@@ -68,6 +68,8 @@ export function createApiClient({ baseUrl = '', getToken, fetch: fetchImpl = (..
     getDiagram: (diagramId: string) => json<Diagram>(`/api/diagrams/${id(diagramId)}`),
     applyOperations: (diagramId: string, body: { baseRevision?: number; operations: Operation[] }) =>
       json<ApplyResponse>(`/api/diagrams/${id(diagramId)}/operations`, { method: 'POST', body: JSON.stringify(body) }),
+    history: (diagramId: string, direction: 'undo' | 'redo') =>
+      json<{ diagramId: string; revision: number }>(`/api/diagrams/${id(diagramId)}/${direction}`, { method: 'POST' }),
     activate: async (diagramId: string) => {
       await request(`/api/diagrams/${id(diagramId)}/activate`, { method: 'POST' });
     },

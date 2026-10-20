@@ -1,4 +1,4 @@
-import { type Element, isGroupKind, type Operation } from '@chartsia/core/model';
+import { type Diagram, type Element, isGroupKind, type Operation } from '@chartsia/core/model';
 import { type Edge, type Node, type OnNodeDrag, useReactFlow } from '@xyflow/react';
 import { useCallback, useMemo } from 'react';
 import { type DiagramEditActions } from '../nodes/edit-context';
@@ -25,12 +25,13 @@ function depth(id: string, byId: Map<string, Element>): number {
 export function useDiagramEdits(api: ApiClient) {
   const { getInternalNode } = useReactFlow();
 
-  const send = useCallback(
-    async (operations: Operation[]) => {
+  // Ejecuta una escritura en el hub y muestra sus errores si la rechaza.
+  const write = useCallback(
+    async (task: (diagram: Diagram) => Promise<unknown>) => {
       const { diagram, connection } = diagramStore.getState();
-      if (!diagram || operations.length === 0) return;
+      if (!diagram) return;
       try {
-        await api.applyOperations(diagram.id, { baseRevision: diagram.revision, operations });
+        await task(diagram);
         // Sin canal en vivo, se lee el resultado directamente.
         if (connection !== 'connected') diagramStore.getState().reconcile(await api.getDiagram(diagram.id));
       } catch (error) {
@@ -42,6 +43,17 @@ export function useDiagramEdits(api: ApiClient) {
     },
     [api],
   );
+
+  const send = useCallback(
+    async (operations: Operation[]) => {
+      if (operations.length === 0) return;
+      await write((diagram) => api.applyOperations(diagram.id, { baseRevision: diagram.revision, operations }));
+    },
+    [api, write],
+  );
+
+  /** Ctrl+Z / Ctrl+Y: deshace o rehace el último cambio del diagrama en el hub. */
+  const history = useCallback((direction: 'undo' | 'redo') => void write((diagram) => api.history(diagram.id, direction)), [api, write]);
 
   /** Al soltar un nodo: `move_element` con su posición absoluta (queda fijado). */
   const onNodeDragStop = useCallback<OnNodeDrag>(
@@ -115,5 +127,5 @@ export function useDiagramEdits(api: ApiClient) {
 
   const editActions = useMemo<DiagramEditActions>(() => ({ editText, readOnly: false }), [editText]);
 
-  return { onNodeDragStop, onDelete, editText, editActions };
+  return { onNodeDragStop, onDelete, editText, editActions, history };
 }
