@@ -49,6 +49,9 @@ for (const [nombre, diagrama] of [
     await page.mouse.move(box.x + 1500, box.y + 600, { steps: 5 });
     await page.mouse.up();
 
+    // El primer clic muestra el cambio; el segundo deja todo el diagrama a la vista.
+    await page.getByRole('button', { name: 'Ajustar', exact: true }).click();
+    await expect(page.locator('[data-element-id="Nuevo"]')).toBeInViewport();
     await page.getByRole('button', { name: 'Ajustar', exact: true }).click();
 
     // Tras la animación corta, cada nodo está dentro del lienzo.

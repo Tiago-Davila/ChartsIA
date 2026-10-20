@@ -28,6 +28,7 @@ function ConnectedApp() {
   const connection = useDiagramStore((s) => s.connection);
   const needsToken = useDiagramStore((s) => s.needsToken);
   const viewVersion = useDiagramStore((s) => s.viewVersion);
+  const changedIds = useDiagramStore((s) => s.lastChangedIds);
   const animate = useDiagramStore((s) => s.lastOrigin === 'agent');
   const edits = useDiagramEdits(api);
   const shortcuts = useMemo(() => ({ history: edits.history, duplicate: edits.duplicate }), [edits.history, edits.duplicate]);
@@ -35,6 +36,17 @@ function ConnectedApp() {
 
   // `viewVersion` fuerza a rehacer los nodos y descartar cambios optimistas rechazados.
   const flow = useMemo(() => (diagram ? toReactFlow(diagram) : { nodes: [], edges: [] }), [diagram, viewVersion]);
+
+  // Lee la lista del hub (los cambios de otros diagramas no llegan en vivo) y abre el más reciente si no es el abierto.
+  const onOpenLatest = useCallback(async () => {
+    const list = await api.listDiagrams().catch(() => undefined);
+    if (!list || list.diagrams.length === 0) return false;
+    diagramStore.getState().setList(list);
+    const latest = list.diagrams.reduce((a, b) => (b.updatedAt > a.updatedAt ? b : a), list.diagrams[0]!);
+    if (latest.diagramId === diagramStore.getState().openDiagramId) return false;
+    openDiagram(latest.diagramId);
+    return true;
+  }, []);
 
   const onExport = useCallback(async (format: ExportFormat) => {
     const current = diagramStore.getState().diagram;
@@ -78,6 +90,9 @@ function ConnectedApp() {
           onDelete={edits.onDelete}
           onConnect={edits.onConnect}
           onAlign={edits.align}
+          changedIds={changedIds}
+          onOpenLatest={onOpenLatest}
+          onChangedFitted={diagramStore.getState().clearChangedIds}
           overlay={<ErrorToast />}
         />
       </div>
