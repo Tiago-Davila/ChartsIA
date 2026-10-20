@@ -12,7 +12,8 @@
     "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput & node --watch-path=dist --enable-source-maps dist/main.js",
     "start": "node --enable-source-maps dist/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
+    "test": "vitest run --exclude '**/*.perf.test.ts' && pnpm test:perf",
+    "test:perf": "vitest run perf.test --fileParallelism=false"
   },
   "dependencies": {
     "@chartsia/core": "workspace:*",

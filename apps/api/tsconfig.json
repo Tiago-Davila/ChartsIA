@@ -9,7 +9,7 @@
       "node"
     ],
     "customConditions": [
-      "source"
+      "@chartsia/source"
     ]
   },
   "include": [

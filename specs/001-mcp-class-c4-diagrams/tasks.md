@@ -224,13 +224,13 @@ las tools T075–T080 y T157 dependen explícitamente de ellos. Deben fallar has
 - [X] T088 [P] [US2] Contract C4: diagrama de contenedores válido; `component` fuera de `boundary` container ⇒ `INVALID_PARENT`; relación `inheritance` en C4 ⇒ `RELATION_NOT_ALLOWED` — `apps/api/test/contract/c4.contract.test.ts` (dep: T026, T065, T159)
 - [X] T089 [P] Contract del listado de tools: los 6 esquemas cumplen el subconjunto común (sin `oneOf`, `additionalProperties:false`) y cada `description` incluye un ejemplo de entrada (FR-003) — `apps/api/test/contract/tools-schema.contract.test.ts` (dep: T026, T159)
 - [X] T158 [P] [US3] Contract `open_diagram`: activa el diagrama, `list_diagrams` lo refleja, emite `active.changed`; id inexistente ⇒ `DIAGRAM_NOT_FOUND` — `apps/api/test/contract/open-diagram.contract.test.ts` (dep: T026, T159)
-- [ ] T090 [P] Contract sobre HTTP real (`StreamableHTTPClientTransport` contra la app Nest levantada) del flujo crear → aplicar → exportar — `apps/api/test/contract/http-transport.contract.test.ts` (dep: T083)
-- [ ] T091 [P] Smoke del puente stdio: compilar (`pnpm --filter @chartsia/api build` en `globalSetup`), lanzar `chartsia-mcp` como proceso hijo y listar tools / crear diagrama — `apps/api/test/contract/stdio-bridge.contract.test.ts` (dep: T082, T083)
-- [ ] T092 [P] Integración REST: códigos 200/204/404/413/422, export con `Content-Disposition` — `apps/api/test/integration/diagrams-rest.test.ts` (dep: T083)
-- [ ] T093 [P] Integración WebSocket: cliente suscrito recibe `diagram.updated` tras una llamada MCP con `origin: "agent"` y tras REST con `origin: "app"` — `apps/api/test/integration/live-gateway.test.ts` (dep: T083)
-- [ ] T094 [P] Integración auth: con `CHARTSIA_HOST=0.0.0.0` sin token ⇒ 401 en `/mcp`, `/api`, `/live`; con token ⇒ OK (header en REST/MCP, `auth.token` en el handshake); `/api/health` sin token ⇒ 200; loopback sin token ⇒ OK; el token no aparece en logs — `apps/api/test/integration/auth.test.ts` (dep: T083)
-- [ ] T095 [P] Integración de límites: petición > 1 MiB ⇒ 413/`LIMIT_EXCEEDED`; > 500 elementos ⇒ `LIMIT_EXCEEDED` con el límite en el mensaje — `apps/api/test/integration/limits.test.ts` (dep: T083)
-- [ ] T096 Test de rendimiento: `create_diagram` de 30 elementos responde en < 500 ms en el hub (presupuesto interno para cumplir SC-001 < 2 s de punta a punta) y layout de 200 en < 1 s — `apps/api/test/integration/performance.test.ts` (dep: T056, T083)
+- [X] T090 [P] Contract sobre HTTP real (`StreamableHTTPClientTransport` contra la app Nest levantada) del flujo crear → aplicar → exportar — `apps/api/test/contract/http-transport.contract.test.ts` (dep: T083)
+- [X] T091 [P] Smoke del puente stdio: compilar (`pnpm --filter @chartsia/api build` en `globalSetup`), lanzar `chartsia-mcp` como proceso hijo y listar tools / crear diagrama — `apps/api/test/contract/stdio-bridge.contract.test.ts` (dep: T082, T083)
+- [X] T092 [P] Integración REST: códigos 200/204/404/413/422, export con `Content-Disposition` — `apps/api/test/integration/diagrams-rest.test.ts` (dep: T083)
+- [X] T093 [P] Integración WebSocket: cliente suscrito recibe `diagram.updated` tras una llamada MCP con `origin: "agent"` y tras REST con `origin: "app"` — `apps/api/test/integration/live-gateway.test.ts` (dep: T083)
+- [X] T094 [P] Integración auth: con `CHARTSIA_HOST=0.0.0.0` sin token ⇒ 401 en `/mcp`, `/api`, `/live`; con token ⇒ OK (header en REST/MCP, `auth.token` en el handshake); `/api/health` sin token ⇒ 200; loopback sin token ⇒ OK; el token no aparece en logs — `apps/api/test/integration/auth.test.ts` (dep: T083)
+- [X] T095 [P] Integración de límites: petición > 1 MiB ⇒ 413/`LIMIT_EXCEEDED`; > 500 elementos ⇒ `LIMIT_EXCEEDED` con el límite en el mensaje — `apps/api/test/integration/limits.test.ts` (dep: T083)
+- [X] T096 Test de rendimiento: `create_diagram` de 30 elementos responde en < 500 ms en el hub (presupuesto interno para cumplir SC-001 < 2 s de punta a punta) y layout de 200 en < 1 s — `apps/api/test/integration/performance.test.ts` (dep: T056, T083)
 
 **Checkpoint**: `pnpm --filter @chartsia/core test` y `pnpm --filter @chartsia/api test` en verde.
 

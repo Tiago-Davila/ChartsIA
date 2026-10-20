@@ -5,14 +5,14 @@
   "type": "module",
   "description": "Modelo canónico, validación, layout, formas y exportadores de ChartsIA",
   "exports": {
-    ".": { "source": "./src/index.ts", "types": "./dist/index.d.ts", "default": "./dist/index.js" },
-    "./model": { "source": "./src/model/index.ts", "types": "./dist/model/index.d.ts", "default": "./dist/model/index.js" },
-    "./validation": { "source": "./src/validation/index.ts", "types": "./dist/validation/index.d.ts", "default": "./dist/validation/index.js" },
-    "./operations": { "source": "./src/operations/index.ts", "types": "./dist/operations/index.d.ts", "default": "./dist/operations/index.js" },
-    "./shapes": { "source": "./src/shapes/index.ts", "types": "./dist/shapes/index.d.ts", "default": "./dist/shapes/index.js" },
-    "./layout": { "source": "./src/layout/index.ts", "types": "./dist/layout/index.d.ts", "default": "./dist/layout/index.js" },
-    "./render": { "source": "./src/render/index.ts", "types": "./dist/render/index.d.ts", "default": "./dist/render/index.js" },
-    "./export": { "source": "./src/export/index.ts", "types": "./dist/export/index.d.ts", "default": "./dist/export/index.js" }
+    ".": { "@chartsia/source": "./src/index.ts", "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    "./model": { "@chartsia/source": "./src/model/index.ts", "types": "./dist/model/index.d.ts", "default": "./dist/model/index.js" },
+    "./validation": { "@chartsia/source": "./src/validation/index.ts", "types": "./dist/validation/index.d.ts", "default": "./dist/validation/index.js" },
+    "./operations": { "@chartsia/source": "./src/operations/index.ts", "types": "./dist/operations/index.d.ts", "default": "./dist/operations/index.js" },
+    "./shapes": { "@chartsia/source": "./src/shapes/index.ts", "types": "./dist/shapes/index.d.ts", "default": "./dist/shapes/index.js" },
+    "./layout": { "@chartsia/source": "./src/layout/index.ts", "types": "./dist/layout/index.d.ts", "default": "./dist/layout/index.js" },
+    "./render": { "@chartsia/source": "./src/render/index.ts", "types": "./dist/render/index.d.ts", "default": "./dist/render/index.js" },
+    "./export": { "@chartsia/source": "./src/export/index.ts", "types": "./dist/export/index.d.ts", "default": "./dist/export/index.js" }
   },
   "files": ["dist"],
   "scripts": {
