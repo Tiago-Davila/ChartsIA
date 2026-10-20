@@ -1,12 +1,14 @@
 import { type Point } from '../model/common.js';
+import { type Side } from '../model/enums.js';
 import { type Rect, r2 } from './types.js';
-
-type Side = 'top' | 'bottom' | 'left' | 'right';
 
 export interface RouteRequest {
   id: string;
   source: string;
   target: string;
+  sourceSide?: Side;
+  targetSide?: Side;
+  waypoints?: Point[];
 }
 
 const MARGIN = 10;
@@ -176,13 +178,21 @@ function searchPath(start: Point, goal: Point, obstacles: Obstacle[], buckets: B
   return undefined;
 }
 
+const between = (a: number, m: number, b: number) => Math.min(a, b) <= m && m <= Math.max(a, b);
+
+/** Quita puntos repetidos y puntos intermedios de un tramo recto (sin perder los retrocesos hacia un quiebre). */
 function simplify(points: Point[]): Point[] {
   const out: Point[] = [];
   for (const p of points) {
     const last = out[out.length - 1];
     if (last && last.x === p.x && last.y === p.y) continue;
     const before = out[out.length - 2];
-    if (before && last && ((before.x === last.x && last.x === p.x) || (before.y === last.y && last.y === p.y))) out.pop();
+    if (
+      before &&
+      last &&
+      ((before.x === last.x && last.x === p.x && between(before.y, last.y, p.y)) || (before.y === last.y && last.y === p.y && between(before.x, last.x, p.x)))
+    )
+      out.pop();
     out.push(p);
   }
   return out;
@@ -207,7 +217,8 @@ export function routeEdges(requests: RouteRequest[], rects: Map<string, Rect>, o
     const s = rects.get(req.source);
     const t = rects.get(req.target);
     if (!s || !t || req.source === req.target) continue;
-    const pair = chooseSides(s, t);
+    const auto = chooseSides(s, t);
+    const pair: [Side, Side] = [req.sourceSide ?? auto[0], req.targetSide ?? auto[1]];
     sides.set(req.id, pair);
     const other = [center(t), center(s)];
     pair.forEach((side, end) => {
@@ -245,17 +256,19 @@ export function routeEdges(requests: RouteRequest[], rects: Map<string, Rect>, o
     const to = portAt(t, tSide, fractions.get(`${req.id}:1`)!);
     const fromOut = { x: from.x + NORMAL[sSide].x * STUB, y: from.y + NORMAL[sSide].y * STUB };
     const toOut = { x: to.x + NORMAL[tSide].x * STUB, y: to.y + NORMAL[tSide].y * STUB };
-    const exempt = new Set(obstacles.filter((o) => inside(fromOut, o) || inside(toOut, o)).map((o) => o.id));
+    const stops = [fromOut, ...(req.waypoints ?? []), toOut];
+    const exempt = new Set(obstacles.filter((o) => stops.some((p) => inside(p, o))).map((o) => o.id));
 
-    const box = {
-      x: Math.min(fromOut.x, toOut.x) - WINDOW,
-      y: Math.min(fromOut.y, toOut.y) - WINDOW,
-      width: Math.abs(fromOut.x - toOut.x) + WINDOW * 2,
-      height: Math.abs(fromOut.y - toOut.y) + WINDOW * 2,
+    const segment = (a: Point, b: Point): Point[] => {
+      const box = {
+        x: Math.min(a.x, b.x) - WINDOW,
+        y: Math.min(a.y, b.y) - WINDOW,
+        width: Math.abs(a.x - b.x) + WINDOW * 2,
+        height: Math.abs(a.y - b.y) + WINDOW * 2,
+      };
+      return searchPath(a, b, buckets.near(box), buckets, exempt) ?? searchPath(a, b, obstacles, buckets, exempt) ?? [a, { x: b.x, y: a.y }, b];
     };
-    const path =
-      searchPath(fromOut, toOut, buckets.near(box), buckets, exempt) ??
-      searchPath(fromOut, toOut, obstacles, buckets, exempt) ?? [fromOut, { x: toOut.x, y: fromOut.y }, toOut];
+    const path = stops.slice(1).flatMap((stop, i) => segment(stops[i]!, stop));
     routes.set(req.id, simplify([from, ...path, to]).map((p) => ({ x: r2(p.x), y: r2(p.y) })));
   }
   return routes;
