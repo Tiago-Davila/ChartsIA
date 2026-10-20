@@ -242,14 +242,14 @@ las tools T075–T080 y T157 dependen explícitamente de ellos. Deben fallar has
 
 **Purpose**: app React compilando, con tests y proxy al hub.
 
-- [ ] T097 Crear paquete `@chartsia/web` (React 19, Vite 8, `@xyflow/react@^12`, `zustand@^5`, `socket.io-client@^4.8`, `@chartsia/core: workspace:*`) — `apps/web/package.json`, `apps/web/tsconfig.json`, `apps/web/index.html` (dep: T002, T005)
-- [ ] T098 Vite con proxy `/api`, `/mcp` y `/socket.io` (`ws: true`) → `http://127.0.0.1:${CHARTSIA_PORT ?? 3333}` — `apps/web/vite.config.ts` (dep: T008, T097)
-- [ ] T099 [P] Vitest + Testing Library + jsdom — `apps/web/vitest.config.ts`, `apps/web/test/setup.ts` (dep: T097)
-- [ ] T100 [P] Playwright apuntando a hub + app levantados por `webServer` — `apps/web/playwright.config.ts` (dep: T097)
-- [ ] T101 [P] Fuentes locales Inter (clean) y Excalifont (sketch), las mismas cuyas métricas usa el núcleo (T048), y tokens de diseño (colores C4, tipografías clean/sketch) — `apps/web/public/fonts/Inter-Regular.woff2`, `apps/web/public/fonts/Excalifont-Regular.woff2`, `apps/web/src/styles/tokens.css`, `apps/web/src/styles/global.css` (dep: T097)
-- [ ] T102 Entrada de la app con `ReactFlowProvider` y estilos de `@xyflow/react` — `apps/web/src/main.tsx`, `apps/web/src/App.tsx` (dep: T097)
-- [ ] T161 Router de la app: `/` (activo o estado vacío) y `/d/:id` (destino de `viewUrl`) — `apps/web/src/app/routes.tsx`, `apps/web/src/App.tsx` (dep: T102)
-- [ ] T103 Actualizar script raíz `pnpm dev` para levantar hub y app en paralelo — `package.json` (dep: T010, T102)
+- [X] T097 Crear paquete `@chartsia/web` (React 19, Vite 8, `@xyflow/react@^12`, `zustand@^5`, `socket.io-client@^4.8`, `@chartsia/core: workspace:*`) — `apps/web/package.json`, `apps/web/tsconfig.json`, `apps/web/index.html` (dep: T002, T005)
+- [X] T098 Vite con proxy `/api`, `/mcp` y `/socket.io` (`ws: true`) → `http://127.0.0.1:${CHARTSIA_PORT ?? 3333}` — `apps/web/vite.config.ts` (dep: T008, T097)
+- [X] T099 [P] Vitest + Testing Library + jsdom — `apps/web/vitest.config.ts`, `apps/web/test/setup.ts` (dep: T097)
+- [X] T100 [P] Playwright apuntando a hub + app levantados por `webServer` — `apps/web/playwright.config.ts` (dep: T097)
+- [X] T101 [P] Fuentes locales Inter (clean) y Excalifont (sketch), las mismas cuyas métricas usa el núcleo (T048), y tokens de diseño (colores C4, tipografías clean/sketch) — `apps/web/public/fonts/Inter-Regular.woff2`, `apps/web/public/fonts/Excalifont-Regular.woff2`, `apps/web/src/styles/tokens.css`, `apps/web/src/styles/global.css` (dep: T097)
+- [X] T102 Entrada de la app con `ReactFlowProvider` y estilos de `@xyflow/react` — `apps/web/src/main.tsx`, `apps/web/src/App.tsx` (dep: T097)
+- [X] T161 Router de la app: `/` (activo o estado vacío) y `/d/:id` (destino de `viewUrl`) — `apps/web/src/app/routes.tsx`, `apps/web/src/App.tsx` (dep: T102)
+- [X] T103 Actualizar script raíz `pnpm dev` para levantar hub y app en paralelo — `package.json` (dep: T010, T102)
 
 ---
 
