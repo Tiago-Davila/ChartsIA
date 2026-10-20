@@ -20,6 +20,7 @@ export const createDiagramTool = (commands: DiagramCommandService, results: Tool
     annotations: { title: 'Crear diagrama', readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     description: [
       'Crea un diagrama de clases UML o C4 (contexto, contenedores o componentes) a partir de una descripción estructural y lo muestra en la app de ChartsIA, donde la persona lo ve al instante.',
+      'Úsalo siempre que la persona pida un diagrama nuevo o distinto de los que ya existen (otro tema, sistema o tipo): crea un diagrama aparte y no modifica los anteriores. No uses apply_changes para eso.',
       'No envíes coordenadas: el servidor dispone el diagrama automáticamente sin solapes. Solo si quieres fijar un elemento, añade layout {"x","y"}.',
       'Cada elemento y relación lleva un id estable elegido por ti (letra inicial, letras, dígitos, "_" o "-"); úsalo después en apply_changes.',
       'Kinds: class → class, interface, enum, package (grupo). c4-context → person, software-system, boundary. c4-container → además container (variant: default|database|queue|web). c4-component → además component, que debe ir dentro de un boundary con boundaryType "container".',
