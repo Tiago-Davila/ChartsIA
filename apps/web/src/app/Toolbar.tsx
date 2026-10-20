@@ -10,6 +10,10 @@ export interface ToolbarProps {
   disabled?: boolean;
   onExport(format: ExportFormat): void;
   onAlign?(mode: AlignMode): void;
+  /** Ids que tocó el último cambio; vacío encuadra todo el diagrama. */
+  changedIds?: string[];
+  /** Abre el diagrama modificado más recientemente; devuelve true si era otro (el lienzo lo encuadra al cargar). */
+  onOpenLatest?(): Promise<boolean>;
 }
 
 const EXPORTS: { value: ExportFormat; label: string }[] = [
@@ -59,13 +63,16 @@ function Menu<T extends string>({ label, items, primary, disabled, onSelect }: {
 }
 
 /** Título, encuadre, alineación de la selección y exportación (FR-027). */
-export function Toolbar({ title, revision, disabled = false, onExport, onAlign }: ToolbarProps) {
+export function Toolbar({ title, revision, disabled = false, onExport, onAlign, changedIds = [], onOpenLatest }: ToolbarProps) {
   const { getNodes, getNodesBounds, setViewport } = useReactFlow();
   const store = useStoreApi();
-  // Encuadra todos los nodos con su tamaño declarado, porque fitView espera nodos medidos y tras un cambio del hub no responde.
-  const fit = () => {
+  // Encuadra los nodos del último cambio (o todos) con su tamaño declarado, porque fitView espera nodos medidos y tras un cambio del hub no responde.
+  const fit = async () => {
+    if (await onOpenLatest?.()) return;
     const { width, height, minZoom } = store.getState();
-    const viewport = getViewportForBounds(getNodesBounds(getNodes()), width, height, minZoom, FIT_VIEW_OPTIONS.maxZoom, FIT_VIEW_OPTIONS.padding);
+    const all = getNodes();
+    const changed = all.filter((n) => changedIds.includes(n.id));
+    const viewport = getViewportForBounds(getNodesBounds(changed.length > 0 ? changed : all), width, height, minZoom, FIT_VIEW_OPTIONS.maxZoom, FIT_VIEW_OPTIONS.padding);
     void setViewport(viewport, { duration: 300 });
   };
   const selected = useNodes().filter((n) => n.selected).length;
@@ -76,7 +83,7 @@ export function Toolbar({ title, revision, disabled = false, onExport, onAlign }
         {revision !== undefined ? <span className="toolbar__revision">rev {revision}</span> : null}
       </h1>
       {onAlign && selected >= 2 ? <Menu label="Alinear" items={ALIGNS} disabled={disabled} onSelect={onAlign} /> : null}
-      <button type="button" className="button" disabled={disabled} onClick={fit}>
+      <button type="button" className="button" disabled={disabled} onClick={() => void fit()}>
         Ajustar
       </button>
       <Menu label="Exportar" items={EXPORTS} primary disabled={disabled} onSelect={onExport} />

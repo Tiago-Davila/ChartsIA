@@ -17,7 +17,7 @@ for (const [nombre, diagrama] of [
   ['clases', library],
   ['con paquete', agrupado],
 ] as const) {
-  test(`Ajustar deja todo el diagrama a la vista tras un cambio del agente y pan lejos (${nombre})`, async ({
+  test(`Ajustar deja a la vista el cambio del agente tras hacer pan lejos (${nombre})`, async ({
     page,
     agent,
   }) => {
@@ -51,11 +51,11 @@ for (const [nombre, diagrama] of [
 
     await page.getByRole('button', { name: 'Ajustar', exact: true }).click();
 
-    // Tras la animación corta, cada nodo está dentro del lienzo.
+    // Tras la animación corta, el nodo cambiado está dentro del lienzo.
     await expect
       .poll(async () => {
         const area = (await canvas.boundingBox())!;
-        for (const node of await nodes.all()) {
+        for (const node of [page.locator('[data-element-id="Nuevo"]')]) {
           const b = (await node.boundingBox())!;
           if (
             b.x < area.x ||
