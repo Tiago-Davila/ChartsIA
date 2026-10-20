@@ -2,9 +2,11 @@ import { measureElement, type Primitive } from '@chartsia/core/shapes';
 import { Handle, type NodeProps, Position } from '@xyflow/react';
 import { type CSSProperties, memo, useCallback, useState } from 'react';
 import { slotValue } from '../canvas/slot-edits';
+import { suggestTypes, typeContext } from '../canvas/type-suggestions';
 import { CleanShape } from '../render/CleanShape';
 import { useDiagramEditActions } from './edit-context';
-import { InlineEditableText } from './InlineEditableText';
+import { diagramStore } from '../state/diagram-store';
+import { InlineEditableText, type Suggestions } from './InlineEditableText';
 import { type ElementFlowNode } from './types';
 
 type TextPrimitive = Extract<Primitive, { type: 'text' }>;
@@ -14,6 +16,16 @@ function editorStyle(p: TextPrimitive, width: number): CSSProperties {
   const top = p.y - p.size * 1.05;
   if (p.anchor === 'middle') return { left: 8, top, width: width - 16, height, fontSize: p.size, textAlign: 'center' };
   return { left: p.x - 3, top, width: Math.max(80, width - p.x - 6), height, fontSize: p.size };
+}
+
+/** Autocompletado de tipos para los slots de atributos y operaciones. */
+function typeSuggester(slot: string): ((text: string, caret: number) => Suggestions | undefined) | undefined {
+  const field = slot.startsWith('attribute:') ? 'attribute' : slot.startsWith('operation:') ? 'operation' : undefined;
+  if (!field) return undefined;
+  return (text, caret) => {
+    const context = typeContext(text, caret, field);
+    return context && { context, items: suggestTypes(context, diagramStore.getState().diagram) };
+  };
 }
 
 /**
@@ -49,6 +61,7 @@ function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<Elemen
             editText(id, editing.slot!, value);
           }}
           onCancel={() => setEditing(undefined)}
+          suggest={typeSuggester(editing.slot!)}
         />
       ) : null}
     </div>

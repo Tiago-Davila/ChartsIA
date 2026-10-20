@@ -248,6 +248,32 @@ button:disabled,
   outline: none;
 }
 
+.type-suggestions {
+  position: absolute;
+  z-index: 11;
+  min-width: 160px;
+  max-height: 220px;
+  margin: 0;
+  padding: 4px 0;
+  overflow-y: auto;
+  list-style: none;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.type-suggestions li {
+  padding: 3px 10px;
+  cursor: pointer;
+}
+.type-suggestions li.is-active,
+.type-suggestions li:hover {
+  color: #fff;
+  background: var(--accent);
+}
+
 /* Leyenda C4 */
 .c4-legend {
   position: absolute;
