@@ -1,0 +1,32 @@
+{
+  "name": "@chartsia/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Modelo canónico, validación, layout, formas y exportadores de ChartsIA",
+  "exports": {
+    ".": { "source": "./src/index.ts", "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    "./model": { "source": "./src/model/index.ts", "types": "./dist/model/index.d.ts", "default": "./dist/model/index.js" },
+    "./validation": { "source": "./src/validation/index.ts", "types": "./dist/validation/index.d.ts", "default": "./dist/validation/index.js" },
+    "./operations": { "source": "./src/operations/index.ts", "types": "./dist/operations/index.d.ts", "default": "./dist/operations/index.js" },
+    "./shapes": { "source": "./src/shapes/index.ts", "types": "./dist/shapes/index.d.ts", "default": "./dist/shapes/index.js" },
+    "./layout": { "source": "./src/layout/index.ts", "types": "./dist/layout/index.d.ts", "default": "./dist/layout/index.js" },
+    "./render": { "source": "./src/render/index.ts", "types": "./dist/render/index.d.ts", "default": "./dist/render/index.js" },
+    "./export": { "source": "./src/export/index.ts", "types": "./dist/export/index.d.ts", "default": "./dist/export/index.js" }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:golden": "vitest run test/golden"
+  },
+  "dependencies": {
+    "elkjs": "^0.12.0",
+    "roughjs": "^4.6.6",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "vitest": "^5.0.5"
+  }
+}
