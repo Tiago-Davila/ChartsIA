@@ -10,6 +10,7 @@ draw.io o Excalidraw. Todo el código, los comentarios y la documentación está
 
 - **Commits**: convencionales y en español (`feat(web): …`, `fix(core): …`, `test(api): …`).
   **Sin** línea `Co-Authored-By` ni ninguna otra atribución.
+  **Con** `Closes #`para cerrar el issue correspondiente si se lo pide. 
 - **Pull requests**: sin mencionar a Claude Code (nada de "Generated with Claude Code").
 - **Ramas**: cada función, módulo o fix nuevo que no exista ya en una rama va en una rama
   nueva, creada antes de empezar a trabajar.
@@ -78,3 +79,9 @@ Toda capacidad nueva debe existir en el núcleo y exponerse como herramienta MCP
 otro cliente más (`.specify/memory/constitution.md`, principio I). Cambiar la salida de un
 exportador exige actualizar y revisar sus golden files. El contrato MCP está en
 `specs/001-mcp-class-c4-diagrams/contracts/`.
+
+
+## Ramas Importantes y sus reglas
+Las ramas mas importantes son **develop** y **master**, SIEMPRE se tiene que hacer push de una rama fix, refactor, feature, docs, etc a develop, de ahi merge a main.
+
+
