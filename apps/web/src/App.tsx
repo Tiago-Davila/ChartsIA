@@ -7,6 +7,7 @@ import { diagramPath, navigate, useRoute } from './app/routes';
 import { TokenPrompt } from './app/TokenPrompt';
 import { toReactFlow } from './canvas/to-react-flow';
 import { useDiagramEdits } from './canvas/use-diagram-edits';
+import { useShortcuts } from './canvas/use-shortcuts';
 import { DiagramEditContext } from './nodes/edit-context';
 import { ApiError } from './state/api-client';
 import { setToken } from './state/auth-token';
@@ -29,6 +30,8 @@ function ConnectedApp() {
   const viewVersion = useDiagramStore((s) => s.viewVersion);
   const animate = useDiagramStore((s) => s.lastOrigin === 'agent');
   const edits = useDiagramEdits(api);
+  const shortcuts = useMemo(() => ({ history: edits.history, duplicate: edits.duplicate }), [edits.history, edits.duplicate]);
+  useShortcuts(shortcuts, diagram !== undefined);
 
   // `viewVersion` fuerza a rehacer los nodos y descartar cambios optimistas rechazados.
   const flow = useMemo(() => (diagram ? toReactFlow(diagram) : { nodes: [], edges: [] }), [diagram, viewVersion]);
@@ -73,6 +76,8 @@ function ConnectedApp() {
           onExport={onExport}
           onNodeDragStop={edits.onNodeDragStop}
           onDelete={edits.onDelete}
+          onConnect={edits.onConnect}
+          onAlign={edits.align}
           overlay={<ErrorToast />}
         />
       </div>

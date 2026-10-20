@@ -122,6 +122,37 @@ describe('DiagramCommandService.apply', () => {
   });
 });
 
+describe('DiagramCommandService.undo', () => {
+  it('deshace y rehace cambios del agente y de la app, con revision nueva y evento', async () => {
+    const { commands, repo, emitted } = createServices();
+    const { diagram: created } = await commands.create(libraryInput);
+    await commands.apply({ operations: [{ op: 'remove_element', id: 'Libro' }], origin: 'app' });
+    await commands.apply({ operations: [{ op: 'set_title', title: 'Otra' }], origin: 'agent' });
+    emitted.length = 0;
+
+    await commands.undo({ direction: 'undo', origin: 'app' });
+    const undone = await commands.undo({ direction: 'undo', origin: 'app' });
+    expect(undone.revision).toBe(5);
+    expect(undone.elements).toEqual(created.elements);
+    expect(undone.title).toBe('Biblioteca');
+    expect(emitted.map((e) => e.name)).toEqual(['diagram.updated', 'diagram.updated']);
+
+    const redone = await commands.undo({ direction: 'redo', origin: 'agent' });
+    expect(redone.elements.map((e) => e.id)).toEqual(['Autor']);
+    expect(await repo.get(created.id)).toEqual(redone);
+  });
+
+  it('un cambio nuevo descarta lo que se podía rehacer; sin historia ⇒ NOTHING_TO_UNDO', async () => {
+    const { commands } = createServices();
+    await commands.create(libraryInput);
+    expect((await domainErrors(commands.undo({ direction: 'undo', origin: 'app' })))[0]?.code).toBe('NOTHING_TO_UNDO');
+    await commands.apply({ operations: [{ op: 'set_title', title: 'A' }], origin: 'app' });
+    await commands.undo({ direction: 'undo', origin: 'app' });
+    await commands.apply({ operations: [{ op: 'set_title', title: 'B' }], origin: 'app' });
+    expect((await domainErrors(commands.undo({ direction: 'redo', origin: 'app' })))[0]?.code).toBe('NOTHING_TO_UNDO');
+  });
+});
+
 describe('DiagramCommandService.activate', () => {
   it('cambia el activo y emite active.changed', async () => {
     const { commands, repo, emitted } = createServices();

@@ -44,6 +44,20 @@ export class DiagramsController {
     return { diagramId: diagram.id, revision: diagram.revision, viewUrl: this.urls.view(diagram.id), applied, warnings };
   }
 
+  @Post(':id/undo')
+  @HttpCode(200)
+  async undo(@Param('id') id: string) {
+    const diagram = await this.commands.undo({ diagramId: id, direction: 'undo', origin: 'app' });
+    return { diagramId: diagram.id, revision: diagram.revision };
+  }
+
+  @Post(':id/redo')
+  @HttpCode(200)
+  async redo(@Param('id') id: string) {
+    const diagram = await this.commands.undo({ diagramId: id, direction: 'redo', origin: 'app' });
+    return { diagramId: diagram.id, revision: diagram.revision };
+  }
+
   @Post(':id/activate')
   @HttpCode(204)
   async activate(@Param('id') id: string): Promise<void> {

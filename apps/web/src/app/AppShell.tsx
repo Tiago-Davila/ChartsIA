@@ -2,6 +2,7 @@ import { type ExportFormat } from '@chartsia/core/export';
 import { type Diagram } from '@chartsia/core/model';
 import { type Edge, type Node } from '@xyflow/react';
 import { type ReactNode } from 'react';
+import { type AlignMode } from '../canvas/align';
 import { DiagramCanvas, type DiagramCanvasProps } from '../canvas/DiagramCanvas';
 import { C4Legend } from '../legend/C4Legend';
 import { ConnectionStatus, type ConnectionState } from './ConnectionStatus';
@@ -24,6 +25,8 @@ export interface AppShellProps {
   onExport(format: ExportFormat): void;
   onNodeDragStop?: DiagramCanvasProps['onNodeDragStop'];
   onDelete?: DiagramCanvasProps['onDelete'];
+  onConnect?: DiagramCanvasProps['onConnect'];
+  onAlign?(mode: AlignMode): void;
   /** Avisos superpuestos (errores de validación, etc.). */
   overlay?: ReactNode;
 }
@@ -48,6 +51,7 @@ export function AppShell(props: AppShellProps) {
               revision={diagram.revision}
               disabled={props.readOnly}
               onExport={props.onExport}
+              onAlign={props.readOnly ? undefined : props.onAlign}
             />
             <div className="app-shell__canvas">
               <DiagramCanvas
@@ -57,6 +61,7 @@ export function AppShell(props: AppShellProps) {
                 readOnly={props.readOnly}
                 onNodeDragStop={props.onNodeDragStop}
                 onDelete={props.onDelete}
+                onConnect={props.onConnect}
               />
               <C4Legend diagram={diagram} />
             </div>

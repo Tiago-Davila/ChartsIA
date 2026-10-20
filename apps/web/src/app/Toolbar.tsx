@@ -1,55 +1,77 @@
 import { type ExportFormat } from '@chartsia/core/export';
-import { useReactFlow } from '@xyflow/react';
+import { useNodes, useReactFlow } from '@xyflow/react';
 import { useRef } from 'react';
+import { type AlignMode } from '../canvas/align';
 
 export interface ToolbarProps {
   title: string;
   revision?: number;
   disabled?: boolean;
   onExport(format: ExportFormat): void;
+  onAlign?(mode: AlignMode): void;
 }
 
-const EXPORTS: { format: ExportFormat; label: string }[] = [
-  { format: 'svg', label: 'SVG (imagen)' },
-  { format: 'drawio', label: 'draw.io (.drawio)' },
-  { format: 'excalidraw', label: 'Excalidraw (.excalidraw)' },
+const EXPORTS: { value: ExportFormat; label: string }[] = [
+  { value: 'svg', label: 'SVG (imagen)' },
+  { value: 'drawio', label: 'draw.io (.drawio)' },
+  { value: 'excalidraw', label: 'Excalidraw (.excalidraw)' },
 ];
 
-/** Título, encuadre y exportación (FR-027). */
-export function Toolbar({ title, revision, disabled = false, onExport }: ToolbarProps) {
-  const { fitView } = useReactFlow();
+const ALIGNS: { value: AlignMode; label: string }[] = [
+  { value: 'left', label: 'Alinear a la izquierda' },
+  { value: 'center', label: 'Centrar en horizontal' },
+  { value: 'right', label: 'Alinear a la derecha' },
+  { value: 'top', label: 'Alinear arriba' },
+  { value: 'middle', label: 'Centrar en vertical' },
+  { value: 'bottom', label: 'Alinear abajo' },
+  { value: 'distribute-x', label: 'Repartir en horizontal' },
+  { value: 'distribute-y', label: 'Repartir en vertical' },
+];
+
+/** Menú desplegable de la barra; se cierra al elegir una opción. */
+function Menu<T extends string>({ label, items, primary, disabled, onSelect }: { label: string; items: { value: T; label: string }[]; primary?: boolean; disabled: boolean; onSelect(value: T): void }) {
   const menu = useRef<HTMLDetailsElement>(null);
+  return (
+    <details className="menu" ref={menu}>
+      <summary className={`button${primary ? ' button--primary' : ''}${disabled ? ' is-disabled' : ''}`} aria-disabled={disabled}>
+        {label}
+      </summary>
+      <ul role="menu">
+        {items.map((item) => (
+          <li key={item.value} role="none">
+            <button
+              type="button"
+              role="menuitem"
+              disabled={disabled}
+              onClick={() => {
+                menu.current?.removeAttribute('open');
+                onSelect(item.value);
+              }}
+            >
+              {item.label}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </details>
+  );
+}
+
+/** Título, encuadre, alineación de la selección y exportación (FR-027). */
+export function Toolbar({ title, revision, disabled = false, onExport, onAlign }: ToolbarProps) {
+  const { fitView } = useReactFlow();
+  const selected = useNodes().filter((n) => n.selected).length;
   return (
     <header className="toolbar">
       <h1 className="toolbar__title" title={title}>
         {title}
         {revision !== undefined ? <span className="toolbar__revision">rev {revision}</span> : null}
       </h1>
+      {onAlign && selected >= 2 ? <Menu label="Alinear" items={ALIGNS} disabled={disabled} onSelect={onAlign} /> : null}
       <button type="button" className="button" disabled={disabled} onClick={() => void fitView({ padding: 0.15, duration: 300 })}>
         Ajustar
       </button>
-      <details className="menu" ref={menu}>
-        <summary className={`button button--primary${disabled ? ' is-disabled' : ''}`} aria-disabled={disabled}>
-          Exportar
-        </summary>
-        <ul role="menu">
-          {EXPORTS.map((e) => (
-            <li key={e.format} role="none">
-              <button
-                type="button"
-                role="menuitem"
-                disabled={disabled}
-                onClick={() => {
-                  menu.current?.removeAttribute('open');
-                  onExport(e.format);
-                }}
-              >
-                {e.label}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </details>
+      <Menu label="Exportar" items={EXPORTS} primary disabled={disabled} onSelect={onExport} />
     </header>
   );
 }

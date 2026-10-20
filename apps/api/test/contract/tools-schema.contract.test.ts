@@ -21,9 +21,9 @@ describe('contract: listado de tools', () => {
   });
   afterAll(() => h.close());
 
-  it('expone las 6 herramientas del contrato', () => {
+  it('expone las 7 herramientas del contrato', () => {
     expect(tools.map((t) => t.name).sort()).toEqual(
-      ['apply_changes', 'create_diagram', 'export_diagram', 'get_diagram', 'list_diagrams', 'open_diagram'],
+      ['apply_changes', 'create_diagram', 'export_diagram', 'get_diagram', 'list_diagrams', 'open_diagram', 'undo_changes'],
     );
   });
 

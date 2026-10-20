@@ -132,6 +132,31 @@ describe('relayoutDiagram (incremental)', () => {
     expect(edgesCrossingNodes(diagram)).toEqual([]);
   });
 
+  it('un elemento redimensionado conserva el tamaño elegido, pero nunca menor que su contenido', async () => {
+    const prev = await layoutDiagram(library());
+    const { diagram } = await edit(prev, [
+      { op: 'resize_element', id: 'Libro', width: 400, height: 300 },
+      { op: 'resize_element', id: 'Socio', width: 10, height: 10 },
+    ]);
+    expect(layoutOf(diagram, 'Libro')).toMatchObject({ width: 400, height: 300, pinned: true, resized: true });
+    expect(layoutOf(diagram, 'Socio').width).toBeGreaterThan(10);
+    expect(overlappingPairs(diagram)).toEqual([]);
+  });
+
+  it('la ruta respeta los lados elegidos y pasa por los quiebres', async () => {
+    const prev = await layoutDiagram(library());
+    const socio = layoutOf(prev, 'Socio');
+    const waypoint = { x: socio.x - 60, y: socio.y - 60 };
+    const { diagram } = await edit(prev, [{ op: 'update_relation', id: 'r5', changes: { sourceSide: 'left', waypoints: [waypoint] } }]);
+    const route = diagram.relations.find((r) => r.id === 'r5')!.route!;
+    expect(route[0]!.x).toBe(socio.x);
+    const onSegment = route.slice(1).some((b, i) => {
+      const a = route[i]!;
+      return Math.min(a.x, b.x) <= waypoint.x && waypoint.x <= Math.max(a.x, b.x) && Math.min(a.y, b.y) <= waypoint.y && waypoint.y <= Math.max(a.y, b.y);
+    });
+    expect(onSegment).toBe(true);
+  });
+
   it('es determinista', async () => {
     const prev = await layoutDiagram(library());
     const ops = [{ op: 'add_element', element: { id: 'X', kind: 'class', name: 'X', attributes: [], operations: [] } }];

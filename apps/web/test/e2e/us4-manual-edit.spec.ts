@@ -34,8 +34,8 @@ test.describe('US4 · escenarios 6–7: edición manual', () => {
     await expect.poll(async () => (await agent.layout(id)).elements.find((e) => e.id === 'Autor')!.name).toBe('Escritor');
 
     await page.getByText('+ prestar(libro: Libro): Prestamo').dblclick();
-    await page.getByRole('textbox', { name: 'Editar texto' }).fill('esto no es una operación');
-    await page.getByRole('textbox', { name: 'Editar texto' }).press('Enter');
+    await page.getByRole('combobox', { name: 'Editar texto' }).fill('esto no es una operación');
+    await page.getByRole('combobox', { name: 'Editar texto' }).press('Enter');
     await expect(page.getByRole('alert')).toContainText('no es un valor válido');
 
     await page.locator('[data-element-id="Prestamo"]').click({ position: { x: 20, y: 8 } });

@@ -20,6 +20,7 @@ export const LayoutSchema = z.strictObject({
   width: z.number().positive().optional(),
   height: z.number().positive().optional(),
   pinned: z.boolean().optional(),
+  resized: z.boolean().optional().describe('Lo marca resize_element: width/height son un mínimo elegido a mano'),
 });
 export type LayoutInput = z.infer<typeof LayoutSchema>;
 export interface Layout {
@@ -28,6 +29,7 @@ export interface Layout {
   width: number;
   height: number;
   pinned: boolean;
+  resized?: boolean;
 }
 
 export const NameSchema = z.string().min(1).max(200);

@@ -20,12 +20,12 @@ const KIND_FIELDS: Record<string, string> = {
   class: 'attributes[] {name, type?, visibility: + - # ~, static?, defaultValue?}, operations[] {name, parameters[] {name, type?}, returnType?, visibility, static?, abstract?}, abstract?, stereotype?',
   interface: 'operations[], attributes[]?',
   enum: 'literals[] (≥1, únicos)',
-  package: 'grupo: otros elementos lo referencian con parentId',
+  package: 'grupo: otros elementos lo referencian con parentId. Úsalo solo si la persona pide agrupar en paquetes',
   person: 'external?, description?',
   'software-system': 'external?, description?',
   container: 'technology?, variant?: default | database | queue | web, description?',
   component: 'technology?, description?; parentId de un boundary con boundaryType "container"',
-  boundary: 'grupo; boundaryType: enterprise | system | container',
+  boundary: 'grupo; boundaryType: enterprise | system | container. Úsalo solo si la persona lo pide o si hace falta para un component',
 };
 
 const RELATION_RULES: Record<string, string> = {

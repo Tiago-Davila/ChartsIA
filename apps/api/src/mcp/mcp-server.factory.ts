@@ -24,6 +24,7 @@ import { exportDiagramTool } from './tools/export-diagram.tool.js';
 import { getDiagramTool } from './tools/get-diagram.tool.js';
 import { listDiagramsTool } from './tools/list-diagrams.tool.js';
 import { openDiagramTool } from './tools/open-diagram.tool.js';
+import { undoChangesTool } from './tools/undo-changes.tool.js';
 import { FailureSchema } from './tools/schemas.js';
 import { type ToolDefinition } from './tools/tool-definition.js';
 
@@ -32,8 +33,9 @@ export const SCHEMA_VERSION = '1.0.0';
 
 const INSTRUCTIONS = [
   'ChartsIA dibuja diagramas de clases UML y C4 en una app que la persona tiene abierta.',
-  'Flujo habitual: create_diagram con la estructura (sin coordenadas) → apply_changes para cada refinamiento → export_diagram si piden un archivo.',
+  'Flujo habitual: create_diagram con la estructura (sin coordenadas) → apply_changes para cada refinamiento → export_diagram si piden un archivo. undo_changes deshace o rehace el último cambio.',
   'Usa get_diagram para conocer los ids actuales antes de editar y list_diagrams / open_diagram para cambiar de diagrama.',
+  'No agrupes elementos en package o boundary salvo que la persona lo pida (o que un component lo exija).',
   'Si una herramienta devuelve isError, lee code, path y hint de cada error, corrige la entrada y vuelve a llamarla.',
 ].join(' ');
 
@@ -62,6 +64,7 @@ export class McpServerFactory {
       listDiagramsTool(query),
       openDiagramTool(commands, results),
       exportDiagramTool(exports, results),
+      undoChangesTool(commands, results),
     ];
     const failure = toToolJsonSchema(FailureSchema);
     this.listing = this.tools.map((tool) => ({

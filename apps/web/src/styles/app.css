@@ -219,9 +219,64 @@ button:disabled,
 .chartsia-node.is-selected svg {
   filter: drop-shadow(0 0 0.5px var(--accent)) drop-shadow(0 0 3px rgb(17 104 189 / 45%));
 }
-.chartsia-handle {
+/* Puntos para conectar arrastrando: solo visibles al pasar por encima del nodo. */
+.chartsia-node .chartsia-handle {
+  width: 10px;
+  height: 10px;
+  background: var(--accent);
+  border: 2px solid #fff;
   opacity: 0;
+}
+.chartsia-node:hover .chartsia-handle.connectable {
+  opacity: 1;
+}
+.chartsia-handle:not(.connectable) {
   pointer-events: none;
+}
+
+/* Barra y tiradores de la flecha seleccionada. */
+.edge-toolbar {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 4px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  white-space: nowrap;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  pointer-events: all;
+}
+.edge-toolbar select,
+.edge-toolbar input {
+  height: 28px;
+  padding: 0 6px;
+  font: inherit;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.edge-toolbar .button {
+  padding: 4px 8px;
+}
+.edge-form {
+  display: flex;
+  gap: 4px;
+}
+.edge-form input {
+  width: 120px;
+}
+.edge-handle {
+  position: absolute;
+  z-index: 19;
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  cursor: move;
+  pointer-events: all;
 }
 .react-flow__node {
   /* Las formas ya dibujan su propio borde y fondo. */
@@ -246,6 +301,32 @@ button:disabled,
   border: 1px solid var(--accent);
   border-radius: 4px;
   outline: none;
+}
+
+.type-suggestions {
+  position: absolute;
+  z-index: 11;
+  min-width: 160px;
+  max-height: 220px;
+  margin: 0;
+  padding: 4px 0;
+  overflow-y: auto;
+  list-style: none;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.type-suggestions li {
+  padding: 3px 10px;
+  cursor: pointer;
+}
+.type-suggestions li.is-active,
+.type-suggestions li:hover {
+  color: #fff;
+  background: var(--accent);
 }
 
 /* Leyenda C4 */
