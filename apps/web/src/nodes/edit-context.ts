@@ -7,10 +7,13 @@ export interface DiagramEditActions {
   /** Tamaño elegido a mano (posición relativa al padre, como la da React Flow). */
   resize(elementId: string, box: { x: number; y: number; width: number; height: number }): void;
   updateRelation(relationId: string, changes: RelationChanges): void;
+  /** Saca un elemento de su grupo, o deshace un grupo dejando a sus hijos en su lugar. */
+  leaveGroup(elementId: string): void;
+  ungroup(groupId: string): void;
   readOnly: boolean;
 }
 
-const noop: DiagramEditActions = { editText: () => {}, resize: () => {}, updateRelation: () => {}, readOnly: true };
+const noop: DiagramEditActions = { editText: () => {}, resize: () => {}, updateRelation: () => {}, leaveGroup: () => {}, ungroup: () => {}, readOnly: true };
 
 export const DiagramEditContext = createContext<DiagramEditActions>(noop);
 

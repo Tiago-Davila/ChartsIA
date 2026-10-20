@@ -23,6 +23,7 @@ export const createDiagramTool = (commands: DiagramCommandService, results: Tool
       'No envíes coordenadas: el servidor dispone el diagrama automáticamente sin solapes. Solo si quieres fijar un elemento, añade layout {"x","y"}.',
       'Cada elemento y relación lleva un id estable elegido por ti (letra inicial, letras, dígitos, "_" o "-"); úsalo después en apply_changes.',
       'Kinds: class → class, interface, enum, package (grupo). c4-context → person, software-system, boundary. c4-container → además container (variant: default|database|queue|web). c4-component → además component, que debe ir dentro de un boundary con boundaryType "container".',
+      'No agrupes por tu cuenta: usa package solo si la persona pide agrupar en paquetes, y boundary solo si lo pide o si el tipo lo exige (component dentro de su container).',
       'Relaciones UML: association, aggregation, composition (el rombo va en source), inheritance (class→class o interface→interface), realization (class→interface), dependency. En C4 usa solo c4-rel con label y technology.',
       'Si algo es inválido no se crea nada y recibes errores con code, path (JSON Pointer), message y hint para corregirlos. La guía completa por tipo está en el recurso chartsia://schema/{type}.',
       `Ejemplo de entrada: ${JSON.stringify(EXAMPLE)}`,

@@ -190,9 +190,12 @@ export function useDiagramEdits(api: ApiClient) {
     [selectedBoxes, send],
   );
 
+  const leaveGroup = useCallback((id: string) => void send([{ op: 'update_element', id, changes: { parentId: null } }]), [send]);
+  const ungroup = useCallback((id: string) => void send([{ op: 'remove_element', id, cascade: 'reparent' }]), [send]);
+
   const editActions = useMemo<DiagramEditActions>(
-    () => ({ editText, resize, updateRelation, readOnly: false }),
-    [editText, resize, updateRelation],
+    () => ({ editText, resize, updateRelation, leaveGroup, ungroup, readOnly: false }),
+    [editText, resize, updateRelation, leaveGroup, ungroup],
   );
 
   return { onNodeDragStop, onDelete, onConnect, editText, editActions, history, duplicate, align };
