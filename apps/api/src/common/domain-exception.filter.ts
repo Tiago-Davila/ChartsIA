@@ -6,6 +6,7 @@ import { isDomainValidationError, type ValidationError } from '@chartsia/core/va
 const STATUS_BY_CODE: Partial<Record<ValidationError['code'], number>> = {
   DIAGRAM_NOT_FOUND: HttpStatus.NOT_FOUND,
   NO_ACTIVE_DIAGRAM: HttpStatus.NOT_FOUND,
+  NOTHING_TO_UNDO: HttpStatus.CONFLICT,
 };
 
 type BodyParserError = { type?: string; limit?: number };
