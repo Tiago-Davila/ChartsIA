@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { newDiagramId } from '@chartsia/core/model';
 import { DiagramCommandService } from './diagram-command.service.js';
+import { DiagramsController } from './diagrams.controller.js';
+import { ExportController } from './export.controller.js';
 import { DiagramEvents } from './diagram-events.js';
 import { DiagramQueryService } from './diagram-query.service.js';
 import { ExportService } from './export.service.js';
@@ -9,6 +11,7 @@ import { CLOCK, DIAGRAM_ID_GENERATOR } from './tokens.js';
 
 @Module({
   imports: [PersistenceModule],
+  controllers: [DiagramsController, ExportController],
   providers: [
     DiagramEvents,
     DiagramQueryService,

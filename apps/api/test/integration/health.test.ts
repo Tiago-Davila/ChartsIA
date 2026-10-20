@@ -8,8 +8,7 @@ import { JsonLogger } from '../../src/common/logger.js';
 describe('GET /api/health', () => {
   let app: INestApplication;
   beforeAll(async () => {
-    app = await createApp(loadConfig({}), new JsonLogger({ level: 'error' }));
-    await app.init();
+    app = await createApp(loadConfig({ CHARTSIA_DATA_DIR: '/tmp/chartsia-health-test' }), { logger: new JsonLogger({ level: 'error' }) });
   });
   afterAll(() => app.close());
 

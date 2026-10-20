@@ -15,7 +15,8 @@ export async function layoutDiagram(diagram: Diagram): Promise<Diagram> {
   const pinned = new Set<string>();
   for (const el of diagram.elements) {
     const r = elk.get(el.id)!;
-    if (el.layout?.pinned) {
+    // En creación, cualquier coordenada recibida viene del agente: queda fijada.
+    if (el.layout) {
       pinned.add(el.id);
       positions.set(el.id, { ...r, x: el.layout.x, y: el.layout.y });
     } else positions.set(el.id, r);

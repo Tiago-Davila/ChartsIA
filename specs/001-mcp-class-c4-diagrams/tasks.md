@@ -177,34 +177,34 @@ MCP ([mcp-tools.md](./contracts/mcp-tools.md)) y Socket.IO. Sin lógica de domin
 
 ### Transversal
 
-- [ ] T068 Guard Bearer: exige `Authorization: Bearer <token>` (HTTP) o `auth.token` (handshake Socket.IO) solo si `CHARTSIA_HOST` no es loopback; `/api/health` excluido — `apps/api/src/auth/bearer.guard.ts` (dep: T156)
-- [ ] T156 Gestión del token: lee `CHARTSIA_TOKEN` o lo genera al primer arranque, lo persiste en `CHARTSIA_DATA_DIR` y lo muestra una vez junto con la URL `{CHARTSIA_PUBLIC_URL}/#token=…`; comparación en tiempo constante — `apps/api/src/auth/token.ts` (dep: T008, T009)
-- [ ] T069 Filtro de excepciones: `ValidationError[]` → HTTP 422 `{ errors }`; `DIAGRAM_NOT_FOUND` → 404; `LIMIT_EXCEEDED` por tamaño → 413 — `apps/api/src/common/domain-exception.filter.ts` (dep: T027)
+- [X] T068 Guard Bearer: exige `Authorization: Bearer <token>` (HTTP) o `auth.token` (handshake Socket.IO) solo si `CHARTSIA_HOST` no es loopback; `/api/health` excluido — `apps/api/src/auth/bearer.guard.ts` (dep: T156)
+- [X] T156 Gestión del token: lee `CHARTSIA_TOKEN` o lo genera al primer arranque, lo persiste en `CHARTSIA_DATA_DIR` y lo muestra una vez junto con la URL `{CHARTSIA_PUBLIC_URL}/#token=…`; comparación en tiempo constante — `apps/api/src/auth/token.ts` (dep: T008, T009)
+- [X] T069 Filtro de excepciones: `ValidationError[]` → HTTP 422 `{ errors }`; `DIAGRAM_NOT_FOUND` → 404; `LIMIT_EXCEEDED` por tamaño → 413 — `apps/api/src/common/domain-exception.filter.ts` (dep: T027)
 
 ### REST
 
-- [ ] T070 [US1] `DiagramsController`: `GET /api/diagrams`, `GET /api/diagrams/:id` (con `layout` y `route`), `POST /api/diagrams/:id/operations` (`{ baseRevision, operations }`, `origin: "app"`), `POST /api/diagrams/:id/activate` (204) — `apps/api/src/diagrams/diagrams.controller.ts` (dep: T065, T155, T068, T069)
-- [ ] T071 [P] [US5] `GET /api/diagrams/:id/export?format=svg|drawio|excalidraw&style=` con `Content-Disposition` — `apps/api/src/diagrams/export.controller.ts` (dep: T066, T068)
+- [X] T070 [US1] `DiagramsController`: `GET /api/diagrams`, `GET /api/diagrams/:id` (con `layout` y `route`), `POST /api/diagrams/:id/operations` (`{ baseRevision, operations }`, `origin: "app"`), `POST /api/diagrams/:id/activate` (204) — `apps/api/src/diagrams/diagrams.controller.ts` (dep: T065, T155, T068, T069)
+- [X] T071 [P] [US5] `GET /api/diagrams/:id/export?format=svg|drawio|excalidraw&style=` con `Content-Disposition` — `apps/api/src/diagrams/export.controller.ts` (dep: T066, T068)
 
 ### WebSocket
 
-- [ ] T072 [US1] `LiveGateway` (namespace `/live`): `subscribe {diagramId}` une a la room; reenvía `diagram.updated {diagramId, revision, origin, diagram}`, `diagram.created`, `active.changed`; aplica el guard en el handshake (`auth.token`) — `apps/api/src/live/live.gateway.ts`, `apps/api/src/live/live.module.ts` (dep: T064, T068)
+- [X] T072 [US1] `LiveGateway` (namespace `/live`): `subscribe {diagramId}` une a la room; reenvía `diagram.updated {diagramId, revision, origin, diagram}`, `diagram.created`, `active.changed`; aplica el guard en el handshake (`auth.token`) — `apps/api/src/live/live.gateway.ts`, `apps/api/src/live/live.module.ts` (dep: T064, T068)
 
 ### MCP
 
-- [ ] T073 Fábrica `McpServer` (nombre `chartsia`, versión de esquema `1.0.0`) que registra tools y recursos con JSON Schema de T026 — `apps/api/src/mcp/mcp-server.factory.ts` (dep: T026, T065, T155)
-- [ ] T074 Formateador de resultados: construye `viewUrl` = `{CHARTSIA_PUBLIC_URL}/d/{id}`; éxito `structuredContent` + `content[0]` texto con resumen y `viewUrl`, y en tools que modifican `content[1]` `resource_link` a `chartsia://diagrams/{id}/export.svg`; error `isError: true`, `structuredContent: { errors }` y texto legible — `apps/api/src/mcp/tool-result.ts` (dep: T008, T027)
-- [ ] T075 [P] [US1] Tool `create_diagram` con descripción y ejemplo de [mcp-tools.md](./contracts/mcp-tools.md); output `{ diagramId, revision, viewUrl, counts, warnings }` — `apps/api/src/mcp/tools/create-diagram.tool.ts` (dep: T073, T074, T084, T089)
-- [ ] T076 [P] [US3] Tool `apply_changes` con descripción y ejemplo (FR-003): (`diagramId?`, `baseRevision?`, `operations`) → `{ diagramId, revision, viewUrl, applied, warnings }` — `apps/api/src/mcp/tools/apply-changes.tool.ts` (dep: T073, T074, T085)
-- [ ] T077 [P] [US3] Tool `get_diagram` con descripción y ejemplo (`diagramId?`, `includeLayout?` defecto false) — `apps/api/src/mcp/tools/get-diagram.tool.ts` (dep: T073, T074, T086)
-- [ ] T078 [P] [US3] Tool `list_diagrams` con descripción y ejemplo → `{ activeDiagramId, diagrams[] }` — `apps/api/src/mcp/tools/list-diagrams.tool.ts` (dep: T073, T074, T086)
-- [ ] T079 [P] [US5] Tool `export_diagram` con descripción y ejemplo (`format`, `style?`) → `{ diagramId, format, mimeType, filename, downloadUrl, content }` — `apps/api/src/mcp/tools/export-diagram.tool.ts` (dep: T066, T073, T074, T087)
-- [ ] T157 [P] [US3] Tool `open_diagram` (`diagramId`) → `{ diagramId, viewUrl }`; llama a `activate` (equivalente MCP de `POST /activate`) — `apps/api/src/mcp/tools/open-diagram.tool.ts` (dep: T073, T074, T158)
-- [ ] T080 [P] Recursos `chartsia://diagrams/{id}`, `chartsia://diagrams/{id}/export.{ext}` y `chartsia://schema/{type}` (guía de kinds y relaciones permitidas por tipo, apoya FR-003) — `apps/api/src/mcp/resources.ts` (dep: T066, T073, T087)
-- [ ] T081 `McpController` Streamable HTTP stateless en `POST/GET/DELETE /mcp` (servidor + transporte por petición) con guard — `apps/api/src/mcp/mcp.controller.ts`, `apps/api/src/mcp/mcp.module.ts` (dep: T075–T080, T157, T068)
-- [ ] T082 Puente stdio `chartsia-mcp`: `StdioServerTransport` ↔ `StreamableHTTPClientTransport` hacia `CHARTSIA_URL` (defecto `http://127.0.0.1:3333/mcp`) con token opcional; mensaje claro si el hub no está corriendo — `apps/api/src/stdio-bridge.ts` (dep: T081)
-- [ ] T083 Registrar `DiagramsModule`, `LiveModule`, `McpModule` y el filtro global en `AppModule` — `apps/api/src/app.module.ts` (dep: T067, T070, T071, T072, T081, T148)
-- [ ] T160 Servir la app compilada: `ServeStaticModule` con `apps/web/dist` en `/`, fallback a `index.html` para `/d/:id`, excluyendo `/api`, `/mcp` y `/socket.io`; se activa solo si existe `dist` — `apps/api/src/web/web-static.module.ts`, `apps/api/src/app.module.ts` (dep: T083)
+- [X] T073 Fábrica `McpServer` (nombre `chartsia`, versión de esquema `1.0.0`) que registra tools y recursos con JSON Schema de T026 — `apps/api/src/mcp/mcp-server.factory.ts` (dep: T026, T065, T155)
+- [X] T074 Formateador de resultados: construye `viewUrl` = `{CHARTSIA_PUBLIC_URL}/d/{id}`; éxito `structuredContent` + `content[0]` texto con resumen y `viewUrl`, y en tools que modifican `content[1]` `resource_link` a `chartsia://diagrams/{id}/export.svg`; error `isError: true`, `structuredContent: { errors }` y texto legible — `apps/api/src/mcp/tool-result.ts` (dep: T008, T027)
+- [X] T075 [P] [US1] Tool `create_diagram` con descripción y ejemplo de [mcp-tools.md](./contracts/mcp-tools.md); output `{ diagramId, revision, viewUrl, counts, warnings }` — `apps/api/src/mcp/tools/create-diagram.tool.ts` (dep: T073, T074, T084, T089)
+- [X] T076 [P] [US3] Tool `apply_changes` con descripción y ejemplo (FR-003): (`diagramId?`, `baseRevision?`, `operations`) → `{ diagramId, revision, viewUrl, applied, warnings }` — `apps/api/src/mcp/tools/apply-changes.tool.ts` (dep: T073, T074, T085)
+- [X] T077 [P] [US3] Tool `get_diagram` con descripción y ejemplo (`diagramId?`, `includeLayout?` defecto false) — `apps/api/src/mcp/tools/get-diagram.tool.ts` (dep: T073, T074, T086)
+- [X] T078 [P] [US3] Tool `list_diagrams` con descripción y ejemplo → `{ activeDiagramId, diagrams[] }` — `apps/api/src/mcp/tools/list-diagrams.tool.ts` (dep: T073, T074, T086)
+- [X] T079 [P] [US5] Tool `export_diagram` con descripción y ejemplo (`format`, `style?`) → `{ diagramId, format, mimeType, filename, downloadUrl, content }` — `apps/api/src/mcp/tools/export-diagram.tool.ts` (dep: T066, T073, T074, T087)
+- [X] T157 [P] [US3] Tool `open_diagram` (`diagramId`) → `{ diagramId, viewUrl }`; llama a `activate` (equivalente MCP de `POST /activate`) — `apps/api/src/mcp/tools/open-diagram.tool.ts` (dep: T073, T074, T158)
+- [X] T080 [P] Recursos `chartsia://diagrams/{id}`, `chartsia://diagrams/{id}/export.{ext}` y `chartsia://schema/{type}` (guía de kinds y relaciones permitidas por tipo, apoya FR-003) — `apps/api/src/mcp/resources.ts` (dep: T066, T073, T087)
+- [X] T081 `McpController` Streamable HTTP stateless en `POST/GET/DELETE /mcp` (servidor + transporte por petición) con guard — `apps/api/src/mcp/mcp.controller.ts`, `apps/api/src/mcp/mcp.module.ts` (dep: T075–T080, T157, T068)
+- [X] T082 Puente stdio `chartsia-mcp`: `StdioServerTransport` ↔ `StreamableHTTPClientTransport` hacia `CHARTSIA_URL` (defecto `http://127.0.0.1:3333/mcp`) con token opcional; mensaje claro si el hub no está corriendo — `apps/api/src/stdio-bridge.ts` (dep: T081)
+- [X] T083 Registrar `DiagramsModule`, `LiveModule`, `McpModule` y el filtro global en `AppModule` — `apps/api/src/app.module.ts` (dep: T067, T070, T071, T072, T081, T148)
+- [X] T160 Servir la app compilada: `ServeStaticModule` con `apps/web/dist` en `/`, fallback a `index.html` para `/d/:id`, excluyendo `/api`, `/mcp` y `/socket.io`; se activa solo si existe `dist` — `apps/api/src/web/web-static.module.ts`, `apps/api/src/app.module.ts` (dep: T083)
 
 **Checkpoint**: hub completo; un agente puede crear y editar diagramas.
 
@@ -216,14 +216,14 @@ MCP ([mcp-tools.md](./contracts/mcp-tools.md)) y Socket.IO. Sin lógica de domin
 **Nota TDD (principio V)**: T084–T089 y T158 se escriben **antes** de las tools de la Fase 5;
 las tools T075–T080 y T157 dependen explícitamente de ellos. Deben fallar hasta que existan.
 
-- [ ] T159 Arnés de tests MCP: `Client` del SDK sobre `InMemoryTransport` conectado a la fábrica de T073 con repositorio en memoria y reloj fijo; helpers de fixtures — `apps/api/test/support/mcp-test-harness.ts` (dep: T026, T065, T155)
-- [ ] T084 [P] [US1] Contract `create_diagram` (InMemoryTransport + `Client` del SDK): entrada mínima, entrada completa, cada código de error alcanzable, `additionalProperties` rechazado, determinismo (dos llamadas iguales ⇒ mismo layout) — `apps/api/test/contract/create-diagram.contract.test.ts` (dep: T026, T065, T159)
-- [ ] T085 [P] [US3] Contract `apply_changes`: atomicidad, cascada, `NO_ACTIVE_DIAGRAM`, `DIAGRAM_NOT_FOUND`, warning por `baseRevision`, nodos `pinned` intactos — `apps/api/test/contract/apply-changes.contract.test.ts` (dep: T026, T065, T159)
-- [ ] T086 [P] [US3] Contract `get_diagram` y `list_diagrams` (refleja `move_element` hecho por la app; `DIAGRAM_NOT_FOUND` con id inexistente) — `apps/api/test/contract/read-tools.contract.test.ts` (dep: T026, T065, T159)
-- [ ] T087 [P] [US5] Contract `export_diagram`: tres formatos, `content` omitido > 512 KiB, recurso MCP equivalente — `apps/api/test/contract/export-diagram.contract.test.ts` (dep: T026, T066, T159)
-- [ ] T088 [P] [US2] Contract C4: diagrama de contenedores válido; `component` fuera de `boundary` container ⇒ `INVALID_PARENT`; relación `inheritance` en C4 ⇒ `RELATION_NOT_ALLOWED` — `apps/api/test/contract/c4.contract.test.ts` (dep: T026, T065, T159)
-- [ ] T089 [P] Contract del listado de tools: los 6 esquemas cumplen el subconjunto común (sin `oneOf`, `additionalProperties:false`) y cada `description` incluye un ejemplo de entrada (FR-003) — `apps/api/test/contract/tools-schema.contract.test.ts` (dep: T026, T159)
-- [ ] T158 [P] [US3] Contract `open_diagram`: activa el diagrama, `list_diagrams` lo refleja, emite `active.changed`; id inexistente ⇒ `DIAGRAM_NOT_FOUND` — `apps/api/test/contract/open-diagram.contract.test.ts` (dep: T026, T159)
+- [X] T159 Arnés de tests MCP: `Client` del SDK sobre `InMemoryTransport` conectado a la fábrica de T073 con repositorio en memoria y reloj fijo; helpers de fixtures — `apps/api/test/support/mcp-test-harness.ts` (dep: T026, T065, T155)
+- [X] T084 [P] [US1] Contract `create_diagram` (InMemoryTransport + `Client` del SDK): entrada mínima, entrada completa, cada código de error alcanzable, `additionalProperties` rechazado, determinismo (dos llamadas iguales ⇒ mismo layout) — `apps/api/test/contract/create-diagram.contract.test.ts` (dep: T026, T065, T159)
+- [X] T085 [P] [US3] Contract `apply_changes`: atomicidad, cascada, `NO_ACTIVE_DIAGRAM`, `DIAGRAM_NOT_FOUND`, warning por `baseRevision`, nodos `pinned` intactos — `apps/api/test/contract/apply-changes.contract.test.ts` (dep: T026, T065, T159)
+- [X] T086 [P] [US3] Contract `get_diagram` y `list_diagrams` (refleja `move_element` hecho por la app; `DIAGRAM_NOT_FOUND` con id inexistente) — `apps/api/test/contract/read-tools.contract.test.ts` (dep: T026, T065, T159)
+- [X] T087 [P] [US5] Contract `export_diagram`: tres formatos, `content` omitido > 512 KiB, recurso MCP equivalente — `apps/api/test/contract/export-diagram.contract.test.ts` (dep: T026, T066, T159)
+- [X] T088 [P] [US2] Contract C4: diagrama de contenedores válido; `component` fuera de `boundary` container ⇒ `INVALID_PARENT`; relación `inheritance` en C4 ⇒ `RELATION_NOT_ALLOWED` — `apps/api/test/contract/c4.contract.test.ts` (dep: T026, T065, T159)
+- [X] T089 [P] Contract del listado de tools: los 6 esquemas cumplen el subconjunto común (sin `oneOf`, `additionalProperties:false`) y cada `description` incluye un ejemplo de entrada (FR-003) — `apps/api/test/contract/tools-schema.contract.test.ts` (dep: T026, T159)
+- [X] T158 [P] [US3] Contract `open_diagram`: activa el diagrama, `list_diagrams` lo refleja, emite `active.changed`; id inexistente ⇒ `DIAGRAM_NOT_FOUND` — `apps/api/test/contract/open-diagram.contract.test.ts` (dep: T026, T159)
 - [ ] T090 [P] Contract sobre HTTP real (`StreamableHTTPClientTransport` contra la app Nest levantada) del flujo crear → aplicar → exportar — `apps/api/test/contract/http-transport.contract.test.ts` (dep: T083)
 - [ ] T091 [P] Smoke del puente stdio: compilar (`pnpm --filter @chartsia/api build` en `globalSetup`), lanzar `chartsia-mcp` como proceso hijo y listar tools / crear diagrama — `apps/api/test/contract/stdio-bridge.contract.test.ts` (dep: T082, T083)
 - [ ] T092 [P] Integración REST: códigos 200/204/404/413/422, export con `Content-Disposition` — `apps/api/test/integration/diagrams-rest.test.ts` (dep: T083)

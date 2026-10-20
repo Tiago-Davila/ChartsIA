@@ -78,7 +78,7 @@ describe('layoutDiagram (completo)', () => {
 
   it('respeta las coordenadas enviadas por el agente y las deja fijadas', async () => {
     const d = library();
-    d.elements.find((e) => e.id === 'Estado')!.layout = { x: 900, y: 40, pinned: true } as never;
+    d.elements.find((e) => e.id === 'Estado')!.layout = { x: 900, y: 40 } as never;
     const out = await layoutDiagram(d);
     expect(layoutOf(out, 'Estado')).toMatchObject({ x: 900, y: 40, pinned: true });
     expect(overlappingPairs(out)).toEqual([]);
