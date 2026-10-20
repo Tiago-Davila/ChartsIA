@@ -8,7 +8,6 @@ function base(): Diagram {
     id: 'dg_aaaaaaaaaaaa',
     type: 'class',
     title: 'Biblioteca',
-    style: 'clean',
     revision: 3,
     createdAt: '2026-10-20T10:00:00.000Z',
     updatedAt: '2026-10-20T10:00:00.000Z',
@@ -149,6 +148,22 @@ describe('applyOperations', () => {
     if (!res.ok) expect(res.errors[0]).toMatchObject({ code: 'FIELD_NOT_ALLOWED', path: '/operations/0/changes/technology' });
   });
 
+  it('resize_element fija el elemento, guarda el tamaño y lo marca como redimensionado', () => {
+    const res = apply([{ op: 'resize_element', id: 'Socio', width: 300, height: 120 }]);
+    expect(res.ok && res.diagram.elements.find((e) => e.id === 'Socio')?.layout).toEqual({ x: 10, y: 20, width: 300, height: 120, pinned: true, resized: true });
+    expect(apply([{ op: 'resize_element', id: 'Socio', width: 0, height: 10 }]).ok).toBe(false);
+  });
+
+  it('update_relation cambia el tipo, invierte, fija lados y quiebres', () => {
+    const res = apply([
+      { op: 'update_relation', id: 'r2', changes: { kind: 'dependency', source: 'Libro', target: 'Socio', sourceSide: 'left', waypoints: [{ x: 1, y: 2 }] } },
+    ]);
+    expect(res.ok && res.diagram.relations[1]).toMatchObject({ kind: 'dependency', source: 'Libro', target: 'Socio', sourceSide: 'left', waypoints: [{ x: 1, y: 2 }] });
+    const cleared = apply([{ op: 'update_relation', id: 'r2', changes: { sourceSide: null, waypoints: null } }], res.ok ? res.diagram : base());
+    expect(cleared.ok && cleared.diagram.relations[1]).not.toHaveProperty('waypoints');
+    expect(apply([{ op: 'update_relation', id: 'r2', changes: { kind: 'c4-rel' } }]).ok).toBe(false);
+  });
+
   it('update_relation y remove_relation', () => {
     const res = apply([
       { op: 'update_relation', id: 'r2', changes: { label: null, targetMultiplicity: '0..*' } },
@@ -172,17 +187,15 @@ describe('applyOperations', () => {
     if (!res.ok) expect(res.errors[0]).toMatchObject({ code: 'UNKNOWN_REFERENCE', path: '/operations/0/id' });
   });
 
-  it('set_title fuera de 1–120 chars y set_style inválido ⇒ error', () => {
+  it('set_title fuera de 1–120 chars y set_style (retirado) ⇒ error', () => {
     for (const op of [
       { op: 'set_title', title: '' },
       { op: 'set_title', title: 'x'.repeat(121) },
-      { op: 'set_style', style: 'neon' },
+      { op: 'set_style', style: 'sketch' },
     ]) {
       const res = apply([op]);
       expect(!res.ok && res.errors[0]?.path).toMatch(/^\/operations\/0/);
     }
-    const ok = apply([{ op: 'set_style', style: 'sketch' }]);
-    expect(ok.ok && ok.diagram.style).toBe('sketch');
   });
 
   it('valida las reglas de dominio sobre el resultado', () => {

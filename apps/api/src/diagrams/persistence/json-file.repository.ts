@@ -108,7 +108,9 @@ export class JsonFileDiagramRepository implements DiagramRepository {
       throw error;
     }
     try {
-      const parsed = DiagramSchema.safeParse(JSON.parse(text));
+      // Los diagramas guardados antes de quitar el estilo boceto traen un campo `style` obsoleto.
+      const { style: _legacyStyle, ...stored } = JSON.parse(text) as Record<string, unknown>;
+      const parsed = DiagramSchema.safeParse(stored);
       if (parsed.success) return parsed.data;
       this.logger.warn(`Se ignora ${path}: no cumple el esquema (${parsed.error.issues[0]?.message ?? ''})`);
     } catch (error) {

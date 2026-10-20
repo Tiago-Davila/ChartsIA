@@ -19,7 +19,8 @@ export const applyChangesTool = (commands: DiagramCommandService, results: ToolR
     annotations: { title: 'Modificar diagrama', readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     description: [
       'Modifica un diagrama existente con un lote atómico de 1 a 200 operaciones, aplicadas en orden. Los cambios aparecen en vivo en la app y el resto del diagrama no se mueve.',
-      'Operaciones (campo "op"): add_element, update_element {id, changes}, remove_element {id, cascade?: "reparent"|"children"}, add_relation, update_relation {id, changes}, remove_relation {id}, move_element {id, x, y} (fija el elemento), set_title, set_style ("clean"|"sketch").',
+      'Operaciones (campo "op"): add_element, update_element {id, changes}, remove_element {id, cascade?: "reparent"|"children"}, add_relation, update_relation {id, changes}, remove_relation {id}, move_element {id, x, y} (fija el elemento), resize_element {id, width, height} (tamaño mínimo elegido a mano), set_title.',
+      'update_relation admite además kind (cambiar el tipo de flecha), sourceSide/targetSide ("top"|"right"|"bottom"|"left") y waypoints (puntos de quiebre); para invertir una flecha intercambia source y target.',
       'En changes, null elimina un campo opcional; id y kind no se pueden cambiar. Al eliminar un elemento se eliminan también sus relaciones.',
       'Sin diagramId se usa el diagrama activo (la respuesta indica cuál). baseRevision es informativo: si no coincide se aplica igual y se avisa en warnings.',
       'Si alguna operación es inválida no se aplica ninguna y recibes los errores con path (p. ej. /operations/2/id) y hint.',

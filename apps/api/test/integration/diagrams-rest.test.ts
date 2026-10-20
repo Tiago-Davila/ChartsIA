@@ -50,6 +50,17 @@ describe('API REST /api', () => {
     expect(malformed.status).toBe(400);
   });
 
+  it('POST /undo y /redo ⇒ 200 con la revision nueva; 409 si no hay nada', async () => {
+    const before = (await body(await json(`/api/diagrams/${id}`))).revision;
+    const undo = await json(`/api/diagrams/${id}/undo`, { method: 'POST' });
+    expect(undo.status).toBe(200);
+    expect(await body(undo)).toEqual({ diagramId: id, revision: before + 1 });
+    expect((await json(`/api/diagrams/${id}/redo`, { method: 'POST' })).status).toBe(200);
+    const nothing = await json(`/api/diagrams/${id}/redo`, { method: 'POST' });
+    expect(nothing.status).toBe(409);
+    expect((await body(nothing)).errors[0].code).toBe('NOTHING_TO_UNDO');
+  });
+
   it('POST /activate ⇒ 204; 404 si no existe', async () => {
     expect((await json(`/api/diagrams/${id}/activate`, { method: 'POST' })).status).toBe(204);
     expect((await json('/api/diagrams/dg_zzzzzzzzzzzz/activate', { method: 'POST' })).status).toBe(404);
@@ -60,7 +71,7 @@ describe('API REST /api', () => {
     ['drawio', 'application/vnd.jgraph.mxfile', 'biblioteca.drawio'],
     ['excalidraw', 'application/vnd.excalidraw+json', 'biblioteca.excalidraw'],
   ])('GET /export?format=%s ⇒ archivo con Content-Disposition', async (format, mime, filename) => {
-    const res = await fetch(`${hub.url}/api/diagrams/${id}/export?format=${format}&style=sketch`);
+    const res = await fetch(`${hub.url}/api/diagrams/${id}/export?format=${format}`);
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toContain(mime);
     expect(res.headers.get('content-disposition')).toBe(`attachment; filename="${filename}"`);

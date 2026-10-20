@@ -1,6 +1,6 @@
 import { type Point } from '../model/common.js';
 import { type Diagram, type Element } from '../model/diagram.js';
-import { type DiagramStyle, isGroupKind } from '../model/enums.js';
+import { isGroupKind } from '../model/enums.js';
 import { type Relation } from '../model/relation.js';
 import { hashSeed } from '../render/hash.js';
 import { edgeLabelLines } from '../render/edges.js';
@@ -22,13 +22,14 @@ const ARROWHEADS: Record<MarkerKind, string> = {
   'arrow-open': 'arrow',
   'arrow-filled': 'triangle',
 };
-const FONT_FAMILY: Record<DiagramStyle, number> = { clean: 2, sketch: 5 };
+/** Excalifont: el archivo conserva el aspecto a mano alzada propio de Excalidraw. */
+const FONT_FAMILY = 5;
 const r = (n: number) => Math.round(n * 100) / 100;
 
 class Builder {
   readonly elements: Json[] = [];
   private readonly updated: number;
-  constructor(private readonly diagram: Diagram, private readonly style: DiagramStyle) {
+  constructor(private readonly diagram: Diagram) {
     this.updated = Date.parse(diagram.updatedAt) || 0;
   }
 
@@ -36,7 +37,7 @@ class Builder {
     return {
       id, type, x: r(box.x), y: r(box.y), width: r(box.width), height: r(box.height), angle: 0,
       strokeColor: '#1e1e1e', backgroundColor: 'transparent', fillStyle: 'solid', strokeWidth: 1,
-      strokeStyle: 'solid', roughness: this.style === 'sketch' ? 1 : 0, opacity: 100, groupIds: [],
+      strokeStyle: 'solid', roughness: 1, opacity: 100, groupIds: [],
       frameId: null, roundness: null, seed: hashSeed(id), version: 1, versionNonce: hashSeed(`${id}#v`),
       isDeleted: false, boundElements: null, updated: this.updated, link: null, locked: false, ...extra,
     };
@@ -58,7 +59,7 @@ class Builder {
   text(id: string, text: string, box: Box, extra: Json = {}): Json {
     const fontSize = (extra.fontSize as number | undefined) ?? 14;
     const el = this.base(id, 'text', box, {
-      text, originalText: text, fontSize, fontFamily: FONT_FAMILY[this.style], textAlign: 'left', verticalAlign: 'top',
+      text, originalText: text, fontSize, fontFamily: FONT_FAMILY, textAlign: 'left', verticalAlign: 'top',
       containerId: null, autoResize: true, lineHeight: 1.25, strokeColor: '#1e1e1e', ...extra,
     });
     this.elements.push(el);
@@ -157,8 +158,8 @@ function addArrow(b: Builder, rel: Relation, byId: Map<string, Json>): void {
  * `boundElements`), flechas con `startBinding`/`endBinding` y puntos de la ruta calculada.
  * Semillas e índices se derivan de los ids, así el archivo es determinista.
  */
-export function exportExcalidraw(diagram: Diagram, style: DiagramStyle = diagram.style): string {
-  const b = new Builder(diagram, style);
+export function exportExcalidraw(diagram: Diagram): string {
+  const b = new Builder(diagram);
   const groupsFirst = [...diagram.elements].sort((a, c) => Number(!isGroupKind(a.kind)) - Number(!isGroupKind(c.kind)) || (a.id < c.id ? -1 : 1));
   for (const el of groupsFirst) {
     const l = el.layout;

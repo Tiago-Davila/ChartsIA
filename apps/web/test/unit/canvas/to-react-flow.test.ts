@@ -8,7 +8,6 @@ const diagram: Diagram = {
   id: 'dg_aaaaaaaaaaaa',
   type: 'c4-container',
   title: 'Tienda',
-  style: 'sketch',
   revision: 4,
   createdAt: '',
   updatedAt: '',
@@ -39,14 +38,14 @@ describe('toReactFlow', () => {
     for (const e of edges) expect(edgeTypes).toHaveProperty(e.type!);
   });
 
-  it('datos: elemento y estilo del diagrama; handles declarados', () => {
-    expect(byId.web!.data).toEqual({ element: diagram.elements[0], style: 'sketch' });
+  it('datos: elemento; handles declarados', () => {
+    expect(byId.web!.data).toEqual({ element: diagram.elements[0] });
     expect(byId.web!.handles).toHaveLength(2);
   });
 
   it('route → data de la arista', () => {
     expect(edges).toEqual([
-      expect.objectContaining({ id: 'u1', source: 'cliente', target: 'web', type: 'routed', data: { relation: diagram.relations[0], style: 'sketch' } }),
+      expect.objectContaining({ id: 'u1', source: 'cliente', target: 'web', type: 'routed', data: { relation: diagram.relations[0] } }),
     ]);
   });
 

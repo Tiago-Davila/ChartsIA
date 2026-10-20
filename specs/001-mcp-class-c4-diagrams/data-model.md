@@ -14,7 +14,6 @@ derivan tipos TS y JSON Schema (contratos MCP). No contiene estilos de ningún f
 | `title` | string | 1–120 chars |
 | `elements` | Element[] | ids únicos en el diagrama (espacio compartido con relaciones); máx. `CHARTSIA_MAX_ELEMENTS` (500) contando grupos |
 | `relations` | Relation[] | ids únicos (no pueden coincidir con un id de elemento); `source`/`target` existentes |
-| `style` | enum | `clean` \| `sketch` (solo presentación) |
 | `revision` | integer | +1 por cada lote de operaciones aplicado |
 | `createdAt` / `updatedAt` | ISO string | servidor |
 
@@ -108,7 +107,7 @@ Lote atómico `operations: Operation[]` (1–200 por llamada), aplicado en orden
 | `update_relation` | `id`, `changes` |
 | `remove_relation` | `id` |
 | `move_element` | `id`, `x`, `y` (marca `pinned=true`; usado por la app) |
-| `set_title` / `set_style` | valor (validado con las mismas reglas que `title` y `style`) |
+| `set_title` | valor (validado con las mismas reglas que `title`) |
 
 ## Estado y transiciones
 

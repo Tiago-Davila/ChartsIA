@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { BOUNDARY_TYPES, CONTAINER_VARIANTS, MAX_OPERATIONS_PER_BATCH, NAVIGABILITIES } from './enums.js';
+import { BOUNDARY_TYPES, CONTAINER_VARIANTS, MAX_OPERATIONS_PER_BATCH, NAVIGABILITIES, RELATION_KINDS, SIDES } from './enums.js';
 import { AttributeSchema, MethodSchema } from './class-elements.js';
-import { DescriptionSchema, ElementIdSchema, LayoutSchema, NameSchema } from './common.js';
-import { DiagramStyleSchema, ElementSchema, TitleSchema } from './diagram.js';
+import { DescriptionSchema, ElementIdSchema, LayoutSchema, NameSchema, PointSchema } from './common.js';
+import { ElementSchema, TitleSchema } from './diagram.js';
 import { MultiplicitySchema, RelationSchema } from './relation.js';
 
 /**
@@ -30,6 +30,7 @@ export type ElementChanges = z.infer<typeof ElementChangesSchema>;
 
 export const RelationChangesSchema = z
   .strictObject({
+    kind: z.enum(RELATION_KINDS).optional(),
     source: ElementIdSchema.optional(),
     target: ElementIdSchema.optional(),
     label: z.string().max(200).nullable().optional(),
@@ -37,6 +38,9 @@ export const RelationChangesSchema = z
     targetMultiplicity: MultiplicitySchema.nullable().optional(),
     navigable: z.enum(NAVIGABILITIES).nullable().optional(),
     technology: z.string().min(1).max(120).nullable().optional(),
+    sourceSide: z.enum(SIDES).nullable().optional(),
+    targetSide: z.enum(SIDES).nullable().optional(),
+    waypoints: z.array(PointSchema).max(20).nullable().optional(),
   })
   .describe('Campos a cambiar, p. ej. {"label":"usa"}; null elimina un campo opcional');
 export type RelationChanges = z.infer<typeof RelationChangesSchema>;
@@ -61,8 +65,13 @@ export const OperationSchema = z.discriminatedUnion('op', [
     x: LayoutSchema.shape.x,
     y: LayoutSchema.shape.y,
   }),
+  z.strictObject({
+    op: z.literal('resize_element'),
+    id: ElementIdSchema,
+    width: z.number().positive().max(5000),
+    height: z.number().positive().max(5000),
+  }),
   z.strictObject({ op: z.literal('set_title'), title: TitleSchema }),
-  z.strictObject({ op: z.literal('set_style'), style: DiagramStyleSchema }),
 ]);
 export type Operation = z.infer<typeof OperationSchema>;
 

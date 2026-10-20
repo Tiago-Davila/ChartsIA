@@ -53,7 +53,6 @@ export const minimalClass = {
 export const fullClass = {
   type: 'class',
   title: 'Pedidos',
-  style: 'sketch',
   elements: [
     { id: 'Pedido', kind: 'class', name: 'Pedido', stereotype: 'entity', description: 'Pedido de compra',
       attributes: [{ name: 'total', type: 'Decimal', visibility: '-', defaultValue: '0' }],

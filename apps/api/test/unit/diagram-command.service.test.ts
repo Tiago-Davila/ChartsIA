@@ -17,7 +17,7 @@ describe('DiagramCommandService.create', () => {
     const { commands, repo, emitted } = createServices();
     const { diagram, warnings } = await commands.create(libraryInput);
     expect(warnings).toEqual([]);
-    expect(diagram).toMatchObject({ id: 'dg_aaaaaaaaaaaa', revision: 1, style: 'clean', title: 'Biblioteca' });
+    expect(diagram).toMatchObject({ id: 'dg_aaaaaaaaaaaa', revision: 1, title: 'Biblioteca' });
     expect(diagram.elements.every((e) => e.layout?.width)).toBe(true);
     expect(diagram.relations[0]?.route?.length).toBeGreaterThanOrEqual(2);
     expect(await repo.get(diagram.id)).toEqual(diagram);
@@ -65,7 +65,7 @@ describe('DiagramCommandService.apply', () => {
     const { commands } = createServices();
     await commands.create(libraryInput);
     const second = await commands.create({ ...libraryInput, title: 'Segundo' });
-    const res = await commands.apply({ operations: [{ op: 'set_style', style: 'sketch' }], origin: 'agent' });
+    const res = await commands.apply({ operations: [{ op: 'set_title', title: 'Renombrado' }], origin: 'agent' });
     expect(res.diagram.id).toBe(second.diagram.id);
   });
 
@@ -119,6 +119,37 @@ describe('DiagramCommandService.apply', () => {
     const final = await repo.get(diagram.id);
     expect(final?.revision).toBe(6);
     expect(final?.elements.map((e) => e.id)).toEqual(expect.arrayContaining(['N0', 'N1', 'N2', 'N3', 'N4']));
+  });
+});
+
+describe('DiagramCommandService.undo', () => {
+  it('deshace y rehace cambios del agente y de la app, con revision nueva y evento', async () => {
+    const { commands, repo, emitted } = createServices();
+    const { diagram: created } = await commands.create(libraryInput);
+    await commands.apply({ operations: [{ op: 'remove_element', id: 'Libro' }], origin: 'app' });
+    await commands.apply({ operations: [{ op: 'set_title', title: 'Otra' }], origin: 'agent' });
+    emitted.length = 0;
+
+    await commands.undo({ direction: 'undo', origin: 'app' });
+    const undone = await commands.undo({ direction: 'undo', origin: 'app' });
+    expect(undone.revision).toBe(5);
+    expect(undone.elements).toEqual(created.elements);
+    expect(undone.title).toBe('Biblioteca');
+    expect(emitted.map((e) => e.name)).toEqual(['diagram.updated', 'diagram.updated']);
+
+    const redone = await commands.undo({ direction: 'redo', origin: 'agent' });
+    expect(redone.elements.map((e) => e.id)).toEqual(['Autor']);
+    expect(await repo.get(created.id)).toEqual(redone);
+  });
+
+  it('un cambio nuevo descarta lo que se podía rehacer; sin historia ⇒ NOTHING_TO_UNDO', async () => {
+    const { commands } = createServices();
+    await commands.create(libraryInput);
+    expect((await domainErrors(commands.undo({ direction: 'undo', origin: 'app' })))[0]?.code).toBe('NOTHING_TO_UNDO');
+    await commands.apply({ operations: [{ op: 'set_title', title: 'A' }], origin: 'app' });
+    await commands.undo({ direction: 'undo', origin: 'app' });
+    await commands.apply({ operations: [{ op: 'set_title', title: 'B' }], origin: 'app' });
+    expect((await domainErrors(commands.undo({ direction: 'redo', origin: 'app' })))[0]?.code).toBe('NOTHING_TO_UNDO');
   });
 });
 

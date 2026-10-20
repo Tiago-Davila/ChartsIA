@@ -34,24 +34,13 @@ test.describe('US4 · escenarios 6–7: edición manual', () => {
     await expect.poll(async () => (await agent.layout(id)).elements.find((e) => e.id === 'Autor')!.name).toBe('Escritor');
 
     await page.getByText('+ prestar(libro: Libro): Prestamo').dblclick();
-    await page.getByRole('textbox', { name: 'Editar texto' }).fill('esto no es una operación');
-    await page.getByRole('textbox', { name: 'Editar texto' }).press('Enter');
+    await page.getByRole('combobox', { name: 'Editar texto' }).fill('esto no es una operación');
+    await page.getByRole('combobox', { name: 'Editar texto' }).press('Enter');
     await expect(page.getByRole('alert')).toContainText('no es un valor válido');
 
     await page.locator('[data-element-id="Prestamo"]').click({ position: { x: 20, y: 8 } });
     await page.keyboard.press('Delete');
     await expect(page.getByText('Préstamo', { exact: true })).toHaveCount(0);
     await expect.poll(async () => (await agent.layout(id)).elements.map((e) => e.id)).not.toContain('Prestamo');
-  });
-
-  test('el estilo boceto persiste tras recargar', async ({ page, agent }) => {
-    const id = await agent.create({ ...library, title: 'Estilo' });
-    await page.goto(`/d/${id}`);
-    await page.getByRole('button', { name: 'Boceto' }).click();
-    await expect(page.getByRole('button', { name: 'Boceto' })).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.locator('[data-testid="shape-Libro"]')).toHaveAttribute('font-family', /Excalifont/);
-    await page.reload();
-    await expect(page.getByRole('button', { name: 'Boceto' })).toHaveAttribute('aria-pressed', 'true');
-    expect((await agent.layout(id)).style).toBe('sketch');
   });
 });

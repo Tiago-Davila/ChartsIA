@@ -9,7 +9,6 @@ function asDiagram(input: DiagramInput): Diagram {
   return {
     ...input,
     id: 'dg_aaaaaaaaaaaa',
-    style: input.style ?? 'clean',
     revision: 0,
     createdAt: '2026-10-20T10:00:00.000Z',
     updatedAt: '2026-10-20T10:00:00.000Z',
@@ -131,6 +130,31 @@ describe('relayoutDiagram (incremental)', () => {
     const { diagram } = await edit(prev, [{ op: 'update_element', id: 'Libro', changes: { attributes: many } }]);
     expect(overlappingPairs(diagram)).toEqual([]);
     expect(edgesCrossingNodes(diagram)).toEqual([]);
+  });
+
+  it('un elemento redimensionado conserva el tamaño elegido, pero nunca menor que su contenido', async () => {
+    const prev = await layoutDiagram(library());
+    const { diagram } = await edit(prev, [
+      { op: 'resize_element', id: 'Libro', width: 400, height: 300 },
+      { op: 'resize_element', id: 'Socio', width: 10, height: 10 },
+    ]);
+    expect(layoutOf(diagram, 'Libro')).toMatchObject({ width: 400, height: 300, pinned: true, resized: true });
+    expect(layoutOf(diagram, 'Socio').width).toBeGreaterThan(10);
+    expect(overlappingPairs(diagram)).toEqual([]);
+  });
+
+  it('la ruta respeta los lados elegidos y pasa por los quiebres', async () => {
+    const prev = await layoutDiagram(library());
+    const socio = layoutOf(prev, 'Socio');
+    const waypoint = { x: socio.x - 60, y: socio.y - 60 };
+    const { diagram } = await edit(prev, [{ op: 'update_relation', id: 'r5', changes: { sourceSide: 'left', waypoints: [waypoint] } }]);
+    const route = diagram.relations.find((r) => r.id === 'r5')!.route!;
+    expect(route[0]!.x).toBe(socio.x);
+    const onSegment = route.slice(1).some((b, i) => {
+      const a = route[i]!;
+      return Math.min(a.x, b.x) <= waypoint.x && waypoint.x <= Math.max(a.x, b.x) && Math.min(a.y, b.y) <= waypoint.y && waypoint.y <= Math.max(a.y, b.y);
+    });
+    expect(onSegment).toBe(true);
   });
 
   it('es determinista', async () => {

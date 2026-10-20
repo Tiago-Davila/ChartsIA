@@ -2,9 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { layoutDiagram, relayoutDiagram } from '@chartsia/core/layout';
 import { type Diagram, DiagramInputSchema, newDiagramId } from '@chartsia/core/model';
 import { applyOperations } from '@chartsia/core/operations';
-import { DomainValidationError, validateDiagram } from '@chartsia/core/validation';
+import { DomainValidationError, validateDiagram, validationError } from '@chartsia/core/validation';
 import { APP_CONFIG, type AppConfig } from '../config/config.js';
 import { DiagramEvents, type Origin } from './diagram-events.js';
+import { DiagramHistory, type HistoryDirection } from './diagram-history.js';
 import { DiagramQueryService, notFound } from './diagram-query.service.js';
 import { DiagramLock } from './persistence/diagram-lock.js';
 import { DIAGRAM_REPOSITORY, type DiagramRepository } from './persistence/diagram.repository.js';
@@ -28,6 +29,8 @@ export interface CommandResult {
  */
 @Injectable()
 export class DiagramCommandService {
+  private readonly history = new DiagramHistory();
+
   constructor(
     @Inject(DIAGRAM_REPOSITORY) private readonly repo: DiagramRepository,
     private readonly lock: DiagramLock,
@@ -45,7 +48,6 @@ export class DiagramCommandService {
     const diagram = await layoutDiagram({
       ...checked.value,
       id: this.newId(),
-      style: checked.value.style ?? 'clean',
       revision: 1,
       createdAt: now,
       updatedAt: now,
@@ -75,8 +77,29 @@ export class DiagramCommandService {
       warnings.push(...laid.warnings);
       const diagram: Diagram = { ...laid.diagram, revision: current.revision + 1, updatedAt: this.clock().toISOString() };
       await this.repo.save(diagram);
+      this.history.record(current);
       this.events.emit({ name: 'diagram.updated', payload: { diagramId: id, revision: diagram.revision, origin: params.origin, diagram } });
       return { diagram, warnings, applied: result.applied };
+    });
+  }
+
+  /** Deshace o rehace el último cambio del diagrama, venga del agente o de la app. */
+  async undo(params: { diagramId?: string; direction: HistoryDirection; origin: Origin }): Promise<Diagram> {
+    const id = await this.query.resolveId(params.diagramId);
+    return this.lock.run(id, async () => {
+      const current = await this.repo.get(id);
+      if (!current) throw notFound(id);
+      const target = this.history.step(current, params.direction);
+      if (!target) {
+        const what = params.direction === 'undo' ? 'deshacer' : 'rehacer';
+        throw new DomainValidationError([
+          validationError('NOTHING_TO_UNDO', '/direction', `No hay cambios para ${what} en "${current.title}".`, 'La historia solo cubre los cambios hechos desde que arrancó el hub.'),
+        ]);
+      }
+      const diagram: Diagram = { ...current, ...target, revision: current.revision + 1, updatedAt: this.clock().toISOString() };
+      await this.repo.save(diagram);
+      this.events.emit({ name: 'diagram.updated', payload: { diagramId: id, revision: diagram.revision, origin: params.origin, diagram } });
+      return diagram;
     });
   }
 

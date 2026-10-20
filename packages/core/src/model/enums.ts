@@ -26,11 +26,12 @@ export type RelationKind = (typeof RELATION_KINDS)[number];
 /** Relaciones UML que admiten multiplicidades en sus extremos. */
 export const MULTIPLICITY_RELATION_KINDS = ['association', 'aggregation', 'composition'] as const;
 
+/** Lado de una caja por el que sale o entra una relación. */
+export const SIDES = ['top', 'right', 'bottom', 'left'] as const;
+export type Side = (typeof SIDES)[number];
+
 export const VISIBILITIES = ['+', '-', '#', '~'] as const;
 export type Visibility = (typeof VISIBILITIES)[number];
-
-export const DIAGRAM_STYLES = ['clean', 'sketch'] as const;
-export type DiagramStyle = (typeof DIAGRAM_STYLES)[number];
 
 export const CONTAINER_VARIANTS = ['default', 'database', 'queue', 'web'] as const;
 export type ContainerVariant = (typeof CONTAINER_VARIANTS)[number];
@@ -54,6 +55,7 @@ export const ERROR_CODES = [
   'SCHEMA_VIOLATION',
   'DIAGRAM_NOT_FOUND',
   'NO_ACTIVE_DIAGRAM',
+  'NOTHING_TO_UNDO',
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
 

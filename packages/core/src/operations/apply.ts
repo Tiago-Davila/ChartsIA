@@ -147,11 +147,15 @@ function applyOne(draft: Draft, op: Operation, base: string): void {
       }
       return;
     }
+    case 'resize_element': {
+      const index = findElement(op.id);
+      const el = d.elements[index]!;
+      const layout = el.layout ?? { x: 0, y: 0 };
+      d.elements[index] = { ...el, layout: { ...layout, width: op.width, height: op.height, pinned: true, resized: true } };
+      return;
+    }
     case 'set_title':
       d.title = op.title;
-      return;
-    case 'set_style':
-      d.style = op.style;
       return;
   }
 }

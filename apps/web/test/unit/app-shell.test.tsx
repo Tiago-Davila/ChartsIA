@@ -15,7 +15,6 @@ const base: AppShellProps = {
   edges: [],
   origin: 'http://127.0.0.1:3333',
   onOpen: vi.fn(),
-  onStyleChange: vi.fn(),
   onExport: vi.fn(),
 };
 
@@ -42,18 +41,13 @@ describe('AppShell', () => {
     expect(onOpen).toHaveBeenCalledWith('dg_aaaaaaaaaaaa');
   });
 
-  it('con diagrama abierto muestra toolbar, estilo y exportación', async () => {
-    const onStyleChange = vi.fn();
+  it('con diagrama abierto muestra toolbar y exportación', async () => {
     const onExport = vi.fn();
     renderShell({
-      onStyleChange,
       onExport,
-      diagram: { id: 'dg_aaaaaaaaaaaa', type: 'class', title: 'Biblioteca', style: 'clean', revision: 3, createdAt: '', updatedAt: '', elements: [], relations: [] },
+      diagram: { id: 'dg_aaaaaaaaaaaa', type: 'class', title: 'Biblioteca', revision: 3, createdAt: '', updatedAt: '', elements: [], relations: [] },
     });
     expect(screen.getByRole('heading', { name: /Biblioteca/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Limpio' })).toHaveAttribute('aria-pressed', 'true');
-    await userEvent.click(screen.getByRole('button', { name: 'Boceto' }));
-    expect(onStyleChange).toHaveBeenCalledWith('sketch');
     await userEvent.click(screen.getByText('Exportar'));
     await userEvent.click(screen.getByRole('menuitem', { name: /draw\.io/ }));
     expect(onExport).toHaveBeenCalledWith('drawio');
@@ -66,7 +60,7 @@ describe('AppShell', () => {
 
   it('la leyenda C4 solo aparece en diagramas C4', () => {
     renderShell({
-      diagram: { id: 'dg_bbbbbbbbbbbb', type: 'c4-container', title: 'Tienda', style: 'clean', revision: 1, createdAt: '', updatedAt: '',
+      diagram: { id: 'dg_bbbbbbbbbbbb', type: 'c4-container', title: 'Tienda', revision: 1, createdAt: '', updatedAt: '',
         elements: [{ id: 'p', kind: 'person', name: 'Cliente' }, { id: 'x', kind: 'software-system', name: 'Pagos', external: true }], relations: [] },
     });
     const legend = screen.getByRole('complementary', { name: 'Leyenda C4' });
