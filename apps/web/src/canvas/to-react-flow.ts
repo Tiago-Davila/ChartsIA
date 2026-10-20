@@ -1,0 +1,55 @@
+import { type Diagram, type Element, isGroupKind } from '@chartsia/core/model';
+import { measureElement } from '@chartsia/core/shapes';
+import { Position } from '@xyflow/react';
+import { type RoutedFlowEdge } from '../edges';
+import { type ElementFlowNode } from '../nodes';
+
+function depthOf(el: Element, byId: Map<string, Element>): number {
+  let depth = 0;
+  let parent = el.parentId ? byId.get(el.parentId) : undefined;
+  while (parent && depth < 64) {
+    depth++;
+    parent = parent.parentId ? byId.get(parent.parentId) : undefined;
+  }
+  return depth;
+}
+
+/**
+ * Modelo → nodos y aristas de React Flow. El tipo de nodo es el `kind`; los grupos son nodos
+ * padre (sub-flows) y van antes que sus hijos, cuyas posiciones son relativas al padre.
+ * Los handles se declaran en el nodo para que las aristas no dependan de medir el DOM.
+ */
+export function toReactFlow(diagram: Diagram): { nodes: ElementFlowNode[]; edges: RoutedFlowEdge[] } {
+  const byId = new Map(diagram.elements.map((e) => [e.id, e]));
+  const ordered = [...diagram.elements].sort((a, b) => depthOf(a, byId) - depthOf(b, byId) || (a.id < b.id ? -1 : 1));
+  const nodes = ordered.map((element): ElementFlowNode => {
+    const size = element.layout?.width && element.layout.height ? { width: element.layout.width, height: element.layout.height } : measureElement(element);
+    const parent = element.parentId ? byId.get(element.parentId) : undefined;
+    const x = (element.layout?.x ?? 0) - (parent?.layout?.x ?? 0);
+    const y = (element.layout?.y ?? 0) - (parent?.layout?.y ?? 0);
+    return {
+      id: element.id,
+      type: element.kind,
+      position: { x, y },
+      width: size.width,
+      height: size.height,
+      ...(parent ? { parentId: parent.id } : {}),
+      ...(isGroupKind(element.kind) ? { zIndex: -1 } : {}),
+      data: { element, style: diagram.style },
+      handles: [
+        { type: 'target', position: Position.Top, x: size.width / 2, y: 0, width: 1, height: 1 },
+        { type: 'source', position: Position.Bottom, x: size.width / 2, y: size.height, width: 1, height: 1 },
+      ],
+    };
+  });
+  const edges = diagram.relations
+    .filter((r) => byId.has(r.source) && byId.has(r.target))
+    .map((relation): RoutedFlowEdge => ({
+      id: relation.id,
+      source: relation.source,
+      target: relation.target,
+      type: 'routed',
+      data: { relation, style: diagram.style },
+    }));
+  return { nodes, edges };
+}

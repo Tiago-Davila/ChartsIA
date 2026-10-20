@@ -295,22 +295,22 @@ las tools T075–T080 y T157 dependen explícitamente de ellos. Deben fallar has
 **Purpose**: la app refleja en vivo los cambios del agente y envía los manuales por la misma
 ruta de escritura.
 
-- [ ] T123 [P] Tests del mapeo modelo → React Flow (`layout` → `position`/`width`/`height`, grupos con `parentId` y posiciones relativas, `route` → `data.points`) — `apps/web/test/unit/canvas/to-react-flow.test.ts` (dep: T099, T024)
-- [ ] T124 [P] Tests del store: aplica `diagram.updated` solo si `revision` es mayor; reconciliación al reconectar — `apps/web/test/unit/state/diagram-store.test.ts` (dep: T099)
-- [ ] T165 Token de la app: lee `#token=` del fragmento una vez, lo guarda en `sessionStorage`, lo quita con `history.replaceState`; pantalla para pegar el token si el hub responde 401 — `apps/web/src/state/auth-token.ts`, `apps/web/src/app/TokenPrompt.tsx` (dep: T097)
-- [ ] T125 Cliente REST tipado según [app-api.md](./contracts/app-api.md), que envía `Authorization: Bearer` cuando hay token (T165); 401 ⇒ pide el token — `apps/web/src/state/api-client.ts` (dep: T097, T165)
-- [ ] T126 Cliente Socket.IO: `io("/live", { path: "/socket.io", auth: { token } })` (`subscribe`, eventos, reconexión con reenvío de `subscribe`) — `apps/web/src/state/live-client.ts` (dep: T097, T165)
-- [ ] T127 Store zustand: diagramas, activo, diagrama abierto, estado de conexión — `apps/web/src/state/diagram-store.ts` (dep: T125, T126; hace pasar T124)
-- [ ] T128 [US1] Mapeo modelo → nodos/aristas React Flow — `apps/web/src/canvas/to-react-flow.ts` con las claves de `nodeTypes`/`edgeTypes` y la convención de `parentId` de los grupos (dep: T024, T112, T113, T114; hace pasar T123)
-- [ ] T129 [US1] Conectar `DiagramCanvas` y `DiagramList` al store; clic en la lista o ruta `/d/:id` abre el diagrama y llama a `POST /api/diagrams/:id/activate`; `active.changed` y `diagram.created` navegan al diagrama — `apps/web/src/canvas/DiagramCanvas.tsx`, `apps/web/src/app/DiagramList.tsx` (dep: T122, T127, T128, T161)
-- [ ] T130 [US4] Arrastrar nodo → `move_element` al soltar (`onNodeDragStop`) vía `POST /api/diagrams/:id/operations` — `apps/web/src/canvas/use-diagram-edits.ts` (dep: T129)
-- [ ] T131 [US4] Edición en línea → `update_element` vía `POST /api/diagrams/:id/operations` — `apps/web/src/canvas/use-diagram-edits.ts` (dep: T121, T130)
-- [ ] T162 [US4] Tecla Supr sobre selección → `remove_element`/`remove_relation` — `apps/web/src/canvas/use-diagram-edits.ts` (dep: T131)
-- [ ] T163 [US4] Aviso de errores: respuestas 422 con `{errors}` mostradas con `message` y `hint`; el estado local no cambia — `apps/web/src/app/ErrorToast.tsx`, `apps/web/src/state/api-client.ts` (dep: T125, T122)
-- [ ] T132 [US4] Cambio de estilo → `set_style` vía `POST /api/diagrams/:id/operations`; el estilo persiste — `apps/web/src/app/Toolbar.tsx` (dep: T118, T127)
-- [ ] T164 [US5] Menú exportar → descarga desde `GET /api/diagrams/:id/export` (con token si aplica) — `apps/web/src/app/Toolbar.tsx`, `apps/web/src/state/api-client.ts` (dep: T132, T125)
-- [ ] T133 Resincronización tras reconexión y estado de conexión en `ConnectionStatus` — `apps/web/src/state/live-client.ts`, `apps/web/src/app/ConnectionStatus.tsx` (dep: T126, T119)
-- [ ] T134 [US3] (Opcional, fuera del MVP; no lo pide la spec) Animación suave al aplicar cambios del agente (solo nodos movidos), sin afectar a nodos `pinned` — `apps/web/src/canvas/DiagramCanvas.tsx` (dep: T129)
+- [X] T123 [P] Tests del mapeo modelo → React Flow (`layout` → `position`/`width`/`height`, grupos con `parentId` y posiciones relativas, `route` → `data.points`) — `apps/web/test/unit/canvas/to-react-flow.test.ts` (dep: T099, T024)
+- [X] T124 [P] Tests del store: aplica `diagram.updated` solo si `revision` es mayor; reconciliación al reconectar — `apps/web/test/unit/state/diagram-store.test.ts` (dep: T099)
+- [X] T165 Token de la app: lee `#token=` del fragmento una vez, lo guarda en `sessionStorage`, lo quita con `history.replaceState`; pantalla para pegar el token si el hub responde 401 — `apps/web/src/state/auth-token.ts`, `apps/web/src/app/TokenPrompt.tsx` (dep: T097)
+- [X] T125 Cliente REST tipado según [app-api.md](./contracts/app-api.md), que envía `Authorization: Bearer` cuando hay token (T165); 401 ⇒ pide el token — `apps/web/src/state/api-client.ts` (dep: T097, T165)
+- [X] T126 Cliente Socket.IO: `io("/live", { path: "/socket.io", auth: { token } })` (`subscribe`, eventos, reconexión con reenvío de `subscribe`) — `apps/web/src/state/live-client.ts` (dep: T097, T165)
+- [X] T127 Store zustand: diagramas, activo, diagrama abierto, estado de conexión — `apps/web/src/state/diagram-store.ts` (dep: T125, T126; hace pasar T124)
+- [X] T128 [US1] Mapeo modelo → nodos/aristas React Flow — `apps/web/src/canvas/to-react-flow.ts` con las claves de `nodeTypes`/`edgeTypes` y la convención de `parentId` de los grupos (dep: T024, T112, T113, T114; hace pasar T123)
+- [X] T129 [US1] Conectar `DiagramCanvas` y `DiagramList` al store; clic en la lista o ruta `/d/:id` abre el diagrama y llama a `POST /api/diagrams/:id/activate`; `active.changed` y `diagram.created` navegan al diagrama — `apps/web/src/canvas/DiagramCanvas.tsx`, `apps/web/src/app/DiagramList.tsx` (dep: T122, T127, T128, T161)
+- [X] T130 [US4] Arrastrar nodo → `move_element` al soltar (`onNodeDragStop`) vía `POST /api/diagrams/:id/operations` — `apps/web/src/canvas/use-diagram-edits.ts` (dep: T129)
+- [X] T131 [US4] Edición en línea → `update_element` vía `POST /api/diagrams/:id/operations` — `apps/web/src/canvas/use-diagram-edits.ts` (dep: T121, T130)
+- [X] T162 [US4] Tecla Supr sobre selección → `remove_element`/`remove_relation` — `apps/web/src/canvas/use-diagram-edits.ts` (dep: T131)
+- [X] T163 [US4] Aviso de errores: respuestas 422 con `{errors}` mostradas con `message` y `hint`; el estado local no cambia — `apps/web/src/app/ErrorToast.tsx`, `apps/web/src/state/api-client.ts` (dep: T125, T122)
+- [X] T132 [US4] Cambio de estilo → `set_style` vía `POST /api/diagrams/:id/operations`; el estilo persiste — `apps/web/src/app/Toolbar.tsx` (dep: T118, T127)
+- [X] T164 [US5] Menú exportar → descarga desde `GET /api/diagrams/:id/export` (con token si aplica) — `apps/web/src/app/Toolbar.tsx`, `apps/web/src/state/api-client.ts` (dep: T132, T125)
+- [X] T133 Resincronización tras reconexión y estado de conexión en `ConnectionStatus` — `apps/web/src/state/live-client.ts`, `apps/web/src/app/ConnectionStatus.tsx` (dep: T126, T119)
+- [X] T134 [US3] (Opcional, fuera del MVP; no lo pide la spec) Animación suave al aplicar cambios del agente (solo nodos movidos), sin afectar a nodos `pinned` — `apps/web/src/canvas/DiagramCanvas.tsx` (dep: T129)
 
 **Checkpoint**: con el hub y la app levantados, un agente crea y edita diagramas que se ven en vivo.
 

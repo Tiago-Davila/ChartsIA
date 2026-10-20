@@ -408,3 +408,18 @@ button:disabled,
   border: 1px solid var(--border);
   border-radius: 6px;
 }
+
+.app-root {
+  height: 100%;
+}
+/* Cambios del agente: transición suave de los nodos que se movieron (los fijados no se mueven). */
+.animate-agent .react-flow__node {
+  transition: transform 260ms ease-out;
+}
+.animate-agent .react-flow__node.dragging {
+  transition: none;
+}
+.loading {
+  margin: 20vh auto 0;
+  color: var(--text-muted);
+}

@@ -3,6 +3,7 @@ import { edgePrimitives, hashSeed, sketchPrimitives } from '@chartsia/core/rende
 import { relationStyle } from '@chartsia/core/shapes';
 import { type Edge, type EdgeProps } from '@xyflow/react';
 import { memo, useMemo } from 'react';
+import { FONT_SKETCH } from '../render/CleanShape';
 import { Primitives } from '../render/Primitives';
 import { EdgeMarkers } from './markers';
 
@@ -28,7 +29,11 @@ function RoutedEdgeImpl({ id, data, sourceX, sourceY, targetX, targetY, selected
   const look = relationStyle(relation);
 
   return (
-    <g data-testid={`edge-${id}`} className={`chartsia-edge${selected ? ' is-selected' : ''}`}>
+    <g
+      data-testid={`edge-${id}`}
+      className={`chartsia-edge${selected ? ' is-selected' : ''}`}
+      fontFamily={style === 'sketch' ? FONT_SKETCH : "Inter, 'Helvetica Neue', Arial, sans-serif"}
+    >
       {routed ? (
         <Primitives primitives={primitives} />
       ) : (

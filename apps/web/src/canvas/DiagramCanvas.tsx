@@ -8,10 +8,11 @@ import {
   type OnNodeDrag,
   ReactFlow,
   useEdgesState,
+  useNodesInitialized,
   useNodesState,
   useReactFlow,
 } from '@xyflow/react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { edgeTypes } from '../edges';
 import { nodeTypes } from '../nodes';
 
@@ -46,14 +47,17 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   const [nodes, setNodes, onNodesChange] = useNodesState(incomingNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(incomingEdges);
   const { fitView } = useReactFlow();
+  const initialized = useNodesInitialized();
+  const fittedFor = useRef<string | null>(null);
 
   useEffect(() => setNodes(incomingNodes), [incomingNodes, setNodes]);
   useEffect(() => setEdges(incomingEdges), [incomingEdges, setEdges]);
-  // Al abrir otro diagrama se encuadra completo.
+  // Al abrir otro diagrama se encuadra completo, cuando React Flow ya midió sus nodos.
   useEffect(() => {
-    const frame = requestAnimationFrame(() => void fitView(FIT_VIEW_OPTIONS));
-    return () => cancelAnimationFrame(frame);
-  }, [diagramId, fitView]);
+    if (!initialized || fittedFor.current === diagramId) return;
+    fittedFor.current = diagramId;
+    void fitView(FIT_VIEW_OPTIONS);
+  }, [initialized, diagramId, fitView]);
 
   return (
     <ReactFlow
@@ -69,11 +73,8 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
       nodesConnectable={false}
       elementsSelectable
       deleteKeyCode={readOnly ? null : ['Delete', 'Backspace']}
-      fitView
-      fitViewOptions={FIT_VIEW_OPTIONS}
       minZoom={0.05}
       maxZoom={4}
-      onlyRenderVisibleElements
       proOptions={PRO_OPTIONS}
     >
       <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#d5d9e0" />

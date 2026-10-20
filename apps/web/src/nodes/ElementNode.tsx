@@ -1,6 +1,7 @@
 import { measureElement, type Primitive } from '@chartsia/core/shapes';
 import { Handle, type NodeProps, Position } from '@xyflow/react';
 import { type CSSProperties, memo, useCallback, useState } from 'react';
+import { slotValue } from '../canvas/slot-edits';
 import { ShapeRenderer } from '../render/ShapeRenderer';
 import { useDiagramEditActions } from './edit-context';
 import { InlineEditableText } from './InlineEditableText';
@@ -41,7 +42,7 @@ function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<Elemen
       <Handle type="source" position={Position.Bottom} isConnectable={false} className="chartsia-handle" />
       {editing ? (
         <InlineEditableText
-          value={editing.text}
+          value={slotValue(element, editing.slot!, editing.text)}
           style={editorStyle(editing, size.width)}
           onCommit={(value) => {
             setEditing(undefined);

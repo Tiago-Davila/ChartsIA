@@ -14,6 +14,8 @@ export interface AppShellProps {
   activeDiagramId: string | null;
   connection: ConnectionState;
   diagram?: Diagram;
+  /** Hay un diagrama abierto que aún se está cargando. */
+  loading?: boolean;
   nodes: Node[];
   edges: Edge[];
   origin: string;
@@ -62,6 +64,8 @@ export function AppShell(props: AppShellProps) {
               <C4Legend diagram={diagram} />
             </div>
           </>
+        ) : props.loading ? (
+          <p className="loading" role="status">Cargando diagrama…</p>
         ) : (
           <EmptyState origin={props.origin} />
         )}
