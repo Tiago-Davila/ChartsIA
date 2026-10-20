@@ -103,13 +103,13 @@ llevan. "Persistencia de tareas" (fase 3) se interpreta como **persistencia de d
 
 **Purpose**: almacenamiento JSON por diagrama con escritura atómica (research R9).
 
-- [ ] T034 [P] Tests del repositorio: guardar/leer/listar; escritura atómica (tmp + rename) sin archivos corruptos ante fallo simulado; `index.json` reconstruible si falta o está corrupto, y tras reconstruirlo el activo es el de `updatedAt` más reciente; archivo de diagrama inválido se ignora y se registra — `apps/api/test/integration/json-file.repository.test.ts` (dep: T024, T007)
-- [ ] T035 [P] Tests del lock por diagrama: operaciones del mismo diagrama se serializan; diagramas distintos en paralelo — `apps/api/test/unit/diagram-lock.test.ts` (dep: T007)
-- [ ] T036 Interfaz `DiagramRepository` (`get`, `save`, `list`, `getActiveId`, `setActiveId`) — `apps/api/src/diagrams/persistence/diagram.repository.ts` (dep: T024)
-- [ ] T037 Generador de ids de diagrama "`dg_` + 12 chars base32" en el núcleo (el formato es parte del modelo) — `packages/core/src/model/ids.ts` (dep: T005)
-- [ ] T038 `JsonFileDiagramRepository`: un archivo `<id>.json` por diagrama en `CHARTSIA_DATA_DIR`, `index.json` con resumen y `activeDiagramId` (al reconstruir el índice, activo = diagrama con `updatedAt` más reciente), creación del directorio al arrancar — `apps/api/src/diagrams/persistence/json-file.repository.ts` (dep: T036, T037, T008; hace pasar T034)
-- [ ] T039 Mutex en memoria por `diagramId` — `apps/api/src/diagrams/persistence/diagram-lock.ts` (dep: T006; hace pasar T035)
-- [ ] T040 Módulo de persistencia que provee el repositorio por token de inyección — `apps/api/src/diagrams/persistence/persistence.module.ts` (dep: T038, T039)
+- [X] T034 [P] Tests del repositorio: guardar/leer/listar; escritura atómica (tmp + rename) sin archivos corruptos ante fallo simulado; `index.json` reconstruible si falta o está corrupto, y tras reconstruirlo el activo es el de `updatedAt` más reciente; archivo de diagrama inválido se ignora y se registra — `apps/api/test/integration/json-file.repository.test.ts` (dep: T024, T007)
+- [X] T035 [P] Tests del lock por diagrama: operaciones del mismo diagrama se serializan; diagramas distintos en paralelo — `apps/api/test/unit/diagram-lock.test.ts` (dep: T007)
+- [X] T036 Interfaz `DiagramRepository` (`get`, `save`, `list`, `getActiveId`, `setActiveId`) — `apps/api/src/diagrams/persistence/diagram.repository.ts` (dep: T024)
+- [X] T037 Generador de ids de diagrama "`dg_` + 12 chars base32" en el núcleo (el formato es parte del modelo) — `packages/core/src/model/ids.ts` (dep: T005)
+- [X] T038 `JsonFileDiagramRepository`: un archivo `<id>.json` por diagrama en `CHARTSIA_DATA_DIR`, `index.json` con resumen y `activeDiagramId` (al reconstruir el índice, activo = diagrama con `updatedAt` más reciente), creación del directorio al arrancar — `apps/api/src/diagrams/persistence/json-file.repository.ts` (dep: T036, T037, T008; hace pasar T034)
+- [X] T039 Mutex en memoria por `diagramId` — `apps/api/src/diagrams/persistence/diagram-lock.ts` (dep: T006; hace pasar T035)
+- [X] T040 Módulo de persistencia que provee el repositorio por token de inyección — `apps/api/src/diagrams/persistence/persistence.module.ts` (dep: T038, T039)
 
 **Checkpoint**: diagramas sobreviven reinicios (FR-026).
 
