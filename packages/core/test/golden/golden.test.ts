@@ -18,7 +18,6 @@ async function load(name: string): Promise<Diagram> {
   return layoutDiagram({
     ...res.value,
     id: 'dg_goldengolden',
-    style: 'clean',
     revision: 1,
     createdAt: '2026-10-20T10:00:00.000Z',
     updatedAt: '2026-10-20T10:00:00.000Z',
@@ -33,14 +32,9 @@ describe.each(fixtures)('golden %s', (name) => {
     await expect(JSON.stringify(d, null, 2) + '\n').toMatchFileSnapshot(expected('layout.json'));
   });
 
-  it.each([
-    ['svg', 'clean', 'clean.svg'],
-    ['svg', 'sketch', 'sketch.svg'],
-    ['drawio', 'clean', 'drawio'],
-    ['excalidraw', 'clean', 'excalidraw'],
-  ] as const)('%s (%s)', async (format, style, ext) => {
+  it.each(['svg', 'drawio', 'excalidraw'] as const)('%s', async (format) => {
     const d = await load(name);
-    const out = exportDiagram(d, format, { style });
-    await expect(out.content).toMatchFileSnapshot(expected(ext));
+    const out = exportDiagram(d, format);
+    await expect(out.content).toMatchFileSnapshot(expected(format));
   });
 });

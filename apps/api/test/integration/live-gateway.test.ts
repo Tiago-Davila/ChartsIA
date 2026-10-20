@@ -46,7 +46,7 @@ describe('gateway en vivo (Socket.IO /live)', () => {
     await fetch(`${hub.url}/api/diagrams/${id}/operations`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ operations: [{ op: 'set_style', style: 'sketch' }] }),
+      body: JSON.stringify({ operations: [{ op: 'set_title', title: 'Desde la app' }] }),
     });
     expect(await fromApp).toMatchObject({ origin: 'app', revision: 3 });
   });

@@ -2,11 +2,10 @@ import { Controller, Get, Param, Query, Res } from '@nestjs/common';
 import { type Response } from 'express';
 import { z } from 'zod';
 import { EXPORT_FORMATS } from '@chartsia/core/export';
-import { DiagramStyleSchema } from '@chartsia/core/model';
 import { DomainValidationError, fromZodError } from '@chartsia/core/validation';
 import { ExportService } from './export.service.js';
 
-const ExportQuerySchema = z.object({ format: z.enum(EXPORT_FORMATS), style: DiagramStyleSchema.optional() });
+const ExportQuerySchema = z.object({ format: z.enum(EXPORT_FORMATS) });
 
 @Controller('api/diagrams')
 export class ExportController {

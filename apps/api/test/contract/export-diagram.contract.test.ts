@@ -27,18 +27,16 @@ describe('contract: export_diagram', () => {
     expect(res.structuredContent!.content).toMatch(pattern);
   });
 
-  it('style sobreescribe el estilo del diagrama solo para la exportación', async () => {
-    const res = await h.call('export_diagram', { diagramId: id, format: 'svg', style: 'clean' });
-    expect(res.structuredContent!.content).toContain('Inter');
-    expect(res.structuredContent!.downloadUrl).toContain('style=clean');
-    expect((await h.repo.get(id))?.style).toBe('sketch');
+  it('ya no acepta style (el estilo boceto se retiró)', async () => {
+    const res = await h.call('export_diagram', { diagramId: id, format: 'svg', style: 'sketch' });
+    expect(res.isError).toBe(true);
   });
 
   it('omite content si supera 512 KiB y devuelve solo downloadUrl', async () => {
     const elements = Array.from({ length: 400 }, (_, i) => ({
       id: `C${i}`, kind: 'class', name: `Clase${i}`, attributes: Array.from({ length: 12 }, (_, j) => ({ name: `campoNumero${j}`, type: 'String', visibility: '-' })), operations: [],
     }));
-    const big = (await h.call('create_diagram', { type: 'class', title: 'Grande', style: 'sketch', elements, relations: [] })).structuredContent!.diagramId;
+    const big = (await h.call('create_diagram', { type: 'class', title: 'Grande', elements, relations: [] })).structuredContent!.diagramId;
     const res = await h.call('export_diagram', { diagramId: big, format: 'svg' });
     expect(res.isError).toBeFalsy();
     expect(res.structuredContent).not.toHaveProperty('content');

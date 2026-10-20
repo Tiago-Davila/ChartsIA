@@ -1,4 +1,4 @@
-/** FNV-1a de 32 bits: semilla estable a partir de un id (render sketch, Excalidraw). */
+/** FNV-1a de 32 bits: semilla estable a partir de un id (export a Excalidraw). */
 export function hashSeed(text: string): number {
   let h = 0x811c9dc5;
   for (let i = 0; i < text.length; i++) {

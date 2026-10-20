@@ -34,8 +34,7 @@ Input:
   "type": "class | c4-context | c4-container | c4-component",
   "title": "string",
   "elements": ["Element"],
-  "relations": ["Relation"],
-  "style": "clean | sketch (opcional, defecto clean)"
+  "relations": ["Relation"]
 }
 ```
 
@@ -80,7 +79,7 @@ Input: `{ diagramId: string }` → Output: `{ diagramId, viewUrl }`
 
 ## `export_diagram`
 
-Input: `{ diagramId?: string, format: "svg | drawio | excalidraw", style?: "clean | sketch" }`
+Input: `{ diagramId?: string, format: "svg | drawio | excalidraw" }`
 Output: `{ diagramId, format, mimeType, filename, downloadUrl, content }`
 
 - `content` es el archivo como texto (todos los formatos son texto). Si excede 512 KiB se omite

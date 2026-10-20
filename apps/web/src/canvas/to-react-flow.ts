@@ -35,7 +35,7 @@ export function toReactFlow(diagram: Diagram): { nodes: ElementFlowNode[]; edges
       height: size.height,
       ...(parent ? { parentId: parent.id } : {}),
       ...(isGroupKind(element.kind) ? { zIndex: -1 } : {}),
-      data: { element, style: diagram.style },
+      data: { element },
       handles: [
         { type: 'target', position: Position.Top, x: size.width / 2, y: 0, width: 1, height: 1 },
         { type: 'source', position: Position.Bottom, x: size.width / 2, y: size.height, width: 1, height: 1 },
@@ -49,7 +49,7 @@ export function toReactFlow(diagram: Diagram): { nodes: ElementFlowNode[]; edges
       source: relation.source,
       target: relation.target,
       type: 'routed',
-      data: { relation, style: diagram.style },
+      data: { relation },
     }));
   return { nodes, edges };
 }

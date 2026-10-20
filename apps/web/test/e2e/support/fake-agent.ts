@@ -35,7 +35,7 @@ export class FakeAgent {
     return this.call('apply_changes', { ...(diagramId ? { diagramId } : {}), operations });
   }
 
-  async layout(diagramId?: string): Promise<{ elements: { id: string; kind: string; parentId?: string; name: string; layout: { x: number; y: number; width: number; height: number; pinned: boolean } }[]; relations: { id: string; route: { x: number; y: number }[] }[]; style: string; title: string }> {
+  async layout(diagramId?: string): Promise<{ elements: { id: string; kind: string; parentId?: string; name: string; layout: { x: number; y: number; width: number; height: number; pinned: boolean } }[]; relations: { id: string; route: { x: number; y: number }[] }[]; title: string }> {
     const res = await this.call('get_diagram', { ...(diagramId ? { diagramId } : {}), includeLayout: true });
     return res.structuredContent as never;
   }

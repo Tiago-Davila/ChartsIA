@@ -19,18 +19,10 @@
   font-style: italic;
   font-display: block;
 }
-@font-face {
-  font-family: 'Excalifont';
-  src: url('/fonts/Excalifont-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: block;
-}
 
 :root {
   /* Tipografías: las mismas cuyas métricas usa el núcleo (text-metrics.ts). */
   --font-clean: Inter, 'Helvetica Neue', Arial, sans-serif;
-  --font-sketch: Excalifont, 'Comic Sans MS', 'Segoe Print', cursive;
   --font-ui: Inter, system-ui, sans-serif;
 
   /* Paleta C4 (igual que @chartsia/core/shapes C4_PALETTE). */

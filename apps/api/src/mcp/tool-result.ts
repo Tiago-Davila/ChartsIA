@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { type CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { type ExportFormat } from '@chartsia/core/export';
-import { type DiagramStyle } from '@chartsia/core/model';
 import { type ValidationError } from '@chartsia/core/validation';
 import { PublicUrls } from '../common/public-urls.js';
 import { APP_CONFIG, type AppConfig } from '../config/config.js';
@@ -31,8 +30,8 @@ export class ToolResultFormatter {
     return this.urls.view(diagramId);
   }
 
-  downloadUrl(diagramId: string, format: ExportFormat, style?: DiagramStyle): string {
-    return this.urls.download(diagramId, format, style);
+  downloadUrl(diagramId: string, format: ExportFormat): string {
+    return this.urls.download(diagramId, format);
   }
 
   success(result: ToolSuccess): CallToolResult {

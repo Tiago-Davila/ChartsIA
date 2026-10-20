@@ -13,7 +13,7 @@ import {
   PackageElementSchema,
 } from './class-elements.js';
 import { type Layout } from './common.js';
-import { DIAGRAM_STYLES, DIAGRAM_TYPES } from './enums.js';
+import { DIAGRAM_TYPES } from './enums.js';
 import { RelationSchema } from './relation.js';
 
 /** Unión de elementos discriminada por `kind` (en JSON Schema se expresa como `anyOf`). */
@@ -36,7 +36,6 @@ export type PositionedElement = Element & { layout: Layout };
 export type ElementOfKind<K extends Element['kind']> = Extract<Element, { kind: K }>;
 
 export const DiagramTypeSchema = z.enum(DIAGRAM_TYPES);
-export const DiagramStyleSchema = z.enum(DIAGRAM_STYLES);
 export const TitleSchema = z.string().min(1).max(120);
 
 /** Entrada de `create_diagram`: descripción estructural, sin coordenadas obligatorias. */
@@ -45,7 +44,6 @@ export const DiagramInputSchema = z.strictObject({
   title: TitleSchema,
   elements: z.array(ElementSchema),
   relations: z.array(RelationSchema),
-  style: DiagramStyleSchema.optional(),
 });
 export type DiagramInput = z.infer<typeof DiagramInputSchema>;
 
@@ -57,7 +55,6 @@ export const DiagramSchema = z.strictObject({
   title: TitleSchema,
   elements: z.array(ElementSchema),
   relations: z.array(RelationSchema),
-  style: DiagramStyleSchema,
   revision: z.number().int().nonnegative(),
   createdAt: z.string(),
   updatedAt: z.string(),

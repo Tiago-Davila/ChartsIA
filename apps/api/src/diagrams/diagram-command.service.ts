@@ -45,7 +45,6 @@ export class DiagramCommandService {
     const diagram = await layoutDiagram({
       ...checked.value,
       id: this.newId(),
-      style: checked.value.style ?? 'clean',
       revision: 1,
       createdAt: now,
       updatedAt: now,

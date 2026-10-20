@@ -9,7 +9,6 @@ function asDiagram(input: DiagramInput): Diagram {
   return {
     ...input,
     id: 'dg_aaaaaaaaaaaa',
-    style: input.style ?? 'clean',
     revision: 0,
     createdAt: '2026-10-20T10:00:00.000Z',
     updatedAt: '2026-10-20T10:00:00.000Z',

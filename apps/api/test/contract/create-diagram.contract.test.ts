@@ -29,7 +29,6 @@ describe('contract: create_diagram', () => {
     expect(res.isError).toBeFalsy();
     expect(res.structuredContent).toMatchObject({ counts: { elements: 6, relations: 5 } });
     const stored = await h.repo.get(res.structuredContent!.diagramId as string);
-    expect(stored?.style).toBe('sketch');
     expect(stored?.elements.find((e) => e.id === 'Base')?.layout).toMatchObject({ x: 600, y: 0, pinned: true });
     expect(await h.repo.getActiveId()).toBe(stored?.id);
   });

@@ -1,5 +1,5 @@
 import { type ExportFormat } from '@chartsia/core/export';
-import { type Diagram, type DiagramStyle, type DiagramType, type Operation } from '@chartsia/core/model';
+import { type Diagram, type DiagramType, type Operation } from '@chartsia/core/model';
 import { type ValidationError } from '@chartsia/core/validation';
 
 export interface DiagramSummary {
@@ -71,9 +71,8 @@ export function createApiClient({ baseUrl = '', getToken, fetch: fetchImpl = (..
     activate: async (diagramId: string) => {
       await request(`/api/diagrams/${id(diagramId)}/activate`, { method: 'POST' });
     },
-    exportFile: async (diagramId: string, format: ExportFormat, style?: DiagramStyle) => {
-      const query = new URLSearchParams({ format, ...(style ? { style } : {}) });
-      const res = await request(`/api/diagrams/${id(diagramId)}/export?${query}`);
+    exportFile: async (diagramId: string, format: ExportFormat) => {
+      const res = await request(`/api/diagrams/${id(diagramId)}/export?format=${format}`);
       const disposition = res.headers.get('Content-Disposition') ?? '';
       const filename = /filename="([^"]+)"/.exec(disposition)?.[1] ?? `diagrama.${format}`;
       return { blob: await res.blob(), filename };

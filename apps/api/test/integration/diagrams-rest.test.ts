@@ -60,7 +60,7 @@ describe('API REST /api', () => {
     ['drawio', 'application/vnd.jgraph.mxfile', 'biblioteca.drawio'],
     ['excalidraw', 'application/vnd.excalidraw+json', 'biblioteca.excalidraw'],
   ])('GET /export?format=%s ⇒ archivo con Content-Disposition', async (format, mime, filename) => {
-    const res = await fetch(`${hub.url}/api/diagrams/${id}/export?format=${format}&style=sketch`);
+    const res = await fetch(`${hub.url}/api/diagrams/${id}/export?format=${format}`);
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toContain(mime);
     expect(res.headers.get('content-disposition')).toBe(`attachment; filename="${filename}"`);
