@@ -320,21 +320,21 @@ ruta de escritura.
 
 **Purpose**: comprobar los 10 escenarios de [quickstart.md](./quickstart.md) y los criterios de éxito.
 
-- [ ] T135 Agente simulado: script que usa el `Client` del SDK MCP sobre HTTP para ejecutar escenarios guionados (crear, refinar ×3, exportar) — `apps/web/test/e2e/support/fake-agent.ts` (dep: T083)
-- [ ] T136 [US1] E2E Playwright escenarios 1–2: diagrama de biblioteca visible en < 2 s, sin solapes de nodos ni aristas que atraviesen nodos, layout idéntico al repetir; `viewUrl` abre `/d/:id` — `apps/web/test/e2e/us1-class-diagram.spec.ts` (dep: T129, T135, T100)
-- [ ] T137 [P] [US1] E2E escenario 3: error `UNKNOWN_REFERENCE` y nada cambia en la app — `apps/web/test/e2e/us1-validation-error.spec.ts` (dep: T129, T135, T100)
-- [ ] T138 [P] [US2] E2E escenario 4: C4 tienda online con límite, BD cilindro, etiquetas `desc [tech]` y leyenda — `apps/web/test/e2e/us2-c4-container.spec.ts` (dep: T129, T135, T100)
-- [ ] T139 [P] [US3] E2E escenario 5: tres refinamientos en vivo sin mover elementos no afectados — `apps/web/test/e2e/us3-refine.spec.ts` (dep: T129, T135, T100)
-- [ ] T140 [P] [US4] E2E escenarios 6–7: nodo movido a mano conserva posición tras añadido del agente; estilo persiste tras recargar — `apps/web/test/e2e/us4-manual-edit.spec.ts` (dep: T131, T132, T162, T163, T135, T100)
-- [ ] T141 [P] [US5] E2E escenario 8 (automatizable): exportar draw.io y Excalidraw y validar estructura (parse XML `mxGraphModel`, JSON `type:"excalidraw"`, bindings resueltos) — `apps/web/test/e2e/us5-export.spec.ts` (dep: T164, T135, T100)
-- [ ] T142 [P] E2E escenario 10: nombre `<img src=x onerror=alert(1)>` se ve literal en la app y en el SVG; ningún diálogo se dispara — `apps/web/test/e2e/security-xss.spec.ts` (dep: T129, T135, T100)
-- [ ] T143 [P] E2E SC-006: diagrama de 200 elementos, pan/zoom sostenido ≥ 50 fps (trazas de rendimiento), mismo umbral que plan.md — `apps/web/test/e2e/perf-large-diagram.spec.ts` (dep: T129, T135, T100)
-- [ ] T167 [P] E2E de métricas de texto: el tamaño que calcula el núcleo (T048) para nombres y miembros contiene el texto medido en el DOM con las fuentes de T101, en clean y sketch — `apps/web/test/e2e/text-metrics.spec.ts` (dep: T101, T129, T135, T100)
-- [ ] T166 Conjunto de evaluación: 20 peticiones de diagramas (clases y C4) para SC-002 y 10 peticiones que provocan errores de validación para SC-003, con criterio de aceptación por petición — `specs/001-mcp-class-c4-diagrams/eval-prompts.md` (dep: —)
+- [X] T135 Agente simulado: script que usa el `Client` del SDK MCP sobre HTTP para ejecutar escenarios guionados (crear, refinar ×3, exportar) — `apps/web/test/e2e/support/fake-agent.ts` (dep: T083)
+- [X] T136 [US1] E2E Playwright escenarios 1–2: diagrama de biblioteca visible en < 2 s, sin solapes de nodos ni aristas que atraviesen nodos, layout idéntico al repetir; `viewUrl` abre `/d/:id` — `apps/web/test/e2e/us1-class-diagram.spec.ts` (dep: T129, T135, T100)
+- [X] T137 [P] [US1] E2E escenario 3: error `UNKNOWN_REFERENCE` y nada cambia en la app — `apps/web/test/e2e/us1-validation-error.spec.ts` (dep: T129, T135, T100)
+- [X] T138 [P] [US2] E2E escenario 4: C4 tienda online con límite, BD cilindro, etiquetas `desc [tech]` y leyenda — `apps/web/test/e2e/us2-c4-container.spec.ts` (dep: T129, T135, T100)
+- [X] T139 [P] [US3] E2E escenario 5: tres refinamientos en vivo sin mover elementos no afectados — `apps/web/test/e2e/us3-refine.spec.ts` (dep: T129, T135, T100)
+- [X] T140 [P] [US4] E2E escenarios 6–7: nodo movido a mano conserva posición tras añadido del agente; estilo persiste tras recargar — `apps/web/test/e2e/us4-manual-edit.spec.ts` (dep: T131, T132, T162, T163, T135, T100)
+- [X] T141 [P] [US5] E2E escenario 8 (automatizable): exportar draw.io y Excalidraw y validar estructura (parse XML `mxGraphModel`, JSON `type:"excalidraw"`, bindings resueltos) — `apps/web/test/e2e/us5-export.spec.ts` (dep: T164, T135, T100)
+- [X] T142 [P] E2E escenario 10: nombre `<img src=x onerror=alert(1)>` se ve literal en la app y en el SVG; ningún diálogo se dispara — `apps/web/test/e2e/security-xss.spec.ts` (dep: T129, T135, T100)
+- [X] T143 [P] E2E SC-006: diagrama de 200 elementos, pan/zoom sostenido ≥ 50 fps (trazas de rendimiento), mismo umbral que plan.md — `apps/web/test/e2e/perf-large-diagram.spec.ts` (dep: T129, T135, T100)
+- [X] T167 [P] E2E de métricas de texto: el tamaño que calcula el núcleo (T048) para nombres y miembros contiene el texto medido en el DOM con las fuentes de T101, en clean y sketch — `apps/web/test/e2e/text-metrics.spec.ts` (dep: T101, T129, T135, T100)
+- [X] T166 Conjunto de evaluación: 20 peticiones de diagramas (clases y C4) para SC-002 y 10 peticiones que provocan errores de validación para SC-003, con criterio de aceptación por petición — `specs/001-mcp-class-c4-diagrams/eval-prompts.md` (dep: —)
 - [ ] T144 Validación manual con Claude Code (HTTP) y Claude Desktop (puente stdio): escenarios 1, 3, 4, 5, 8; ejecutar `eval-prompts.md` y medir SC-002 (≥ 95 % sin solapes en 20 peticiones) y SC-003 (≥ 90 % de errores autocorregidos); anotar resultados — `specs/001-mcp-class-c4-diagrams/validation-report.md` (dep: T136–T142, T166)
 - [ ] T145 Validación manual con OpenAI Responses API vía túnel y token (escenario 9 / SC-004, repitiendo `eval-prompts.md`) y apertura real de exports en app.diagrams.net y excalidraw.com (SC-005) — `specs/001-mcp-class-c4-diagrams/validation-report.md` (dep: T144)
-- [ ] T146 [P] Actualizar README con instalación, conexión de agentes y token por fragmento fuera de loopback y limitación de ChatGPT UI (OAuth) — `README.md` (dep: T145)
-- [ ] T147 Ejecutar `pnpm typecheck && pnpm lint && pnpm test` y Constitution Check final (principios I–VI) registrado en el informe — `specs/001-mcp-class-c4-diagrams/validation-report.md` (dep: T146)
+- [X] T146 [P] Actualizar README con instalación, conexión de agentes y token por fragmento fuera de loopback y limitación de ChatGPT UI (OAuth) — `README.md` (dep: T145)
+- [X] T147 Ejecutar `pnpm typecheck && pnpm lint && pnpm test` y Constitution Check final (principios I–VI) registrado en el informe — `specs/001-mcp-class-c4-diagrams/validation-report.md` (dep: T146)
 
 ---
 
@@ -407,6 +407,8 @@ T110, T111, T112, T114
 
 ## Notes
 
-- Ninguna tarea de este archivo se ha ejecutado; no se ha escrito código.
+- Implementación completada salvo T144 y T145 (validación manual con agentes reales y apertura de
+  exports en draw.io/Excalidraw), pendientes de ejecutar por una persona; ver
+  [validation-report.md](./validation-report.md). T146 y T147 se completaron sin esperar a T145.
 - Cada cambio de golden file (T044) requiere revisión explícita en el PR.
 - Commits semánticos por tarea o grupo lógico; rama `001-mcp-class-c4-diagrams`.
