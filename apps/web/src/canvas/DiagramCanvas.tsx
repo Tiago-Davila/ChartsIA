@@ -29,7 +29,7 @@ export interface DiagramCanvasProps {
   onConnect?: OnConnect;
 }
 
-const FIT_VIEW_OPTIONS = { padding: 0.15, maxZoom: 1.25 };
+export const FIT_VIEW_OPTIONS = { padding: 0.15, maxZoom: 1.25 };
 const PRO_OPTIONS = { hideAttribution: true };
 const MINIMAP_STYLE = { width: 180, height: 120 };
 
