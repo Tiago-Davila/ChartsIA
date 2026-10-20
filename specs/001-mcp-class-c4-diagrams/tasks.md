@@ -259,34 +259,34 @@ las tools T075–T080 y T157 dependen explícitamente de ellos. Deben fallar has
 
 ### Tests de componentes primero
 
-- [ ] T104 [P] [US1] Tests de `UmlClassNode`: 3 compartimentos, visibilidad `+ - # ~`, abstracta en cursiva, estereotipo; nombres con HTML se ven como texto literal — `apps/web/test/unit/nodes/uml-class-node.test.tsx` (dep: T099)
-- [ ] T105 [P] [US2] Tests de nodos C4: etiqueta de tipo `[Container: tech]`, variante `database`, externo en gris — `apps/web/test/unit/nodes/c4-nodes.test.tsx` (dep: T099)
-- [ ] T106 [P] Tests de `RoutedEdge`: dibuja la polilínea de `route`, marcador correcto por `kind`, etiqueta "descripción [tecnología]" en `c4-rel` — `apps/web/test/unit/edges/routed-edge.test.tsx` (dep: T099)
+- [X] T104 [P] [US1] Tests de `UmlClassNode`: 3 compartimentos, visibilidad `+ - # ~`, abstracta en cursiva, estereotipo; nombres con HTML se ven como texto literal — `apps/web/test/unit/nodes/uml-class-node.test.tsx` (dep: T099)
+- [X] T105 [P] [US2] Tests de nodos C4: etiqueta de tipo `[Container: tech]`, variante `database`, externo en gris — `apps/web/test/unit/nodes/c4-nodes.test.tsx` (dep: T099)
+- [X] T106 [P] Tests de `RoutedEdge`: dibuja la polilínea de `route`, marcador correcto por `kind`, etiqueta "descripción [tecnología]" en `c4-rel` — `apps/web/test/unit/edges/routed-edge.test.tsx` (dep: T099)
 
 ### Renderizado de formas (comparte geometría con el núcleo)
 
-- [ ] T107 Adaptador primitivas → JSX SVG para estilo clean — `apps/web/src/render/CleanShape.tsx` importando solo `@chartsia/core/shapes` y `/render` (dep: T053, T063, T102)
-- [ ] T108 [P] [US4] Adaptador roughjs → JSX SVG para estilo sketch (memoizado por id+tamaño) — `apps/web/src/render/SketchShape.tsx` (dep: T058, T102)
-- [ ] T109 `ShapeRenderer` que elige clean/sketch según el estilo del diagrama — `apps/web/src/render/ShapeRenderer.tsx` (dep: T107, T108)
+- [X] T107 Adaptador primitivas → JSX SVG para estilo clean — `apps/web/src/render/CleanShape.tsx` importando solo `@chartsia/core/shapes` y `/render` (dep: T053, T063, T102)
+- [X] T108 [P] [US4] Adaptador roughjs → JSX SVG para estilo sketch (memoizado por id+tamaño) — `apps/web/src/render/SketchShape.tsx` (dep: T058, T102)
+- [X] T109 `ShapeRenderer` que elige clean/sketch según el estilo del diagrama — `apps/web/src/render/ShapeRenderer.tsx` (dep: T107, T108)
 
 ### Nodos, aristas y lienzo
 
-- [ ] T110 [P] [US1] Nodos UML `UmlClassNode`, `UmlInterfaceNode`, `UmlEnumNode` (con handles de conexión) — `apps/web/src/nodes/uml/UmlClassNode.tsx`, `apps/web/src/nodes/uml/UmlInterfaceNode.tsx`, `apps/web/src/nodes/uml/UmlEnumNode.tsx` (dep: T109, T121; hace pasar T104)
-- [ ] T111 [P] [US2] Nodos C4 `C4PersonNode`, `C4SystemNode`, `C4ContainerNode`, `C4ComponentNode` — `apps/web/src/nodes/c4/C4PersonNode.tsx`, `apps/web/src/nodes/c4/C4SystemNode.tsx`, `apps/web/src/nodes/c4/C4ContainerNode.tsx`, `apps/web/src/nodes/c4/C4ComponentNode.tsx` (dep: T109, T121; hace pasar T105)
-- [ ] T112 [P] `GroupNode` para `package` y `boundary` (sub-flow con `parentId`) — `apps/web/src/nodes/GroupNode.tsx` (dep: T109)
-- [ ] T113 Registro `nodeTypes` — `apps/web/src/nodes/index.ts` (dep: T110, T111, T112)
-- [ ] T114 [P] `RoutedEdge` + definiciones de marcadores SVG UML/C4 — `apps/web/src/edges/RoutedEdge.tsx`, `apps/web/src/edges/markers.tsx`, `apps/web/src/edges/index.ts` (dep: T051, T102; hace pasar T106)
-- [ ] T115 [US1] `DiagramCanvas`: `ReactFlow` con `nodeTypes`/`edgeTypes`, `Background`, `MiniMap`, `Controls`, `fitView`, pan/zoom infinito — `apps/web/src/canvas/DiagramCanvas.tsx` (dep: T113, T114)
-- [ ] T116 [P] [US2] Leyenda C4 flotante (solo en diagramas C4) — `apps/web/src/legend/C4Legend.tsx` (dep: T151, T102)
+- [X] T110 [P] [US1] Nodos UML `UmlClassNode`, `UmlInterfaceNode`, `UmlEnumNode` (con handles de conexión) — `apps/web/src/nodes/uml/UmlClassNode.tsx`, `apps/web/src/nodes/uml/UmlInterfaceNode.tsx`, `apps/web/src/nodes/uml/UmlEnumNode.tsx` (dep: T109, T121; hace pasar T104)
+- [X] T111 [P] [US2] Nodos C4 `C4PersonNode`, `C4SystemNode`, `C4ContainerNode`, `C4ComponentNode` — `apps/web/src/nodes/c4/C4PersonNode.tsx`, `apps/web/src/nodes/c4/C4SystemNode.tsx`, `apps/web/src/nodes/c4/C4ContainerNode.tsx`, `apps/web/src/nodes/c4/C4ComponentNode.tsx` (dep: T109, T121; hace pasar T105)
+- [X] T112 [P] `GroupNode` para `package` y `boundary` (sub-flow con `parentId`) — `apps/web/src/nodes/GroupNode.tsx` (dep: T109)
+- [X] T113 Registro `nodeTypes` — `apps/web/src/nodes/index.ts` (dep: T110, T111, T112)
+- [X] T114 [P] `RoutedEdge` + definiciones de marcadores SVG UML/C4 — `apps/web/src/edges/RoutedEdge.tsx`, `apps/web/src/edges/markers.tsx`, `apps/web/src/edges/index.ts` (dep: T051, T102; hace pasar T106)
+- [X] T115 [US1] `DiagramCanvas`: `ReactFlow` con `nodeTypes`/`edgeTypes`, `Background`, `MiniMap`, `Controls`, `fitView`, pan/zoom infinito — `apps/web/src/canvas/DiagramCanvas.tsx` (dep: T113, T114)
+- [X] T116 [P] [US2] Leyenda C4 flotante (solo en diagramas C4) — `apps/web/src/legend/C4Legend.tsx` (dep: T151, T102)
 
 ### Pantallas
 
-- [ ] T117 [P] [US4] Barra lateral con lista de diagramas (título, tipo, fecha) y diagrama activo resaltado — `apps/web/src/app/DiagramList.tsx` (dep: T102)
-- [ ] T118 [P] [US4] Toolbar: alternar estilo clean/sketch, ajustar a pantalla, menú exportar (SVG, draw.io, Excalidraw) — `apps/web/src/app/Toolbar.tsx` (dep: T102)
-- [ ] T119 [P] Indicador de conexión con el hub (conectado / reconectando / desconectado) — `apps/web/src/app/ConnectionStatus.tsx` (dep: T102)
-- [ ] T120 [P] Estado vacío "conecta tu agente" con comandos de [quickstart.md](./quickstart.md) para Claude y OpenAI (mantener sincronizado con quickstart en el mismo PR) — `apps/web/src/app/EmptyState.tsx` (dep: T102)
-- [ ] T121 [US4] Componente de edición de texto en línea (doble clic sobre nombre/miembro), usado por los nodos — `apps/web/src/nodes/InlineEditableText.tsx` (dep: T102)
-- [ ] T122 `AppShell` que compone barra lateral, toolbar, lienzo, leyenda y estado vacío — `apps/web/src/app/AppShell.tsx` (dep: T115, T116, T117, T118, T119, T120, T161)
+- [X] T117 [P] [US4] Barra lateral con lista de diagramas (título, tipo, fecha) y diagrama activo resaltado — `apps/web/src/app/DiagramList.tsx` (dep: T102)
+- [X] T118 [P] [US4] Toolbar: alternar estilo clean/sketch, ajustar a pantalla, menú exportar (SVG, draw.io, Excalidraw) — `apps/web/src/app/Toolbar.tsx` (dep: T102)
+- [X] T119 [P] Indicador de conexión con el hub (conectado / reconectando / desconectado) — `apps/web/src/app/ConnectionStatus.tsx` (dep: T102)
+- [X] T120 [P] Estado vacío "conecta tu agente" con comandos de [quickstart.md](./quickstart.md) para Claude y OpenAI (mantener sincronizado con quickstart en el mismo PR) — `apps/web/src/app/EmptyState.tsx` (dep: T102)
+- [X] T121 [US4] Componente de edición de texto en línea (doble clic sobre nombre/miembro), usado por los nodos — `apps/web/src/nodes/InlineEditableText.tsx` (dep: T102)
+- [X] T122 `AppShell` que compone barra lateral, toolbar, lienzo, leyenda y estado vacío — `apps/web/src/app/AppShell.tsx` (dep: T115, T116, T117, T118, T119, T120, T161)
 
 ---
 

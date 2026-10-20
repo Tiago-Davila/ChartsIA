@@ -1,9 +1,11 @@
 import roughModule from 'roughjs';
+import { type RoughGenerator } from 'roughjs/bin/generator.js';
 import { type Primitive } from '../shapes/types.js';
 
 // roughjs es CommonJS en Node y ESM en el navegador: se normaliza el export por defecto.
-type Rough = (typeof roughModule)['default'];
-const rough = ((roughModule as unknown as { default?: Rough }).default ?? roughModule) as Rough;
+// Tipado estructural: TypeScript ve el export por defecto distinto según la resolución (NodeNext/Bundler).
+type Rough = { generator(): RoughGenerator };
+const rough = ((roughModule as unknown as { default?: Rough }).default ?? roughModule) as unknown as Rough;
 const generator = rough.generator();
 
 function roundedRectPath(x: number, y: number, w: number, h: number, rx: number): string {

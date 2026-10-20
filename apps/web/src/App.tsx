@@ -1,12 +1,21 @@
 import { ReactFlowProvider } from '@xyflow/react';
-import { useRoute } from './app/routes';
+import { AppShell } from './app/AppShell';
 
-/** Raíz de la app. El `AppShell` (fase 8) compone la barra lateral, la toolbar y el lienzo. */
+/** Raíz de la app. La fase 9 conecta el `AppShell` al hub (store, REST y tiempo real). */
 export function App() {
-  const route = useRoute();
   return (
     <ReactFlowProvider>
-      <main data-route={route.name}>ChartsIA</main>
+      <AppShell
+        diagrams={[]}
+        activeDiagramId={null}
+        connection="disconnected"
+        nodes={[]}
+        edges={[]}
+        origin={window.location.origin}
+        onOpen={() => {}}
+        onStyleChange={() => {}}
+        onExport={() => {}}
+      />
     </ReactFlowProvider>
   );
 }
