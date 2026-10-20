@@ -1,7 +1,8 @@
 import { type ExportFormat } from '@chartsia/core/export';
-import { useNodes, useReactFlow } from '@xyflow/react';
+import { getViewportForBounds, useNodes, useReactFlow, useStoreApi } from '@xyflow/react';
 import { useRef } from 'react';
 import { type AlignMode } from '../canvas/align';
+import { FIT_VIEW_OPTIONS } from '../canvas/DiagramCanvas';
 
 export interface ToolbarProps {
   title: string;
@@ -59,7 +60,14 @@ function Menu<T extends string>({ label, items, primary, disabled, onSelect }: {
 
 /** Título, encuadre, alineación de la selección y exportación (FR-027). */
 export function Toolbar({ title, revision, disabled = false, onExport, onAlign }: ToolbarProps) {
-  const { fitView } = useReactFlow();
+  const { getNodes, getNodesBounds, setViewport } = useReactFlow();
+  const store = useStoreApi();
+  // Encuadra todos los nodos con su tamaño declarado, porque fitView espera nodos medidos y tras un cambio del hub no responde.
+  const fit = () => {
+    const { width, height, minZoom } = store.getState();
+    const viewport = getViewportForBounds(getNodesBounds(getNodes()), width, height, minZoom, FIT_VIEW_OPTIONS.maxZoom, FIT_VIEW_OPTIONS.padding);
+    void setViewport(viewport, { duration: 300 });
+  };
   const selected = useNodes().filter((n) => n.selected).length;
   return (
     <header className="toolbar">
@@ -68,7 +76,7 @@ export function Toolbar({ title, revision, disabled = false, onExport, onAlign }
         {revision !== undefined ? <span className="toolbar__revision">rev {revision}</span> : null}
       </h1>
       {onAlign && selected >= 2 ? <Menu label="Alinear" items={ALIGNS} disabled={disabled} onSelect={onAlign} /> : null}
-      <button type="button" className="button" disabled={disabled} onClick={() => void fitView({ padding: 0.15, duration: 300 })}>
+      <button type="button" className="button" disabled={disabled} onClick={fit}>
         Ajustar
       </button>
       <Menu label="Exportar" items={EXPORTS} primary disabled={disabled} onSelect={onExport} />
