@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 
 export interface ShortcutActions {
   history(direction: 'undo' | 'redo'): void;
+  duplicate(): void;
 }
 
 /** Ignora los atajos mientras se escribe en un campo de texto. */
@@ -9,7 +10,7 @@ function isTyping(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
 }
 
-/** Atajos globales del lienzo: Ctrl+Z deshace, Ctrl+Shift+Z y Ctrl+Y rehacen. */
+/** Atajos globales del lienzo: Ctrl+Z deshace, Ctrl+Shift+Z y Ctrl+Y rehacen, Ctrl+D duplica. */
 export function useShortcuts(actions: ShortcutActions, enabled: boolean): void {
   useEffect(() => {
     if (!enabled) return;
@@ -19,6 +20,9 @@ export function useShortcuts(actions: ShortcutActions, enabled: boolean): void {
       if (key === 'z' || key === 'y') {
         e.preventDefault();
         actions.history(key === 'y' || e.shiftKey ? 'redo' : 'undo');
+      } else if (key === 'd') {
+        e.preventDefault();
+        actions.duplicate();
       }
     };
     window.addEventListener('keydown', onKeyDown);

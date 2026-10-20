@@ -30,7 +30,7 @@ function ConnectedApp() {
   const viewVersion = useDiagramStore((s) => s.viewVersion);
   const animate = useDiagramStore((s) => s.lastOrigin === 'agent');
   const edits = useDiagramEdits(api);
-  const shortcuts = useMemo(() => ({ history: edits.history }), [edits.history]);
+  const shortcuts = useMemo(() => ({ history: edits.history, duplicate: edits.duplicate }), [edits.history, edits.duplicate]);
   useShortcuts(shortcuts, diagram !== undefined);
 
   // `viewVersion` fuerza a rehacer los nodos y descartar cambios optimistas rechazados.
@@ -76,6 +76,8 @@ function ConnectedApp() {
           onExport={onExport}
           onNodeDragStop={edits.onNodeDragStop}
           onDelete={edits.onDelete}
+          onConnect={edits.onConnect}
+          onAlign={edits.align}
           overlay={<ErrorToast />}
         />
       </div>

@@ -1,6 +1,6 @@
 import { measureElement, type Primitive } from '@chartsia/core/shapes';
-import { Handle, type NodeProps, Position } from '@xyflow/react';
-import { type CSSProperties, memo, useCallback, useState } from 'react';
+import { Handle, NodeResizer, type NodeProps, Position } from '@xyflow/react';
+import { type CSSProperties, memo, useCallback, useMemo, useState } from 'react';
 import { slotValue } from '../canvas/slot-edits';
 import { suggestTypes, typeContext } from '../canvas/type-suggestions';
 import { CleanShape } from '../render/CleanShape';
@@ -35,9 +35,9 @@ function typeSuggester(slot: string): ((text: string, caret: number) => Suggesti
  */
 function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<ElementFlowNode>) {
   const { element } = data;
-  const fallback = width && height ? undefined : measureElement(element);
-  const size = { width: width ?? fallback!.width, height: height ?? fallback!.height };
-  const { editText, readOnly } = useDiagramEditActions();
+  const minimum = useMemo(() => measureElement(element), [element]);
+  const size = { width: width ?? minimum.width, height: height ?? minimum.height };
+  const { editText, resize, readOnly } = useDiagramEditActions();
   const [editing, setEditing] = useState<TextPrimitive>();
 
   const onTextDoubleClick = useCallback(
@@ -50,8 +50,11 @@ function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<Elemen
   return (
     <div className={`chartsia-node${selected ? ' is-selected' : ''}`} style={{ width: size.width, height: size.height }} data-element-id={id}>
       <CleanShape element={element} size={size} onTextDoubleClick={onTextDoubleClick} />
-      <Handle type="target" position={Position.Top} isConnectable={false} className="chartsia-handle" />
-      <Handle type="source" position={Position.Bottom} isConnectable={false} className="chartsia-handle" />
+      {selected && !readOnly ? (
+        <NodeResizer minWidth={minimum.width} minHeight={minimum.height} color="var(--accent)" onResizeEnd={(_, box) => resize(id, box)} />
+      ) : null}
+      <Handle type="target" position={Position.Top} isConnectable={!readOnly} className="chartsia-handle" />
+      <Handle type="source" position={Position.Bottom} isConnectable={!readOnly} className="chartsia-handle" />
       {editing ? (
         <InlineEditableText
           value={slotValue(element, editing.slot!, editing.text)}
