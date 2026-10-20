@@ -18,6 +18,7 @@ export const applyChangesTool = (commands: DiagramCommandService, results: ToolR
     name: 'apply_changes',
     annotations: { title: 'Modificar diagrama', readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     description: [
+      'Solo para refinar un diagrama que ya existe y del que se está hablando. Si la persona pide un diagrama nuevo o de otro tema, usa create_diagram: apply_changes sobre el diagrama activo lo pisaría.',
       'Modifica un diagrama existente con un lote atómico de 1 a 200 operaciones, aplicadas en orden. Los cambios aparecen en vivo en la app y el resto del diagrama no se mueve.',
       'Operaciones (campo "op"): add_element, update_element {id, changes}, remove_element {id, cascade?: "reparent"|"children"}, add_relation, update_relation {id, changes}, remove_relation {id}, move_element {id, x, y} (fija el elemento), resize_element {id, width, height} (tamaño mínimo elegido a mano), set_title.',
       'update_relation admite además kind (cambiar el tipo de flecha), sourceSide/targetSide ("top"|"right"|"bottom"|"left") y waypoints (puntos de quiebre); para invertir una flecha intercambia source y target.',
