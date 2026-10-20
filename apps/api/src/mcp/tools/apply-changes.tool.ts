@@ -1,0 +1,50 @@
+import { z } from 'zod';
+import { OperationBatchSchema } from '@chartsia/core/model';
+import { type DiagramCommandService } from '../../diagrams/diagram-command.service.js';
+import { type ToolResultFormatter } from '../tool-result.js';
+import { DiagramIdSchema } from './schemas.js';
+import { defineTool } from './tool-definition.js';
+
+const EXAMPLE = {
+  operations: [
+    { op: 'add_element', element: { id: 'Cliente', kind: 'class', name: 'Cliente', attributes: [], operations: [] } },
+    { op: 'add_relation', relation: { id: 'r2', kind: 'association', source: 'Cliente', target: 'Pedido', label: 'realiza' } },
+    { op: 'update_element', id: 'Linea', changes: { name: 'LineaDePedido' } },
+  ],
+};
+
+export const applyChangesTool = (commands: DiagramCommandService, results: ToolResultFormatter) =>
+  defineTool({
+    name: 'apply_changes',
+    annotations: { title: 'Modificar diagrama', readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    description: [
+      'Modifica un diagrama existente con un lote atómico de 1 a 200 operaciones, aplicadas en orden. Los cambios aparecen en vivo en la app y el resto del diagrama no se mueve.',
+      'Operaciones (campo "op"): add_element, update_element {id, changes}, remove_element {id, cascade?: "reparent"|"children"}, add_relation, update_relation {id, changes}, remove_relation {id}, move_element {id, x, y} (fija el elemento), set_title, set_style ("clean"|"sketch").',
+      'En changes, null elimina un campo opcional; id y kind no se pueden cambiar. Al eliminar un elemento se eliminan también sus relaciones.',
+      'Sin diagramId se usa el diagrama activo (la respuesta indica cuál). baseRevision es informativo: si no coincide se aplica igual y se avisa en warnings.',
+      'Si alguna operación es inválida no se aplica ninguna y recibes los errores con path (p. ej. /operations/2/id) y hint.',
+      `Ejemplo de entrada: ${JSON.stringify(EXAMPLE)}`,
+    ].join('\n'),
+    input: z.strictObject({
+      diagramId: DiagramIdSchema.optional(),
+      baseRevision: z.number().int().nonnegative().optional().describe('Revisión sobre la que razonaste los cambios'),
+      operations: OperationBatchSchema,
+    }),
+    output: z.strictObject({
+      diagramId: z.string(),
+      revision: z.number().int(),
+      viewUrl: z.string(),
+      applied: z.number().int(),
+      warnings: z.array(z.string()),
+    }),
+    run: async (args) => {
+      const { diagram, warnings, applied } = await commands.apply({ ...args, origin: 'agent' });
+      const viewUrl = results.viewUrl(diagram.id);
+      return {
+        linkDiagramId: diagram.id,
+        title: diagram.title,
+        summary: `${applied} operación(es) aplicadas a "${diagram.title}" (${diagram.id}), ahora en la revisión ${diagram.revision}. Se ve en ${viewUrl}${warnings.length ? `\nAvisos:\n- ${warnings.join('\n- ')}` : ''}`,
+        structured: { diagramId: diagram.id, revision: diagram.revision, viewUrl, applied, warnings },
+      };
+    },
+  });

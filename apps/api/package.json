@@ -1,0 +1,43 @@
+{
+  "name": "@chartsia/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Hub Nest.js de ChartsIA: MCP, REST y Socket.IO",
+  "bin": {
+    "chartsia-mcp": "dist/stdio-bridge.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput & node --watch-path=dist --enable-source-maps dist/main.js",
+    "start": "node --enable-source-maps dist/main.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --exclude '**/*.perf.test.ts' && pnpm test:perf",
+    "test:perf": "vitest run perf.test --fileParallelism=false"
+  },
+  "dependencies": {
+    "@chartsia/core": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@nestjs/common": "^12.2.0",
+    "@nestjs/core": "^12.2.0",
+    "@nestjs/platform-express": "^12.2.0",
+    "@nestjs/platform-socket.io": "^12.2.0",
+    "@nestjs/serve-static": "^12.0.0",
+    "@nestjs/websockets": "^12.2.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "socket.io": "^4.8.4",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^12.0.9",
+    "@nestjs/testing": "^12.2.0",
+    "@swc/core": "^1.16.18",
+    "@types/express": "^5.0.0",
+    "@types/supertest": "^7.2.1",
+    "socket.io-client": "^4.8.4",
+    "supertest": "^7.3.1",
+    "unplugin-swc": "^2.0.0",
+    "vitest": "^5.0.5"
+  }
+}
