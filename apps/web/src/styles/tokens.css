@@ -1,0 +1,60 @@
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Excalifont';
+  src: url('/fonts/Excalifont-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  /* Tipografías: las mismas cuyas métricas usa el núcleo (text-metrics.ts). */
+  --font-clean: Inter, 'Helvetica Neue', Arial, sans-serif;
+  --font-sketch: Excalifont, 'Comic Sans MS', 'Segoe Print', cursive;
+  --font-ui: Inter, system-ui, sans-serif;
+
+  /* Paleta C4 (igual que @chartsia/core/shapes C4_PALETTE). */
+  --c4-person: #08427b;
+  --c4-system: #1168bd;
+  --c4-container: #438dd5;
+  --c4-component: #85bbf0;
+  --c4-external: #999999;
+
+  --surface: #ffffff;
+  --surface-muted: #f5f6f8;
+  --canvas: #fbfbfc;
+  --border: #dde1e6;
+  --text: #1f2933;
+  --text-muted: #616e7c;
+  --accent: #1168bd;
+  --accent-soft: #e6f0fa;
+  --danger: #c0392b;
+  --danger-soft: #fdecea;
+  --ok: #2e7d32;
+  --warn: #b26a00;
+
+  --radius: 8px;
+  --sidebar-width: 260px;
+  --toolbar-height: 52px;
+  --shadow: 0 1px 2px rgb(16 24 40 / 6%), 0 4px 12px rgb(16 24 40 / 8%);
+}
