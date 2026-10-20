@@ -29,6 +29,7 @@ export interface AppShellProps {
   onAlign?(mode: AlignMode): void;
   changedIds?: string[];
   onOpenLatest?(): Promise<boolean>;
+  onChangedFitted?(): void;
   /** Avisos superpuestos (errores de validación, etc.). */
   overlay?: ReactNode;
 }
@@ -56,6 +57,7 @@ export function AppShell(props: AppShellProps) {
               onAlign={props.readOnly ? undefined : props.onAlign}
               changedIds={props.changedIds}
               onOpenLatest={props.onOpenLatest}
+              onChangedFitted={props.onChangedFitted}
             />
             <div className="app-shell__canvas">
               <DiagramCanvas

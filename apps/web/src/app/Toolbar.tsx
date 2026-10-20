@@ -14,6 +14,8 @@ export interface ToolbarProps {
   changedIds?: string[];
   /** Abre el diagrama modificado más recientemente; devuelve true si era otro (el lienzo lo encuadra al cargar). */
   onOpenLatest?(): Promise<boolean>;
+  /** Se llama tras encuadrar lo cambiado, para que el siguiente clic encuadre todo el diagrama. */
+  onChangedFitted?(): void;
 }
 
 const EXPORTS: { value: ExportFormat; label: string }[] = [
@@ -63,7 +65,7 @@ function Menu<T extends string>({ label, items, primary, disabled, onSelect }: {
 }
 
 /** Título, encuadre, alineación de la selección y exportación (FR-027). */
-export function Toolbar({ title, revision, disabled = false, onExport, onAlign, changedIds = [], onOpenLatest }: ToolbarProps) {
+export function Toolbar({ title, revision, disabled = false, onExport, onAlign, changedIds = [], onOpenLatest, onChangedFitted }: ToolbarProps) {
   const { getNodes, getNodesBounds, setViewport } = useReactFlow();
   const store = useStoreApi();
   // Encuadra los nodos del último cambio (o todos) con su tamaño declarado, porque fitView espera nodos medidos y tras un cambio del hub no responde.
@@ -72,6 +74,7 @@ export function Toolbar({ title, revision, disabled = false, onExport, onAlign, 
     const { width, height, minZoom } = store.getState();
     const all = getNodes();
     const changed = all.filter((n) => changedIds.includes(n.id));
+    if (changed.length > 0) onChangedFitted?.();
     const viewport = getViewportForBounds(getNodesBounds(changed.length > 0 ? changed : all), width, height, minZoom, FIT_VIEW_OPTIONS.maxZoom, FIT_VIEW_OPTIONS.padding);
     void setViewport(viewport, { duration: 300 });
   };

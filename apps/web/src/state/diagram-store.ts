@@ -15,7 +15,7 @@ export interface DiagramState {
   errors: ValidationError[];
   /** Origen del último cambio aplicado (anima solo los del agente). */
   lastOrigin?: 'agent' | 'app';
-  /** Elementos que tocó el último `diagram.updated` del diagrama abierto (vacío si no se sabe). */
+  /** Elementos que tocó el último cambio del agente en el diagrama abierto; vacío si no se sabe o ya se encuadraron. */
   lastChangedIds: string[];
   /** Se incrementa para descartar cambios optimistas del lienzo (p. ej. tras un 422). */
   viewVersion: number;
@@ -32,6 +32,7 @@ export interface DiagramState {
   showErrors(errors: ValidationError[]): void;
   dismissErrors(): void;
   refreshView(): void;
+  clearChangedIds(): void;
 }
 
 /** Ids de los elementos nuevos o distintos entre dos versiones del diagrama. */
@@ -74,7 +75,7 @@ export function createDiagramStore() {
         const diagrams = upsert(s.diagrams, summarize(diagram));
         if (diagramId !== s.openDiagramId) return { diagrams };
         if (s.diagram && revision <= s.diagram.revision) return { diagrams };
-        return { diagrams, diagram, lastOrigin: origin, lastChangedIds: s.diagram ? changedElementIds(s.diagram, diagram) : [] };
+        return { diagrams, diagram, lastOrigin: origin, lastChangedIds: origin === 'agent' && s.diagram ? changedElementIds(s.diagram, diagram) : [] };
       }),
     reconcile: (remote) =>
       set((s) => {
@@ -93,6 +94,7 @@ export function createDiagramStore() {
     setNeedsToken: (needsToken) => set({ needsToken }),
     showErrors: (errors) => set((s) => ({ errors, viewVersion: s.viewVersion + 1 })),
     dismissErrors: () => set({ errors: [] }),
+    clearChangedIds: () => set({ lastChangedIds: [] }),
     refreshView: () => set((s) => ({ viewVersion: s.viewVersion + 1 })),
   }));
 }

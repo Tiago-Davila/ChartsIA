@@ -29,6 +29,10 @@ describe('diagram store', () => {
     store.getState().receiveDiagram(con(2, [el('A', 'A'), el('B', 'B')]));
     store.getState().applyUpdate({ diagramId: 'dg_aaaaaaaaaaaa', revision: 3, origin: 'agent', diagram: con(3, [el('A', 'A'), el('B', 'B2'), el('C', 'C')]) });
     expect(store.getState().lastChangedIds).toEqual(['B', 'C']);
+    store.getState().clearChangedIds();
+    expect(store.getState().lastChangedIds).toEqual([]);
+    store.getState().applyUpdate({ diagramId: 'dg_aaaaaaaaaaaa', revision: 4, origin: 'app', diagram: con(4, [el('A', 'A9'), el('B', 'B2'), el('C', 'C')]) });
+    expect(store.getState().lastChangedIds).toEqual([]);
   });
 
   it('ignora actualizaciones de otro diagrama pero actualiza su resumen en la lista', () => {

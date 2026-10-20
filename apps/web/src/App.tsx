@@ -92,6 +92,7 @@ function ConnectedApp() {
           onAlign={edits.align}
           changedIds={changedIds}
           onOpenLatest={onOpenLatest}
+          onChangedFitted={diagramStore.getState().clearChangedIds}
           overlay={<ErrorToast />}
         />
       </div>
