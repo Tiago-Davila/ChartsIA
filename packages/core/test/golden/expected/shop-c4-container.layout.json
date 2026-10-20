@@ -1,0 +1,272 @@
+{
+  "type": "c4-container",
+  "title": "Tienda online",
+  "elements": [
+    {
+      "id": "cliente",
+      "name": "Cliente",
+      "description": "Compra productos en la tienda",
+      "kind": "person",
+      "layout": {
+        "x": 446.17,
+        "y": 30,
+        "width": 220,
+        "height": 148,
+        "pinned": false
+      }
+    },
+    {
+      "id": "admin",
+      "name": "Administrador",
+      "description": "Gestiona el catálogo",
+      "kind": "person",
+      "layout": {
+        "x": 166.17,
+        "y": 36,
+        "width": 220,
+        "height": 142,
+        "pinned": false
+      }
+    },
+    {
+      "id": "tienda",
+      "name": "Tienda online",
+      "kind": "boundary",
+      "boundaryType": "system",
+      "layout": {
+        "x": 147,
+        "y": 263,
+        "width": 575,
+        "height": 631,
+        "pinned": false
+      }
+    },
+    {
+      "id": "web",
+      "name": "Aplicación web",
+      "description": "Interfaz de compra",
+      "parentId": "tienda",
+      "kind": "container",
+      "technology": "React",
+      "variant": "web",
+      "layout": {
+        "x": 409.5,
+        "y": 329,
+        "width": 220,
+        "height": 134,
+        "pinned": false
+      }
+    },
+    {
+      "id": "api",
+      "name": "API",
+      "description": "Lógica de pedidos y catálogo",
+      "parentId": "tienda",
+      "kind": "container",
+      "technology": "Nest.js",
+      "layout": {
+        "x": 409.5,
+        "y": 543,
+        "width": 220,
+        "height": 110,
+        "pinned": false
+      }
+    },
+    {
+      "id": "db",
+      "name": "Base de datos",
+      "description": "Pedidos, productos y clientes",
+      "parentId": "tienda",
+      "kind": "container",
+      "technology": "PostgreSQL",
+      "variant": "database",
+      "layout": {
+        "x": 171,
+        "y": 733,
+        "width": 220,
+        "height": 137,
+        "pinned": false
+      }
+    },
+    {
+      "id": "cola",
+      "name": "Cola de eventos",
+      "parentId": "tienda",
+      "kind": "container",
+      "technology": "RabbitMQ",
+      "variant": "queue",
+      "layout": {
+        "x": 451,
+        "y": 733,
+        "width": 247,
+        "height": 110,
+        "pinned": false
+      }
+    },
+    {
+      "id": "pagos",
+      "name": "Pasarela de pagos",
+      "description": "Procesa pagos con tarjeta",
+      "kind": "software-system",
+      "external": true,
+      "layout": {
+        "x": 30,
+        "y": 979,
+        "width": 220,
+        "height": 110,
+        "pinned": false
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "u1",
+      "kind": "c4-rel",
+      "source": "cliente",
+      "target": "web",
+      "label": "Compra",
+      "technology": "HTTPS",
+      "route": [
+        {
+          "x": 556.17,
+          "y": 178
+        },
+        {
+          "x": 556.17,
+          "y": 194
+        },
+        {
+          "x": 556.17,
+          "y": 313
+        },
+        {
+          "x": 556.17,
+          "y": 329
+        }
+      ]
+    },
+    {
+      "id": "u2",
+      "kind": "c4-rel",
+      "source": "admin",
+      "target": "web",
+      "label": "Gestiona el catálogo",
+      "technology": "HTTPS",
+      "route": [
+        {
+          "x": 276.17,
+          "y": 178
+        },
+        {
+          "x": 276.17,
+          "y": 194
+        },
+        {
+          "x": 482.83,
+          "y": 194
+        },
+        {
+          "x": 482.83,
+          "y": 313
+        },
+        {
+          "x": 482.83,
+          "y": 329
+        }
+      ]
+    },
+    {
+      "id": "u3",
+      "kind": "c4-rel",
+      "source": "web",
+      "target": "api",
+      "label": "Llama a",
+      "technology": "JSON/HTTPS",
+      "route": [
+        {
+          "x": 519.5,
+          "y": 463
+        },
+        {
+          "x": 519.5,
+          "y": 543
+        }
+      ]
+    },
+    {
+      "id": "u4",
+      "kind": "c4-rel",
+      "source": "api",
+      "target": "db",
+      "label": "Lee y escribe",
+      "technology": "SQL",
+      "route": [
+        {
+          "x": 519.5,
+          "y": 653
+        },
+        {
+          "x": 519.5,
+          "y": 669
+        },
+        {
+          "x": 281,
+          "y": 669
+        },
+        {
+          "x": 281,
+          "y": 733
+        }
+      ]
+    },
+    {
+      "id": "u5",
+      "kind": "c4-rel",
+      "source": "api",
+      "target": "cola",
+      "label": "Publica eventos",
+      "technology": "AMQP",
+      "route": [
+        {
+          "x": 574.5,
+          "y": 653
+        },
+        {
+          "x": 574.5,
+          "y": 733
+        }
+      ]
+    },
+    {
+      "id": "u6",
+      "kind": "c4-rel",
+      "source": "api",
+      "target": "pagos",
+      "label": "Cobra",
+      "technology": "HTTPS",
+      "route": [
+        {
+          "x": 464.5,
+          "y": 653
+        },
+        {
+          "x": 464.5,
+          "y": 669
+        },
+        {
+          "x": 140,
+          "y": 669
+        },
+        {
+          "x": 140,
+          "y": 979
+        }
+      ]
+    }
+  ],
+  "id": "dg_goldengolden",
+  "style": "clean",
+  "revision": 1,
+  "createdAt": "2026-10-20T10:00:00.000Z",
+  "updatedAt": "2026-10-20T10:00:00.000Z"
+}

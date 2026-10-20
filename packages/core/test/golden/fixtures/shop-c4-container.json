@@ -1,0 +1,22 @@
+{
+  "type": "c4-container",
+  "title": "Tienda online",
+  "elements": [
+    { "id": "cliente", "kind": "person", "name": "Cliente", "description": "Compra productos en la tienda" },
+    { "id": "admin", "kind": "person", "name": "Administrador", "description": "Gestiona el catálogo" },
+    { "id": "tienda", "kind": "boundary", "name": "Tienda online", "boundaryType": "system" },
+    { "id": "web", "kind": "container", "name": "Aplicación web", "technology": "React", "variant": "web", "parentId": "tienda", "description": "Interfaz de compra" },
+    { "id": "api", "kind": "container", "name": "API", "technology": "Nest.js", "parentId": "tienda", "description": "Lógica de pedidos y catálogo" },
+    { "id": "db", "kind": "container", "name": "Base de datos", "technology": "PostgreSQL", "variant": "database", "parentId": "tienda", "description": "Pedidos, productos y clientes" },
+    { "id": "cola", "kind": "container", "name": "Cola de eventos", "technology": "RabbitMQ", "variant": "queue", "parentId": "tienda" },
+    { "id": "pagos", "kind": "software-system", "name": "Pasarela de pagos", "external": true, "description": "Procesa pagos con tarjeta" }
+  ],
+  "relations": [
+    { "id": "u1", "kind": "c4-rel", "source": "cliente", "target": "web", "label": "Compra", "technology": "HTTPS" },
+    { "id": "u2", "kind": "c4-rel", "source": "admin", "target": "web", "label": "Gestiona el catálogo", "technology": "HTTPS" },
+    { "id": "u3", "kind": "c4-rel", "source": "web", "target": "api", "label": "Llama a", "technology": "JSON/HTTPS" },
+    { "id": "u4", "kind": "c4-rel", "source": "api", "target": "db", "label": "Lee y escribe", "technology": "SQL" },
+    { "id": "u5", "kind": "c4-rel", "source": "api", "target": "cola", "label": "Publica eventos", "technology": "AMQP" },
+    { "id": "u6", "kind": "c4-rel", "source": "api", "target": "pagos", "label": "Cobra", "technology": "HTTPS" }
+  ]
+}

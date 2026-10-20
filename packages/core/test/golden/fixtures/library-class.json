@@ -1,0 +1,34 @@
+{
+  "type": "class",
+  "title": "Biblioteca",
+  "elements": [
+    { "id": "Persona", "kind": "class", "name": "Persona", "abstract": true,
+      "attributes": [{ "name": "nombre", "type": "String", "visibility": "#" }],
+      "operations": [{ "name": "nombreCompleto", "parameters": [], "returnType": "String", "visibility": "+", "abstract": true }] },
+    { "id": "Socio", "kind": "class", "name": "Socio",
+      "attributes": [{ "name": "numero", "type": "int", "visibility": "-" }, { "name": "total", "type": "int", "visibility": "+", "static": true, "defaultValue": "0" }],
+      "operations": [{ "name": "prestar", "parameters": [{ "name": "libro", "type": "Libro" }], "returnType": "Prestamo", "visibility": "+" }] },
+    { "id": "Autor", "kind": "class", "name": "Autor", "attributes": [], "operations": [] },
+    { "id": "Libro", "kind": "class", "name": "Libro", "stereotype": "entity",
+      "attributes": [{ "name": "isbn", "type": "String", "visibility": "-" }, { "name": "titulo", "type": "String", "visibility": "-" }],
+      "operations": [] },
+    { "id": "Prestamo", "kind": "class", "name": "Préstamo",
+      "attributes": [{ "name": "desde", "type": "Date", "visibility": "-" }, { "name": "estado", "type": "EstadoPrestamo", "visibility": "-" }],
+      "operations": [{ "name": "devolver", "parameters": [], "visibility": "+" }] },
+    { "id": "Prestable", "kind": "interface", "name": "Prestable",
+      "operations": [{ "name": "disponible", "parameters": [], "returnType": "boolean", "visibility": "+" }] },
+    { "id": "EstadoPrestamo", "kind": "enum", "name": "EstadoPrestamo", "literals": ["ACTIVO", "DEVUELTO", "VENCIDO"] },
+    { "id": "catalogo", "kind": "package", "name": "catalogo" },
+    { "id": "Ejemplar", "kind": "class", "name": "Ejemplar", "parentId": "catalogo", "attributes": [], "operations": [] }
+  ],
+  "relations": [
+    { "id": "h1", "kind": "inheritance", "source": "Socio", "target": "Persona" },
+    { "id": "h2", "kind": "inheritance", "source": "Autor", "target": "Persona" },
+    { "id": "rl1", "kind": "realization", "source": "Libro", "target": "Prestable" },
+    { "id": "c1", "kind": "composition", "source": "Socio", "target": "Prestamo", "sourceMultiplicity": "1", "targetMultiplicity": "0..*" },
+    { "id": "a1", "kind": "association", "source": "Prestamo", "target": "Libro", "label": "de", "navigable": "source-to-target" },
+    { "id": "ag1", "kind": "aggregation", "source": "Libro", "target": "Autor", "targetMultiplicity": "1..*" },
+    { "id": "d1", "kind": "dependency", "source": "Prestamo", "target": "EstadoPrestamo" },
+    { "id": "a2", "kind": "association", "source": "Ejemplar", "target": "Libro" }
+  ]
+}
