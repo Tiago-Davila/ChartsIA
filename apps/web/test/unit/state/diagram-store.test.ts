@@ -23,6 +23,18 @@ describe('diagram store', () => {
     expect(store.getState().lastOrigin).toBe('agent');
   });
 
+  it('guarda los elementos nuevos o modificados del último diagram.updated', () => {
+    const el = (id: string, name: string) => ({ id, kind: 'class' as const, name, attributes: [], operations: [] });
+    const con = (revision: number, elements: ReturnType<typeof el>[]) => ({ ...d(revision, 't'), elements });
+    store.getState().receiveDiagram(con(2, [el('A', 'A'), el('B', 'B')]));
+    store.getState().applyUpdate({ diagramId: 'dg_aaaaaaaaaaaa', revision: 3, origin: 'agent', diagram: con(3, [el('A', 'A'), el('B', 'B2'), el('C', 'C')]) });
+    expect(store.getState().lastChangedIds).toEqual(['B', 'C']);
+    store.getState().clearChangedIds();
+    expect(store.getState().lastChangedIds).toEqual([]);
+    store.getState().applyUpdate({ diagramId: 'dg_aaaaaaaaaaaa', revision: 4, origin: 'app', diagram: con(4, [el('A', 'A9'), el('B', 'B2'), el('C', 'C')]) });
+    expect(store.getState().lastChangedIds).toEqual([]);
+  });
+
   it('ignora actualizaciones de otro diagrama pero actualiza su resumen en la lista', () => {
     store.getState().setList({ activeDiagramId: null, diagrams: [{ diagramId: 'dg_bbbbbbbbbbbb', type: 'class', title: 'B', revision: 1, updatedAt: '' }] });
     store.getState().applyUpdate({ diagramId: 'dg_bbbbbbbbbbbb', revision: 5, origin: 'agent', diagram: d(5, 'B2', 'dg_bbbbbbbbbbbb') });

@@ -15,6 +15,8 @@ export interface DiagramState {
   errors: ValidationError[];
   /** Origen del último cambio aplicado (anima solo los del agente). */
   lastOrigin?: 'agent' | 'app';
+  /** Elementos que tocó el último cambio del agente en el diagrama abierto; vacío si no se sabe o ya se encuadraron. */
+  lastChangedIds: string[];
   /** Se incrementa para descartar cambios optimistas del lienzo (p. ej. tras un 422). */
   viewVersion: number;
 
@@ -30,6 +32,13 @@ export interface DiagramState {
   showErrors(errors: ValidationError[]): void;
   dismissErrors(): void;
   refreshView(): void;
+  clearChangedIds(): void;
+}
+
+/** Ids de los elementos nuevos o distintos entre dos versiones del diagrama. */
+export function changedElementIds(before: Diagram, after: Diagram): string[] {
+  const old = new Map(before.elements.map((e) => [e.id, JSON.stringify(e)]));
+  return after.elements.filter((e) => old.get(e.id) !== JSON.stringify(e)).map((e) => e.id);
 }
 
 function summarize(d: Diagram): DiagramSummary {
@@ -51,11 +60,12 @@ export function createDiagramStore() {
     needsToken: false,
     errors: [],
     lastOrigin: undefined,
+    lastChangedIds: [],
     viewVersion: 0,
 
     setList: (list) => set({ diagrams: list.diagrams, activeDiagramId: list.activeDiagramId }),
     open: (diagramId) =>
-      set((s) => (s.openDiagramId === diagramId ? s : { openDiagramId: diagramId, diagram: undefined, errors: [], lastOrigin: undefined })),
+      set((s) => (s.openDiagramId === diagramId ? s : { openDiagramId: diagramId, diagram: undefined, errors: [], lastOrigin: undefined, lastChangedIds: [] })),
     receiveDiagram: (diagram) => {
       if (diagram.id !== get().openDiagramId) return;
       set((s) => ({ diagram, diagrams: upsert(s.diagrams, summarize(diagram)) }));
@@ -65,7 +75,7 @@ export function createDiagramStore() {
         const diagrams = upsert(s.diagrams, summarize(diagram));
         if (diagramId !== s.openDiagramId) return { diagrams };
         if (s.diagram && revision <= s.diagram.revision) return { diagrams };
-        return { diagrams, diagram, lastOrigin: origin };
+        return { diagrams, diagram, lastOrigin: origin, lastChangedIds: origin === 'agent' && s.diagram ? changedElementIds(s.diagram, diagram) : [] };
       }),
     reconcile: (remote) =>
       set((s) => {
@@ -84,6 +94,7 @@ export function createDiagramStore() {
     setNeedsToken: (needsToken) => set({ needsToken }),
     showErrors: (errors) => set((s) => ({ errors, viewVersion: s.viewVersion + 1 })),
     dismissErrors: () => set({ errors: [] }),
+    clearChangedIds: () => set({ lastChangedIds: [] }),
     refreshView: () => set((s) => ({ viewVersion: s.viewVersion + 1 })),
   }));
 }
