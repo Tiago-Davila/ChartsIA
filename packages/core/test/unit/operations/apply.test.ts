@@ -8,7 +8,6 @@ function base(): Diagram {
     id: 'dg_aaaaaaaaaaaa',
     type: 'class',
     title: 'Biblioteca',
-    style: 'clean',
     revision: 3,
     createdAt: '2026-10-20T10:00:00.000Z',
     updatedAt: '2026-10-20T10:00:00.000Z',
@@ -172,17 +171,15 @@ describe('applyOperations', () => {
     if (!res.ok) expect(res.errors[0]).toMatchObject({ code: 'UNKNOWN_REFERENCE', path: '/operations/0/id' });
   });
 
-  it('set_title fuera de 1–120 chars y set_style inválido ⇒ error', () => {
+  it('set_title fuera de 1–120 chars y set_style (retirado) ⇒ error', () => {
     for (const op of [
       { op: 'set_title', title: '' },
       { op: 'set_title', title: 'x'.repeat(121) },
-      { op: 'set_style', style: 'neon' },
+      { op: 'set_style', style: 'sketch' },
     ]) {
       const res = apply([op]);
       expect(!res.ok && res.errors[0]?.path).toMatch(/^\/operations\/0/);
     }
-    const ok = apply([{ op: 'set_style', style: 'sketch' }]);
-    expect(ok.ok && ok.diagram.style).toBe('sketch');
   });
 
   it('valida las reglas de dominio sobre el resultado', () => {

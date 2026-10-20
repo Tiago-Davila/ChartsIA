@@ -16,7 +16,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [],
       "frameId": null,
@@ -44,7 +44,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [],
       "frameId": null,
@@ -60,7 +60,7 @@
       "text": "catalogo",
       "originalText": "catalogo",
       "fontSize": 14,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
@@ -81,7 +81,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Autor-group"
@@ -124,7 +124,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Autor-group"
@@ -142,7 +142,7 @@
       "text": "Autor",
       "originalText": "Autor",
       "fontSize": 14,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "center",
       "verticalAlign": "top",
       "containerId": "Autor",
@@ -163,7 +163,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Autor-group"
@@ -208,7 +208,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Autor-group"
@@ -253,7 +253,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Ejemplar-group"
@@ -292,7 +292,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Ejemplar-group"
@@ -310,7 +310,7 @@
       "text": "Ejemplar",
       "originalText": "Ejemplar",
       "fontSize": 14,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "center",
       "verticalAlign": "top",
       "containerId": "Ejemplar",
@@ -331,7 +331,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Ejemplar-group"
@@ -376,7 +376,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Ejemplar-group"
@@ -421,7 +421,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "EstadoPrestamo-group"
@@ -460,7 +460,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "EstadoPrestamo-group"
@@ -478,7 +478,7 @@
       "text": "«enumeration»\nEstadoPrestamo",
       "originalText": "«enumeration»\nEstadoPrestamo",
       "fontSize": 14,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "center",
       "verticalAlign": "top",
       "containerId": "EstadoPrestamo",
@@ -499,7 +499,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "EstadoPrestamo-group"
@@ -544,7 +544,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "EstadoPrestamo-group"
@@ -562,7 +562,7 @@
       "text": "ACTIVO",
       "originalText": "ACTIVO",
       "fontSize": 13,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
@@ -583,7 +583,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "EstadoPrestamo-group"
@@ -601,7 +601,7 @@
       "text": "DEVUELTO",
       "originalText": "DEVUELTO",
       "fontSize": 13,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
@@ -622,7 +622,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "EstadoPrestamo-group"
@@ -640,7 +640,7 @@
       "text": "VENCIDO",
       "originalText": "VENCIDO",
       "fontSize": 13,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
@@ -661,7 +661,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Libro-group"
@@ -712,7 +712,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Libro-group"
@@ -730,7 +730,7 @@
       "text": "«entity»\nLibro",
       "originalText": "«entity»\nLibro",
       "fontSize": 14,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "center",
       "verticalAlign": "top",
       "containerId": "Libro",
@@ -751,7 +751,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Libro-group"
@@ -796,7 +796,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Libro-group"
@@ -814,7 +814,7 @@
       "text": "- isbn: String",
       "originalText": "- isbn: String",
       "fontSize": 13,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
@@ -835,7 +835,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Libro-group"
@@ -853,7 +853,7 @@
       "text": "- titulo: String",
       "originalText": "- titulo: String",
       "fontSize": 13,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
@@ -874,7 +874,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Libro-group"
@@ -919,7 +919,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Persona-group"
@@ -962,7 +962,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Persona-group"
@@ -980,7 +980,7 @@
       "text": "Persona",
       "originalText": "Persona",
       "fontSize": 14,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "center",
       "verticalAlign": "top",
       "containerId": "Persona",
@@ -1001,7 +1001,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Persona-group"
@@ -1046,7 +1046,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Persona-group"
@@ -1064,7 +1064,7 @@
       "text": "# nombre: String",
       "originalText": "# nombre: String",
       "fontSize": 13,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
@@ -1085,7 +1085,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Persona-group"
@@ -1130,7 +1130,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Persona-group"
@@ -1148,7 +1148,7 @@
       "text": "+ nombreCompleto(): String",
       "originalText": "+ nombreCompleto(): String",
       "fontSize": 13,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
@@ -1169,7 +1169,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Prestable-group"
@@ -1208,7 +1208,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Prestable-group"
@@ -1226,7 +1226,7 @@
       "text": "«interface»\nPrestable",
       "originalText": "«interface»\nPrestable",
       "fontSize": 14,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "center",
       "verticalAlign": "top",
       "containerId": "Prestable",
@@ -1247,7 +1247,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Prestable-group"
@@ -1292,7 +1292,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Prestable-group"
@@ -1310,7 +1310,7 @@
       "text": "+ disponible(): boolean",
       "originalText": "+ disponible(): boolean",
       "fontSize": 13,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
@@ -1331,7 +1331,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Prestamo-group"
@@ -1378,7 +1378,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Prestamo-group"
@@ -1396,7 +1396,7 @@
       "text": "Préstamo",
       "originalText": "Préstamo",
       "fontSize": 14,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "center",
       "verticalAlign": "top",
       "containerId": "Prestamo",
@@ -1417,7 +1417,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Prestamo-group"
@@ -1462,7 +1462,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Prestamo-group"
@@ -1480,7 +1480,7 @@
       "text": "- desde: Date",
       "originalText": "- desde: Date",
       "fontSize": 13,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
@@ -1501,7 +1501,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Prestamo-group"
@@ -1519,7 +1519,7 @@
       "text": "- estado: EstadoPrestamo",
       "originalText": "- estado: EstadoPrestamo",
       "fontSize": 13,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
@@ -1540,7 +1540,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Prestamo-group"
@@ -1585,7 +1585,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Prestamo-group"
@@ -1603,7 +1603,7 @@
       "text": "+ devolver()",
       "originalText": "+ devolver()",
       "fontSize": 13,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
@@ -1624,7 +1624,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Socio-group"
@@ -1667,7 +1667,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Socio-group"
@@ -1685,7 +1685,7 @@
       "text": "Socio",
       "originalText": "Socio",
       "fontSize": 14,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "center",
       "verticalAlign": "top",
       "containerId": "Socio",
@@ -1706,7 +1706,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Socio-group"
@@ -1751,7 +1751,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Socio-group"
@@ -1769,7 +1769,7 @@
       "text": "- numero: int",
       "originalText": "- numero: int",
       "fontSize": 13,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
@@ -1790,7 +1790,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Socio-group"
@@ -1808,7 +1808,7 @@
       "text": "+ total: int = 0",
       "originalText": "+ total: int = 0",
       "fontSize": 13,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
@@ -1829,7 +1829,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Socio-group"
@@ -1874,7 +1874,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [
         "Socio-group"
@@ -1892,7 +1892,7 @@
       "text": "+ prestar(libro: Libro): Prestamo",
       "originalText": "+ prestar(libro: Libro): Prestamo",
       "fontSize": 13,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
@@ -1913,7 +1913,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [],
       "frameId": null,
@@ -1978,7 +1978,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [],
       "frameId": null,
@@ -1994,7 +1994,7 @@
       "text": "de",
       "originalText": "de",
       "fontSize": 12,
-      "fontFamily": 2,
+      "fontFamily": 5,
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "a1",
@@ -2015,7 +2015,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [],
       "frameId": null,
@@ -2067,7 +2067,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [],
       "frameId": null,
@@ -2123,7 +2123,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [],
       "frameId": null,
@@ -2175,7 +2175,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "dashed",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [],
       "frameId": null,
@@ -2227,7 +2227,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [],
       "frameId": null,
@@ -2287,7 +2287,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [],
       "frameId": null,
@@ -2355,7 +2355,7 @@
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "dashed",
-      "roughness": 0,
+      "roughness": 1,
       "opacity": 100,
       "groupIds": [],
       "frameId": null,

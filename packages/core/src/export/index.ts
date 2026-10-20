@@ -1,5 +1,4 @@
 import { type Diagram } from '../model/diagram.js';
-import { type DiagramStyle } from '../model/enums.js';
 import { exportDrawio } from './drawio.js';
 import { exportExcalidraw } from './excalidraw.js';
 import { exportSvg } from './svg.js';
@@ -33,9 +32,8 @@ export function exportFilename(title: string, format: ExportFormat): string {
   return `${slug || 'diagrama'}.${format}`;
 }
 
-export function exportDiagram(diagram: Diagram, format: ExportFormat, options: { style?: DiagramStyle } = {}): ExportResult {
-  const style = options.style ?? diagram.style;
-  const content = format === 'svg' ? exportSvg(diagram, style) : format === 'drawio' ? exportDrawio(diagram) : exportExcalidraw(diagram, style);
+export function exportDiagram(diagram: Diagram, format: ExportFormat): ExportResult {
+  const content = format === 'svg' ? exportSvg(diagram) : format === 'drawio' ? exportDrawio(diagram) : exportExcalidraw(diagram);
   return { format, mimeType: MIME_TYPES[format], filename: exportFilename(diagram.title, format), content };
 }
 

@@ -2,7 +2,7 @@ import { measureElement, type Primitive } from '@chartsia/core/shapes';
 import { Handle, type NodeProps, Position } from '@xyflow/react';
 import { type CSSProperties, memo, useCallback, useState } from 'react';
 import { slotValue } from '../canvas/slot-edits';
-import { ShapeRenderer } from '../render/ShapeRenderer';
+import { CleanShape } from '../render/CleanShape';
 import { useDiagramEditActions } from './edit-context';
 import { InlineEditableText } from './InlineEditableText';
 import { type ElementFlowNode } from './types';
@@ -22,7 +22,7 @@ function editorStyle(p: TextPrimitive, width: number): CSSProperties {
  * existen para que React Flow las conecte (invisibles, no conectables).
  */
 function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<ElementFlowNode>) {
-  const { element, style } = data;
+  const { element } = data;
   const fallback = width && height ? undefined : measureElement(element);
   const size = { width: width ?? fallback!.width, height: height ?? fallback!.height };
   const { editText, readOnly } = useDiagramEditActions();
@@ -37,7 +37,7 @@ function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<Elemen
 
   return (
     <div className={`chartsia-node${selected ? ' is-selected' : ''}`} style={{ width: size.width, height: size.height }} data-element-id={id}>
-      <ShapeRenderer element={element} size={size} style={style} onTextDoubleClick={onTextDoubleClick} />
+      <CleanShape element={element} size={size} onTextDoubleClick={onTextDoubleClick} />
       <Handle type="target" position={Position.Top} isConnectable={false} className="chartsia-handle" />
       <Handle type="source" position={Position.Bottom} isConnectable={false} className="chartsia-handle" />
       {editing ? (

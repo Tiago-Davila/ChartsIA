@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { BOUNDARY_TYPES, CONTAINER_VARIANTS, MAX_OPERATIONS_PER_BATCH, NAVIGABILITIES } from './enums.js';
 import { AttributeSchema, MethodSchema } from './class-elements.js';
 import { DescriptionSchema, ElementIdSchema, LayoutSchema, NameSchema } from './common.js';
-import { DiagramStyleSchema, ElementSchema, TitleSchema } from './diagram.js';
+import { ElementSchema, TitleSchema } from './diagram.js';
 import { MultiplicitySchema, RelationSchema } from './relation.js';
 
 /**
@@ -62,7 +62,6 @@ export const OperationSchema = z.discriminatedUnion('op', [
     y: LayoutSchema.shape.y,
   }),
   z.strictObject({ op: z.literal('set_title'), title: TitleSchema }),
-  z.strictObject({ op: z.literal('set_style'), style: DiagramStyleSchema }),
 ]);
 export type Operation = z.infer<typeof OperationSchema>;
 

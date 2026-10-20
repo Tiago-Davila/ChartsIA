@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { createDiagramStore } from '../../../src/state/diagram-store';
 
 const d = (revision: number, title = 'T', id = 'dg_aaaaaaaaaaaa'): Diagram => ({
-  id, type: 'class', title, style: 'clean', revision, createdAt: '', updatedAt: `2026-10-20T10:00:0${revision}.000Z`, elements: [], relations: [],
+  id, type: 'class', title, revision, createdAt: '', updatedAt: `2026-10-20T10:00:0${revision}.000Z`, elements: [], relations: [],
 });
 
 describe('diagram store', () => {

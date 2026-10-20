@@ -1,5 +1,5 @@
 import { type ExportFormat } from '@chartsia/core/export';
-import { type Diagram, type DiagramStyle } from '@chartsia/core/model';
+import { type Diagram } from '@chartsia/core/model';
 import { type Edge, type Node } from '@xyflow/react';
 import { type ReactNode } from 'react';
 import { DiagramCanvas, type DiagramCanvasProps } from '../canvas/DiagramCanvas';
@@ -21,7 +21,6 @@ export interface AppShellProps {
   origin: string;
   readOnly?: boolean;
   onOpen(diagramId: string): void;
-  onStyleChange(style: DiagramStyle): void;
   onExport(format: ExportFormat): void;
   onNodeDragStop?: DiagramCanvasProps['onNodeDragStop'];
   onDelete?: DiagramCanvasProps['onDelete'];
@@ -46,13 +45,11 @@ export function AppShell(props: AppShellProps) {
           <>
             <Toolbar
               title={diagram.title}
-              style={diagram.style}
               revision={diagram.revision}
               disabled={props.readOnly}
-              onStyleChange={props.onStyleChange}
               onExport={props.onExport}
             />
-            <div className={`app-shell__canvas style-${diagram.style}`}>
+            <div className="app-shell__canvas">
               <DiagramCanvas
                 diagramId={diagram.id}
                 nodes={props.nodes}

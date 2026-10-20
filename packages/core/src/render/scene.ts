@@ -1,11 +1,9 @@
 import { type Diagram } from '../model/diagram.js';
-import { type DiagramStyle, isGroupKind } from '../model/enums.js';
+import { isGroupKind } from '../model/enums.js';
 import { legendEntries, legendPrimitives } from '../shapes/c4/legend.js';
 import { elementPrimitives } from '../shapes/registry.js';
 import { type Primitive } from '../shapes/types.js';
 import { edgePrimitives } from './edges.js';
-import { hashSeed } from './hash.js';
-import { sketchPrimitives } from './sketch.js';
 
 export interface SceneNode {
   id: string;
@@ -26,10 +24,7 @@ export interface Scene {
   legend?: SceneNode;
 }
 
-export const FONT_FAMILIES: Record<DiagramStyle, string> = {
-  clean: "Inter, 'Helvetica Neue', Arial, sans-serif",
-  sketch: "Excalifont, 'Comic Sans MS', 'Segoe Print', cursive",
-};
+export const FONT_FAMILY = "Inter, 'Helvetica Neue', Arial, sans-serif";
 
 const MARGIN = 24;
 
@@ -44,8 +39,8 @@ function depth(diagram: Diagram, id: string): number {
   return d;
 }
 
-/** Escena de render compartida por el SVG exportado y la app (estilos clean y sketch). */
-export function buildScene(diagram: Diagram, style: DiagramStyle = diagram.style): Scene {
+/** Escena de render compartida por el SVG exportado y la app. */
+export function buildScene(diagram: Diagram): Scene {
   const ordered = [...diagram.elements].sort(
     (a, b) =>
       Number(!isGroupKind(a.kind)) - Number(!isGroupKind(b.kind)) ||
@@ -56,15 +51,11 @@ export function buildScene(diagram: Diagram, style: DiagramStyle = diagram.style
     const l = el.layout ?? { x: 0, y: 0, width: 0, height: 0 };
     const width = l.width ?? 0;
     const height = l.height ?? 0;
-    const base = elementPrimitives(el, { width, height });
-    return { id: el.id, x: l.x, y: l.y, width, height, primitives: style === 'sketch' ? sketchPrimitives(base, hashSeed(el.id)) : base };
+    return { id: el.id, x: l.x, y: l.y, width, height, primitives: elementPrimitives(el, { width, height }) };
   });
   const edges = [...diagram.relations]
     .sort((a, b) => (a.id < b.id ? -1 : 1))
-    .map((rel) => {
-      const base = edgePrimitives(rel);
-      return { id: rel.id, primitives: style === 'sketch' ? sketchPrimitives(base, hashSeed(rel.id)) : base };
-    });
+    .map((rel) => ({ id: rel.id, primitives: edgePrimitives(rel) }));
 
   const xs: number[] = [];
   const ys: number[] = [];
@@ -91,7 +82,7 @@ export function buildScene(diagram: Diagram, style: DiagramStyle = diagram.style
   const entries = legendEntries(diagram);
   if (entries.length > 0) {
     const { size, primitives } = legendPrimitives(entries);
-    legend = { id: '__legend__', x: maxX, y: minY + MARGIN, ...size, primitives: style === 'sketch' ? sketchPrimitives(primitives, 7) : primitives };
+    legend = { id: '__legend__', x: maxX, y: minY + MARGIN, ...size, primitives };
     maxX += size.width + MARGIN;
     maxY = Math.max(maxY, legend.y + size.height + MARGIN);
   }

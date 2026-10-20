@@ -1,14 +1,11 @@
 import { type ExportFormat } from '@chartsia/core/export';
-import { type DiagramStyle } from '@chartsia/core/model';
 import { useReactFlow } from '@xyflow/react';
 import { useRef } from 'react';
 
 export interface ToolbarProps {
   title: string;
-  style: DiagramStyle;
   revision?: number;
   disabled?: boolean;
-  onStyleChange(style: DiagramStyle): void;
   onExport(format: ExportFormat): void;
 }
 
@@ -18,8 +15,8 @@ const EXPORTS: { format: ExportFormat; label: string }[] = [
   { format: 'excalidraw', label: 'Excalidraw (.excalidraw)' },
 ];
 
-/** Título, estilo limpio/boceto (FR-024), encuadre y exportación (FR-027). */
-export function Toolbar({ title, style, revision, disabled = false, onStyleChange, onExport }: ToolbarProps) {
+/** Título, encuadre y exportación (FR-027). */
+export function Toolbar({ title, revision, disabled = false, onExport }: ToolbarProps) {
   const { fitView } = useReactFlow();
   const menu = useRef<HTMLDetailsElement>(null);
   return (
@@ -28,13 +25,6 @@ export function Toolbar({ title, style, revision, disabled = false, onStyleChang
         {title}
         {revision !== undefined ? <span className="toolbar__revision">rev {revision}</span> : null}
       </h1>
-      <div className="toolbar__group" role="group" aria-label="Estilo">
-        {(['clean', 'sketch'] as const).map((s) => (
-          <button key={s} type="button" className={`segmented${style === s ? ' is-active' : ''}`} aria-pressed={style === s} disabled={disabled} onClick={() => onStyleChange(s)}>
-            {s === 'clean' ? 'Limpio' : 'Boceto'}
-          </button>
-        ))}
-      </div>
       <button type="button" className="button" disabled={disabled} onClick={() => void fitView({ padding: 0.15, duration: 300 })}>
         Ajustar
       </button>

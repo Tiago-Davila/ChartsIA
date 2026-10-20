@@ -150,9 +150,6 @@ function applyOne(draft: Draft, op: Operation, base: string): void {
     case 'set_title':
       d.title = op.title;
       return;
-    case 'set_style':
-      d.style = op.style;
-      return;
   }
 }
 

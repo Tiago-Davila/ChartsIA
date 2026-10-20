@@ -1,13 +1,12 @@
-import { type DiagramStyle, type Relation } from '@chartsia/core/model';
-import { edgePrimitives, hashSeed, sketchPrimitives } from '@chartsia/core/render';
+import { type Relation } from '@chartsia/core/model';
+import { edgePrimitives } from '@chartsia/core/render';
 import { relationStyle } from '@chartsia/core/shapes';
 import { type Edge, type EdgeProps } from '@xyflow/react';
 import { memo, useMemo } from 'react';
-import { FONT_SKETCH } from '../render/CleanShape';
 import { Primitives } from '../render/Primitives';
 import { EdgeMarkers } from './markers';
 
-export type RoutedEdgeData = { relation: Relation; style: DiagramStyle };
+export type RoutedEdgeData = { relation: Relation };
 export type RoutedFlowEdge = Edge<RoutedEdgeData>;
 
 /**
@@ -16,13 +15,8 @@ export type RoutedFlowEdge = Edge<RoutedEdgeData>;
  */
 function RoutedEdgeImpl({ id, data, sourceX, sourceY, targetX, targetY, selected }: EdgeProps<RoutedFlowEdge>) {
   const relation = data!.relation;
-  const style = data!.style;
   const routed = (relation.route?.length ?? 0) >= 2;
-  const primitives = useMemo(() => {
-    if (!routed) return [];
-    const base = edgePrimitives(relation);
-    return style === 'sketch' ? sketchPrimitives(base, hashSeed(relation.id)) : base;
-  }, [relation, style, routed]);
+  const primitives = useMemo(() => (routed ? edgePrimitives(relation) : []), [relation, routed]);
 
   const points = routed ? relation.route! : [{ x: sourceX, y: sourceY }, { x: targetX, y: targetY }];
   const d = points.map((p, i) => `${i ? 'L' : 'M'} ${p.x} ${p.y}`).join(' ');
@@ -32,7 +26,7 @@ function RoutedEdgeImpl({ id, data, sourceX, sourceY, targetX, targetY, selected
     <g
       data-testid={`edge-${id}`}
       className={`chartsia-edge${selected ? ' is-selected' : ''}`}
-      fontFamily={style === 'sketch' ? FONT_SKETCH : "Inter, 'Helvetica Neue', Arial, sans-serif"}
+      fontFamily="Inter, 'Helvetica Neue', Arial, sans-serif"
     >
       {routed ? (
         <Primitives primitives={primitives} />

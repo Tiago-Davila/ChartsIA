@@ -14,7 +14,7 @@ draw.io o Excalidraw.
   relaciones que no atraviesan elementos. Los cambios incrementales no mueven lo que ya estaba.
 - **Errores accionables**: cada error trae `code`, `path` (JSON Pointer), `message` y `hint`
   para que el agente se corrija solo.
-- **Dos estilos**: limpio (formas de draw.io) y boceto (roughjs + Excalifont, como Excalidraw).
+- **Exportación** a SVG, draw.io y Excalidraw (este último con trazo a mano alzada y Excalifont).
 
 ## Requisitos
 

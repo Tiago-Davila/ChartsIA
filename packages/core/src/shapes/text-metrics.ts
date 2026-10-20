@@ -1,7 +1,7 @@
 /**
  * Medida de texto determinista basada en tablas fijas de anchos de glifo (en milésimas de em),
  * independiente del navegador y de las fuentes instaladas (research R7). Cubre las dos fuentes
- * empaquetadas: Inter (estilo limpio) y Excalifont (estilo boceto). Los valores son anchos de
+ * empaquetadas: Inter (app y SVG) y Excalifont (export a Excalidraw). Los valores son anchos de
  * avance redondeados hacia arriba para que el texto renderizado quepa siempre en la forma.
  */
 export type FontFamily = 'clean' | 'sketch';

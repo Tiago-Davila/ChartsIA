@@ -17,7 +17,7 @@ describe('DiagramCommandService.create', () => {
     const { commands, repo, emitted } = createServices();
     const { diagram, warnings } = await commands.create(libraryInput);
     expect(warnings).toEqual([]);
-    expect(diagram).toMatchObject({ id: 'dg_aaaaaaaaaaaa', revision: 1, style: 'clean', title: 'Biblioteca' });
+    expect(diagram).toMatchObject({ id: 'dg_aaaaaaaaaaaa', revision: 1, title: 'Biblioteca' });
     expect(diagram.elements.every((e) => e.layout?.width)).toBe(true);
     expect(diagram.relations[0]?.route?.length).toBeGreaterThanOrEqual(2);
     expect(await repo.get(diagram.id)).toEqual(diagram);
@@ -65,7 +65,7 @@ describe('DiagramCommandService.apply', () => {
     const { commands } = createServices();
     await commands.create(libraryInput);
     const second = await commands.create({ ...libraryInput, title: 'Segundo' });
-    const res = await commands.apply({ operations: [{ op: 'set_style', style: 'sketch' }], origin: 'agent' });
+    const res = await commands.apply({ operations: [{ op: 'set_title', title: 'Renombrado' }], origin: 'agent' });
     expect(res.diagram.id).toBe(second.diagram.id);
   });
 

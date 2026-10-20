@@ -12,7 +12,6 @@ async function evilDiagram(): Promise<Diagram> {
     id: 'dg_aaaaaaaaaaaa',
     type: 'class',
     title: `${EVIL} ${TRICKY}`,
-    style: 'clean',
     revision: 1,
     createdAt: '2026-10-20T10:00:00.000Z',
     updatedAt: '2026-10-20T10:00:00.000Z',
@@ -34,10 +33,10 @@ describe('escape de texto en exportaciones', () => {
     expect(escapeXml('a\u0000b\u0007c\td')).toBe('abc\td');
   });
 
-  it.each([['svg', 'clean'], ['svg', 'sketch'], ['drawio', 'clean']] as const)(
-    '%s (%s): el nombre malicioso aparece escapado y sin DOCTYPE/ENTITY',
-    async (format, style) => {
-      const out = exportDiagram(await evilDiagram(), format, { style }).content;
+  it.each(['svg', 'drawio'] as const)(
+    '%s: el nombre malicioso aparece escapado y sin DOCTYPE/ENTITY',
+    async (format) => {
+      const out = exportDiagram(await evilDiagram(), format).content;
       expect(out).not.toContain('<img');
       expect(out).not.toContain(']]>');
       expect(out).toContain('&lt;img src=x onerror=alert(1)&gt;');

@@ -113,9 +113,7 @@ export function useDiagramEdits(api: ApiClient) {
     [send],
   );
 
-  const setStyle = useCallback((style: 'clean' | 'sketch') => void send([{ op: 'set_style', style }]), [send]);
-
   const editActions = useMemo<DiagramEditActions>(() => ({ editText, readOnly: false }), [editText]);
 
-  return { onNodeDragStop, onDelete, editText, setStyle, editActions };
+  return { onNodeDragStop, onDelete, editText, editActions };
 }

@@ -60,12 +60,4 @@ describe('UmlClassNode', () => {
     expect(screen.getByText('«enumeration»')).toBeInTheDocument();
     expect(screen.getByText('PAGADO')).toBeInTheDocument();
   });
-
-  it('el estilo boceto usa trazos a mano alzada y la fuente Excalifont', () => {
-    const { container } = renderFlow([pedido], [], 'sketch');
-    const shape = container.querySelector('[data-testid="shape-Pedido"]')!;
-    expect(shape.querySelectorAll('rect')).toHaveLength(0);
-    expect(shape.querySelectorAll('path').length).toBeGreaterThan(2);
-    expect(shape.getAttribute('font-family')).toContain('Excalifont');
-  });
 });

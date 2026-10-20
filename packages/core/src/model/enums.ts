@@ -29,9 +29,6 @@ export const MULTIPLICITY_RELATION_KINDS = ['association', 'aggregation', 'compo
 export const VISIBILITIES = ['+', '-', '#', '~'] as const;
 export type Visibility = (typeof VISIBILITIES)[number];
 
-export const DIAGRAM_STYLES = ['clean', 'sketch'] as const;
-export type DiagramStyle = (typeof DIAGRAM_STYLES)[number];
-
 export const CONTAINER_VARIANTS = ['default', 'database', 'queue', 'web'] as const;
 export type ContainerVariant = (typeof CONTAINER_VARIANTS)[number];
 

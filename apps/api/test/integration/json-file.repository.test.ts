@@ -42,6 +42,13 @@ describe('JsonFileDiagramRepository', () => {
     expect(await again.getActiveId()).toBe(d.id);
   });
 
+  it('carga diagramas guardados con el campo style ya retirado', async () => {
+    const d = storedDiagram();
+    await (await open()).save(d);
+    await writeFile(join(dir, `${d.id}.json`), JSON.stringify({ ...d, style: 'sketch' }));
+    expect(await (await open()).get(d.id)).toEqual(d);
+  });
+
   it('lista ordenado por updatedAt descendente', async () => {
     const repo = await open();
     const old = storedDiagram({ updatedAt: '2026-01-01T00:00:00.000Z' });

@@ -42,7 +42,6 @@ imprime al arrancar (ver [app-api.md](./contracts/app-api.md)).
 | 4 | US2 | "C4 de contenedores de una tienda online: web, API, BD, pasarela de pagos externa" | límite con contenedores dentro, externo fuera, BD como cilindro, etiquetas "desc [tech]", leyenda |
 | 5 | US3 | "Añade Editorial relacionada con Libro", luego "renombra Socio a Usuario", luego "elimina Préstamo" | cada cambio aparece en vivo; el resto no se mueve; relaciones de Préstamo desaparecen |
 | 6 | US4 | Mover un nodo a mano, pedir al agente que añada otro elemento | el nodo movido conserva su posición; `get_diagram` refleja el movimiento |
-| 7 | US4 | Alternar estilo clean/sketch, recargar | contenido igual, estilo persiste |
 | 8 | US5 | Exportar a drawio y excalidraw; abrir en app.diagrams.net y excalidraw.com | abren sin errores con todos los elementos y flechas conectadas |
 | 9 | SC-004 | Repetir 1, 5 y 8 con un agente GPT | mismo resultado |
 | 10 | Seguridad | Crear una clase llamada `<img src=x onerror=alert(1)>` | se muestra como texto literal en app y en SVG exportado |

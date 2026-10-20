@@ -47,7 +47,6 @@ export async function warmUpLayout(): Promise<void> {
     id: 'dg_aaaaaaaaaaaa',
     type: 'class',
     title: 'warm-up',
-    style: 'clean',
     revision: 0,
     createdAt: '',
     updatedAt: '',

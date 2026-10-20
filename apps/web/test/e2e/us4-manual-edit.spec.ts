@@ -43,15 +43,4 @@ test.describe('US4 · escenarios 6–7: edición manual', () => {
     await expect(page.getByText('Préstamo', { exact: true })).toHaveCount(0);
     await expect.poll(async () => (await agent.layout(id)).elements.map((e) => e.id)).not.toContain('Prestamo');
   });
-
-  test('el estilo boceto persiste tras recargar', async ({ page, agent }) => {
-    const id = await agent.create({ ...library, title: 'Estilo' });
-    await page.goto(`/d/${id}`);
-    await page.getByRole('button', { name: 'Boceto' }).click();
-    await expect(page.getByRole('button', { name: 'Boceto' })).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.locator('[data-testid="shape-Libro"]')).toHaveAttribute('font-family', /Excalifont/);
-    await page.reload();
-    await expect(page.getByRole('button', { name: 'Boceto' })).toHaveAttribute('aria-pressed', 'true');
-    expect((await agent.layout(id)).style).toBe('sketch');
-  });
 });

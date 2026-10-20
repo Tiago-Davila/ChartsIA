@@ -152,23 +152,6 @@
   font-weight: 400;
   color: var(--text-muted);
 }
-.toolbar__group {
-  display: inline-flex;
-  padding: 2px;
-  background: var(--surface-muted);
-  border-radius: var(--radius);
-}
-.segmented {
-  padding: 5px 12px;
-  background: none;
-  border: 0;
-  border-radius: 6px;
-}
-.segmented.is-active {
-  background: var(--surface);
-  box-shadow: var(--shadow);
-  font-weight: 600;
-}
 .button {
   padding: 6px 12px;
   background: var(--surface);
@@ -263,9 +246,6 @@ button:disabled,
   border: 1px solid var(--accent);
   border-radius: 4px;
   outline: none;
-}
-.style-sketch .inline-edit {
-  font-family: var(--font-sketch);
 }
 
 /* Leyenda C4 */

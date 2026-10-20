@@ -70,7 +70,6 @@ function ConnectedApp() {
           edges={flow.edges}
           origin={window.location.origin}
           onOpen={openDiagram}
-          onStyleChange={edits.setStyle}
           onExport={onExport}
           onNodeDragStop={edits.onNodeDragStop}
           onDelete={edits.onDelete}
