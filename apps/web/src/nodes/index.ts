@@ -7,6 +7,7 @@ import { C4SystemNode } from './c4/C4SystemNode';
 import { ErAttributeNode } from './er/ErAttributeNode';
 import { ErEntityNode } from './er/ErEntityNode';
 import { ErTableNode } from './er/ErTableNode';
+import { ElementNode } from './ElementNode';
 import { ErValueListNode } from './er/ErValueListNode';
 import { GroupNode } from './GroupNode';
 import { UmlClassNode } from './uml/UmlClassNode';
@@ -26,6 +27,7 @@ export const nodeTypes = {
   boundary: GroupNode,
   entity: ErEntityNode,
   table: ErTableNode,
+  figure: ElementNode,
   attribute: ErAttributeNode,
   'value-list': ErValueListNode,
 } satisfies Record<ElementKind, NodeTypes[string]> as NodeTypes;

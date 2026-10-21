@@ -1,5 +1,6 @@
 export * from './c4/legend.js';
 export * from './c4/palette.js';
+export { figureOutline, figureTextArea } from './general/figure.js';
 export * from './registry.js';
 export * from './text-metrics.js';
 export * from './types.js';

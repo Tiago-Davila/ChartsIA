@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BOUNDARY_TYPES, CARDINALITIES, CONTAINER_VARIANTS, MAX_OPERATIONS_PER_BATCH, NAVIGABILITIES, RELATION_KINDS, SIDES } from './enums.js';
+import { BOUNDARY_TYPES, CARDINALITIES, CONTAINER_VARIANTS, FIGURE_SHAPES, MAX_OPERATIONS_PER_BATCH, NAVIGABILITIES, RELATION_KINDS, SIDES } from './enums.js';
 import { AttributeSchema, MethodSchema } from './class-elements.js';
 import { ColumnSchema } from './er-elements.js';
 import { DescriptionSchema, ElementIdSchema, LayoutSchema, NameSchema, PointSchema } from './common.js';
@@ -27,6 +27,7 @@ export const ElementChangesSchema = z
     boundaryType: z.enum(BOUNDARY_TYPES).optional(),
     columns: z.array(ColumnSchema).min(1).max(200).optional(),
     weak: z.boolean().nullable().optional(),
+    shape: z.enum(FIGURE_SHAPES).optional(),
     key: z.boolean().nullable().optional(),
     multivalued: z.boolean().nullable().optional(),
     derived: z.boolean().nullable().optional(),

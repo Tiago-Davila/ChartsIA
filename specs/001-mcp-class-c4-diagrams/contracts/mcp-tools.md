@@ -68,6 +68,11 @@ En `apply_changes`, `update_element` admite `weak`, `columns` (reemplaza la list
 `derived`, `values` (reemplaza la lista) y `update_relation` admite
 `sourceCardinality`, `targetCardinality` e `identifying`.
 
+Figuras generales: `figure` es un elemento básico con `shape` (`circle`, `square`, `rectangle`,
+`triangle`, `hexagon` o `cloud`) y el `name` centrado dentro. Se permite en **todos** los tipos de
+diagrama (`class`, `c4-*` y `er`; decisión del issue #194) y se conecta con las relaciones propias
+del tipo. Un `package` también puede contenerlas. `update_element` admite `shape` para cambiar la forma.
+
 `projectId` coloca el diagrama en un proyecto existente; si no existe, `PROJECT_NOT_FOUND` y no
 se crea nada.
 

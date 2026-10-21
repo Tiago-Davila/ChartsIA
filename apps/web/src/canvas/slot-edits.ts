@@ -45,6 +45,7 @@ export function parseMethod(text: string, previous?: Method): Method | undefined
 
 /** Valor editable de un slot (la descripción completa, no solo la línea visible). */
 export function slotValue(element: Element, slot: string, shown: string): string {
+  if (slot === 'name' && element.kind === 'figure') return element.name; // el nombre se muestra partido en líneas
   if (slot === 'description' && 'description' in element && element.description) return element.description;
   if (slot === 'stereotype') return shown.replace(/^«|»$/g, '');
   if (slot === 'type' && 'technology' in element) return element.technology ?? '';

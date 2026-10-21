@@ -1,0 +1,18 @@
+{
+  "type": "c4-context",
+  "title": "Figuras <generales> & más",
+  "elements": [
+    { "id": "usuario", "kind": "person", "name": "Usuario" },
+    { "id": "circulo", "kind": "figure", "name": "Círculo", "shape": "circle" },
+    { "id": "cuadrado", "kind": "figure", "name": "Cuadrado", "shape": "square" },
+    { "id": "rectangulo", "kind": "figure", "name": "Rectángulo con un nombre largo <y> \"raro\"", "shape": "rectangle" },
+    { "id": "triangulo", "kind": "figure", "name": "Triángulo", "shape": "triangle" },
+    { "id": "hexagono", "kind": "figure", "name": "Hexágono", "shape": "hexagon" },
+    { "id": "nube", "kind": "figure", "name": "Nube", "shape": "cloud" }
+  ],
+  "relations": [
+    { "id": "r1", "kind": "c4-rel", "source": "usuario", "target": "nube", "label": "usa" },
+    { "id": "r2", "kind": "c4-rel", "source": "nube", "target": "hexagono" },
+    { "id": "r3", "kind": "c4-rel", "source": "hexagono", "target": "triangulo" }
+  ]
+}
