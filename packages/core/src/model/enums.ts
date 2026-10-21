@@ -10,14 +10,18 @@ export type C4ElementKind = (typeof C4_ELEMENT_KINDS)[number];
 export const ER_ELEMENT_KINDS = ['entity', 'table', 'attribute', 'value-list'] as const;
 export type ErElementKind = (typeof ER_ELEMENT_KINDS)[number];
 
-/** Figuras generales (círculo, cuadrado, rectángulo, triángulo, hexágono y nube): válidas en todos los tipos de diagrama. */
+/** Figuras generales: válidas en todos los tipos de diagrama. */
 export const FIGURE_ELEMENT_KINDS = ['figure'] as const;
 export type FigureElementKind = (typeof FIGURE_ELEMENT_KINDS)[number];
+
+/** Trazos libres: válidos en todos los tipos de diagrama. */
+export const DRAWING_ELEMENT_KINDS = ['drawing'] as const;
+export type DrawingElementKind = (typeof DRAWING_ELEMENT_KINDS)[number];
 
 export const FIGURE_SHAPES = ['circle', 'square', 'rectangle', 'triangle', 'hexagon', 'cloud'] as const;
 export type FigureShape = (typeof FIGURE_SHAPES)[number];
 
-export type ElementKind = ClassElementKind | C4ElementKind | ErElementKind | FigureElementKind;
+export type ElementKind = ClassElementKind | C4ElementKind | ErElementKind | FigureElementKind | DrawingElementKind;
 
 /** Elementos que agrupan a otros mediante `parentId`. */
 export const GROUP_KINDS = ['package', 'boundary'] as const satisfies readonly ElementKind[];
@@ -84,11 +88,11 @@ export type ErrorCode = (typeof ERROR_CODES)[number];
 
 /** Las figuras generales se permiten en todos los tipos de diagrama (decisión del issue #194). */
 export const ALLOWED_KINDS_BY_DIAGRAM: Readonly<Record<DiagramType, readonly ElementKind[]>> = {
-  class: [...CLASS_ELEMENT_KINDS, ...FIGURE_ELEMENT_KINDS],
-  'c4-context': ['person', 'software-system', 'boundary', ...FIGURE_ELEMENT_KINDS],
-  'c4-container': ['person', 'software-system', 'container', 'boundary', ...FIGURE_ELEMENT_KINDS],
-  'c4-component': ['person', 'software-system', 'container', 'component', 'boundary', ...FIGURE_ELEMENT_KINDS],
-  er: [...ER_ELEMENT_KINDS, ...FIGURE_ELEMENT_KINDS],
+  class: [...CLASS_ELEMENT_KINDS, ...FIGURE_ELEMENT_KINDS, ...DRAWING_ELEMENT_KINDS],
+  'c4-context': ['person', 'software-system', 'boundary', ...FIGURE_ELEMENT_KINDS, ...DRAWING_ELEMENT_KINDS],
+  'c4-container': ['person', 'software-system', 'container', 'boundary', ...FIGURE_ELEMENT_KINDS, ...DRAWING_ELEMENT_KINDS],
+  'c4-component': ['person', 'software-system', 'container', 'component', 'boundary', ...FIGURE_ELEMENT_KINDS, ...DRAWING_ELEMENT_KINDS],
+  er: [...ER_ELEMENT_KINDS, ...FIGURE_ELEMENT_KINDS, ...DRAWING_ELEMENT_KINDS],
 };
 
 /** El conector se permite en todos los tipos de diagrama (decisión del issue #195). */

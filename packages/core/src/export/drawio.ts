@@ -5,6 +5,7 @@ import { c4Cells } from './drawio-c4.js';
 import { classCells } from './drawio-class.js';
 import { erCells, erEdgeStyle } from './drawio-er.js';
 import { figureCells } from './drawio-figure.js';
+import { drawingXml } from './drawio-drawing.js';
 import { drawioFont, drawioStroke } from './drawio-style.js';
 import { xmlElement } from './xml-escape.js';
 import { FONT } from '../shapes/types.js';
@@ -107,6 +108,11 @@ export function exportDrawio(diagram: Diagram): string {
       height: l.height ?? 60,
     };
     const parent = parentEl ? parentEl.id : '1';
+    const drawing = drawingXml(el, parent, geo);
+    if (drawing) {
+      cells.push(drawing);
+      continue;
+    }
     const vertices = classCells(el, parent, geo) ?? c4Cells(el, parent, geo) ?? erCells(el, parent, geo) ?? figureCells(el, parent, geo) ?? [];
     cells.push(...vertices.map(vertexXml));
   }

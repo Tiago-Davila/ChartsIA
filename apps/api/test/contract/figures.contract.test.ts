@@ -34,6 +34,28 @@ describe('contract: figuras generales', () => {
     expect(svg).toContain('Círculo');
   });
 
+  it('crea, actualiza y exporta trazos drawing mediante MCP', async () => {
+    const created = await h.call('create_diagram', {
+      type: 'class', title: 'Lápiz',
+      elements: [{ id: 'trazo', kind: 'drawing', name: 'Trazo', points: [{ x: 2, y: 3 }, { x: 40, y: 25 }, { x: 70, y: 50 }], strokeColor: '#b42318', strokeWidth: 3 }],
+      relations: [],
+    });
+    expect(created.isError).toBeFalsy();
+
+    const updated = await h.call('apply_changes', {
+      operations: [{ op: 'update_element', id: 'trazo', changes: { points: [{ x: 5, y: 6 }, { x: 45, y: 30 }], strokeColor: '#175cd3', strokeWidth: 4 } }],
+    });
+    expect(updated.isError).toBeFalsy();
+
+    const svg = (await h.call('export_diagram', { format: 'svg' })).structuredContent!.content as string;
+    const drawio = (await h.call('export_diagram', { format: 'drawio' })).structuredContent!.content as string;
+    const excalidraw = JSON.parse((await h.call('export_diagram', { format: 'excalidraw' })).structuredContent!.content as string);
+    expect(svg).toContain('stroke="#175cd3"');
+    expect(drawio).toContain('strokeColor=#175cd3;strokeWidth=4;');
+    expect(drawio).toContain('as="sourcePoint"');
+    expect(excalidraw.elements.find((e: { id: string }) => e.id === 'trazo')).toMatchObject({ type: 'line', strokeColor: '#175cd3', strokeWidth: 4 });
+  });
+
   it('una forma inexistente (heptágono) se rechaza con SCHEMA_VIOLATION', async () => {
     const bad = figures('class');
     bad.elements[0]!.shape = 'heptagon';
@@ -47,6 +69,8 @@ describe('contract: figuras generales', () => {
       const text = (res.contents[0] as { text: string }).text;
       expect(text).toContain('`figure`');
       expect(text).toContain('hexagon');
+      expect(text).toContain('`drawing`');
+      expect(text).toContain('1024');
     }
   });
 });

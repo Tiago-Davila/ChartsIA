@@ -51,7 +51,7 @@ function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<Elemen
   return (
     <div className={`chartsia-node${selected ? ' is-selected' : ''}`} style={{ width: size.width, height: size.height }} data-element-id={id}>
       <CleanShape element={element} size={size} onTextDoubleClick={onTextDoubleClick} />
-      {selected && !readOnly ? (
+      {selected && !readOnly && element.kind !== 'drawing' ? (
         <NodeResizer minWidth={minimum.width} minHeight={minimum.height} color="var(--accent)" onResizeEnd={(_, box) => resize(id, box)} />
       ) : null}
       <Handle type="target" position={Position.Top} isConnectable={!readOnly} className="chartsia-handle" />

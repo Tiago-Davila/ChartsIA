@@ -87,6 +87,15 @@ describe('INVALID_PARENT', () => {
     expect(errs(d)).toEqual([]);
   });
 
+  it('un package también contiene trazos libres', () => {
+    const d = classDiagram();
+    d.elements.push(
+      { id: 'pkg', kind: 'package', name: 'pkg' },
+      { id: 'trazo', kind: 'drawing', name: 'Trazo', points: [{ x: 0, y: 0 }, { x: 12, y: 8 }], strokeColor: '#1f2933', strokeWidth: 2, parentId: 'pkg' },
+    );
+    expect(errs(d)).toEqual([]);
+  });
+
   it('en c4-component un component debe estar dentro de un boundary container', () => {
     const base = {
       type: 'c4-component' as const,

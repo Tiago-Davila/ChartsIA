@@ -12,6 +12,8 @@ export interface Paint {
   strokeWidth?: number;
   /** Patrón de trazo discontinuo, p. ej. [6, 4]. */
   dash?: number[];
+  lineCap?: 'butt' | 'round' | 'square';
+  lineJoin?: 'miter' | 'round' | 'bevel';
 }
 
 export type RectPrimitive = { type: 'rect'; x: number; y: number; width: number; height: number; rx?: number } & Paint;
