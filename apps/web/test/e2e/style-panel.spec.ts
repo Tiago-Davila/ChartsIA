@@ -36,7 +36,7 @@ test.describe('panel de estilo', () => {
     const id = await agent.create({ ...library, title: 'Varios' });
     await page.goto(`/d/${id}`);
     await page.locator('[data-element-id="Autor"]').click({ position: { x: 20, y: 8 } });
-    await page.locator('[data-element-id="Libro"]').click({ position: { x: 20, y: 8 }, modifiers: ['Shift'] });
+    await page.locator('[data-element-id="Libro"]').click({ position: { x: 20, y: 8 }, modifiers: ['Control'] });
 
     await page.getByLabel('Color de borde libre').fill('#123456');
     await expect.poll(() => estiloDe(agent, id, 'Autor')).toEqual({ borderColor: '#123456' });
