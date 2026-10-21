@@ -54,8 +54,9 @@ test.describe('más edición en el lienzo', () => {
     await expect(page.locator('.react-flow__node')).toHaveCount(4);
 
     const canvas = (await page.locator('.react-flow').boundingBox())!;
-    const from = { x: canvas.x + 30, y: canvas.y + 30 };
-    const to = { x: from.x + 70, y: from.y + 60 };
+    const from = { x: canvas.x + canvas.width - 30, y: canvas.y + 30 };
+    const to = { x: from.x - 70, y: from.y + 60 };
+    expect(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.classList.contains('react-flow__pane'), from)).toBe(true);
     const viewport = page.locator('.react-flow__viewport');
     await expect.poll(() => viewport.evaluate((element) => getComputedStyle(element).transform)).not.toBe('matrix(1, 0, 0, 1, 0, 0)');
     const beforeWheel = await viewport.getAttribute('style');
