@@ -146,9 +146,9 @@
     {
       "id": "cliente-label",
       "type": "text",
-      "x": 98.67,
-      "y": 80,
-      "width": 204,
+      "x": 115.67,
+      "y": 82,
+      "width": 170,
       "height": 80,
       "angle": 0,
       "strokeColor": "#ffffff",
@@ -224,9 +224,9 @@
     {
       "id": "db-label",
       "type": "text",
-      "x": 62,
-      "y": 545,
-      "width": 204,
+      "x": 72.25,
+      "y": 588,
+      "width": 183.5,
       "height": 35,
       "angle": 0,
       "strokeColor": "#ffffff",
@@ -291,7 +291,7 @@
     {
       "id": "hexagono",
       "type": "line",
-      "x": 370.67,
+      "x": 389.87,
       "y": 69,
       "width": 149,
       "height": 64,
@@ -303,7 +303,9 @@
       "strokeStyle": "solid",
       "roughness": 1,
       "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "hexagono-group"
+      ],
       "frameId": null,
       "roundness": null,
       "seed": 2082081375,
@@ -316,31 +318,31 @@
       "locked": false,
       "points": [
         [
-          19.2,
+          0,
+          0
+        ],
+        [
+          110.6,
           0
         ],
         [
           129.8,
-          0
-        ],
-        [
-          149,
           32
         ],
         [
-          129.8,
-          64
-        ],
-        [
-          19.2,
+          110.6,
           64
         ],
         [
           0,
+          64
+        ],
+        [
+          -19.2,
           32
         ],
         [
-          19.2,
+          0,
           0
         ]
       ],
@@ -355,10 +357,10 @@
     {
       "id": "hexagono-label",
       "type": "text",
-      "x": 389.87,
-      "y": 77,
-      "width": 110.6,
-      "height": 48,
+      "x": 397.92,
+      "y": 89.75,
+      "width": 94.5,
+      "height": 22.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -367,7 +369,9 @@
       "strokeStyle": "solid",
       "roughness": 1,
       "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "hexagono-group"
+      ],
       "frameId": null,
       "roundness": null,
       "seed": 1446442062,
@@ -391,11 +395,11 @@
     },
     {
       "id": "nube",
-      "type": "ellipse",
-      "x": 579.67,
-      "y": 56,
-      "width": 140,
-      "height": 90,
+      "type": "line",
+      "x": 614.67,
+      "y": 78.5,
+      "width": 124.51,
+      "height": 77.06,
       "angle": 0,
       "strokeColor": "#0369a1",
       "backgroundColor": "#e0f2fe",
@@ -404,30 +408,137 @@
       "strokeStyle": "solid",
       "roughness": 1,
       "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "nube-group"
+      ],
       "frameId": null,
-      "roundness": null,
+      "roundness": {
+        "type": 2
+      },
       "seed": 69857888,
       "version": 1,
       "versionNonce": 499136839,
       "isDeleted": false,
-      "boundElements": [
-        {
-          "type": "text",
-          "id": "nube-label"
-        }
-      ],
+      "boundElements": null,
       "updated": 1792490400000,
       "link": null,
       "locked": false,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          -16.93,
+          3.59
+        ],
+        [
+          -25.2,
+          11.81
+        ],
+        [
+          -24.02,
+          20.88
+        ],
+        [
+          -12.6,
+          27
+        ],
+        [
+          -21.33,
+          35.96
+        ],
+        [
+          -17.32,
+          45.34
+        ],
+        [
+          -5.71,
+          51.17
+        ],
+        [
+          8.4,
+          49.5
+        ],
+        [
+          22.47,
+          59.63
+        ],
+        [
+          42.18,
+          63
+        ],
+        [
+          62.15,
+          59.63
+        ],
+        [
+          77,
+          49.5
+        ],
+        [
+          92.91,
+          46.55
+        ],
+        [
+          99.31,
+          39.38
+        ],
+        [
+          97.18,
+          30.52
+        ],
+        [
+          87.5,
+          22.5
+        ],
+        [
+          92.86,
+          9.42
+        ],
+        [
+          85.75,
+          -1.12
+        ],
+        [
+          70.77,
+          -6.61
+        ],
+        [
+          52.5,
+          -4.5
+        ],
+        [
+          37.9,
+          -12.02
+        ],
+        [
+          22.31,
+          -14.06
+        ],
+        [
+          8.7,
+          -10.2
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "polygon": true,
+      "lastCommittedPoint": null,
+      "startBinding": null,
+      "endBinding": null,
+      "startArrowhead": null,
+      "endArrowhead": null,
       "index": "aA"
     },
     {
       "id": "nube-label",
       "type": "text",
-      "x": 587.67,
-      "y": 64,
-      "width": 124,
+      "x": 631.42,
+      "y": 90,
+      "width": 36.5,
       "height": 17.5,
       "angle": 0,
       "strokeColor": "#0c4a6e",
@@ -437,7 +548,9 @@
       "strokeStyle": "solid",
       "roughness": 1,
       "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "nube-group"
+      ],
       "frameId": null,
       "roundness": null,
       "seed": 1057006705,
@@ -454,7 +567,7 @@
       "fontFamily": 3,
       "textAlign": "center",
       "verticalAlign": "middle",
-      "containerId": "nube",
+      "containerId": null,
       "autoResize": true,
       "lineHeight": 1.25,
       "index": "aB"
@@ -501,10 +614,10 @@
     {
       "id": "pagos-label",
       "type": "text",
-      "x": 183,
-      "y": 791,
-      "width": 242,
-      "height": 50,
+      "x": 207.75,
+      "y": 800.5,
+      "width": 192.5,
+      "height": 75,
       "angle": 0,
       "strokeColor": "#ffffff",
       "backgroundColor": "transparent",
@@ -524,7 +637,7 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "text": "Pasarela\n[Software System - External]",
+      "text": "Pasarela\n[Software System -\nExternal]",
       "originalText": "Pasarela\n[Software System - External]",
       "fontSize": 20,
       "fontFamily": 2,
@@ -585,9 +698,9 @@
     {
       "id": "web-label",
       "type": "text",
-      "x": 98.67,
-      "y": 331,
-      "width": 204,
+      "x": 119.42,
+      "y": 372.5,
+      "width": 162.5,
       "height": 35,
       "angle": 0,
       "strokeColor": "#fefefe",
@@ -657,14 +770,6 @@
         ],
         [
           0,
-          16
-        ],
-        [
-          0,
-          135
-        ],
-        [
-          0,
           151
         ]
       ],
@@ -687,9 +792,9 @@
     {
       "id": "r1-label",
       "type": "text",
-      "x": 208.67,
-      "y": 180,
-      "width": -16,
+      "x": 188.67,
+      "y": 240,
+      "width": 24,
       "height": 15,
       "angle": 0,
       "strokeColor": "#b54708",
@@ -759,10 +864,6 @@
         ],
         [
           0,
-          16
-        ],
-        [
-          0,
           80
         ]
       ],
@@ -785,9 +886,9 @@
     {
       "id": "r2-label",
       "type": "text",
-      "x": 172,
-      "y": 465,
-      "width": -16,
+      "x": 121.75,
+      "y": 482,
+      "width": 84.5,
       "height": 30,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -887,9 +988,9 @@
     {
       "id": "r3-label",
       "type": "text",
-      "x": 245.34,
-      "y": 465,
-      "width": 50.66,
+      "x": 284.75,
+      "y": 620.5,
+      "width": 38.5,
       "height": 15,
       "angle": 0,
       "strokeColor": "#1e1e1e",

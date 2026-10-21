@@ -91,19 +91,39 @@ export function figureTextArea(shape: FigureShape, size: Size): Area {
   return GEOMETRY[shape].area(size);
 }
 
-/** Contorno de la nube (la misma curva que la forma `cloud` de draw.io), escalado al tamaño dado. */
+/** Curva de la nube (la misma que la forma `cloud` de draw.io) en fracciones del tamaño: punto inicial y, por tramo, dos controles y el destino. */
+const CLOUD_START: [number, number] = [0.25, 0.25];
+const CLOUD_CURVES: [number, number, number, number, number, number][] = [
+  [0.05, 0.25, 0, 0.5, 0.16, 0.55],
+  [0, 0.66, 0.18, 0.9, 0.31, 0.8],
+  [0.4, 1, 0.7, 1, 0.8, 0.8],
+  [1, 0.8, 1, 0.6, 0.875, 0.5],
+  [1, 0.3, 0.8, 0.1, 0.625, 0.2],
+  [0.5, 0.05, 0.3, 0.05, 0.25, 0.25],
+];
+
+/** Contorno de la nube escalado al tamaño dado. */
 function cloudPath({ width: w, height: h }: Size): string {
   const p = (x: number, y: number) => `${r(x * w)} ${r(y * h)}`;
-  return [
-    `M ${p(0.25, 0.25)}`,
-    `C ${p(0.05, 0.25)} ${p(0, 0.5)} ${p(0.16, 0.55)}`,
-    `C ${p(0, 0.66)} ${p(0.18, 0.9)} ${p(0.31, 0.8)}`,
-    `C ${p(0.4, 1)} ${p(0.7, 1)} ${p(0.8, 0.8)}`,
-    `C ${p(1, 0.8)} ${p(1, 0.6)} ${p(0.875, 0.5)}`,
-    `C ${p(1, 0.3)} ${p(0.8, 0.1)} ${p(0.625, 0.2)}`,
-    `C ${p(0.5, 0.05)} ${p(0.3, 0.05)} ${p(0.25, 0.25)}`,
-    'Z',
-  ].join(' ');
+  const curves = CLOUD_CURVES.map((c) => `C ${p(c[0], c[1])} ${p(c[2], c[3])} ${p(c[4], c[5])}`);
+  return [`M ${p(...CLOUD_START)}`, ...curves, 'Z'].join(' ');
+}
+
+/** Puntos de la nube muestreados de su curva (el último no repite el primero), para formatos sin bezier como Excalidraw. */
+export function cloudPoints({ width: w, height: h }: Size, perCurve = 4): Point[] {
+  const points: Point[] = [];
+  let [x0, y0] = CLOUD_START;
+  for (const [x1, y1, x2, y2, x3, y3] of CLOUD_CURVES) {
+    for (let i = 0; i < perCurve; i++) {
+      const t = i / perCurve;
+      const u = 1 - t;
+      const x = u ** 3 * x0 + 3 * u * u * t * x1 + 3 * u * t * t * x2 + t ** 3 * x3;
+      const y = u ** 3 * y0 + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t ** 3 * y3;
+      points.push({ x: r(x * w), y: r(y * h) });
+    }
+    [x0, y0] = [x3, y3];
+  }
+  return points;
 }
 
 function outlinePrimitive(shape: FigureShape, size: Size, paint: { fill: string; stroke: string }): Primitive {
@@ -118,6 +138,11 @@ function outlinePrimitive(shape: FigureShape, size: Size, paint: { fill: string;
 
 function textLines(name: string, width: number, style?: Style): string[] {
   return wrapText(name, width, textFont(style, FONT.name), MAX_LINES);
+}
+
+/** Líneas en que se parte el nombre de una figura dentro de su zona de texto; las usan todos los exportadores. */
+export function figureTextLines(el: FigureElement, size: Size): string[] {
+  return textLines(el.name, figureTextArea(el.shape, size).width, el.style);
 }
 
 /**

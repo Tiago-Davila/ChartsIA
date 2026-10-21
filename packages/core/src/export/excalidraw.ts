@@ -3,11 +3,12 @@ import { type Diagram, type Element } from '../model/diagram.js';
 import { type Cardinality, isGroupKind } from '../model/enums.js';
 import { type Relation } from '../model/relation.js';
 import { hashSeed } from '../render/hash.js';
-import { edgeLabelLines } from '../render/edges.js';
+import { edgeLabelLines, labelAnchor } from '../render/edges.js';
 import { type Style, type StyleFontFamily } from '../model/style.js';
 import { c4Colors, C4_PALETTE } from '../shapes/c4/palette.js';
-import { figureOutline, figureTextArea } from '../shapes/general/figure.js';
+import { cloudPoints, figureOutline, figureTextArea, figureTextLines } from '../shapes/general/figure.js';
 import { paintOf, textFont } from '../shapes/style.js';
+import { measureText, wrapText } from '../shapes/text-metrics.js';
 import { FONT } from '../shapes/types.js';
 import { boxGeometry } from '../shapes/uml/compartments.js';
 import { classBox } from '../shapes/uml/class.js';
@@ -85,11 +86,15 @@ class Builder {
     }));
   }
 
-  /** Polígono cerrado: una línea que vuelve a su primer punto. */
+  /** Polígono cerrado: una línea que vuelve a su primer punto; `points` es relativo a `box` y el primer punto fija el origen de la línea. */
   polygon(id: string, points: Point[], box: Box, extra: Json = {}): void {
-    const closed = [...points, points[0]!];
-    this.elements.push(this.base(id, 'line', box, {
-      points: closed.map((p) => [r(p.x), r(p.y)]), polygon: true, lastCommittedPoint: null, startBinding: null, endBinding: null,
+    const closed = [...points, points[0]!].map((p) => ({ x: box.x + p.x, y: box.y + p.y }));
+    const origin = closed[0]!;
+    const xs = closed.map((p) => p.x);
+    const ys = closed.map((p) => p.y);
+    const bounds = { x: origin.x, y: origin.y, width: Math.max(...xs) - Math.min(...xs), height: Math.max(...ys) - Math.min(...ys) };
+    this.elements.push(this.base(id, 'line', bounds, {
+      points: closed.map((p) => [r(p.x - origin.x), r(p.y - origin.y)]), polygon: true, lastCommittedPoint: null, startBinding: null, endBinding: null,
       startArrowhead: null, endArrowhead: null, ...extra,
     }));
   }
@@ -104,17 +109,63 @@ class Builder {
     return el;
   }
 
-  /** Texto ligado a un contenedor: el contenedor declara el vínculo en `boundElements`. */
-  boundText(container: Json, text: string, extra: Json = {}): void {
-    const id = `${container.id as string}-label`;
-    const lines = text.split('\n').length;
-    const fontSize = (extra.fontSize as number | undefined) ?? 14;
-    const height = lines * fontSize * 1.25;
-    this.text(id, text, { x: (container.x as number) + 8, y: (container.y as number) + 8, width: (container.width as number) - 16, height }, {
-      textAlign: 'center', verticalAlign: 'middle', containerId: container.id, ...extra,
-    });
-    container.boundElements = [...((container.boundElements as Json[] | null) ?? []), { type: 'text', id }];
+  /** Subrayado de un texto: Excalidraw no tiene texto subrayado, así que se dibuja una línea debajo de las letras. */
+  underline(id: string, text: Json, width: number, extra: Json = {}): void {
+    const y = (text.y as number) + ((text.fontSize as number) * 1.1);
+    const x = text.x as number;
+    this.line(id, { x, y }, { x: x + width, y }, extra);
   }
+
+  /**
+   * Texto ligado a un contenedor: el contenedor declara el vínculo en `boundElements`. Excalidraw no
+   * recoloca ni parte el texto al abrir el archivo, así que aquí se parte y se centra en el contenedor
+   * (en una flecha, sobre el tramo más largo). Con `verticalAlign: 'top'` ocupa el ancho de la cabecera.
+   */
+  boundText(container: Json, text: string, extra: Json = {}): Json {
+    const id = `${container.id as string}-label`;
+    const fontSize = (extra.fontSize as number | undefined) ?? 14;
+    const { x, y, width, height } = container as Record<'x' | 'y' | 'width' | 'height', number>;
+    let box: Box;
+    let shown = text;
+    if (extra.verticalAlign === 'top') {
+      box = { x: x + 8, y: y + 8, width: width - 16, height: text.split('\n').length * fontSize * LINE_HEIGHT };
+    } else {
+      const maxWidth = container.type === 'rectangle' ? width - 10 : container.type === 'ellipse' ? Math.round(width * Math.SQRT1_2) : Infinity;
+      const lines = text.split('\n').flatMap((l) => (measureLine(l, extra) > maxWidth ? wrapText(l, maxWidth, measureStyle(extra)) : [l]));
+      shown = lines.join('\n');
+      const size = textSize(lines, extra);
+      const center = container.type === 'arrow' ? arrowLabelCenter(container) : { x: x + width / 2, y: y + height / 2 };
+      box = { x: center.x - size.width / 2, y: center.y - size.height / 2, ...size };
+    }
+    const label = this.text(id, shown, box, { textAlign: 'center', verticalAlign: 'middle', containerId: container.id, originalText: text, ...extra });
+    container.boundElements = [...((container.boundElements as Json[] | null) ?? []), { type: 'text', id }];
+    return label;
+  }
+}
+
+/** Alto de línea de Excalidraw, relativo al tamaño de la letra. */
+const LINE_HEIGHT = 1.25;
+/** Familia con que se mide el texto de cada familia de Excalidraw (serif usa Helvetica, así que mide como sans-serif). */
+const MEASURE_FAMILIES: Record<number, StyleFontFamily> = { 2: 'sans-serif', 3: 'monospace', 5: 'handwritten' };
+
+function measureStyle(font: Json): { size: number; fontFamily: StyleFontFamily } {
+  return { size: (font.fontSize as number | undefined) ?? 14, fontFamily: MEASURE_FAMILIES[(font.fontFamily as number | undefined) ?? FONT_FAMILY] ?? 'handwritten' };
+}
+
+function measureLine(line: string, font: Json): number {
+  return measureText(line, measureStyle(font));
+}
+
+/** Ancho y alto de un texto de varias líneas con la fuente dada. */
+function textSize(lines: string[], font: Json): { width: number; height: number } {
+  return { width: Math.max(...lines.map((l) => measureLine(l, font))), height: lines.length * measureStyle(font).size * LINE_HEIGHT };
+}
+
+/** Centro de la etiqueta de una flecha: el medio de su tramo más largo, como en el SVG. */
+function arrowLabelCenter(arrow: Json): Point {
+  const origin = { x: arrow.x as number, y: arrow.y as number };
+  const points = (arrow.points as number[][]).map(([px, py]) => ({ x: origin.x + px!, y: origin.y + py! }));
+  return labelAnchor(points);
 }
 
 function addUml(b: Builder, el: Element, box: Box): void {
@@ -127,7 +178,10 @@ function addUml(b: Builder, el: Element, box: Box): void {
   g.sections.forEach((section, s) => {
     b.line(`${el.id}-sep-${s}`, { x: box.x, y: box.y + section.top }, { x: box.x + box.width, y: box.y + section.top }, { ...strokeOf(el.style), groupIds: group });
     section.lines.forEach((line, i) => {
-      b.text(`${el.id}-${line.line.slot ?? `${s}-${i}`}`, line.line.text, { x: box.x + 10, y: box.y + line.y, width: box.width - 20, height: line.height }, { ...fontOf(el.style, FONT.member), groupIds: group });
+      const lineId = `${el.id}-${line.line.slot ?? `${s}-${i}`}`;
+      const font = fontOf(el.style, FONT.member);
+      const text = b.text(lineId, line.line.text, { x: box.x + 10, y: box.y + line.y, width: box.width - 20, height: line.height }, { ...font, groupIds: group });
+      if (line.line.underline) b.underline(`${lineId}-underline`, text, measureLine(line.line.text, font), { strokeColor: el.style?.fontColor ?? '#1e1e1e', groupIds: group });
     });
   });
 }
@@ -169,8 +223,10 @@ function addEr(b: Builder, el: Element, box: Box): void {
   if (el.kind === 'table' || el.kind === 'value-list') return addUml(b, el, box);
   if (el.kind === 'attribute') {
     const dashed = el.derived ? { strokeStyle: 'dashed' } : {};
-    const oval = b.shape(el.id, 'ellipse', box, { ...boxOf(el.style, '#fffef5'), ...dashed });
-    b.boundText(oval, el.name, fontOf(el.style, FONT.member));
+    const group = el.key ? { groupIds: [`${el.id}-group`] } : {};
+    const oval = b.shape(el.id, 'ellipse', box, { ...boxOf(el.style, '#fffef5'), ...dashed, ...group });
+    const label = b.boundText(oval, el.name, { ...fontOf(el.style, FONT.member), ...group });
+    if (el.key) b.underline(`${el.id}-underline`, label, label.width as number, { strokeColor: el.style?.fontColor ?? '#1e1e1e', ...group });
     if (el.multivalued) {
       const inner = { x: box.x + MULTIVALUED_GAP, y: box.y + MULTIVALUED_GAP, width: box.width - MULTIVALUED_GAP * 2, height: box.height - MULTIVALUED_GAP * 2 };
       b.shape(`${el.id}-inner`, 'ellipse', inner, { ...strokeOf(el.style), ...dashed });
@@ -186,20 +242,28 @@ function addEr(b: Builder, el: Element, box: Box): void {
   }
 }
 
-/** Figura general: Excalidraw no tiene nube, así que se aproxima con una elipse; triángulo y hexágono son polígonos. */
+/**
+ * Figura general: círculo, cuadrado y rectángulo son formas nativas con el texto ligado; triángulo,
+ * hexágono y nube son una línea cerrada (la nube con curva suave) con el texto agrupado encima.
+ */
 function addFigure(b: Builder, el: Element, box: Box): void {
   if (el.kind !== 'figure') return;
   const paint = boxOf(el.style, '#fffef5');
   const font = fontOf(el.style, FONT.name);
-  const outline = figureOutline(el.shape, box);
+  const lines = figureTextLines(el, box);
+  const text = lines.join('\n');
+  const outline = el.shape === 'cloud' ? cloudPoints(box) : figureOutline(el.shape, box);
   if (!outline) {
-    const container = b.shape(el.id, el.shape === 'circle' || el.shape === 'cloud' ? 'ellipse' : 'rectangle', box, paint);
-    b.boundText(container, el.name, font);
+    const container = b.shape(el.id, el.shape === 'circle' ? 'ellipse' : 'rectangle', box, paint);
+    b.boundText(container, text, { ...font, originalText: el.name });
     return;
   }
-  b.polygon(el.id, outline, box, paint);
+  const group = [`${el.id}-group`];
+  b.polygon(el.id, outline, box, { ...paint, groupIds: group, ...(el.shape === 'cloud' ? { roundness: { type: 2 } } : {}) });
   const area = figureTextArea(el.shape, box);
-  b.text(`${el.id}-label`, el.name, { x: box.x + area.x, y: box.y + area.y, width: area.width, height: area.height }, { textAlign: 'center', verticalAlign: 'middle', ...font });
+  const size = textSize(lines, font);
+  const at = { x: box.x + area.x + (area.width - size.width) / 2, y: box.y + area.y + (area.height - size.height) / 2, ...size };
+  b.text(`${el.id}-label`, text, at, { textAlign: 'center', verticalAlign: 'middle', originalText: el.name, groupIds: group, ...font });
 }
 
 /** Marca pata de gallo como líneas y un círculo, porque Excalidraw no tiene cero-o-uno nativo. */
@@ -212,19 +276,29 @@ function addCardinality(b: Builder, rel: Relation, kind: Cardinality, tag: strin
   }
 }
 
+/** Quita los puntos intermedios alineados con sus vecinos: Excalidraw pone la etiqueta en el punto del medio, que así queda en el centro de la flecha. */
+function withoutCollinear(route: Point[]): Point[] {
+  return route.filter((p, i) => {
+    const a = route[i - 1];
+    const c = route[i + 1];
+    return !a || !c || (p.x - a.x) * (c.y - a.y) !== (p.y - a.y) * (c.x - a.x);
+  });
+}
+
 function addArrow(b: Builder, rel: Relation, byId: Map<string, Json>): void {
   const route = rel.route ?? [];
   if (route.length < 2) return;
   const style = relationStyle(rel);
   const origin = route[0]!;
-  const xs = route.map((p) => p.x);
-  const ys = route.map((p) => p.y);
+  const path = withoutCollinear(route);
+  const xs = path.map((p) => p.x);
+  const ys = path.map((p) => p.y);
   const binding = (elementId: string) => ({ elementId, focus: 0, gap: 1 });
   const arrow = b.shape(rel.id, 'rectangle', { x: origin.x, y: origin.y, width: Math.max(...xs) - Math.min(...xs), height: Math.max(...ys) - Math.min(...ys) }, {
     type: 'arrow',
     strokeColor: style.color,
     strokeStyle: style.dash ? 'dashed' : 'solid',
-    points: route.map((p) => [r(p.x - origin.x), r(p.y - origin.y)]),
+    points: path.map((p) => [r(p.x - origin.x), r(p.y - origin.y)]),
     lastCommittedPoint: null,
     startBinding: byId.has(rel.source) ? binding(rel.source) : null,
     endBinding: byId.has(rel.target) ? binding(rel.target) : null,
@@ -263,7 +337,8 @@ export function exportExcalidraw(diagram: Diagram): string {
     } else if (diagram.type === 'er') addEr(b, el, box);
     else addC4(b, el, box);
   }
-  const byId = new Map(b.elements.filter((e) => diagram.elements.some((d) => d.id === e.id)).map((e) => [e.id as string, e]));
+  // Las líneas cerradas (triángulo, hexágono, nube) no admiten vínculos de flecha en Excalidraw, así que las flechas hacia ellas quedan sin vincular.
+  const byId = new Map(b.elements.filter((e) => e.type !== 'line' && diagram.elements.some((d) => d.id === e.id)).map((e) => [e.id as string, e]));
   for (const rel of [...diagram.relations].sort((a, c) => (a.id < c.id ? -1 : 1))) addArrow(b, rel, byId);
 
   const keys = orderKeys(b.elements.length);

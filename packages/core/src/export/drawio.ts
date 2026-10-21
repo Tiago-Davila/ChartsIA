@@ -4,7 +4,7 @@ import { type Relation } from '../model/relation.js';
 import { c4Cells } from './drawio-c4.js';
 import { classCells } from './drawio-class.js';
 import { erCells, erEdgeStyle } from './drawio-er.js';
-import { figureCells } from './drawio-figure.js';
+import { figureCells, figureConstraint } from './drawio-figure.js';
 import { drawioFont, drawioStroke } from './drawio-style.js';
 import { xmlElement } from './xml-escape.js';
 import { FONT } from '../shapes/types.js';
@@ -49,10 +49,10 @@ function vertexXml(cell: DrawioCell): string {
 }
 
 /** Restricción de puerto (exitX/entryX) a partir del punto de la ruta sobre el borde del nodo. */
-function constraint(prefix: 'exit' | 'entry', p: Point, l: Element['layout']): string {
+function constraint(prefix: 'exit' | 'entry', p: Point, el: Element | undefined): string {
+  const l = el?.layout;
   if (!l || !l.width || !l.height) return '';
-  const fx = r((p.x - l.x) / l.width);
-  const fy = r((p.y - l.y) / l.height);
+  const [fx, fy] = figureConstraint(el, r((p.x - l.x) / l.width), r((p.y - l.y) / l.height));
   return `${prefix}X=${fx};${prefix}Y=${fy};${prefix}Dx=0;${prefix}Dy=0;`;
 }
 
@@ -73,7 +73,7 @@ function edgeXml(rel: Relation, byId: Map<string, Element>): string {
   if (rel.kind === 'connector') style = style.replace('endArrow=open;endSize=12;', connectorEdgeStyle(rel));
   if (rel.kind === 'association' && rel.navigable === 'source-to-target') style = style.replace('endArrow=none;', 'endArrow=open;endSize=12;');
   style = drawioFont(drawioStroke(style, rel.style), rel.style, FONT.small);
-  if (route.length >= 2) style += constraint('exit', route[0]!, src?.layout) + constraint('entry', route[route.length - 1]!, tgt?.layout);
+  if (route.length >= 2) style += constraint('exit', route[0]!, src) + constraint('entry', route[route.length - 1]!, tgt);
   const label = [rel.label, rel.kind === 'c4-rel' && rel.technology ? `[${rel.technology}]` : undefined].filter(Boolean).join('\n');
   const points = route.slice(1, -1).map((p) => xmlElement('mxPoint', { x: r(p.x), y: r(p.y) })).join('');
   const geometry = xmlElement('mxGeometry', { relative: '1', as: 'geometry' }, points ? xmlElement('Array', { as: 'points' }, points) : '');

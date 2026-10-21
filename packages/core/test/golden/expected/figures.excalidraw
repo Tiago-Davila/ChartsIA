@@ -39,9 +39,9 @@
     {
       "id": "circulo-label",
       "type": "text",
-      "x": 38,
-      "y": 59,
-      "width": 84,
+      "x": 53.5,
+      "y": 92.25,
+      "width": 53,
       "height": 17.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -109,9 +109,9 @@
     {
       "id": "cuadrado-label",
       "type": "text",
-      "x": 198,
-      "y": 59,
-      "width": 84,
+      "x": 204.25,
+      "y": 92.25,
+      "width": 71.5,
       "height": 17.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -146,7 +146,7 @@
     {
       "id": "hexagono",
       "type": "line",
-      "x": 609,
+      "x": 628.2,
       "y": 422,
       "width": 128,
       "height": 64,
@@ -158,53 +158,46 @@
       "strokeStyle": "solid",
       "roughness": 1,
       "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "hexagono-group"
+      ],
       "frameId": null,
       "roundness": null,
       "seed": 2082081375,
       "version": 1,
       "versionNonce": 1823232770,
       "isDeleted": false,
-      "boundElements": [
-        {
-          "type": "arrow",
-          "id": "r2"
-        },
-        {
-          "type": "arrow",
-          "id": "r3"
-        }
-      ],
+      "boundElements": null,
       "updated": 1792490400000,
       "link": null,
       "locked": false,
       "points": [
         [
-          19.2,
+          0,
+          0
+        ],
+        [
+          89.6,
           0
         ],
         [
           108.8,
-          0
-        ],
-        [
-          128,
           32
         ],
         [
-          108.8,
-          64
-        ],
-        [
-          19.2,
+          89.6,
           64
         ],
         [
           0,
+          64
+        ],
+        [
+          -19.2,
           32
         ],
         [
-          19.2,
+          0,
           0
         ]
       ],
@@ -219,10 +212,10 @@
     {
       "id": "hexagono-label",
       "type": "text",
-      "x": 628.2,
-      "y": 430,
-      "width": 89.6,
-      "height": 48,
+      "x": 636.25,
+      "y": 445.25,
+      "width": 73.5,
+      "height": 17.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -231,7 +224,9 @@
       "strokeStyle": "solid",
       "roughness": 1,
       "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "hexagono-group"
+      ],
       "frameId": null,
       "roundness": null,
       "seed": 1446442062,
@@ -255,11 +250,11 @@
     },
     {
       "id": "nube",
-      "type": "ellipse",
-      "x": 603,
-      "y": 252,
-      "width": 140,
-      "height": 90,
+      "type": "line",
+      "x": 638,
+      "y": 274.5,
+      "width": 124.51,
+      "height": 77.06,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "#fffef5",
@@ -268,38 +263,137 @@
       "strokeStyle": "solid",
       "roughness": 1,
       "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "nube-group"
+      ],
       "frameId": null,
-      "roundness": null,
+      "roundness": {
+        "type": 2
+      },
       "seed": 69857888,
       "version": 1,
       "versionNonce": 499136839,
       "isDeleted": false,
-      "boundElements": [
-        {
-          "type": "text",
-          "id": "nube-label"
-        },
-        {
-          "type": "arrow",
-          "id": "r1"
-        },
-        {
-          "type": "arrow",
-          "id": "r2"
-        }
-      ],
+      "boundElements": null,
       "updated": 1792490400000,
       "link": null,
       "locked": false,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          -16.93,
+          3.59
+        ],
+        [
+          -25.2,
+          11.81
+        ],
+        [
+          -24.02,
+          20.88
+        ],
+        [
+          -12.6,
+          27
+        ],
+        [
+          -21.33,
+          35.96
+        ],
+        [
+          -17.32,
+          45.34
+        ],
+        [
+          -5.71,
+          51.17
+        ],
+        [
+          8.4,
+          49.5
+        ],
+        [
+          22.47,
+          59.63
+        ],
+        [
+          42.18,
+          63
+        ],
+        [
+          62.15,
+          59.63
+        ],
+        [
+          77,
+          49.5
+        ],
+        [
+          92.91,
+          46.55
+        ],
+        [
+          99.31,
+          39.38
+        ],
+        [
+          97.18,
+          30.52
+        ],
+        [
+          87.5,
+          22.5
+        ],
+        [
+          92.86,
+          9.42
+        ],
+        [
+          85.75,
+          -1.12
+        ],
+        [
+          70.77,
+          -6.61
+        ],
+        [
+          52.5,
+          -4.5
+        ],
+        [
+          37.9,
+          -12.02
+        ],
+        [
+          22.31,
+          -14.06
+        ],
+        [
+          8.7,
+          -10.2
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "polygon": true,
+      "lastCommittedPoint": null,
+      "startBinding": null,
+      "endBinding": null,
+      "startArrowhead": null,
+      "endArrowhead": null,
       "index": "a6"
     },
     {
       "id": "nube-label",
       "type": "text",
-      "x": 611,
-      "y": 260,
-      "width": 124,
+      "x": 654,
+      "y": 286,
+      "width": 38,
       "height": 17.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -309,7 +403,9 @@
       "strokeStyle": "solid",
       "roughness": 1,
       "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "nube-group"
+      ],
       "frameId": null,
       "roundness": null,
       "seed": 1057006705,
@@ -326,7 +422,7 @@
       "fontFamily": 5,
       "textAlign": "center",
       "verticalAlign": "middle",
-      "containerId": "nube",
+      "containerId": null,
       "autoResize": true,
       "lineHeight": 1.25,
       "index": "a7"
@@ -367,10 +463,10 @@
     {
       "id": "rectangulo-label",
       "type": "text",
-      "x": 358,
-      "y": 67,
-      "width": 137,
-      "height": 17.5,
+      "x": 358.25,
+      "y": 74.75,
+      "width": 136.5,
+      "height": 52.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -390,7 +486,7 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "text": "Rectángulo con un nombre largo <y> \"raro\"",
+      "text": "Rectángulo con un\nnombre largo <y>\n\"raro\"",
       "originalText": "Rectángulo con un nombre largo <y> \"raro\"",
       "fontSize": 14,
       "fontFamily": 5,
@@ -404,7 +500,7 @@
     {
       "id": "triangulo",
       "type": "line",
-      "x": 585,
+      "x": 673,
       "y": 566,
       "width": 176,
       "height": 104,
@@ -416,37 +512,34 @@
       "strokeStyle": "solid",
       "roughness": 1,
       "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "triangulo-group"
+      ],
       "frameId": null,
       "roundness": null,
       "seed": 1389007911,
       "version": 1,
       "versionNonce": 531675660,
       "isDeleted": false,
-      "boundElements": [
-        {
-          "type": "arrow",
-          "id": "r3"
-        }
-      ],
+      "boundElements": null,
       "updated": 1792490400000,
       "link": null,
       "locked": false,
       "points": [
         [
-          88,
+          0,
           0
         ],
         [
-          176,
+          88,
+          104
+        ],
+        [
+          -88,
           104
         ],
         [
           0,
-          104
-        ],
-        [
-          88,
           0
         ]
       ],
@@ -461,10 +554,10 @@
     {
       "id": "triangulo-label",
       "type": "text",
-      "x": 629,
-      "y": 618,
-      "width": 88,
-      "height": 52,
+      "x": 637,
+      "y": 635.25,
+      "width": 72,
+      "height": 17.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -473,7 +566,9 @@
       "strokeStyle": "solid",
       "roughness": 1,
       "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "triangulo-group"
+      ],
       "frameId": null,
       "roundness": null,
       "seed": 1339269318,
@@ -571,9 +666,9 @@
     {
       "id": "usuario-label",
       "type": "text",
-      "x": 571,
-      "y": 80,
-      "width": 204,
+      "x": 640.75,
+      "y": 104.5,
+      "width": 64.5,
       "height": 35,
       "angle": 0,
       "strokeColor": "#ffffff",
@@ -654,11 +749,7 @@
         "focus": 0,
         "gap": 1
       },
-      "endBinding": {
-        "elementId": "nube",
-        "focus": 0,
-        "gap": 1
-      },
+      "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": "triangle",
       "elbowed": false,
@@ -667,9 +758,9 @@
     {
       "id": "r1-label",
       "type": "text",
-      "x": 681,
-      "y": 180,
-      "width": -16,
+      "x": 661.75,
+      "y": 204.5,
+      "width": 22.5,
       "height": 15,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -738,16 +829,8 @@
         ]
       ],
       "lastCommittedPoint": null,
-      "startBinding": {
-        "elementId": "nube",
-        "focus": 0,
-        "gap": 1
-      },
-      "endBinding": {
-        "elementId": "hexagono",
-        "focus": 0,
-        "gap": 1
-      },
+      "startBinding": null,
+      "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": "triangle",
       "elbowed": false,
@@ -790,16 +873,8 @@
         ]
       ],
       "lastCommittedPoint": null,
-      "startBinding": {
-        "elementId": "hexagono",
-        "focus": 0,
-        "gap": 1
-      },
-      "endBinding": {
-        "elementId": "triangulo",
-        "focus": 0,
-        "gap": 1
-      },
+      "startBinding": null,
+      "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": "triangle",
       "elbowed": false,

@@ -43,9 +43,9 @@
     {
       "id": "apellido-label",
       "type": "text",
-      "x": 359.33,
-      "y": 300,
-      "width": 83,
+      "x": 372.83,
+      "y": 305.88,
+      "width": 56,
       "height": 16.25,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -133,9 +133,9 @@
     {
       "id": "cliente-label",
       "type": "text",
-      "x": 63,
-      "y": 38,
-      "width": 104,
+      "x": 88.5,
+      "y": 45.25,
+      "width": 53,
       "height": 17.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -182,7 +182,9 @@
       "strokeStyle": "solid",
       "roughness": 1,
       "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "dni-group"
+      ],
       "frameId": null,
       "roundness": null,
       "seed": 1416290125,
@@ -207,9 +209,9 @@
     {
       "id": "dni-label",
       "type": "text",
-      "x": 38,
-      "y": 166,
-      "width": 74,
+      "x": 62,
+      "y": 171.88,
+      "width": 26,
       "height": 16.25,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -219,7 +221,9 @@
       "strokeStyle": "solid",
       "roughness": 1,
       "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "dni-group"
+      ],
       "frameId": null,
       "roundness": null,
       "seed": 841443806,
@@ -240,6 +244,51 @@
       "autoResize": true,
       "lineHeight": 1.25,
       "index": "a5"
+    },
+    {
+      "id": "dni-underline",
+      "type": "line",
+      "x": 62,
+      "y": 186.18,
+      "width": 26,
+      "height": 0,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [
+        "dni-group"
+      ],
+      "frameId": null,
+      "roundness": null,
+      "seed": 538955362,
+      "version": 1,
+      "versionNonce": 1751834345,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1792490400000,
+      "link": null,
+      "locked": false,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          26,
+          0
+        ]
+      ],
+      "lastCommittedPoint": null,
+      "startBinding": null,
+      "endBinding": null,
+      "startArrowhead": null,
+      "endArrowhead": null,
+      "index": "a6"
     },
     {
       "id": "edad",
@@ -276,14 +325,14 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "index": "a6"
+      "index": "a7"
     },
     {
       "id": "edad-label",
       "type": "text",
-      "x": 625,
-      "y": 166,
-      "width": 126,
+      "x": 644.5,
+      "y": 171.88,
+      "width": 87,
       "height": 16.25,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -313,7 +362,7 @@
       "containerId": "edad",
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "a7"
+      "index": "a8"
     },
     {
       "id": "estado",
@@ -354,14 +403,14 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "index": "a8"
+      "index": "a9"
     },
     {
       "id": "estado-label",
       "type": "text",
-      "x": 842,
-      "y": 300,
-      "width": 74,
+      "x": 855,
+      "y": 305.88,
+      "width": 48,
       "height": 16.25,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -391,7 +440,7 @@
       "containerId": "estado",
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "a9"
+      "index": "aA"
     },
     {
       "id": "estados",
@@ -430,7 +479,7 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "index": "aA"
+      "index": "aB"
     },
     {
       "id": "estados-label",
@@ -469,7 +518,7 @@
       "containerId": "estados",
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "aB"
+      "index": "aC"
     },
     {
       "id": "estados-sep-0",
@@ -514,7 +563,7 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
-      "index": "aC"
+      "index": "aD"
     },
     {
       "id": "estados-value:0",
@@ -553,7 +602,7 @@
       "containerId": null,
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "aD"
+      "index": "aE"
     },
     {
       "id": "estados-value:1",
@@ -592,7 +641,7 @@
       "containerId": null,
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "aE"
+      "index": "aF"
     },
     {
       "id": "estados-value:2",
@@ -631,7 +680,7 @@
       "containerId": null,
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "aF"
+      "index": "aG"
     },
     {
       "id": "nombre",
@@ -676,14 +725,14 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "index": "aG"
+      "index": "aH"
     },
     {
       "id": "nombre-label",
       "type": "text",
-      "x": 188,
-      "y": 172.67,
-      "width": 174,
+      "x": 214.5,
+      "y": 178.55,
+      "width": 121,
       "height": 16.25,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -713,7 +762,7 @@
       "containerId": "nombre",
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "aH"
+      "index": "aI"
     },
     {
       "id": "nombre_pila",
@@ -750,14 +799,14 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "index": "aI"
+      "index": "aJ"
     },
     {
       "id": "nombre_pila-label",
       "type": "text",
-      "x": 203.33,
-      "y": 300,
-      "width": 80,
+      "x": 216.33,
+      "y": 305.88,
+      "width": 54,
       "height": 16.25,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -787,7 +836,7 @@
       "containerId": "nombre_pila",
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "aJ"
+      "index": "aK"
     },
     {
       "id": "pedido",
@@ -828,14 +877,14 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "index": "aK"
+      "index": "aL"
     },
     {
       "id": "pedido-label",
       "type": "text",
-      "x": 827,
-      "y": 169,
-      "width": 104,
+      "x": 853.75,
+      "y": 176.25,
+      "width": 50.5,
       "height": 17.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -865,7 +914,7 @@
       "containerId": "pedido",
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "aL"
+      "index": "aM"
     },
     {
       "id": "telefonos",
@@ -902,14 +951,14 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "index": "aM"
+      "index": "aN"
     },
     {
       "id": "telefonos-label",
       "type": "text",
-      "x": 438,
-      "y": 166,
-      "width": 111,
+      "x": 459,
+      "y": 176.88,
+      "width": 69,
       "height": 16.25,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -939,7 +988,7 @@
       "containerId": "telefonos",
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "aN"
+      "index": "aO"
     },
     {
       "id": "telefonos-inner",
@@ -967,7 +1016,7 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "index": "aO"
+      "index": "aP"
     },
     {
       "id": "a1",
@@ -1019,7 +1068,7 @@
       "startArrowhead": null,
       "endArrowhead": null,
       "elbowed": false,
-      "index": "aP"
+      "index": "aQ"
     },
     {
       "id": "a2",
@@ -1079,7 +1128,7 @@
       "startArrowhead": null,
       "endArrowhead": null,
       "elbowed": false,
-      "index": "aQ"
+      "index": "aR"
     },
     {
       "id": "a3",
@@ -1131,7 +1180,7 @@
       "startArrowhead": null,
       "endArrowhead": null,
       "elbowed": false,
-      "index": "aR"
+      "index": "aS"
     },
     {
       "id": "a4",
@@ -1191,7 +1240,7 @@
       "startArrowhead": null,
       "endArrowhead": null,
       "elbowed": false,
-      "index": "aS"
+      "index": "aT"
     },
     {
       "id": "a5",
@@ -1251,7 +1300,7 @@
       "startArrowhead": null,
       "endArrowhead": null,
       "elbowed": false,
-      "index": "aT"
+      "index": "aU"
     },
     {
       "id": "a6",
@@ -1311,7 +1360,7 @@
       "startArrowhead": null,
       "endArrowhead": null,
       "elbowed": false,
-      "index": "aU"
+      "index": "aV"
     },
     {
       "id": "a7",
@@ -1363,7 +1412,7 @@
       "startArrowhead": null,
       "endArrowhead": null,
       "elbowed": false,
-      "index": "aV"
+      "index": "aW"
     },
     {
       "id": "a8",
@@ -1415,7 +1464,7 @@
       "startArrowhead": null,
       "endArrowhead": null,
       "elbowed": false,
-      "index": "aW"
+      "index": "aX"
     },
     {
       "id": "r1",
@@ -1480,7 +1529,7 @@
       "startArrowhead": null,
       "endArrowhead": null,
       "elbowed": false,
-      "index": "aX"
+      "index": "aY"
     },
     {
       "id": "r1-src-0",
@@ -1523,7 +1572,7 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
-      "index": "aY"
+      "index": "aZ"
     },
     {
       "id": "r1-src-1",
@@ -1566,7 +1615,7 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
-      "index": "aZ"
+      "index": "aa"
     },
     {
       "id": "r1-dst-0",
@@ -1609,7 +1658,7 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
-      "index": "aa"
+      "index": "ab"
     },
     {
       "id": "r1-dst-1",
@@ -1652,7 +1701,7 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
-      "index": "ab"
+      "index": "ac"
     },
     {
       "id": "r1-dst-2",
@@ -1695,7 +1744,7 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
-      "index": "ac"
+      "index": "ad"
     },
     {
       "id": "r1-dst-o",
@@ -1723,14 +1772,14 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "index": "ad"
+      "index": "ae"
     },
     {
       "id": "r1-label",
       "type": "text",
-      "x": 163,
-      "y": 86,
-      "width": 708,
+      "x": 502,
+      "y": 86.5,
+      "width": 30,
       "height": 15,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -1760,7 +1809,7 @@
       "containerId": "r1",
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "ae"
+      "index": "af"
     }
   ],
   "appState": {

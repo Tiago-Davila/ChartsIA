@@ -1817,6 +1817,51 @@
       "index": "ah"
     },
     {
+      "id": "Socio-attribute:1-underline",
+      "type": "line",
+      "x": 498.5,
+      "y": 291.3,
+      "width": 99,
+      "height": 0,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [
+        "Socio-group"
+      ],
+      "frameId": null,
+      "roundness": null,
+      "seed": 623884152,
+      "version": 1,
+      "versionNonce": 1654436733,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1792490400000,
+      "link": null,
+      "locked": false,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          99,
+          0
+        ]
+      ],
+      "lastCommittedPoint": null,
+      "startBinding": null,
+      "endBinding": null,
+      "startArrowhead": null,
+      "endArrowhead": null,
+      "index": "ai"
+    },
+    {
       "id": "Socio-sep-1",
       "type": "line",
       "x": 488.5,
@@ -1859,7 +1904,7 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
-      "index": "ai"
+      "index": "aj"
     },
     {
       "id": "Socio-operation:0",
@@ -1898,7 +1943,7 @@
       "containerId": null,
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "aj"
+      "index": "ak"
     },
     {
       "id": "a1",
@@ -1963,14 +2008,14 @@
       "startArrowhead": null,
       "endArrowhead": "arrow",
       "elbowed": false,
-      "index": "ak"
+      "index": "al"
     },
     {
       "id": "a1-label",
       "type": "text",
-      "x": 588,
-      "y": 567,
-      "width": 167,
+      "x": 480.75,
+      "y": 567.5,
+      "width": 15.5,
       "height": 15,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -2000,7 +2045,7 @@
       "containerId": "a1",
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "al"
+      "index": "am"
     },
     {
       "id": "a2",
@@ -2052,7 +2097,7 @@
       "startArrowhead": null,
       "endArrowhead": null,
       "elbowed": false,
-      "index": "am"
+      "index": "an"
     },
     {
       "id": "ag1",
@@ -2087,10 +2132,6 @@
         ],
         [
           0,
-          70.75
-        ],
-        [
-          0,
           86.75
         ]
       ],
@@ -2108,7 +2149,7 @@
       "startArrowhead": "diamond_outline",
       "endArrowhead": null,
       "elbowed": false,
-      "index": "an"
+      "index": "ao"
     },
     {
       "id": "c1",
@@ -2160,7 +2201,7 @@
       "startArrowhead": "diamond",
       "endArrowhead": null,
       "elbowed": false,
-      "index": "ao"
+      "index": "ap"
     },
     {
       "id": "d1",
@@ -2212,7 +2253,7 @@
       "startArrowhead": null,
       "endArrowhead": "arrow",
       "elbowed": false,
-      "index": "ap"
+      "index": "aq"
     },
     {
       "id": "h1",
@@ -2272,7 +2313,7 @@
       "startArrowhead": null,
       "endArrowhead": "triangle_outline",
       "elbowed": false,
-      "index": "aq"
+      "index": "ar"
     },
     {
       "id": "h2",
@@ -2340,7 +2381,7 @@
       "startArrowhead": null,
       "endArrowhead": "triangle_outline",
       "elbowed": false,
-      "index": "ar"
+      "index": "as"
     },
     {
       "id": "rl1",
@@ -2400,7 +2441,7 @@
       "startArrowhead": null,
       "endArrowhead": "triangle_outline",
       "elbowed": false,
-      "index": "as"
+      "index": "at"
     }
   ],
   "appState": {
