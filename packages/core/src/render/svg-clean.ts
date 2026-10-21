@@ -22,6 +22,8 @@ export function primitivesToSvg(primitives: Primitive[]): string {
           return `<ellipse cx="${n(p.cx)}" cy="${n(p.cy)}" rx="${n(p.rx)}" ry="${n(p.ry)}"${paint(p)}/>`;
         case 'line':
           return `<line x1="${n(p.x1)}" y1="${n(p.y1)}" x2="${n(p.x2)}" y2="${n(p.y2)}"${paint(p)}/>`;
+        case 'image':
+          return `<image href="${escapeXml(p.href)}" x="${n(p.x)}" y="${n(p.y)}" width="${n(p.width)}" height="${n(p.height)}" preserveAspectRatio="xMidYMid meet"/>`;
         case 'path':
           return `<path d="${escapeXml(p.d)}"${paint(p)}/>`;
         case 'text': {

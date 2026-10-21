@@ -1,0 +1,24 @@
+{
+  "type": "class",
+  "title": "Imágenes embebidas",
+  "elements": [
+    {
+      "id": "foto",
+      "name": "Foto PNG",
+      "kind": "image",
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAYAAAD0In+KAAAAEUlEQVR4nGM4H2zxX6NsxX8AE2IEn6hGtYAAAAAASUVORK5CYII=",
+      "layout": {
+        "x": 30,
+        "y": 30,
+        "width": 320,
+        "height": 220,
+        "pinned": false
+      }
+    }
+  ],
+  "relations": [],
+  "id": "dg_goldengolden",
+  "revision": 1,
+  "createdAt": "2026-10-20T10:00:00.000Z",
+  "updatedAt": "2026-10-20T10:00:00.000Z"
+}

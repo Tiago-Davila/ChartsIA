@@ -30,9 +30,9 @@ export function checkParents({ diagram, elementsById }: RuleContext): Validation
         `"${el.id}" tiene como padre a "${parent.id}", que es un ${parent.kind} y no un grupo.`,
         'parentId solo puede apuntar a un package (clases) o a un boundary (C4).',
       );
-    } else if (parent.kind === 'package' && el.kind !== 'figure' && !(CLASS_ELEMENT_KINDS as readonly string[]).includes(el.kind)) {
+    } else if (parent.kind === 'package' && el.kind !== 'figure' && el.kind !== 'image' && !(CLASS_ELEMENT_KINDS as readonly string[]).includes(el.kind)) {
       invalid(
-        `Un package solo contiene elementos de clases o figuras; "${el.id}" es ${el.kind}.`,
+        `Un package solo contiene elementos de clases, figuras o imágenes; "${el.id}" es ${el.kind}.`,
         'Mueve el elemento fuera del package o usa un boundary en diagramas C4.',
       );
     }

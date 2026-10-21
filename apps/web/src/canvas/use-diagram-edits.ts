@@ -6,6 +6,7 @@ import { ApiError, type ApiClient } from '../state/api-client';
 import { diagramStore } from '../state/diagram-store';
 import { type AlignMode, alignBoxes } from './align';
 import { connectionRelation, freeId } from './edge-edits';
+import { readImageFile } from './image-import';
 import { changesForSlot } from './slot-edits';
 import { type StyleUpdate } from './style-edits';
 
@@ -26,22 +27,24 @@ function depth(id: string, byId: Map<string, Element>): number {
  * lienzo vuelve al último estado confirmado.
  */
 export function useDiagramEdits(api: ApiClient) {
-  const { getInternalNode, getNodes } = useReactFlow();
+  const { getInternalNode, getNodes, screenToFlowPosition } = useReactFlow();
 
   // Ejecuta una escritura en el hub y muestra sus errores si la rechaza.
   const write = useCallback(
     async (task: (diagram: Diagram) => Promise<unknown>) => {
       const { diagram, connection } = diagramStore.getState();
-      if (!diagram) return;
+      if (!diagram) return false;
       try {
         await task(diagram);
         // Sin canal en vivo, se lee el resultado directamente.
         if (connection !== 'connected') diagramStore.getState().reconcile(await api.getDiagram(diagram.id));
+        return true;
       } catch (error) {
         const store = diagramStore.getState();
         if (error instanceof ApiError && error.unauthorized) store.setNeedsToken(true);
         else if (error instanceof ApiError && error.errors.length > 0) store.showErrors(error.errors);
         else store.showErrors([{ code: 'SCHEMA_VIOLATION', path: '', message: 'No se pudo contactar con el hub.', hint: 'Comprueba que el hub está en marcha y vuelve a intentarlo.' }]);
+        return false;
       }
     },
     [api],
@@ -49,10 +52,42 @@ export function useDiagramEdits(api: ApiClient) {
 
   const send = useCallback(
     async (operations: Operation[]) => {
-      if (operations.length === 0) return;
-      await write((diagram) => api.applyOperations(diagram.id, { baseRevision: diagram.revision, operations }));
+      if (operations.length === 0) return true;
+      return write((diagram) => api.applyOperations(diagram.id, { baseRevision: diagram.revision, operations }));
     },
     [api, write],
+  );
+
+  /** Inserta imágenes locales saneadas en la posición de pantalla indicada. */
+  const insertImages = useCallback(
+    (files: File[], screenPosition: { x: number; y: number }) => {
+      void (async () => {
+        const initial = diagramStore.getState().diagram;
+        if (!initial) return;
+        const draft = { elements: [...initial.elements], relations: initial.relations };
+        const point = screenToFlowPosition(screenPosition);
+        for (const [index, file] of files.entries()) {
+          let image: { name: string; src: string };
+          try {
+            image = await readImageFile(file);
+          } catch (error) {
+            diagramStore.getState().showErrors([{ code: 'SCHEMA_VIOLATION', path: '/elements', message: (error as Error).message, hint: 'Usa un PNG, JPG o SVG válido de hasta 5 MiB. Los SVG solo pueden contener formas y texto; se rechazan scripts, enlaces y estilos activos.' }]);
+            return;
+          }
+          if (diagramStore.getState().diagram?.id !== initial.id) return;
+          const element = {
+            id: freeId(draft, 'Imagen'),
+            kind: 'image' as const,
+            name: image.name,
+            src: image.src,
+            layout: { x: Math.round(point.x + index * 24), y: Math.round(point.y + index * 24), width: 320, height: 220 },
+          };
+          if (!(await send([{ op: 'add_element', element }]))) return;
+          draft.elements.push(element);
+        }
+      })();
+    },
+    [screenToFlowPosition, send],
   );
 
   /** Ctrl+Z / Ctrl+Y: deshace o rehace el último cambio del diagrama en el hub. */
@@ -207,5 +242,5 @@ export function useDiagramEdits(api: ApiClient) {
     [editText, resize, updateRelation, updateStyles, leaveGroup, ungroup],
   );
 
-  return { onNodeDragStop, onDelete, onConnect, editText, editActions, history, duplicate, align, rename };
+  return { onNodeDragStop, onDelete, onConnect, editText, editActions, history, duplicate, align, rename, insertImages };
 }

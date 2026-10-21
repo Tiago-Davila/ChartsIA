@@ -43,7 +43,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     token: env.CHARTSIA_TOKEN || undefined,
     dataDir: env.CHARTSIA_DATA_DIR || join(homedir(), '.chartsia', 'diagrams'),
     maxElements: intFromEnv(env, 'CHARTSIA_MAX_ELEMENTS', 500),
-    maxRequestBytes: intFromEnv(env, 'CHARTSIA_MAX_REQUEST_BYTES', 1024 * 1024),
+    maxRequestBytes: intFromEnv(env, 'CHARTSIA_MAX_REQUEST_BYTES', 8 * 1024 * 1024),
     publicUrl: (env.CHARTSIA_PUBLIC_URL || `http://${urlHost}:${port}`).replace(/\/+$/, ''),
     webOrigin: env.CHARTSIA_WEB_ORIGIN || 'http://127.0.0.1:5173',
     webDistDir: env.CHARTSIA_WEB_DIST || undefined,

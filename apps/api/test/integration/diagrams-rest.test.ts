@@ -121,4 +121,19 @@ describe('POST /api/diagrams', () => {
     const list = await body(await json('/api/diagrams'));
     expect(list.diagrams.find((d: { title: string }) => d.title === 'En proyecto')).toMatchObject({ projectId: project.id });
   });
+
+  it('rechaza SVG activo antes de persistirlo', async () => {
+    const created = await body(await json('/api/diagrams', {
+      method: 'POST',
+      body: JSON.stringify({ type: 'class', title: 'Malicioso' }),
+    }));
+    const src = `data:image/svg+xml;base64,${Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>').toString('base64')}`;
+    const response = await json(`/api/diagrams/${created.diagramId}/operations`, {
+      method: 'POST',
+      body: JSON.stringify({ operations: [{ op: 'add_element', element: { id: 'img', kind: 'image', name: 'Imagen', src } }] }),
+    });
+    expect(response.status).toBe(422);
+    expect((await body(response)).errors[0]).toMatchObject({ code: 'SCHEMA_VIOLATION', path: '/operations/0/element/src' });
+    expect((await body(await json(`/api/diagrams/${created.diagramId}`))).elements).toHaveLength(0);
+  });
 });

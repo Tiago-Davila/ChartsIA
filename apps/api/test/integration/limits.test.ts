@@ -10,7 +10,7 @@ function createCall(args: unknown) {
 describe('límites', () => {
   let hub: TestHub;
   beforeAll(async () => {
-    hub = await startHub();
+    hub = await startHub({ CHARTSIA_MAX_REQUEST_BYTES: String(1024 * 1024) });
   });
   afterAll(() => hub.close());
 

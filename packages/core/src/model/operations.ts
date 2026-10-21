@@ -6,6 +6,7 @@ import { DescriptionSchema, ElementIdSchema, LayoutSchema, NameSchema, PointSche
 import { ElementSchema, TitleSchema } from './diagram.js';
 import { MultiplicitySchema, RelationSchema } from './relation.js';
 import { StyleSchema } from './style.js';
+import { ImageDataUrlSchema } from './image-elements.js';
 
 /**
  * Cambios parciales de un elemento: unión de los campos editables de todos los `kind`.
@@ -29,6 +30,7 @@ export const ElementChangesSchema = z
     columns: z.array(ColumnSchema).min(1).max(200).optional(),
     weak: z.boolean().nullable().optional(),
     shape: z.enum(FIGURE_SHAPES).optional(),
+    src: ImageDataUrlSchema.optional().describe('Reemplaza la imagen con un data URL PNG/JPG o SVG saneado'),
     key: z.boolean().nullable().optional(),
     multivalued: z.boolean().nullable().optional(),
     derived: z.boolean().nullable().optional(),
