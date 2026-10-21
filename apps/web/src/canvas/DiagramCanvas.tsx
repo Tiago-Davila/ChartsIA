@@ -9,6 +9,7 @@ import {
   type OnConnect,
   type OnNodeDrag,
   ReactFlow,
+  SelectionMode,
   useEdgesState,
   useNodesInitialized,
   useNodesState,
@@ -92,6 +93,11 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
       nodesConnectable={!readOnly}
       connectionMode={ConnectionMode.Loose}
       elementsSelectable
+      selectionOnDrag
+      selectionMode={SelectionMode.Partial}
+      panOnDrag={false}
+      panOnScroll
+      panActivationKeyCode="Space"
       deleteKeyCode={readOnly ? null : ['Delete', 'Backspace']}
       minZoom={0.05}
       maxZoom={4}
