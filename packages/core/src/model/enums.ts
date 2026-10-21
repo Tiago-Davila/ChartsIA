@@ -30,11 +30,17 @@ export const UML_RELATION_KINDS = [
   'realization',
   'dependency',
 ] as const;
-export const RELATION_KINDS = [...UML_RELATION_KINDS, 'c4-rel', 'er-rel', 'er-attr'] as const;
+/** Conector libre: flecha o línea sin semántica UML/C4, válida en todos los tipos de diagrama. */
+export const CONNECTOR_KIND = 'connector';
+export const RELATION_KINDS = [...UML_RELATION_KINDS, 'c4-rel', 'er-rel', 'er-attr', CONNECTOR_KIND] as const;
 export type RelationKind = (typeof RELATION_KINDS)[number];
 
 /** Relaciones UML que admiten multiplicidades en sus extremos. */
 export const MULTIPLICITY_RELATION_KINDS = ['association', 'aggregation', 'composition'] as const;
+
+/** Puntas de un conector: ninguna, solo en el destino (por defecto) o en ambos extremos. */
+export const ARROWHEADS = ['none', 'end', 'both'] as const;
+export type Arrowheads = (typeof ARROWHEADS)[number];
 
 /** Cardinalidad de un extremo de una relación ER (pata de gallo). */
 export const CARDINALITIES = ['one', 'zero-one', 'one-many', 'zero-many'] as const;
@@ -85,12 +91,13 @@ export const ALLOWED_KINDS_BY_DIAGRAM: Readonly<Record<DiagramType, readonly Ele
   er: [...ER_ELEMENT_KINDS, ...FIGURE_ELEMENT_KINDS],
 };
 
+/** El conector se permite en todos los tipos de diagrama (decisión del issue #195). */
 export const ALLOWED_RELATIONS_BY_DIAGRAM: Readonly<Record<DiagramType, readonly RelationKind[]>> = {
-  class: UML_RELATION_KINDS,
-  'c4-context': ['c4-rel'],
-  'c4-container': ['c4-rel'],
-  'c4-component': ['c4-rel'],
-  er: ['er-rel', 'er-attr'],
+  class: [...UML_RELATION_KINDS, CONNECTOR_KIND],
+  'c4-context': ['c4-rel', CONNECTOR_KIND],
+  'c4-container': ['c4-rel', CONNECTOR_KIND],
+  'c4-component': ['c4-rel', CONNECTOR_KIND],
+  er: ['er-rel', 'er-attr', CONNECTOR_KIND],
 };
 
 export const DEFAULT_MAX_ELEMENTS = 500;

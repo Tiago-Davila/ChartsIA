@@ -30,7 +30,7 @@ const KIND_FIELDS: Record<string, string> = {
   component: 'technology?, description?; parentId de un boundary con boundaryType "container"',
   entity: 'weak?: true (entidad débil, se dibuja con doble borde), description?',
   table: 'columns[] (≥1, máx. 200, nombres únicos) {name, type, pk?, fk?: {table, column}, notNull?, unique?}; una fila por columna ("PK id: INT NOT NULL"; PK en negrita y subrayada, FK en cursiva). fk debe apuntar a una columna pk de otra tabla; la flecha FK→PK la dibujas tú con una er-rel entre las dos tablas',
-  figure: 'figura general permitida en TODOS los tipos de diagrama; shape (obligatorio): circle | square | rectangle | triangle | hexagon | cloud; name es el texto centrado dentro. Úsala solo si la persona pide una figura básica o libre (no para sustituir clases, entidades ni elementos C4). En clases y C4 las relaciones del tipo de diagrama valen también entre figuras; en er, er-rel y er-attr no admiten figuras',
+  figure: 'figura general permitida en TODOS los tipos de diagrama; shape (obligatorio): circle | square | rectangle | triangle | hexagon | cloud; name es el texto centrado dentro. Úsala solo si la persona pide una figura básica o libre (no para sustituir clases, entidades ni elementos C4). En clases y C4 las relaciones del tipo de diagrama valen también entre figuras; para unir figuras entre sí, o una figura con una entity, table o attribute de er, usa la relación connector (en er, er-rel y er-attr no admiten figuras)',
   attribute: 'Notación Chen: óvalo unido a su entidad con una er-attr. key?: true (nombre subrayado; no con multivalued ni derived), multivalued?: true (doble óvalo), derived?: true (óvalo discontinuo). Un atributo compuesto es el que tiene sub-atributos: une cada sub-atributo a él con otra er-attr',
   'value-list': 'values[] (≥1, máx. 200, únicos): lista de valores posibles de un atributo, una fila por valor; se une al atributo con una er-attr (atributo→lista)',
   boundary: 'grupo; boundaryType: enterprise | system | container. Úsalo solo si la persona lo pide o si hace falta para un component',
@@ -45,6 +45,7 @@ const RELATION_RULES: Record<string, string> = {
   dependency: 'label?',
   'c4-rel': 'label? (qué hace) y technology? (protocolo); solo en diagramas C4',
   'er-attr': 'une un atributo o lista a su dueño; source es el dueño y target lo que cuelga de él: entity→attribute, attribute→attribute (compuesto) o attribute→value-list. Un atributo o lista cuelga de un solo dueño. Sin cardinalidades ni identifying; solo en diagramas er',
+  connector: 'flecha o línea libre, sin semántica UML/C4, permitida en TODOS los tipos de diagrama y entre cualquier par de elementos que no sean grupos. Úsala para unir figuras entre sí o con elementos de cualquier tipo, y para uniones libres; si existe una relación propia del tipo (herencia, c4-rel, er-rel, er-attr…) usa esa. arrowheads?: none (sin punta) | end (punta en el destino, por defecto) | both (punta en ambos extremos), dashed?: true (línea discontinua), label?',
   'er-rel': 'sourceCardinality y targetCardinality obligatorias (one | zero-one | one-many | zero-many, pata de gallo; cada marca va en su extremo), identifying?: true (línea continua; sin él es discontinua), label?; solo une entities o tables, y solo en diagramas er',
 };
 

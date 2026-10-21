@@ -33,6 +33,7 @@ const EDGE_STYLES: Record<Relation['kind'], string> = {
   'c4-rel': 'endArrow=blockThin;endFill=1;endSize=12;strokeColor=#707070;fontColor=#404040;dashed=1;',
   'er-rel': 'endArrow=none;',
   'er-attr': 'endArrow=none;',
+  connector: 'endArrow=open;endSize=12;',
 };
 
 function vertexXml(cell: DrawioCell): string {
@@ -53,12 +54,21 @@ function constraint(prefix: 'exit' | 'entry', p: Point, l: Element['layout']): s
   return `${prefix}X=${fx};${prefix}Y=${fy};${prefix}Dx=0;${prefix}Dy=0;`;
 }
 
+/** Puntas y trazo de un conector libre: sin punta, en el destino (defecto) o en ambos extremos. */
+function connectorEdgeStyle(rel: Relation): string {
+  const heads = rel.arrowheads ?? 'end';
+  const start = heads === 'both' ? 'startArrow=open;startSize=12;' : '';
+  const end = heads === 'none' ? 'endArrow=none;' : 'endArrow=open;endSize=12;';
+  return `${start}${end}${rel.dashed ? 'dashed=1;' : ''}`;
+}
+
 function edgeXml(rel: Relation, byId: Map<string, Element>): string {
   const route = rel.route ?? [];
   const src = byId.get(rel.source);
   const tgt = byId.get(rel.target);
   let style = `${EDGE_STYLES[rel.kind]}html=0;rounded=0;edgeStyle=none;orthogonal=1;fontSize=11;labelBackgroundColor=#ffffff;`;
   if (rel.kind === 'er-rel') style = style.replace('endArrow=none;', erEdgeStyle(rel));
+  if (rel.kind === 'connector') style = style.replace('endArrow=open;endSize=12;', connectorEdgeStyle(rel));
   if (rel.kind === 'association' && rel.navigable === 'source-to-target') style = style.replace('endArrow=none;', 'endArrow=open;endSize=12;');
   if (route.length >= 2) style += constraint('exit', route[0]!, src?.layout) + constraint('entry', route[route.length - 1]!, tgt?.layout);
   const label = [rel.label, rel.kind === 'c4-rel' && rel.technology ? `[${rel.technology}]` : undefined].filter(Boolean).join('\n');
