@@ -4,6 +4,9 @@ import {
   ALLOWED_KINDS_BY_DIAGRAM,
   ALLOWED_RELATIONS_BY_DIAGRAM,
   DIAGRAM_TYPES,
+  FONT_FAMILIES,
+  FONT_SIZE_MAX,
+  FONT_SIZE_MIN,
   type DiagramType,
 } from '@chartsia/core/model';
 import { isDomainValidationError } from '@chartsia/core/validation';
@@ -51,7 +54,7 @@ export function schemaGuide(type: DiagramType): string {
   return [
     `# Diagrama \`${type}\``,
     '',
-    'Todos los elementos: `id` (letra inicial; letras, dígitos, "_" o "-"; máx. 64), `kind`, `name` (1–200), `description?` (≤1000), `parentId?` (grupo contenedor), `layout?` ({x, y} solo para fijar).',
+    'Todos los elementos: `id` (letra inicial; letras, dígitos, "_" o "-"; máx. 64), `kind`, `name` (1–200), `description?` (≤1000), `parentId?` (grupo contenedor), `layout?` ({x, y} solo para fijar), `style?` (ver "Estilo").',
     '',
     '## Kinds permitidos',
     kinds,
@@ -59,6 +62,9 @@ export function schemaGuide(type: DiagramType): string {
     '## Relaciones permitidas',
     'Todas: `id`, `kind`, `source`, `target` (ids de elementos que no sean grupos), `label?` (≤200).',
     relations,
+    '',
+    '## Estilo',
+    `Opcional en elementos y relaciones, solo si la persona lo pide: \`style\` {\`borderColor?\`, \`fillColor?\`, \`fontColor?\` (\`#rrggbb\`), \`fontFamily?\` (${FONT_FAMILIES.join(' | ')}), \`fontSize?\` (entero de ${FONT_SIZE_MIN} a ${FONT_SIZE_MAX})}. En una relación, \`borderColor\` es el color de la línea. En \`update_element\` y \`update_relation\`, \`style\` reemplaza el estilo completo y \`null\` lo elimina.`,
   ].join('\n');
 }
 
