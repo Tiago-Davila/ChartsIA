@@ -1,3 +1,4 @@
+import { checkRules } from '@chartsia/core/validation';
 import { ALLOWED_RELATIONS_BY_DIAGRAM, type Diagram, MULTIPLICITY_RELATION_KINDS, type Point, type Relation, type RelationChanges, type RelationKind } from '@chartsia/core/model';
 
 /** Ids ya usados por elementos y relaciones (comparten espacio). */
@@ -18,18 +19,30 @@ export function relationId(diagram: Pick<Diagram, 'elements' | 'relations'>): st
   for (let n = diagram.relations.length + 1; ; n++) if (!used.has(`r${n}`)) return `r${n}`;
 }
 
-/** Relación nueva al conectar arrastrando; con una figura en er usa un conector, y con un atributo o lista una er-attr con el dueño como origen. */
+/** Relaciones que se prueban al conectar, de la más específica a la menos; en er-attr se prueba también con los extremos invertidos. */
+function connectionCandidates(type: Diagram['type'], id: string, source: string, target: string): Relation[] {
+  if (type === 'class') return [{ id, kind: 'association', source, target }];
+  if (type === 'er') {
+    return [
+      { id, kind: 'er-rel', source, target, sourceCardinality: 'one', targetCardinality: 'zero-many' },
+      { id, kind: 'er-attr', source, target },
+      { id, kind: 'er-attr', source: target, target: source },
+    ];
+  }
+  return [{ id, kind: 'c4-rel', source, target }];
+}
+
+/** Si la relación cumple las reglas del core para sus dos extremos (no mira el resto del diagrama). */
+function isValidRelation(type: Diagram['type'], elements: Diagram['elements'], relation: Relation): boolean {
+  const ends = elements.filter((e) => e.id === relation.source || e.id === relation.target);
+  return checkRules({ type, elements: ends, relations: [relation] }).every((error) => !error.path.startsWith('/relations/'));
+}
+
+/** Relación nueva al conectar arrastrando: la primera semántica que admite el par o, si ninguna, un conector. */
 export function connectionRelation(diagram: Pick<Diagram, 'type' | 'elements' | 'relations'>, source: string, target: string): Relation {
   const id = relationId(diagram);
-  const kindOf = (elementId: string) => diagram.elements.find((e) => e.id === elementId)?.kind;
-  const chen = (elementId: string) => kindOf(elementId) === 'attribute' || kindOf(elementId) === 'value-list';
-  if (diagram.type === 'er' && (kindOf(source) === 'figure' || kindOf(target) === 'figure')) return { id, kind: 'connector', source, target };
-  if (diagram.type === 'er' && (chen(source) || chen(target))) {
-    const swap = kindOf(target) === 'entity' || kindOf(source) === 'value-list';
-    return { id, kind: 'er-attr', source: swap ? target : source, target: swap ? source : target };
-  }
-  if (diagram.type === 'er') return { id, kind: 'er-rel', source, target, sourceCardinality: 'one', targetCardinality: 'zero-many' };
-  return { id, kind: diagram.type === 'class' ? 'association' : 'c4-rel', source, target };
+  const candidates = connectionCandidates(diagram.type, id, source, target);
+  return candidates.find((rel) => isValidRelation(diagram.type, diagram.elements, rel)) ?? { id, kind: 'connector', source, target };
 }
 
 /** Tipos de flecha válidos en el diagrama. */
@@ -37,18 +50,29 @@ export function relationKinds(type: Diagram['type']): readonly RelationKind[] {
   return ALLOWED_RELATIONS_BY_DIAGRAM[type];
 }
 
-/** Cambios para pasar a otro tipo de flecha, quitando los campos que el tipo nuevo no admite. */
+/** Tipos de flecha que admiten cada campo opcional; los demás tipos no lo aceptan. */
+const KINDS_BY_FIELD = {
+  sourceMultiplicity: MULTIPLICITY_RELATION_KINDS,
+  targetMultiplicity: MULTIPLICITY_RELATION_KINDS,
+  navigable: ['association'],
+  technology: ['c4-rel'],
+  sourceCardinality: ['er-rel'],
+  targetCardinality: ['er-rel'],
+  identifying: ['er-rel'],
+  arrowheads: ['connector'],
+  dashed: ['connector'],
+} as const satisfies Partial<Record<keyof Relation, readonly RelationKind[]>>;
+
+/** Cambios para pasar a otro tipo de flecha, quitando los campos que el tipo nuevo no admite y agregando los obligatorios. */
 export function kindChanges(rel: Relation, kind: RelationKind): RelationChanges {
-  const multiplicities = (MULTIPLICITY_RELATION_KINDS as readonly string[]).includes(kind);
+  const removed = Object.entries(KINDS_BY_FIELD)
+    .filter(([field, kinds]) => rel[field as keyof typeof KINDS_BY_FIELD] !== undefined && !(kinds as readonly string[]).includes(kind))
+    .map(([field]) => [field, null]);
   return {
     kind,
-    ...(!multiplicities && (rel.sourceMultiplicity || rel.targetMultiplicity) ? { sourceMultiplicity: null, targetMultiplicity: null } : {}),
-    ...(kind !== 'association' && rel.navigable ? { navigable: null } : {}),
-    ...(kind === 'er-rel' && !rel.sourceCardinality ? { sourceCardinality: 'one' as const, targetCardinality: 'zero-many' as const } : {}),
-    ...(kind !== 'connector' && (rel.arrowheads || rel.dashed !== undefined) ? { arrowheads: null, dashed: null } : {}),
-    ...(kind !== 'er-rel' && (rel.sourceCardinality || rel.targetCardinality || rel.identifying !== undefined)
-      ? { sourceCardinality: null, targetCardinality: null, identifying: null }
-      : {}),
+    ...Object.fromEntries(removed),
+    ...(kind === 'er-rel' && !rel.sourceCardinality ? { sourceCardinality: 'one' as const } : {}),
+    ...(kind === 'er-rel' && !rel.targetCardinality ? { targetCardinality: 'zero-many' as const } : {}),
   };
 }
 
