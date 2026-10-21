@@ -16,4 +16,24 @@ test.describe('título editable', () => {
     await expect(page.getByRole('heading', { name: /Título viejo/ })).toBeVisible();
     await expect(page.getByRole('navigation', { name: 'Diagramas' }).getByText('Título viejo')).toBeVisible();
   });
+
+  test('desde el menú ⋯ renombra un diagrama no abierto sin abrirlo y persiste al recargar', async ({ page, agent }) => {
+    const abierto = await agent.create({ ...library, title: 'Abierto' });
+    await agent.create({ ...library, title: 'Para renombrar' });
+    await page.goto(`/d/${abierto}`);
+    const lista = page.getByRole('navigation', { name: 'Diagramas' });
+    const url = page.url();
+
+    page.once('dialog', (dialog) => void dialog.accept('Ya renombrado'));
+    await lista.getByRole('button', { name: 'Opciones de Para renombrar' }).click();
+    await page.getByRole('menuitem', { name: 'Renombrar…' }).click();
+
+    await expect(lista.getByText('Ya renombrado')).toBeVisible();
+    await expect(lista.getByText('Para renombrar')).toHaveCount(0);
+    expect(page.url()).toBe(url);
+    await expect(page.getByRole('heading', { name: /Abierto/ })).toBeVisible();
+
+    await page.reload();
+    await expect(lista.getByText('Ya renombrado')).toBeVisible();
+  });
 });

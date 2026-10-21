@@ -18,6 +18,7 @@ const base: AppShellProps = {
   onOpen: vi.fn(),
   onMoveDiagram: vi.fn(),
   onNewProject: vi.fn(),
+  onRenameDiagram: vi.fn(),
   onExport: vi.fn(),
 };
 
@@ -79,6 +80,23 @@ describe('AppShell', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Opciones de Biblioteca' }));
     await userEvent.click(screen.getByRole('menuitem', { name: 'Nuevo proyecto…' }));
     expect(onNewProject).toHaveBeenCalledWith('dg_aaaaaaaaaaaa', 'Nuevo');
+    prompt.mockRestore();
+  });
+
+  it('"Renombrar…" no llama al hub si está cancelado, vacío o igual, y llama con el id correcto', async () => {
+    const onRenameDiagram = vi.fn();
+    const prompt = vi.spyOn(window, 'prompt');
+    renderShell({ onRenameDiagram });
+    const renombrar = async (respuesta: string | null) => {
+      prompt.mockReturnValueOnce(respuesta);
+      await userEvent.click(screen.getByRole('button', { name: 'Opciones de Biblioteca' }));
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Renombrar…' }));
+    };
+    for (const respuesta of [null, '   ', 'Biblioteca']) await renombrar(respuesta);
+    expect(onRenameDiagram).not.toHaveBeenCalled();
+    await renombrar(' Otro ');
+    expect(prompt).toHaveBeenLastCalledWith('Nuevo título del diagrama', 'Biblioteca');
+    expect(onRenameDiagram).toHaveBeenCalledWith('dg_aaaaaaaaaaaa', 'Otro');
     prompt.mockRestore();
   });
 
