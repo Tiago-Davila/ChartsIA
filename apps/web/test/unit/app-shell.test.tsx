@@ -10,6 +10,7 @@ const base: AppShellProps = {
     { diagramId: 'dg_bbbbbbbbbbbb', type: 'c4-container', title: 'Tienda', revision: 1, updatedAt: '2026-10-19T10:00:00.000Z' },
   ],
   projects: [],
+  agents: [],
   activeDiagramId: 'dg_bbbbbbbbbbbb',
   connection: 'connected',
   nodes: [],

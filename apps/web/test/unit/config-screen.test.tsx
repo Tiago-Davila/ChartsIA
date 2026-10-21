@@ -3,13 +3,16 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AGENTS } from '../../src/app/agents';
 import { ConfigScreen } from '../../src/app/ConfigScreen';
+import { type ConnectedAgent } from '../../src/state/api-client';
 import { clearToken, setToken } from '../../src/state/auth-token';
 
 const origin = 'http://127.0.0.1:3333';
-const renderScreen = () => render(<ConfigScreen origin={origin} connection="connected" onBack={vi.fn()} />);
+let agents: ConnectedAgent[] = [];
+const renderScreen = () => render(<ConfigScreen origin={origin} agents={agents} connection="connected" onBack={vi.fn()} />);
 
 describe('ConfigScreen', () => {
   afterEach(() => {
+    agents = [];
     clearToken();
     vi.restoreAllMocks();
   });
@@ -20,6 +23,17 @@ describe('ConfigScreen', () => {
     expect(screen.getByText('Conectado al hub')).toBeInTheDocument();
     for (const agent of AGENTS) expect(screen.getByRole('article', { name: agent.name })).toBeInTheDocument();
     expect(screen.getByText(`claude mcp add --transport http chartsia ${origin}/mcp`)).toBeInTheDocument();
+  });
+
+  it('lista los agentes conectados con su versión y su última llamada, o avisa si no hay', () => {
+    const { unmount } = renderScreen();
+    expect(screen.getByText('Ningún agente se ha conectado todavía.')).toBeInTheDocument();
+    unmount();
+    agents = [{ id: 1, name: '<b>claude-code</b>', version: '2.1.0', lastCallAt: '2026-01-02T03:04:00.000Z' }];
+    renderScreen();
+    const item = screen.getByRole('listitem');
+    expect(item).toHaveTextContent('<b>claude-code</b> v2.1.0 · última llamada');
+    expect(item.querySelector('b')).toBeNull();
   });
 
   it('copia el comando de la tarjeta', async () => {

@@ -1,4 +1,4 @@
-import { library } from './support/fake-agent';
+import { FakeAgent, library } from './support/fake-agent';
 import { expect, test } from './support/fixtures';
 
 test.describe('pantalla de configuración', () => {
@@ -17,4 +17,14 @@ test.describe('pantalla de configuración', () => {
     await expect(page).toHaveURL(new RegExp(`/d/${id}$`));
     await expect(page.locator('.react-flow')).toBeVisible();
   });
+});
+
+test('un agente que se conecta aparece en /config sin recargar', async ({ page, baseURL }) => {
+  await page.goto('/config');
+  await expect(page.getByRole('heading', { name: 'Configuración' })).toBeVisible();
+  await expect(page.getByText('agente-en-vivo')).toHaveCount(0);
+
+  const agent = await new FakeAgent(baseURL!, 'agente-en-vivo').connect();
+  await expect(page.getByRole('listitem').filter({ hasText: 'agente-en-vivo v1.0.0' })).toBeVisible();
+  await agent.close();
 });

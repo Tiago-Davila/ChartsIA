@@ -2,7 +2,7 @@ import { type ExportFormat } from '@chartsia/core/export';
 import { type Diagram } from '@chartsia/core/model';
 import { type Edge, type Node } from '@xyflow/react';
 import { type ReactNode } from 'react';
-import { type Project } from '../state/api-client';
+import { type ConnectedAgent, type Project } from '../state/api-client';
 import { type AlignMode } from '../canvas/align';
 import { DiagramCanvas, type DiagramCanvasProps } from '../canvas/DiagramCanvas';
 import { C4Legend } from '../legend/C4Legend';
@@ -15,6 +15,7 @@ import { Toolbar } from './Toolbar';
 export interface AppShellProps {
   diagrams: DiagramListItem[];
   projects: Project[];
+  agents: ConnectedAgent[];
   activeDiagramId: string | null;
   connection: ConnectionState;
   diagram?: Diagram;
@@ -60,7 +61,7 @@ export function AppShell(props: AppShellProps) {
       </aside>
       <main className="app-shell__main">
         {props.configOpen ? (
-          <ConfigScreen origin={props.origin} connection={props.connection} onBack={props.onCloseConfig} />
+          <ConfigScreen origin={props.origin} agents={props.agents} connection={props.connection} onBack={props.onCloseConfig} />
         ) : diagram ? (
           <>
             <Toolbar

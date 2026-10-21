@@ -30,6 +30,7 @@ function ConnectedApp() {
   const { live, reload } = useHubSync(api, route);
   const diagrams = useDiagramStore((s) => s.diagrams);
   const projects = useDiagramStore((s) => s.projects);
+  const agents = useDiagramStore((s) => s.agents);
   const activeDiagramId = useDiagramStore((s) => s.activeDiagramId);
   const diagram = useDiagramStore((s) => s.diagram);
   const loading = useDiagramStore((s) => s.openDiagramId !== null && s.diagram === undefined);
@@ -105,6 +106,7 @@ function ConnectedApp() {
         <AppShell
           diagrams={diagrams}
           projects={projects}
+          agents={agents}
           activeDiagramId={activeDiagramId}
           connection={connection}
           diagram={diagram}

@@ -1,5 +1,6 @@
 import { type DynamicModule, Module } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
+import { AgentsModule } from './agents/agents.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { DomainExceptionFilter } from './common/domain-exception.filter.js';
 import { type AppConfig, loadConfig } from './config/config.js';
@@ -26,6 +27,7 @@ export class AppModule {
         AuthModule.forRoot(token),
         HealthModule,
         DiagramsModule,
+        AgentsModule,
         LiveModule,
         McpModule,
         WebStaticModule.forRoot(config.webDistDir),

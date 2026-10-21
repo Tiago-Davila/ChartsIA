@@ -26,6 +26,8 @@ describe('smoke del puente stdio chartsia-mcp', () => {
     const id = (res.structuredContent as { diagramId: string }).diagramId;
     const list = await body(await fetch(`${hub.url}/api/diagrams`));
     expect(list.activeDiagramId).toBe(id);
+    // El hub ve el clientInfo del agente real, no el del puente.
+    expect((await body(await fetch(`${hub.url}/api/agents`))).agents).toEqual([expect.objectContaining({ name: 'stdio-smoke', version: '1.0.0' })]);
     await client.close();
   });
 
