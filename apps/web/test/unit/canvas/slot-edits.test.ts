@@ -43,6 +43,12 @@ describe('edición en línea → changes', () => {
     expect(changesForSlot(c4, 'type', 'Vue')).toEqual({ technology: 'Vue' });
   });
 
+  it('el nombre de una figura se edita completo aunque se vea partido en líneas', () => {
+    const figura: Element = { id: 'f', kind: 'figure', name: 'Servicio de autenticación', shape: 'circle' };
+    expect(slotValue(figura, 'name', 'Servicio de')).toBe('Servicio de autenticación');
+    expect(changesForSlot(figura, 'name', 'Otro')).toEqual({ name: 'Otro' });
+  });
+
   it('slots desconocidos o texto inválido ⇒ sin cambios', () => {
     expect(changesForSlot(cls, 'label', 'x')).toBeUndefined();
     expect(changesForSlot(cls, 'operation:0', 'sin paréntesis')).toBeUndefined();

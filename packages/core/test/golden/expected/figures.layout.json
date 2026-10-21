@@ -1,0 +1,151 @@
+{
+  "type": "c4-context",
+  "title": "Figuras <generales> & más",
+  "elements": [
+    {
+      "id": "usuario",
+      "name": "Usuario",
+      "kind": "person",
+      "layout": {
+        "x": 563,
+        "y": 30,
+        "width": 220,
+        "height": 142,
+        "pinned": false
+      }
+    },
+    {
+      "id": "circulo",
+      "name": "Círculo",
+      "kind": "figure",
+      "shape": "circle",
+      "layout": {
+        "x": 30,
+        "y": 51,
+        "width": 100,
+        "height": 100,
+        "pinned": false
+      }
+    },
+    {
+      "id": "cuadrado",
+      "name": "Cuadrado",
+      "kind": "figure",
+      "shape": "square",
+      "layout": {
+        "x": 190,
+        "y": 51,
+        "width": 100,
+        "height": 100,
+        "pinned": false
+      }
+    },
+    {
+      "id": "rectangulo",
+      "name": "Rectángulo con un nombre largo <y> \"raro\"",
+      "kind": "figure",
+      "shape": "rectangle",
+      "layout": {
+        "x": 350,
+        "y": 59,
+        "width": 153,
+        "height": 84,
+        "pinned": false
+      }
+    },
+    {
+      "id": "triangulo",
+      "name": "Triángulo",
+      "kind": "figure",
+      "shape": "triangle",
+      "layout": {
+        "x": 585,
+        "y": 566,
+        "width": 176,
+        "height": 104,
+        "pinned": false
+      }
+    },
+    {
+      "id": "hexagono",
+      "name": "Hexágono",
+      "kind": "figure",
+      "shape": "hexagon",
+      "layout": {
+        "x": 609,
+        "y": 422,
+        "width": 128,
+        "height": 64,
+        "pinned": false
+      }
+    },
+    {
+      "id": "nube",
+      "name": "Nube",
+      "kind": "figure",
+      "shape": "cloud",
+      "layout": {
+        "x": 603,
+        "y": 252,
+        "width": 140,
+        "height": 90,
+        "pinned": false
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "r1",
+      "kind": "c4-rel",
+      "source": "usuario",
+      "target": "nube",
+      "label": "usa",
+      "route": [
+        {
+          "x": 673,
+          "y": 172
+        },
+        {
+          "x": 673,
+          "y": 252
+        }
+      ]
+    },
+    {
+      "id": "r2",
+      "kind": "c4-rel",
+      "source": "nube",
+      "target": "hexagono",
+      "route": [
+        {
+          "x": 673,
+          "y": 342
+        },
+        {
+          "x": 673,
+          "y": 422
+        }
+      ]
+    },
+    {
+      "id": "r3",
+      "kind": "c4-rel",
+      "source": "hexagono",
+      "target": "triangulo",
+      "route": [
+        {
+          "x": 673,
+          "y": 486
+        },
+        {
+          "x": 673,
+          "y": 566
+        }
+      ]
+    }
+  ],
+  "id": "dg_goldengolden",
+  "revision": 1,
+  "createdAt": "2026-10-20T10:00:00.000Z",
+  "updatedAt": "2026-10-20T10:00:00.000Z"
+}

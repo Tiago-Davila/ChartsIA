@@ -27,6 +27,7 @@ const KIND_FIELDS: Record<string, string> = {
   component: 'technology?, description?; parentId de un boundary con boundaryType "container"',
   entity: 'weak?: true (entidad débil, se dibuja con doble borde), description?',
   table: 'columns[] (≥1, máx. 200, nombres únicos) {name, type, pk?, fk?: {table, column}, notNull?, unique?}; una fila por columna ("PK id: INT NOT NULL"; PK en negrita y subrayada, FK en cursiva). fk debe apuntar a una columna pk de otra tabla; la flecha FK→PK la dibujas tú con una er-rel entre las dos tablas',
+  figure: 'figura general permitida en TODOS los tipos de diagrama; shape (obligatorio): circle | square | rectangle | triangle | hexagon | cloud; name es el texto centrado dentro. Úsala solo si la persona pide una figura básica o libre (no para sustituir clases, entidades ni elementos C4). Las relaciones del tipo de diagrama valen también entre figuras',
   boundary: 'grupo; boundaryType: enterprise | system | container. Úsalo solo si la persona lo pide o si hace falta para un component',
 };
 
