@@ -112,6 +112,9 @@ function ConnectedApp() {
           nodes={flow.nodes}
           edges={flow.edges}
           origin={window.location.origin}
+          configOpen={route.name === 'config'}
+          onConfig={() => navigate('/config')}
+          onCloseConfig={() => navigate(diagram ? diagramPath(diagram.id) : '/')}
           onOpen={openDiagram}
           onMoveDiagram={onMoveDiagram}
           onNewProject={onNewProject}

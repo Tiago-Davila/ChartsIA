@@ -1,10 +1,11 @@
 import { useCallback, useSyncExternalStore } from 'react';
 
-export type Route = { name: 'home' } | { name: 'diagram'; diagramId: string };
+export type Route = { name: 'home' } | { name: 'config' } | { name: 'diagram'; diagramId: string };
 
 const DIAGRAM_PATH = /^\/d\/([^/]+)\/?$/;
 
 export function parseRoute(pathname: string): Route {
+  if (pathname === '/config') return { name: 'config' };
   const match = DIAGRAM_PATH.exec(pathname);
   return match ? { name: 'diagram', diagramId: decodeURIComponent(match[1]!) } : { name: 'home' };
 }
@@ -35,8 +36,8 @@ export function navigate(path: string, options: { replace?: boolean } = {}): voi
 }
 
 /**
- * Enrutado mínimo de la app: `/` (diagrama activo o estado vacío) y `/d/:id` (destino de
- * `viewUrl`). Dos rutas no justifican una dependencia de router (principio VI).
+ * Enrutado mínimo de la app: `/` (diagrama activo o estado vacío), `/d/:id` (destino de
+ * `viewUrl`) y `/config` (conexión de agentes). Tres rutas no justifican una dependencia de router (principio VI).
  */
 export function useRoute(): Route {
   const path = useSyncExternalStore(subscribe, getPath, () => '/');

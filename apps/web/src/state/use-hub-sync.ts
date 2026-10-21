@@ -74,8 +74,8 @@ export function useHubSync(api: ApiClient, route: Route): { live: React.RefObjec
 
   // En "/" se abre el diagrama activo, si lo hay.
   useEffect(() => {
-    if (!routeId && activeDiagramId) navigate(diagramPath(activeDiagramId), { replace: true });
-  }, [routeId, activeDiagramId]);
+    if (route.name === 'home' && activeDiagramId) navigate(diagramPath(activeDiagramId), { replace: true });
+  }, [route.name, activeDiagramId]);
 
   // Diagrama abierto → cargarlo, suscribirse y marcarlo activo para los agentes.
   useEffect(() => {
