@@ -3,8 +3,10 @@ import { type ElementKind } from '../model/enums.js';
 import { boundaryShape } from './c4/boundary.js';
 import { componentShape } from './c4/component.js';
 import { containerShape } from './c4/container.js';
+import { attributeShape } from './er/attribute.js';
 import { entityShape } from './er/entity.js';
 import { tableShape } from './er/table.js';
+import { valueListShape } from './er/value-list.js';
 import { personShape } from './c4/person.js';
 import { softwareSystemShape } from './c4/software-system.js';
 import { type Primitive, type ShapeDefinition, type Size } from './types.js';
@@ -25,6 +27,8 @@ const SHAPES: { [K in ElementKind]: ShapeDefinition<Extract<Element, { kind: K }
   boundary: boundaryShape,
   entity: entityShape,
   table: tableShape,
+  attribute: attributeShape,
+  'value-list': valueListShape,
 };
 
 export function shapeFor<E extends Element>(element: E): ShapeDefinition<E> {

@@ -43,6 +43,13 @@ describe('edición en línea → changes', () => {
     expect(changesForSlot(c4, 'type', 'Vue')).toEqual({ technology: 'Vue' });
   });
 
+  it('edita un valor de una lista de valores y su nombre', () => {
+    const list: Element = { id: 'L', kind: 'value-list', name: 'L', values: ['a', 'b'] };
+    expect(changesForSlot(list, 'value:1', 'c')).toEqual({ values: ['a', 'c'] });
+    expect(changesForSlot(list, 'name', 'Estados')).toEqual({ name: 'Estados' });
+    expect(changesForSlot(cls, 'value:0', 'x')).toBeUndefined();
+  });
+
   it('slots desconocidos o texto inválido ⇒ sin cambios', () => {
     expect(changesForSlot(cls, 'label', 'x')).toBeUndefined();
     expect(changesForSlot(cls, 'operation:0', 'sin paréntesis')).toBeUndefined();

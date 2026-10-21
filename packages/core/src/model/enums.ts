@@ -7,7 +7,7 @@ export type ClassElementKind = (typeof CLASS_ELEMENT_KINDS)[number];
 export const C4_ELEMENT_KINDS = ['person', 'software-system', 'container', 'component', 'boundary'] as const;
 export type C4ElementKind = (typeof C4_ELEMENT_KINDS)[number];
 
-export const ER_ELEMENT_KINDS = ['entity', 'table'] as const;
+export const ER_ELEMENT_KINDS = ['entity', 'table', 'attribute', 'value-list'] as const;
 export type ErElementKind = (typeof ER_ELEMENT_KINDS)[number];
 
 export type ElementKind = ClassElementKind | C4ElementKind | ErElementKind;
@@ -23,7 +23,7 @@ export const UML_RELATION_KINDS = [
   'realization',
   'dependency',
 ] as const;
-export const RELATION_KINDS = [...UML_RELATION_KINDS, 'c4-rel', 'er-rel'] as const;
+export const RELATION_KINDS = [...UML_RELATION_KINDS, 'c4-rel', 'er-rel', 'er-attr'] as const;
 export type RelationKind = (typeof RELATION_KINDS)[number];
 
 /** Relaciones UML que admiten multiplicidades en sus extremos. */
@@ -82,7 +82,7 @@ export const ALLOWED_RELATIONS_BY_DIAGRAM: Readonly<Record<DiagramType, readonly
   'c4-context': ['c4-rel'],
   'c4-container': ['c4-rel'],
   'c4-component': ['c4-rel'],
-  er: ['er-rel'],
+  er: ['er-rel', 'er-attr'],
 };
 
 export const DEFAULT_MAX_ELEMENTS = 500;

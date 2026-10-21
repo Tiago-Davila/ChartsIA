@@ -4,8 +4,10 @@ import { C4ComponentNode } from './c4/C4ComponentNode';
 import { C4ContainerNode } from './c4/C4ContainerNode';
 import { C4PersonNode } from './c4/C4PersonNode';
 import { C4SystemNode } from './c4/C4SystemNode';
+import { ErAttributeNode } from './er/ErAttributeNode';
 import { ErEntityNode } from './er/ErEntityNode';
 import { ErTableNode } from './er/ErTableNode';
+import { ErValueListNode } from './er/ErValueListNode';
 import { GroupNode } from './GroupNode';
 import { UmlClassNode } from './uml/UmlClassNode';
 import { UmlEnumNode } from './uml/UmlEnumNode';
@@ -24,6 +26,8 @@ export const nodeTypes = {
   boundary: GroupNode,
   entity: ErEntityNode,
   table: ErTableNode,
+  attribute: ErAttributeNode,
+  'value-list': ErValueListNode,
 } satisfies Record<ElementKind, NodeTypes[string]> as NodeTypes;
 
 export type { ElementFlowNode, ElementNodeData } from './types';

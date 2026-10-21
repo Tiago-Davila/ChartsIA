@@ -14,6 +14,7 @@ const KIND_LABELS: Record<RelationKind, string> = {
   dependency: 'Dependencia',
   'c4-rel': 'Relación',
   'er-rel': 'Relación ER',
+  'er-attr': 'Atributo ER',
 };
 
 const CARDINALITY_LABELS: Record<Cardinality, string> = {

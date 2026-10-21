@@ -5,7 +5,7 @@ import { type DiagramEditActions } from '../nodes/edit-context';
 import { ApiError, type ApiClient } from '../state/api-client';
 import { diagramStore } from '../state/diagram-store';
 import { type AlignMode, alignBoxes } from './align';
-import { defaultRelationKind, freeId, relationId } from './edge-edits';
+import { connectionRelation, freeId } from './edge-edits';
 import { changesForSlot } from './slot-edits';
 
 function depth(id: string, byId: Map<string, Element>): number {
@@ -150,7 +150,7 @@ export function useDiagramEdits(api: ApiClient) {
     ({ source, target }: Connection) => {
       const diagram = diagramStore.getState().diagram;
       if (!diagram || !source || !target) return;
-      void send([{ op: 'add_relation', relation: { id: relationId(diagram), kind: defaultRelationKind(diagram.type), source, target, ...(diagram.type === 'er' ? { sourceCardinality: 'one', targetCardinality: 'zero-many' } : {}) } }]);
+      void send([{ op: 'add_relation', relation: connectionRelation(diagram, source, target) }]);
     },
     [send],
   );

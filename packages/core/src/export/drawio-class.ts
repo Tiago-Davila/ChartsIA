@@ -1,6 +1,7 @@
 import { type Element } from '../model/diagram.js';
 import { boxGeometry, type CompartmentBox } from '../shapes/uml/compartments.js';
 import { tableBox } from '../shapes/er/table.js';
+import { valueListBox } from '../shapes/er/value-list.js';
 import { classBox } from '../shapes/uml/class.js';
 import { enumBox } from '../shapes/uml/enum.js';
 import { interfaceBox } from '../shapes/uml/interface.js';
@@ -14,6 +15,7 @@ function boxFor(el: Element): CompartmentBox | undefined {
   if (el.kind === 'interface') return interfaceBox(el);
   if (el.kind === 'enum') return enumBox(el);
   if (el.kind === 'table') return tableBox(el);
+  if (el.kind === 'value-list') return valueListBox(el);
   return undefined;
 }
 

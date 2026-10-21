@@ -10,7 +10,9 @@ import { classBox } from '../shapes/uml/class.js';
 import { enumBox } from '../shapes/uml/enum.js';
 import { interfaceBox } from '../shapes/uml/interface.js';
 import { WEAK_GAP } from '../shapes/er/entity.js';
+import { MULTIVALUED_GAP } from '../shapes/er/attribute.js';
 import { tableBox } from '../shapes/er/table.js';
+import { valueListBox } from '../shapes/er/value-list.js';
 import { CIRCLE_RADIUS, crowFoot, isCardinality, markerFrame, relationStyle, type MarkerKind } from '../shapes/uml/markers.js';
 import { orderKeys } from './fractional-index.js';
 
@@ -82,7 +84,7 @@ class Builder {
 }
 
 function addUml(b: Builder, el: Element, box: Box): void {
-  const compartments = el.kind === 'class' ? classBox(el) : el.kind === 'interface' ? interfaceBox(el) : el.kind === 'enum' ? enumBox(el) : el.kind === 'table' ? tableBox(el) : undefined;
+  const compartments = el.kind === 'class' ? classBox(el) : el.kind === 'interface' ? interfaceBox(el) : el.kind === 'enum' ? enumBox(el) : el.kind === 'table' ? tableBox(el) : el.kind === 'value-list' ? valueListBox(el) : undefined;
   if (!compartments) return;
   const group = [`${el.id}-group`];
   const rect = b.shape(el.id, 'rectangle', box, { backgroundColor: '#fffef5', groupIds: group });
@@ -128,7 +130,17 @@ function addC4(b: Builder, el: Element, box: Box): void {
 }
 
 function addEr(b: Builder, el: Element, box: Box): void {
-  if (el.kind === 'table') return addUml(b, el, box);
+  if (el.kind === 'table' || el.kind === 'value-list') return addUml(b, el, box);
+  if (el.kind === 'attribute') {
+    const dashed = el.derived ? { strokeStyle: 'dashed' } : {};
+    const oval = b.shape(el.id, 'ellipse', box, { backgroundColor: '#fffef5', ...dashed });
+    b.boundText(oval, el.name, { fontSize: 13 });
+    if (el.multivalued) {
+      const inner = { x: box.x + MULTIVALUED_GAP, y: box.y + MULTIVALUED_GAP, width: box.width - MULTIVALUED_GAP * 2, height: box.height - MULTIVALUED_GAP * 2 };
+      b.shape(`${el.id}-inner`, 'ellipse', inner, dashed);
+    }
+    return;
+  }
   if (el.kind !== 'entity') return;
   const rect = b.shape(el.id, 'rectangle', box, { backgroundColor: '#fffef5' });
   b.boundText(rect, el.name, { fontSize: 14 });
