@@ -57,6 +57,14 @@ describe('ConfigScreen', () => {
     }
   });
 
+  it('el snippet de Grok es JSON válido, usa el placeholder del túnel en loopback y no lleva token real', () => {
+    const snippet = (url: string) => JSON.parse(AGENTS.find((a) => a.id === 'grok')!.snippet(url));
+    const local = snippet(`${origin}/mcp`);
+    expect(local).toMatchObject({ type: 'mcp', server_label: 'chartsia', server_url: 'https://<túnel>/mcp' });
+    expect(local.headers.Authorization).toBe('Bearer <CHARTSIA_TOKEN>');
+    expect(snippet('https://hub.example.com/mcp').server_url).toBe('https://hub.example.com/mcp');
+  });
+
   it('copia el comando de la tarjeta', async () => {
     const user = userEvent.setup();
     const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();

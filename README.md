@@ -108,6 +108,31 @@ pnpm --filter @chartsia/api start      # app y MCP en http://127.0.0.1:3333
 - **OpenAI Responses API**: herramienta
   `{"type":"mcp","server_label":"chartsia","server_url":"https://<túnel>/mcp","authorization":"<CHARTSIA_TOKEN>"}`;
   el hub debe ser accesible desde internet (p. ej. un túnel) con `CHARTSIA_HOST=0.0.0.0`.
+- **Grok (API de xAI)**: herramienta MCP remota en `tools` de `POST https://api.x.ai/v1/responses`
+  (campos de xAI: `type`, `server_url`, `server_label`, `headers`, opcionalmente `allowed_tools`;
+  solo HTTP en streaming o SSE). La pantalla de configuración muestra este JSON.
+  ```json
+  { "type": "mcp", "server_label": "chartsia", "server_url": "https://<túnel>/mcp",
+    "headers": { "Authorization": "Bearer <CHARTSIA_TOKEN>" } }
+  ```
+  - xAI conecta desde sus servidores: no llega a `127.0.0.1`, hace falta un túnel. Ejemplo:
+    `CHARTSIA_HOST=0.0.0.0 CHARTSIA_TOKEN=<CHARTSIA_TOKEN> pnpm --filter @chartsia/api start` y, en
+    otra terminal, `cloudflared tunnel --url http://127.0.0.1:3333` (la URL pública + `/mcp` es `server_url`).
+    Fuera de loopback el token es obligatorio; si no defines `CHARTSIA_TOKEN`, el hub genera uno
+    y lo guarda en `CHARTSIA_DATA_DIR/.token`.
+  - Se usa `headers` y no `authorization` porque la doc de xAI no aclara si este campo añade `Bearer`,
+    y el hub exige `Authorization: Bearer <token>`.
+  - Ejemplo mínimo:
+    ```bash
+    curl https://api.x.ai/v1/responses -H "Authorization: Bearer $XAI_API_KEY" \
+      -H "Content-Type: application/json" -d '{"model":"<modelo>","input":"Crea un diagrama de clases",
+      "tools":[{"type":"mcp","server_label":"chartsia","server_url":"https://<túnel>/mcp",
+      "headers":{"Authorization":"Bearer <CHARTSIA_TOKEN>"}}]}'
+    ```
+  - **Riesgo**: quien tenga la URL del túnel y el token puede crear y borrar diagramas (sin token,
+    cualquiera con la URL). No subas el token al repositorio, usa uno largo y cierra el túnel al terminar.
+  - Los esquemas de las herramientas usan `anyOf`, `const`, `pattern` y `additionalProperties:false`,
+    que la doc de xAI admite en esquemas de herramientas; si xAI responde 400, indica la herramienta.
 
 Herramientas: `create_diagram`, `apply_changes`, `get_diagram`, `list_diagrams`,
 `open_diagram`, `export_diagram`. Recursos: `chartsia://diagrams/{id}`,

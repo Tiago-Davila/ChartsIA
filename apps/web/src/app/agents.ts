@@ -37,6 +37,22 @@ export const AGENTS: Agent[] = [
     snippet: (mcpUrl) => JSON.stringify({ type: 'mcp', server_label: 'chartsia', server_url: mcpUrl, authorization: '<CHARTSIA_TOKEN>' }),
   },
   {
+    id: 'grok',
+    name: 'Grok (xAI API)',
+    help: 'Herramienta MCP para la API de xAI (POST https://api.x.ai/v1/responses, dentro de "tools"). xAI no llega a loopback: expón el hub con un túnel (CHARTSIA_HOST=0.0.0.0, token obligatorio) y sustituye <túnel> y <CHARTSIA_TOKEN>; no subas el token al repositorio.',
+    snippet: (mcpUrl) =>
+      JSON.stringify(
+        {
+          type: 'mcp',
+          server_label: 'chartsia',
+          server_url: esLoopback(mcpUrl) ? 'https://<túnel>/mcp' : mcpUrl,
+          headers: { Authorization: 'Bearer <CHARTSIA_TOKEN>' },
+        },
+        null,
+        2,
+      ),
+  },
+  {
     id: 'opencode-remote',
     name: 'OpenCode (HTTP)',
     help: 'Añádelo a "mcp" en opencode.json. Fuera de loopback, sustituye <CHARTSIA_TOKEN> y no lo subas al repositorio.',
