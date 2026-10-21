@@ -29,7 +29,7 @@ const DASH = [6, 4];
  * "todo", que en el modelo es `source` (p. ej. Pedido ◆— LineaPedido).
  */
 export function relationStyle(
-  rel: Pick<Relation, 'kind' | 'navigable' | 'sourceCardinality' | 'targetCardinality' | 'identifying' | 'style'>,
+  rel: Pick<Relation, 'kind' | 'navigable' | 'sourceCardinality' | 'targetCardinality' | 'identifying' | 'arrowheads' | 'dashed' | 'style'>,
 ): RelationStyle {
   const base = defaultRelationStyle(rel);
   return {
@@ -39,7 +39,7 @@ export function relationStyle(
   };
 }
 
-function defaultRelationStyle(rel: Pick<Relation, 'kind' | 'navigable' | 'sourceCardinality' | 'targetCardinality' | 'identifying'>): RelationStyle {
+function defaultRelationStyle(rel: Pick<Relation, 'kind' | 'navigable' | 'sourceCardinality' | 'targetCardinality' | 'identifying' | 'arrowheads' | 'dashed'>): RelationStyle {
   switch (rel.kind) {
     case 'inheritance':
       return { color: COLORS.edge, end: 'triangle-hollow' };
@@ -58,6 +58,15 @@ function defaultRelationStyle(rel: Pick<Relation, 'kind' | 'navigable' | 'source
       return { color: '#707070', dash: DASH, end: 'arrow-filled' };
     case 'er-attr':
       return { color: COLORS.edge };
+    case 'connector': {
+      const heads = rel.arrowheads ?? 'end';
+      return {
+        color: COLORS.edge,
+        ...(rel.dashed ? { dash: DASH } : {}),
+        ...(heads === 'both' ? { start: 'arrow-open' as const } : {}),
+        ...(heads !== 'none' ? { end: 'arrow-open' as const } : {}),
+      };
+    }
     case 'er-rel':
       return { color: COLORS.edge, ...(rel.identifying ? {} : { dash: DASH }), start: rel.sourceCardinality, end: rel.targetCardinality };
   }

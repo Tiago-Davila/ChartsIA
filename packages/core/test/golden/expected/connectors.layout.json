@@ -1,0 +1,185 @@
+{
+  "type": "er",
+  "title": "Conectores <libres> & figuras",
+  "elements": [
+    {
+      "id": "cliente",
+      "name": "Cliente",
+      "kind": "entity",
+      "layout": {
+        "x": 36.5,
+        "y": 30,
+        "width": 120,
+        "height": 48,
+        "pinned": false
+      }
+    },
+    {
+      "id": "nombre",
+      "name": "nombre",
+      "kind": "attribute",
+      "layout": {
+        "x": 30,
+        "y": 356,
+        "width": 93,
+        "height": 44,
+        "pinned": false
+      }
+    },
+    {
+      "id": "nube",
+      "name": "Nube",
+      "kind": "figure",
+      "shape": "cloud",
+      "layout": {
+        "x": 163,
+        "y": 158,
+        "width": 140,
+        "height": 90,
+        "pinned": false
+      }
+    },
+    {
+      "id": "circulo",
+      "name": "Círculo",
+      "kind": "figure",
+      "shape": "circle",
+      "layout": {
+        "x": 183,
+        "y": 328,
+        "width": 100,
+        "height": 100,
+        "pinned": false
+      }
+    },
+    {
+      "id": "cuadrado",
+      "name": "Cuadrado",
+      "kind": "figure",
+      "shape": "square",
+      "layout": {
+        "x": 43.17,
+        "y": 508,
+        "width": 100,
+        "height": 100,
+        "pinned": false
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "r1",
+      "kind": "er-attr",
+      "source": "cliente",
+      "target": "nombre",
+      "route": [
+        {
+          "x": 76.5,
+          "y": 78
+        },
+        {
+          "x": 76.5,
+          "y": 356
+        }
+      ]
+    },
+    {
+      "id": "r2",
+      "kind": "connector",
+      "source": "cliente",
+      "target": "nube",
+      "label": "se conecta <a>",
+      "route": [
+        {
+          "x": 116.5,
+          "y": 78
+        },
+        {
+          "x": 116.5,
+          "y": 94
+        },
+        {
+          "x": 233,
+          "y": 94
+        },
+        {
+          "x": 233,
+          "y": 158
+        }
+      ]
+    },
+    {
+      "id": "r3",
+      "kind": "connector",
+      "source": "nube",
+      "target": "circulo",
+      "arrowheads": "both",
+      "dashed": true,
+      "route": [
+        {
+          "x": 233,
+          "y": 248
+        },
+        {
+          "x": 233,
+          "y": 328
+        }
+      ]
+    },
+    {
+      "id": "r4",
+      "kind": "connector",
+      "source": "circulo",
+      "target": "cuadrado",
+      "arrowheads": "none",
+      "route": [
+        {
+          "x": 233,
+          "y": 428
+        },
+        {
+          "x": 233,
+          "y": 444
+        },
+        {
+          "x": 109.84,
+          "y": 444
+        },
+        {
+          "x": 109.84,
+          "y": 492
+        },
+        {
+          "x": 109.84,
+          "y": 508
+        }
+      ]
+    },
+    {
+      "id": "r5",
+      "kind": "connector",
+      "source": "nombre",
+      "target": "cuadrado",
+      "label": "libre",
+      "dashed": true,
+      "route": [
+        {
+          "x": 76.5,
+          "y": 400
+        },
+        {
+          "x": 76.5,
+          "y": 492
+        },
+        {
+          "x": 76.5,
+          "y": 508
+        }
+      ]
+    }
+  ],
+  "id": "dg_goldengolden",
+  "revision": 1,
+  "createdAt": "2026-10-20T10:00:00.000Z",
+  "updatedAt": "2026-10-20T10:00:00.000Z"
+}

@@ -7,7 +7,7 @@ import { Primitives } from '../render/Primitives';
  * Marcadores UML/C4 de una relación (triángulo, rombo, flecha), con la misma geometría que
  * el SVG exportado. Útil para dibujar una relación sin ruta calculada (p. ej. al arrastrar).
  */
-export function EdgeMarkers({ relation, points }: { relation: Pick<Relation, 'kind' | 'navigable' | 'style'>; points: Point[] }) {
+export function EdgeMarkers({ relation, points }: { relation: Pick<Relation, 'kind' | 'navigable' | 'arrowheads' | 'dashed' | 'style'>; points: Point[] }) {
   if (points.length < 2) return null;
   const style = relationStyle(relation);
   const n = points.length;

@@ -9,7 +9,7 @@ import { validateDiagram } from '../../src/validation/index.js';
 
 // Regenerar solo con revisión explícita del diff: `pnpm --filter @chartsia/core test:golden -u`.
 const here = dirname(fileURLToPath(import.meta.url));
-const fixtures = ['library-class', 'shop-c4-container', 'uml-members', 'shop-er', 'shop-er-tables', 'shop-er-chen', 'figures', 'styled-class', 'styled-c4', 'styled-er'];
+const fixtures = ['library-class', 'shop-c4-container', 'uml-members', 'shop-er', 'shop-er-tables', 'shop-er-chen', 'figures', 'connectors', 'styled-class', 'styled-c4', 'styled-er'];
 
 async function load(name: string): Promise<Diagram> {
   const raw = JSON.parse(readFileSync(join(here, 'fixtures', `${name}.json`), 'utf8'));

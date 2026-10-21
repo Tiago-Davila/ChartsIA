@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BOUNDARY_TYPES, CARDINALITIES, CONTAINER_VARIANTS, FIGURE_SHAPES, MAX_OPERATIONS_PER_BATCH, NAVIGABILITIES, RELATION_KINDS, SIDES } from './enums.js';
+import { ARROWHEADS, BOUNDARY_TYPES, CARDINALITIES, CONTAINER_VARIANTS, FIGURE_SHAPES, MAX_OPERATIONS_PER_BATCH, NAVIGABILITIES, RELATION_KINDS, SIDES } from './enums.js';
 import { AttributeSchema, MethodSchema } from './class-elements.js';
 import { ColumnSchema } from './er-elements.js';
 import { DescriptionSchema, ElementIdSchema, LayoutSchema, NameSchema, PointSchema } from './common.js';
@@ -51,6 +51,8 @@ export const RelationChangesSchema = z
     sourceCardinality: z.enum(CARDINALITIES).nullable().optional(),
     targetCardinality: z.enum(CARDINALITIES).nullable().optional(),
     identifying: z.boolean().nullable().optional(),
+    arrowheads: z.enum(ARROWHEADS).nullable().optional(),
+    dashed: z.boolean().nullable().optional(),
     sourceSide: z.enum(SIDES).nullable().optional(),
     targetSide: z.enum(SIDES).nullable().optional(),
     waypoints: z.array(PointSchema).max(20).nullable().optional(),

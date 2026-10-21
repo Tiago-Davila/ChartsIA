@@ -20,6 +20,12 @@ describe('ediciones de flechas', () => {
     expect(kindChanges(rel, 'composition')).toEqual({ kind: 'composition', navigable: null });
   });
 
+  it('pasar de un conector a otro tipo quita puntas y trazo', () => {
+    const rel = { id: 'r', kind: 'connector' as const, source: 'A', target: 'B', arrowheads: 'both' as const, dashed: true };
+    expect(kindChanges(rel, 'association')).toEqual({ kind: 'association', arrowheads: null, dashed: null });
+    expect(kindChanges(rel, 'connector')).toEqual({ kind: 'connector' });
+  });
+
   it('invertir intercambia extremos, multiplicidades, lados y quiebres', () => {
     const changes = reverseChanges({
       id: 'r', kind: 'association', source: 'A', target: 'B', targetMultiplicity: '0..*', sourceSide: 'left',
@@ -62,6 +68,12 @@ describe('conectar arrastrando', () => {
     expect(connectionRelation(er, 'a', 'E')).toEqual({ id: 'r1', kind: 'er-attr', source: 'E', target: 'a' });
     expect(connectionRelation(er, 'a', 'b')).toMatchObject({ source: 'a', target: 'b' });
     expect(connectionRelation(er, 'L', 'a')).toMatchObject({ source: 'a', target: 'L' });
+  });
+
+  it('con una figura en er crea un conector', () => {
+    const withFigure = { ...er, elements: [...er.elements, { id: 'f', kind: 'figure' as const, name: 'f', shape: 'circle' as const }] };
+    expect(connectionRelation(withFigure, 'E', 'f')).toEqual({ id: 'r1', kind: 'connector', source: 'E', target: 'f' });
+    expect(connectionRelation(withFigure, 'f', 'a')).toMatchObject({ kind: 'connector' });
   });
 
   it('en clases y C4 mantiene el tipo por defecto', () => {
