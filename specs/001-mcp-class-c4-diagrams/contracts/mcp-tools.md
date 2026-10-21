@@ -51,7 +51,13 @@ pata de gallo; cada marca se dibuja en su extremo); si falta alguna, `FIELD_REQU
 `identifying: true` la dibuja con línea continua y, sin él, discontinua. Estos campos, y las
 multiplicidades UML, no se admiten fuera de su tipo (`FIELD_NOT_ALLOWED`); los kinds y
 relaciones de `class` y C4 tampoco valen en `er` (`KIND_NOT_ALLOWED`, `RELATION_NOT_ALLOWED`).
-En `apply_changes`, `update_element` admite `weak` y `update_relation` admite
+`table` es una tabla de base de datos: `columns` (1 a 200, nombres únicos por tabla) con
+`name`, `type`, `pk?`, `fk?: {table, column}`, `notNull?` y `unique?`. Se dibuja con una fila
+por columna (`PK id: INT NOT NULL`; la PK en negrita y subrayada, la FK en cursiva). Una `fk` debe
+apuntar a otra tabla existente y a una de sus columnas `pk`: si no, `UNKNOWN_REFERENCE` o
+`INVALID_MEMBER`; una columna repetida es `INVALID_MEMBER`. La flecha FK→PK es una `er-rel`
+normal entre las dos tablas, que declara el agente.
+En `apply_changes`, `update_element` admite `weak`, `columns` (reemplaza la lista) y `update_relation` admite
 `sourceCardinality`, `targetCardinality` e `identifying`.
 
 `projectId` coloca el diagrama en un proyecto existente; si no existe, `PROJECT_NOT_FOUND` y no

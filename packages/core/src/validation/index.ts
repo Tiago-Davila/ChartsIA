@@ -2,6 +2,7 @@ import { type z } from 'zod';
 import { type DiagramContent, type DiagramInput, DiagramInputSchema } from '../model/diagram.js';
 import { buildContext, type Rule, type RuleOptions } from './context.js';
 import { fromZodError, type ValidationError } from './errors.js';
+import { checkColumns } from './rules/columns.js';
 import { checkInheritanceCycles, checkParentCycles, checkParents } from './rules/hierarchy.js';
 import { checkKinds } from './rules/kinds.js';
 import { checkMembers } from './rules/members.js';
@@ -18,6 +19,7 @@ const RULES: Rule[] = [
   checkReferences,
   checkKinds,
   checkMembers,
+  checkColumns,
   checkRelations,
   checkParents,
   checkParentCycles,

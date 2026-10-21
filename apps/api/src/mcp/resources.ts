@@ -26,6 +26,7 @@ const KIND_FIELDS: Record<string, string> = {
   container: 'technology?, variant?: default | database | queue | web, description?',
   component: 'technology?, description?; parentId de un boundary con boundaryType "container"',
   entity: 'weak?: true (entidad débil, se dibuja con doble borde), description?',
+  table: 'columns[] (≥1, máx. 200, nombres únicos) {name, type, pk?, fk?: {table, column}, notNull?, unique?}; una fila por columna ("PK id: INT NOT NULL"; PK en negrita y subrayada, FK en cursiva). fk debe apuntar a una columna pk de otra tabla; la flecha FK→PK la dibujas tú con una er-rel entre las dos tablas',
   boundary: 'grupo; boundaryType: enterprise | system | container. Úsalo solo si la persona lo pide o si hace falta para un component',
 };
 

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { BOUNDARY_TYPES, CARDINALITIES, CONTAINER_VARIANTS, MAX_OPERATIONS_PER_BATCH, NAVIGABILITIES, RELATION_KINDS, SIDES } from './enums.js';
 import { AttributeSchema, MethodSchema } from './class-elements.js';
+import { ColumnSchema } from './er-elements.js';
 import { DescriptionSchema, ElementIdSchema, LayoutSchema, NameSchema, PointSchema } from './common.js';
 import { ElementSchema, TitleSchema } from './diagram.js';
 import { MultiplicitySchema, RelationSchema } from './relation.js';
@@ -24,6 +25,7 @@ export const ElementChangesSchema = z
     technology: z.string().min(1).max(120).nullable().optional(),
     variant: z.enum(CONTAINER_VARIANTS).nullable().optional(),
     boundaryType: z.enum(BOUNDARY_TYPES).optional(),
+    columns: z.array(ColumnSchema).min(1).max(200).optional(),
     weak: z.boolean().nullable().optional(),
   })
   .describe('Campos a cambiar, p. ej. {"name":"Usuario"}; null elimina un campo opcional');

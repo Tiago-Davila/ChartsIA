@@ -10,6 +10,7 @@ import { classBox } from '../shapes/uml/class.js';
 import { enumBox } from '../shapes/uml/enum.js';
 import { interfaceBox } from '../shapes/uml/interface.js';
 import { WEAK_GAP } from '../shapes/er/entity.js';
+import { tableBox } from '../shapes/er/table.js';
 import { CIRCLE_RADIUS, crowFoot, isCardinality, markerFrame, relationStyle, type MarkerKind } from '../shapes/uml/markers.js';
 import { orderKeys } from './fractional-index.js';
 
@@ -81,7 +82,7 @@ class Builder {
 }
 
 function addUml(b: Builder, el: Element, box: Box): void {
-  const compartments = el.kind === 'class' ? classBox(el) : el.kind === 'interface' ? interfaceBox(el) : el.kind === 'enum' ? enumBox(el) : undefined;
+  const compartments = el.kind === 'class' ? classBox(el) : el.kind === 'interface' ? interfaceBox(el) : el.kind === 'enum' ? enumBox(el) : el.kind === 'table' ? tableBox(el) : undefined;
   if (!compartments) return;
   const group = [`${el.id}-group`];
   const rect = b.shape(el.id, 'rectangle', box, { backgroundColor: '#fffef5', groupIds: group });
@@ -127,6 +128,7 @@ function addC4(b: Builder, el: Element, box: Box): void {
 }
 
 function addEr(b: Builder, el: Element, box: Box): void {
+  if (el.kind === 'table') return addUml(b, el, box);
   if (el.kind !== 'entity') return;
   const rect = b.shape(el.id, 'rectangle', box, { backgroundColor: '#fffef5' });
   b.boundText(rect, el.name, { fontSize: 14 });

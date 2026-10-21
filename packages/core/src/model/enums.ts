@@ -7,7 +7,7 @@ export type ClassElementKind = (typeof CLASS_ELEMENT_KINDS)[number];
 export const C4_ELEMENT_KINDS = ['person', 'software-system', 'container', 'component', 'boundary'] as const;
 export type C4ElementKind = (typeof C4_ELEMENT_KINDS)[number];
 
-export const ER_ELEMENT_KINDS = ['entity'] as const;
+export const ER_ELEMENT_KINDS = ['entity', 'table'] as const;
 export type ErElementKind = (typeof ER_ELEMENT_KINDS)[number];
 
 export type ElementKind = ClassElementKind | C4ElementKind | ErElementKind;
