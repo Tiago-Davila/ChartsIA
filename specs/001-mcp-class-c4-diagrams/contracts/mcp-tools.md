@@ -39,6 +39,11 @@ Input:
 }
 ```
 
+Miembros UML: `abstract: true` en una clase dibuja `«abstract»` y el nombre en cursiva; un
+método de interfaz con `default: true` se dibuja como `+ default nombre()` (sin cursiva) y solo se
+admite en interfaces, sin `abstract` ni `static` (si no, `INVALID_MEMBER`); un `enum` admite
+`attributes` y `operations` opcionales además de `literals`.
+
 `projectId` coloca el diagrama en un proyecto existente; si no existe, `PROJECT_NOT_FOUND` y no
 se crea nada.
 

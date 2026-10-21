@@ -9,7 +9,7 @@ import { validateDiagram } from '../../src/validation/index.js';
 
 // Regenerar solo con revisión explícita del diff: `pnpm --filter @chartsia/core test:golden -u`.
 const here = dirname(fileURLToPath(import.meta.url));
-const fixtures = ['library-class', 'shop-c4-container'];
+const fixtures = ['library-class', 'shop-c4-container', 'uml-members'];
 
 async function load(name: string): Promise<Diagram> {
   const raw = JSON.parse(readFileSync(join(here, 'fixtures', `${name}.json`), 'utf8'));

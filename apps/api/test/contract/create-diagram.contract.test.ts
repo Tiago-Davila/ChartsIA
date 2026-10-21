@@ -33,6 +33,27 @@ describe('contract: create_diagram', () => {
     expect(await h.repo.getActiveId()).toBe(stored?.id);
   });
 
+  it('figuras UML: método default, clase abstracta y enum con miembros', async () => {
+    const figuras = {
+      type: 'class',
+      title: 'Figuras',
+      elements: [
+        { id: 'Figura', kind: 'interface', name: 'Figura', operations: [{ name: 'describir', parameters: [], visibility: '+', default: true }] },
+        { id: 'Base', kind: 'class', name: 'Base', abstract: true, attributes: [], operations: [] },
+        { id: 'Color', kind: 'enum', name: 'Color', literals: ['ROJO'], attributes: [{ name: 'hex', visibility: '-' }], operations: [{ name: 'f', parameters: [], visibility: '+' }] },
+      ],
+      relations: [],
+    };
+    const res = await h.call('create_diagram', figuras);
+    expect(res.isError).toBeFalsy();
+    const svg = await h.call('export_diagram', { diagramId: res.structuredContent!.diagramId, format: 'svg' });
+    const text = String(svg.structuredContent!.content);
+    expect(text).toContain('default describir()');
+    expect(text).toContain('«abstract»');
+    const bad = await h.call('create_diagram', { ...figuras, elements: [{ id: 'C', kind: 'class', name: 'C', attributes: [], operations: [{ name: 'f', parameters: [], visibility: '+', default: true }] }] });
+    expect(h.errorCodes(bad)).toEqual(['INVALID_MEMBER']);
+  });
+
   it.each([
     ['SCHEMA_VIOLATION', { ...minimalClass, title: '' }],
     ['DUPLICATE_ID', { ...minimalClass, elements: [...minimalClass.elements, { id: 'Pedido', kind: 'enum', name: 'X', literals: ['A'] }] }],

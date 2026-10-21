@@ -29,6 +29,11 @@ describe('edición en línea → changes', () => {
     expect(changesForSlot(cls, 'operation:0', '+ g()')).toEqual({ operations: [{ name: 'g', parameters: [], visibility: '+', abstract: true }] });
   });
 
+  it('parseMethod lee y conserva el prefijo default', () => {
+    expect(parseMethod('+ default describir(): String')).toEqual({ name: 'describir', visibility: '+', returnType: 'String', parameters: [], default: true });
+    expect(parseMethod('+ describir()')).not.toHaveProperty('default');
+  });
+
   it('nombre, literales, descripción y tecnología', () => {
     expect(changesForSlot(cls, 'name', 'B')).toEqual({ name: 'B' });
     expect(changesForSlot({ id: 'E', kind: 'enum', name: 'E', literals: ['A', 'B'] }, 'literal:1', 'C')).toEqual({ literals: ['A', 'C'] });

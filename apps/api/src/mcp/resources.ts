@@ -17,9 +17,9 @@ export const RESOURCE_TEMPLATES: ResourceTemplate[] = [
 ];
 
 const KIND_FIELDS: Record<string, string> = {
-  class: 'attributes[] {name, type?, visibility: + - # ~, static?, defaultValue?}, operations[] {name, parameters[] {name, type?}, returnType?, visibility, static?, abstract?}, abstract?, stereotype?',
-  interface: 'operations[], attributes[]?',
-  enum: 'literals[] (≥1, únicos)',
+  class: 'attributes[] {name, type?, visibility: + - # ~, static?, defaultValue?}, operations[] {name, parameters[] {name, type?}, returnType?, visibility, static?, abstract?}, abstract? (se dibuja «abstract» y el nombre en cursiva), stereotype?',
+  interface: 'operations[] (igual que en class; default?: true marca un método default de Java, se dibuja con la palabra default y sin cursiva; solo en interfaces, no con abstract ni static), attributes[]?',
+  enum: 'literals[] (≥1, únicos), attributes[]? y operations[]? (como en class)',
   package: 'grupo: otros elementos lo referencian con parentId. Úsalo solo si la persona pide agrupar en paquetes',
   person: 'external?, description?',
   'software-system': 'external?, description?',
