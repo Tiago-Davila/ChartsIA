@@ -51,9 +51,88 @@ pnpm --filter @chartsia/api start      # app y MCP en http://127.0.0.1:3333
   `claude mcp add --transport http chartsia http://127.0.0.1:3333/mcp`
 - **Claude Desktop (stdio)**: comando `pnpm --filter @chartsia/api exec chartsia-mcp`
   (puente stdio → hub; el hub debe estar corriendo). Variables: `CHARTSIA_URL`, `CHARTSIA_TOKEN`.
+- **OpenCode**: en `opencode.json` (proyecto) bajo `mcp`; la pantalla de configuración de la app
+  muestra estos JSON con la URL real. Esquema: `https://opencode.ai/config.json`.
+  - HTTP:
+    ```json
+    { "mcp": { "chartsia": { "type": "remote", "url": "http://127.0.0.1:3333/mcp" } } }
+    ```
+    Fuera de loopback añade `"headers": { "Authorization": "Bearer <CHARTSIA_TOKEN>" }`.
+  - stdio (puente `chartsia-mcp`; el hub debe estar corriendo):
+    ```json
+    { "mcp": { "chartsia": { "type": "local",
+      "command": ["pnpm", "--filter", "@chartsia/api", "exec", "chartsia-mcp"],
+      "cwd": "<RUTA_AL_REPO_CHARTSIA>",
+      "environment": { "CHARTSIA_URL": "http://127.0.0.1:3333/mcp" } } } }
+    ```
+    Fuera de loopback añade `"CHARTSIA_TOKEN": "<CHARTSIA_TOKEN>"` en `environment`.
+  - No subas el token real al repositorio: usa un `opencode.json` local o ignorado por git.
+  - Comprueba la conexión con `opencode mcp list`.
+- **Gemini CLI**: en `.gemini/settings.json` del proyecto (mejor que el global `~/.gemini/settings.json`)
+  bajo `mcpServers`; la pantalla de configuración de la app muestra estos JSON con la URL real.
+  - HTTP:
+    ```json
+    { "mcpServers": { "chartsia": { "httpUrl": "http://127.0.0.1:3333/mcp" } } }
+    ```
+    Fuera de loopback añade `"headers": { "Authorization": "Bearer <CHARTSIA_TOKEN>" }`.
+  - stdio (puente `chartsia-mcp`; el hub debe estar corriendo y el repositorio compilado con `pnpm build`):
+    ```json
+    { "mcpServers": { "chartsia": { "command": "node",
+      "args": ["apps/api/dist/stdio-bridge.js"],
+      "cwd": "<RUTA_AL_REPO_CHARTSIA>",
+      "env": { "CHARTSIA_URL": "http://127.0.0.1:3333/mcp" } } } }
+    ```
+    Fuera de loopback añade `"CHARTSIA_TOKEN": "<CHARTSIA_TOKEN>"` en `env`.
+  - No subas el token real al repositorio: usa un `.gemini/settings.json` local o ignorado por git.
+  - Comprueba la conexión con `gemini mcp list`.
+- **GitHub Copilot (VS Code)**: en `.vscode/mcp.json` del proyecto, bajo `servers`; la pantalla de
+  configuración de la app muestra estos JSON con la URL real.
+  - HTTP:
+    ```json
+    { "servers": { "chartsia": { "type": "http", "url": "http://127.0.0.1:3333/mcp" } } }
+    ```
+  - stdio (puente `chartsia-mcp`; el hub debe estar corriendo y el repositorio compilado con `pnpm build`):
+    ```json
+    { "servers": { "chartsia": { "type": "stdio", "command": "node",
+      "args": ["apps/api/dist/stdio-bridge.js"],
+      "cwd": "<RUTA_AL_REPO_CHARTSIA>",
+      "env": { "CHARTSIA_URL": "http://127.0.0.1:3333/mcp" } } } }
+    ```
+  - Fuera de loopback el token se pide con `inputs`, así no queda en el archivo: añade
+    `"inputs": [{ "type": "promptString", "id": "chartsia-token", "description": "Token de ChartsIA", "password": true }]`
+    y `"headers": { "Authorization": "Bearer ${input:chartsia-token}" }` (HTTP) o
+    `"CHARTSIA_TOKEN": "${input:chartsia-token}"` en `env` (stdio).
+  - Abre el chat de Copilot en modo Agent y habilita las herramientas de chartsia (selector de herramientas).
+  - Alternativa por terminal (perfil de usuario, no del proyecto):
+    `code --add-mcp '{"name":"chartsia","type":"http","url":"http://127.0.0.1:3333/mcp"}'`.
 - **OpenAI Responses API**: herramienta
   `{"type":"mcp","server_label":"chartsia","server_url":"https://<túnel>/mcp","authorization":"<CHARTSIA_TOKEN>"}`;
   el hub debe ser accesible desde internet (p. ej. un túnel) con `CHARTSIA_HOST=0.0.0.0`.
+- **Grok (API de xAI)**: herramienta MCP remota en `tools` de `POST https://api.x.ai/v1/responses`
+  (campos de xAI: `type`, `server_url`, `server_label`, `headers`, opcionalmente `allowed_tools`;
+  solo HTTP en streaming o SSE). La pantalla de configuración muestra este JSON.
+  ```json
+  { "type": "mcp", "server_label": "chartsia", "server_url": "https://<túnel>/mcp",
+    "headers": { "Authorization": "Bearer <CHARTSIA_TOKEN>" } }
+  ```
+  - xAI conecta desde sus servidores: no llega a `127.0.0.1`, hace falta un túnel. Ejemplo:
+    `CHARTSIA_HOST=0.0.0.0 CHARTSIA_TOKEN=<CHARTSIA_TOKEN> pnpm --filter @chartsia/api start` y, en
+    otra terminal, `cloudflared tunnel --url http://127.0.0.1:3333` (la URL pública + `/mcp` es `server_url`).
+    Fuera de loopback el token es obligatorio; si no defines `CHARTSIA_TOKEN`, el hub genera uno
+    y lo guarda en `CHARTSIA_DATA_DIR/.token`.
+  - Se usa `headers` y no `authorization` porque la doc de xAI no aclara si este campo añade `Bearer`,
+    y el hub exige `Authorization: Bearer <token>`.
+  - Ejemplo mínimo:
+    ```bash
+    curl https://api.x.ai/v1/responses -H "Authorization: Bearer $XAI_API_KEY" \
+      -H "Content-Type: application/json" -d '{"model":"<modelo>","input":"Crea un diagrama de clases",
+      "tools":[{"type":"mcp","server_label":"chartsia","server_url":"https://<túnel>/mcp",
+      "headers":{"Authorization":"Bearer <CHARTSIA_TOKEN>"}}]}'
+    ```
+  - **Riesgo**: quien tenga la URL del túnel y el token puede crear y borrar diagramas (sin token,
+    cualquiera con la URL). No subas el token al repositorio, usa uno largo y cierra el túnel al terminar.
+  - Los esquemas de las herramientas usan `anyOf`, `const`, `pattern` y `additionalProperties:false`,
+    que la doc de xAI admite en esquemas de herramientas; si xAI responde 400, indica la herramienta.
 
 Herramientas: `create_diagram`, `apply_changes`, `get_diagram`, `list_diagrams`,
 `open_diagram`, `export_diagram`. Recursos: `chartsia://diagrams/{id}`,
