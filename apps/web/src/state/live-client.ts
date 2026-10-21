@@ -1,6 +1,7 @@
 import { type Diagram, type DiagramType } from '@chartsia/core/model';
 import { io, type Socket } from 'socket.io-client';
 import { type ConnectionState } from '../app/ConnectionStatus';
+import { type ConnectedAgent } from './api-client';
 
 export interface DiagramUpdatedEvent {
   diagramId: string;
@@ -14,6 +15,7 @@ export interface LiveHandlers {
   onCreated(event: { diagramId: string; title: string; type: DiagramType }): void;
   onProjectsChanged(): void;
   onActiveChanged(event: { diagramId: string }): void;
+  onAgentsChanged(event: { agents: ConnectedAgent[] }): void;
   onStatus(state: ConnectionState): void;
   /** Tras cada (re)conexión: la app reconcilia el estado con `GET`. */
   onConnected(): void;
@@ -53,6 +55,7 @@ export function createLiveClient(getToken: () => string | undefined, handlers: L
   socket.on('diagram.created', handlers.onCreated);
   socket.on('projects.changed', handlers.onProjectsChanged);
   socket.on('active.changed', handlers.onActiveChanged);
+  socket.on('agents.changed', handlers.onAgentsChanged);
 
   return {
     subscribe(diagramId: string | null) {

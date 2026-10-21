@@ -34,7 +34,7 @@ import { type ToolDefinition } from './tools/tool-definition.js';
 export const SCHEMA_VERSION = '1.0.0';
 
 const INSTRUCTIONS = [
-  'ChartsIA dibuja diagramas de clases UML y C4 en una app que la persona tiene abierta.',
+  'ChartsIA dibuja diagramas de clases UML, C4 y entidad-relación en una app que la persona tiene abierta.',
   'Flujo habitual: create_diagram con la estructura (sin coordenadas) → apply_changes para cada refinamiento → export_diagram si piden un archivo. undo_changes deshace o rehace el último cambio.',
   'Cada pedido de un diagrama nuevo o distinto (otro tema, sistema o tipo) va con create_diagram, que no toca los diagramas anteriores; apply_changes solo refina el diagrama existente del que se habla (por defecto el activo).',
   'Usa get_diagram para conocer los ids actuales antes de editar y list_diagrams / open_diagram para cambiar de diagrama.',

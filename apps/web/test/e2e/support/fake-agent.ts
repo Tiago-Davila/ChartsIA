@@ -12,10 +12,13 @@ export type AgentResult = CallToolResult & {
  */
 export class FakeAgent {
   private client?: Client;
-  constructor(private readonly baseUrl: string) {}
+  constructor(
+    private readonly baseUrl: string,
+    private readonly name = 'chartsia-e2e-agent',
+  ) {}
 
   async connect(): Promise<this> {
-    this.client = new Client({ name: 'chartsia-e2e-agent', version: '1.0.0' });
+    this.client = new Client({ name: this.name, version: '1.0.0' });
     await this.client.connect(new StreamableHTTPClientTransport(new URL(`${this.baseUrl}/mcp`)));
     return this;
   }

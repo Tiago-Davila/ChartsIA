@@ -2,12 +2,13 @@ import { type Diagram, type DiagramType } from '@chartsia/core/model';
 import { type ValidationError } from '@chartsia/core/validation';
 import { createStore, useStore } from 'zustand';
 import { type ConnectionState } from '../app/ConnectionStatus';
-import { type DiagramListResponse, type DiagramSummary, type Project } from './api-client';
+import { type ConnectedAgent, type DiagramListResponse, type DiagramSummary, type Project } from './api-client';
 import { type DiagramUpdatedEvent } from './live-client';
 
 export interface DiagramState {
   diagrams: DiagramSummary[];
   projects: Project[];
+  agents: ConnectedAgent[];
   activeDiagramId: string | null;
   openDiagramId: string | null;
   diagram?: Diagram;
@@ -22,6 +23,7 @@ export interface DiagramState {
   viewVersion: number;
 
   setList(list: DiagramListResponse): void;
+  setAgents(agents: ConnectedAgent[]): void;
   open(diagramId: string | null): void;
   receiveDiagram(diagram: Diagram): void;
   applyUpdate(event: DiagramUpdatedEvent): void;
@@ -57,6 +59,7 @@ export function createDiagramStore() {
   return createStore<DiagramState>()((set, get) => ({
     diagrams: [],
     projects: [],
+    agents: [],
     activeDiagramId: null,
     openDiagramId: null,
     diagram: undefined,
@@ -68,6 +71,7 @@ export function createDiagramStore() {
     viewVersion: 0,
 
     setList: (list) => set({ diagrams: list.diagrams, projects: list.projects, activeDiagramId: list.activeDiagramId }),
+    setAgents: (agents) => set({ agents }),
     open: (diagramId) =>
       set((s) => (s.openDiagramId === diagramId ? s : { openDiagramId: diagramId, diagram: undefined, errors: [], lastOrigin: undefined, lastChangedIds: [] })),
     receiveDiagram: (diagram) => {

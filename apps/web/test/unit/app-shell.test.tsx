@@ -10,11 +10,14 @@ const base: AppShellProps = {
     { diagramId: 'dg_bbbbbbbbbbbb', type: 'c4-container', title: 'Tienda', revision: 1, updatedAt: '2026-10-19T10:00:00.000Z' },
   ],
   projects: [],
+  agents: [],
   activeDiagramId: 'dg_bbbbbbbbbbbb',
   connection: 'connected',
   nodes: [],
   edges: [],
   origin: 'http://127.0.0.1:3333',
+  onConfig: vi.fn(),
+  onCloseConfig: vi.fn(),
   onOpen: vi.fn(),
   onMoveDiagram: vi.fn(),
   onNewProject: vi.fn(),
@@ -30,10 +33,24 @@ const renderShell = (props: Partial<AppShellProps> = {}) =>
   );
 
 describe('AppShell', () => {
-  it('sin diagrama abierto muestra el estado vacío con los comandos del quickstart', () => {
-    renderShell();
+  it('sin diagrama abierto muestra el estado vacío con un enlace a la configuración', async () => {
+    const onConfig = vi.fn();
+    renderShell({ onConfig });
     expect(screen.getByRole('heading', { name: 'Conecta tu agente' })).toBeInTheDocument();
-    expect(screen.getByText('claude mcp add --transport http chartsia http://127.0.0.1:3333/mcp')).toBeInTheDocument();
+    expect(screen.queryByText(/claude mcp add/)).toBeNull();
+    await userEvent.click(screen.getByRole('link', { name: 'la configuración' }));
+    expect(onConfig).toHaveBeenCalled();
+  });
+
+  it('el engranaje abre la configuración y la pantalla permite volver', async () => {
+    const onConfig = vi.fn();
+    const onCloseConfig = vi.fn();
+    renderShell({ onConfig, onCloseConfig, configOpen: true });
+    await userEvent.click(screen.getByRole('button', { name: 'Configuración' }));
+    expect(onConfig).toHaveBeenCalled();
+    expect(screen.getByRole('heading', { name: 'Configuración' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: '← Volver al lienzo' }));
+    expect(onCloseConfig).toHaveBeenCalled();
   });
 
   it('lista los diagramas, marca el activo y permite abrir cualquiera', async () => {

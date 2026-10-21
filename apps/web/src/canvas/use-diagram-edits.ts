@@ -150,7 +150,7 @@ export function useDiagramEdits(api: ApiClient) {
     ({ source, target }: Connection) => {
       const diagram = diagramStore.getState().diagram;
       if (!diagram || !source || !target) return;
-      void send([{ op: 'add_relation', relation: { id: relationId(diagram), kind: defaultRelationKind(diagram.type), source, target } }]);
+      void send([{ op: 'add_relation', relation: { id: relationId(diagram), kind: defaultRelationKind(diagram.type), source, target, ...(diagram.type === 'er' ? { sourceCardinality: 'one', targetCardinality: 'zero-many' } : {}) } }]);
     },
     [send],
   );

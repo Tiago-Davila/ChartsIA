@@ -73,6 +73,25 @@ export function checkRelations({ diagram, elementsById }: RuleContext): Validati
     }
     if (rel.kind !== 'association') field('navigable', 'navigable solo aplica a association');
     if (rel.kind !== 'c4-rel') field('technology', 'technology solo aplica a relaciones c4-rel');
+    if (rel.kind === 'er-rel') {
+      for (const name of ['sourceCardinality', 'targetCardinality'] as const) {
+        if (rel[name] === undefined) {
+          errors.push(
+            validationError(
+              'FIELD_REQUIRED',
+              `${base}/${name}`,
+              `La relación "${rel.id}" (er-rel) necesita "${name}".`,
+              `Agrega "${name}": one, zero-one, one-many o zero-many.`,
+            ),
+          );
+        }
+      }
+    } else {
+      const why = 'la cardinalidad y identifying solo aplican a relaciones er-rel';
+      field('sourceCardinality', why);
+      field('targetCardinality', why);
+      field('identifying', why);
+    }
   });
   return errors;
 }

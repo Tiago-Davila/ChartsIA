@@ -1,5 +1,6 @@
 import { type Element } from '../model/diagram.js';
 import { boxGeometry, type CompartmentBox } from '../shapes/uml/compartments.js';
+import { tableBox } from '../shapes/er/table.js';
 import { classBox } from '../shapes/uml/class.js';
 import { enumBox } from '../shapes/uml/enum.js';
 import { interfaceBox } from '../shapes/uml/interface.js';
@@ -12,10 +13,11 @@ function boxFor(el: Element): CompartmentBox | undefined {
   if (el.kind === 'class') return classBox(el);
   if (el.kind === 'interface') return interfaceBox(el);
   if (el.kind === 'enum') return enumBox(el);
+  if (el.kind === 'table') return tableBox(el);
   return undefined;
 }
 
-/** Clase/interfaz/enum como `swimlane` con `stackLayout` y una celda por miembro (mxUML25). */
+/** Clase/interfaz/enum/tabla como `swimlane` con `stackLayout` y una celda por miembro (mxUML25). */
 export function classCells(el: Element, parent: string, geo: { x: number; y: number; width: number; height: number }): DrawioCell[] | undefined {
   if (el.kind === 'package') {
     return [{
