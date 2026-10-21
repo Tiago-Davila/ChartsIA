@@ -135,3 +135,42 @@ describe('AppShell', () => {
     expect(legend).toHaveTextContent('Externo');
   });
 });
+
+describe('AppShell: título editable', () => {
+  const diagram = { id: 'dg_bbbbbbbbbbbb', type: 'class', title: 'Tienda', revision: 1, elements: [], relations: [] } as unknown as AppShellProps['diagram'];
+  const abrirEditor = async (props: Partial<AppShellProps> = {}) => {
+    const user = userEvent.setup();
+    const onRename = vi.fn();
+    renderShell({ diagram, onRename, ...props });
+    await user.dblClick(screen.getByRole('heading', { name: /Tienda/ }));
+    return { user, onRename, input: screen.queryByRole('textbox', { name: 'Título del diagrama' }) };
+  };
+
+  it('Enter guarda el título nuevo', async () => {
+    const { user, onRename, input } = await abrirEditor();
+    await user.clear(input!);
+    await user.type(input!, 'Mercado{Enter}');
+    expect(onRename).toHaveBeenCalledWith('Mercado');
+  });
+
+  it('Escape cancela sin llamar al hub', async () => {
+    const { user, onRename, input } = await abrirEditor();
+    await user.type(input!, 'X{Escape}');
+    expect(onRename).not.toHaveBeenCalled();
+    expect(screen.getByRole('heading', { name: /Tienda/ })).toBeInTheDocument();
+  });
+
+  it('un título vacío o igual al actual no llama al hub', async () => {
+    const { user, onRename, input } = await abrirEditor();
+    await user.clear(input!);
+    await user.keyboard('{Enter}');
+    await user.dblClick(screen.getByRole('heading', { name: /Tienda/ }));
+    await user.keyboard('{Enter}');
+    expect(onRename).not.toHaveBeenCalled();
+  });
+
+  it('en solo lectura no se edita', async () => {
+    const { input } = await abrirEditor({ readOnly: true });
+    expect(input).toBeNull();
+  });
+});

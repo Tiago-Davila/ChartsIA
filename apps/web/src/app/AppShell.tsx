@@ -33,6 +33,7 @@ export interface AppShellProps {
   onMoveDiagram(diagramId: string, projectId: string | null): void;
   onNewProject(diagramId: string, name: string): void;
   onExport(format: ExportFormat): void;
+  onRename?(title: string): void;
   onNodeDragStop?: DiagramCanvasProps['onNodeDragStop'];
   onDelete?: DiagramCanvasProps['onDelete'];
   onConnect?: DiagramCanvasProps['onConnect'];
@@ -69,6 +70,7 @@ export function AppShell(props: AppShellProps) {
               revision={diagram.revision}
               disabled={props.readOnly}
               onExport={props.onExport}
+              onRename={props.onRename}
               onAlign={props.readOnly ? undefined : props.onAlign}
               changedIds={props.changedIds}
               onOpenLatest={props.onOpenLatest}
