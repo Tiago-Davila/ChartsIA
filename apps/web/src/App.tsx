@@ -76,6 +76,21 @@ function ConnectedApp() {
     }
   }, []);
 
+  // Renombra un diagrama; el abierto entra al historial y los demás se actualizan pidiendo la lista de nuevo.
+  const onRenameDiagram = useCallback(
+    async (diagramId: string, title: string) => {
+      if (diagramId === diagramStore.getState().openDiagramId) return edits.rename(title);
+      const baseRevision = diagramStore.getState().diagrams.find((d) => d.diagramId === diagramId)?.revision;
+      try {
+        await api.applyOperations(diagramId, { baseRevision, operations: [{ op: 'set_title', title }] });
+        diagramStore.getState().setList(await api.listDiagrams());
+      } catch (error) {
+        reportError(error);
+      }
+    },
+    [edits.rename],
+  );
+
   const onExport = useCallback(async (format: ExportFormat) => {
     const current = diagramStore.getState().diagram;
     if (!current) return;
@@ -120,6 +135,7 @@ function ConnectedApp() {
           onOpen={openDiagram}
           onMoveDiagram={onMoveDiagram}
           onNewProject={onNewProject}
+          onRenameDiagram={onRenameDiagram}
           onExport={onExport}
           onRename={edits.rename}
           onNodeDragStop={edits.onNodeDragStop}
