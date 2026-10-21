@@ -230,6 +230,15 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.toolbar__title--input {
+  padding: 2px 6px;
+  font-family: inherit;
+  font-weight: 700;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
 .toolbar__revision {
   margin-left: 8px;
   font-size: 12px;

@@ -116,6 +116,7 @@ function ConnectedApp() {
           onMoveDiagram={onMoveDiagram}
           onNewProject={onNewProject}
           onExport={onExport}
+          onRename={edits.rename}
           onNodeDragStop={edits.onNodeDragStop}
           onDelete={edits.onDelete}
           onConnect={edits.onConnect}
