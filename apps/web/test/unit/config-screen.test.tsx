@@ -22,6 +22,18 @@ describe('ConfigScreen', () => {
     expect(screen.getByText(`claude mcp add --transport http chartsia ${origin}/mcp`)).toBeInTheDocument();
   });
 
+  it('los snippets de OpenCode son JSON válido con la URL del hub', () => {
+    const snippet = (id: string, url: string) => JSON.parse(AGENTS.find((a) => a.id === id)!.snippet(url));
+    for (const id of ['opencode-remote', 'opencode-local']) {
+      const config = snippet(id, `${origin}/mcp`);
+      expect(config.$schema).toBe('https://opencode.ai/config.json');
+      expect(JSON.stringify(config.mcp.chartsia)).toContain(`${origin}/mcp`);
+      expect(JSON.stringify(config)).not.toContain('Bearer');
+    }
+    const remoto = snippet('opencode-remote', 'https://hub.example.com/mcp');
+    expect(remoto.mcp.chartsia.headers.Authorization).toBe('Bearer <CHARTSIA_TOKEN>');
+  });
+
   it('copia el comando de la tarjeta', async () => {
     const user = userEvent.setup();
     const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
