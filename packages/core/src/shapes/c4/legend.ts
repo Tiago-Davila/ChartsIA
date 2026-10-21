@@ -1,4 +1,5 @@
 import { type DiagramContent } from '../../model/diagram.js';
+import { isC4Diagram } from '../../model/enums.js';
 import { lineHeight, measureText } from '../text-metrics.js';
 import { FONT, type Primitive, type Size } from '../types.js';
 import { C4_PALETTE } from './palette.js';
@@ -25,7 +26,7 @@ const LABELS: Record<LegendEntry['key'], string> = {
 
 /** Entradas de la leyenda C4 (FR-015) solo para lo que aparece en el diagrama. */
 export function legendEntries(diagram: DiagramContent): LegendEntry[] {
-  if (diagram.type === 'class') return [];
+  if (!isC4Diagram(diagram.type)) return [];
   const present = new Set<LegendEntry['key']>();
   for (const el of diagram.elements) {
     if ('external' in el && el.external) present.add('external');

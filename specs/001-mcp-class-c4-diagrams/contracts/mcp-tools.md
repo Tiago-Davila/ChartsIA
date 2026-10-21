@@ -31,7 +31,7 @@ Input:
 
 ```json
 {
-  "type": "class | c4-context | c4-container | c4-component",
+  "type": "class | c4-context | c4-container | c4-component | er",
   "title": "string",
   "elements": ["Element"],
   "relations": ["Relation"],
@@ -43,6 +43,16 @@ Miembros UML: `abstract: true` en una clase dibuja `«abstract»` y el nombre en
 método de interfaz con `default: true` se dibuja como `+ default nombre()` (sin cursiva) y solo se
 admite en interfaces, sin `abstract` ni `static` (si no, `INVALID_MEMBER`); un `enum` admite
 `attributes` y `operations` opcionales además de `literals`.
+
+Diagramas `er` (entidad-relación): solo admiten `entity` (`weak: true` la dibuja con doble
+borde, como entidad débil) y relaciones `er-rel` entre entidades. Cada `er-rel` exige
+`sourceCardinality` y `targetCardinality` (`one`, `zero-one`, `one-many` o `zero-many`, notación
+pata de gallo; cada marca se dibuja en su extremo); si falta alguna, `FIELD_REQUIRED`.
+`identifying: true` la dibuja con línea continua y, sin él, discontinua. Estos campos, y las
+multiplicidades UML, no se admiten fuera de su tipo (`FIELD_NOT_ALLOWED`); los kinds y
+relaciones de `class` y C4 tampoco valen en `er` (`KIND_NOT_ALLOWED`, `RELATION_NOT_ALLOWED`).
+En `apply_changes`, `update_element` admite `weak` y `update_relation` admite
+`sourceCardinality`, `targetCardinality` e `identifying`.
 
 `projectId` coloca el diagrama en un proyecto existente; si no existe, `PROJECT_NOT_FOUND` y no
 se crea nada.

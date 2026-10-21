@@ -56,3 +56,28 @@ describe('escape de texto en exportaciones', () => {
     expect(texts.some((t: string) => t.includes(EVIL))).toBe(true);
   });
 });
+
+describe('escape en diagramas er', () => {
+  async function evilEr(): Promise<Diagram> {
+    return layoutDiagram({
+      id: 'dg_aaaaaaaaaaaa', type: 'er', title: EVIL, revision: 1,
+      createdAt: '2026-10-20T10:00:00.000Z', updatedAt: '2026-10-20T10:00:00.000Z',
+      elements: [
+        { id: 'A', kind: 'entity', name: EVIL, weak: true },
+        { id: 'B', kind: 'entity', name: TRICKY },
+      ],
+      relations: [{ id: 'r', kind: 'er-rel', source: 'A', target: 'B', label: EVIL, sourceCardinality: 'zero-many', targetCardinality: 'one' }],
+    });
+  }
+
+  it.each(['svg', 'drawio'] as const)('%s: nombres y etiquetas escapados', async (format) => {
+    const out = exportDiagram(await evilEr(), format).content;
+    expect(out).not.toContain('<img');
+    expect(out).toContain('&lt;img src=x onerror=alert(1)&gt;');
+  });
+
+  it('excalidraw: JSON válido con el texto literal', async () => {
+    const json = JSON.parse(exportDiagram(await evilEr(), 'excalidraw').content);
+    expect(json.elements.some((e: { text?: string }) => e.text?.includes(EVIL))).toBe(true);
+  });
+});

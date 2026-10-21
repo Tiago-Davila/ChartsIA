@@ -5,6 +5,7 @@ export const DIAGRAM_TYPE_LABELS: Record<DiagramType, string> = {
   'c4-context': 'C4 · Contexto',
   'c4-container': 'C4 · Contenedores',
   'c4-component': 'C4 · Componentes',
+  er: 'Entidad-relación',
 };
 
 const dateFormat = new Intl.DateTimeFormat('es', { dateStyle: 'short', timeStyle: 'short' });

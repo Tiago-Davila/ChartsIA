@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BOUNDARY_TYPES, CONTAINER_VARIANTS, MAX_OPERATIONS_PER_BATCH, NAVIGABILITIES, RELATION_KINDS, SIDES } from './enums.js';
+import { BOUNDARY_TYPES, CARDINALITIES, CONTAINER_VARIANTS, MAX_OPERATIONS_PER_BATCH, NAVIGABILITIES, RELATION_KINDS, SIDES } from './enums.js';
 import { AttributeSchema, MethodSchema } from './class-elements.js';
 import { DescriptionSchema, ElementIdSchema, LayoutSchema, NameSchema, PointSchema } from './common.js';
 import { ElementSchema, TitleSchema } from './diagram.js';
@@ -24,6 +24,7 @@ export const ElementChangesSchema = z
     technology: z.string().min(1).max(120).nullable().optional(),
     variant: z.enum(CONTAINER_VARIANTS).nullable().optional(),
     boundaryType: z.enum(BOUNDARY_TYPES).optional(),
+    weak: z.boolean().nullable().optional(),
   })
   .describe('Campos a cambiar, p. ej. {"name":"Usuario"}; null elimina un campo opcional');
 export type ElementChanges = z.infer<typeof ElementChangesSchema>;
@@ -38,6 +39,9 @@ export const RelationChangesSchema = z
     targetMultiplicity: MultiplicitySchema.nullable().optional(),
     navigable: z.enum(NAVIGABILITIES).nullable().optional(),
     technology: z.string().min(1).max(120).nullable().optional(),
+    sourceCardinality: z.enum(CARDINALITIES).nullable().optional(),
+    targetCardinality: z.enum(CARDINALITIES).nullable().optional(),
+    identifying: z.boolean().nullable().optional(),
     sourceSide: z.enum(SIDES).nullable().optional(),
     targetSide: z.enum(SIDES).nullable().optional(),
     waypoints: z.array(PointSchema).max(20).nullable().optional(),

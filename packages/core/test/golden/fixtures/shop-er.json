@@ -1,0 +1,15 @@
+{
+  "type": "er",
+  "title": "Tienda ER & <Pedidos>",
+  "elements": [
+    { "id": "cliente", "kind": "entity", "name": "Cliente" },
+    { "id": "pedido", "kind": "entity", "name": "Pedido" },
+    { "id": "linea", "kind": "entity", "name": "Línea <de> \"pedido\"", "weak": true },
+    { "id": "producto", "kind": "entity", "name": "Producto" }
+  ],
+  "relations": [
+    { "id": "r1", "kind": "er-rel", "source": "cliente", "target": "pedido", "label": "hace", "sourceCardinality": "one", "targetCardinality": "zero-many" },
+    { "id": "r2", "kind": "er-rel", "source": "pedido", "target": "linea", "identifying": true, "sourceCardinality": "one", "targetCardinality": "one-many" },
+    { "id": "r3", "kind": "er-rel", "source": "linea", "target": "producto", "label": "refiere", "sourceCardinality": "zero-many", "targetCardinality": "zero-one" }
+  ]
+}

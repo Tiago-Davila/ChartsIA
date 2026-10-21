@@ -1,6 +1,6 @@
 import { type Point } from '../model/common.js';
 import { type Diagram, type Element } from '../model/diagram.js';
-import { isGroupKind } from '../model/enums.js';
+import { type Cardinality, isGroupKind } from '../model/enums.js';
 import { type Relation } from '../model/relation.js';
 import { hashSeed } from '../render/hash.js';
 import { edgeLabelLines } from '../render/edges.js';
@@ -9,13 +9,14 @@ import { boxGeometry } from '../shapes/uml/compartments.js';
 import { classBox } from '../shapes/uml/class.js';
 import { enumBox } from '../shapes/uml/enum.js';
 import { interfaceBox } from '../shapes/uml/interface.js';
-import { relationStyle, type MarkerKind } from '../shapes/uml/markers.js';
+import { WEAK_GAP } from '../shapes/er/entity.js';
+import { CIRCLE_RADIUS, crowFoot, isCardinality, markerFrame, relationStyle, type MarkerKind } from '../shapes/uml/markers.js';
 import { orderKeys } from './fractional-index.js';
 
 type Json = Record<string, unknown>;
 type Box = { x: number; y: number; width: number; height: number };
 
-const ARROWHEADS: Record<MarkerKind, string> = {
+const ARROWHEADS: Record<Exclude<MarkerKind, Cardinality>, string> = {
   'triangle-hollow': 'triangle_outline',
   'diamond-filled': 'diamond',
   'diamond-hollow': 'diamond_outline',
@@ -125,6 +126,26 @@ function addC4(b: Builder, el: Element, box: Box): void {
   }
 }
 
+function addEr(b: Builder, el: Element, box: Box): void {
+  if (el.kind !== 'entity') return;
+  const rect = b.shape(el.id, 'rectangle', box, { backgroundColor: '#fffef5' });
+  b.boundText(rect, el.name, { fontSize: 14 });
+  if (el.weak) {
+    const inner = { x: box.x + WEAK_GAP, y: box.y + WEAK_GAP, width: box.width - WEAK_GAP * 2, height: box.height - WEAK_GAP * 2 };
+    b.shape(`${el.id}-inner`, 'rectangle', inner, {});
+  }
+}
+
+/** Marca pata de gallo como líneas y un círculo, porque Excalidraw no tiene cero-o-uno nativo. */
+function addCardinality(b: Builder, rel: Relation, kind: Cardinality, tag: string, tip: Point, from: Point, color: string): void {
+  const { lines, circle } = crowFoot(kind, markerFrame(tip, from));
+  lines.forEach((l, i) => b.line(`${rel.id}-${tag}-${i}`, l[0], l[1], { strokeColor: color, strokeWidth: 1.5 }));
+  if (circle) {
+    const box = { x: circle.x - CIRCLE_RADIUS, y: circle.y - CIRCLE_RADIUS, width: CIRCLE_RADIUS * 2, height: CIRCLE_RADIUS * 2 };
+    b.shape(`${rel.id}-${tag}-o`, 'ellipse', box, { strokeColor: color, backgroundColor: '#ffffff', strokeWidth: 1.5 });
+  }
+}
+
 function addArrow(b: Builder, rel: Relation, byId: Map<string, Json>): void {
   const route = rel.route ?? [];
   if (route.length < 2) return;
@@ -141,14 +162,16 @@ function addArrow(b: Builder, rel: Relation, byId: Map<string, Json>): void {
     lastCommittedPoint: null,
     startBinding: byId.has(rel.source) ? binding(rel.source) : null,
     endBinding: byId.has(rel.target) ? binding(rel.target) : null,
-    startArrowhead: style.start ? ARROWHEADS[style.start] : null,
-    endArrowhead: style.end ? ARROWHEADS[style.end] : null,
+    startArrowhead: style.start && !isCardinality(style.start) ? ARROWHEADS[style.start] : null,
+    endArrowhead: style.end && !isCardinality(style.end) ? ARROWHEADS[style.end] : null,
     elbowed: false,
   });
   for (const id of [rel.source, rel.target]) {
     const target = byId.get(id);
     if (target) target.boundElements = [...((target.boundElements as Json[] | null) ?? []), { type: 'arrow', id: rel.id }];
   }
+  if (style.start && isCardinality(style.start)) addCardinality(b, rel, style.start, 'src', route[0]!, route[1]!, style.color);
+  if (style.end && isCardinality(style.end)) addCardinality(b, rel, style.end, 'dst', route[route.length - 1]!, route[route.length - 2]!, style.color);
   const lines = edgeLabelLines(rel);
   if (lines.length > 0) b.boundText(arrow, lines.join('\n'), { fontSize: 12 });
 }
@@ -170,7 +193,8 @@ export function exportExcalidraw(diagram: Diagram): string {
         b.shape(el.id, 'rectangle', box, {});
         b.text(`${el.id}-title`, el.name, { x: box.x + 10, y: box.y + 6, width: box.width - 20, height: 20 }, { fontSize: 14 });
       } else addUml(b, el, box);
-    } else addC4(b, el, box);
+    } else if (diagram.type === 'er') addEr(b, el, box);
+    else addC4(b, el, box);
   }
   const byId = new Map(b.elements.filter((e) => diagram.elements.some((d) => d.id === e.id)).map((e) => [e.id as string, e]));
   for (const rel of [...diagram.relations].sort((a, c) => (a.id < c.id ? -1 : 1))) addArrow(b, rel, byId);
