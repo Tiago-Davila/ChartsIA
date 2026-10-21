@@ -6,6 +6,7 @@ import { type Project } from '../state/api-client';
 import { type AlignMode } from '../canvas/align';
 import { DiagramCanvas, type DiagramCanvasProps } from '../canvas/DiagramCanvas';
 import { C4Legend } from '../legend/C4Legend';
+import { ConfigScreen } from './ConfigScreen';
 import { ConnectionStatus, type ConnectionState } from './ConnectionStatus';
 import { DiagramList, type DiagramListItem } from './DiagramList';
 import { EmptyState } from './EmptyState';
@@ -22,6 +23,10 @@ export interface AppShellProps {
   nodes: Node[];
   edges: Edge[];
   origin: string;
+  /** Muestra la pantalla de configuración en lugar del lienzo. */
+  configOpen?: boolean;
+  onConfig(): void;
+  onCloseConfig(): void;
   readOnly?: boolean;
   onOpen(diagramId: string): void;
   onMoveDiagram(diagramId: string, projectId: string | null): void;
@@ -48,10 +53,15 @@ export function AppShell(props: AppShellProps) {
           <span className="brand__mark" aria-hidden>◆</span> ChartsIA
         </div>
         <DiagramList diagrams={props.diagrams} projects={props.projects} activeDiagramId={props.activeDiagramId} openDiagramId={diagram?.id ?? null} onOpen={props.onOpen} onMove={props.onMoveDiagram} onNewProject={props.onNewProject} />
+        <button type="button" className="button sidebar-config" aria-label="Configuración" aria-pressed={props.configOpen} onClick={props.onConfig}>
+          <span aria-hidden>⚙</span>
+        </button>
         <ConnectionStatus state={props.connection} />
       </aside>
       <main className="app-shell__main">
-        {diagram ? (
+        {props.configOpen ? (
+          <ConfigScreen origin={props.origin} connection={props.connection} onBack={props.onCloseConfig} />
+        ) : diagram ? (
           <>
             <Toolbar
               title={diagram.title}
@@ -79,7 +89,7 @@ export function AppShell(props: AppShellProps) {
         ) : props.loading ? (
           <p className="loading" role="status">Cargando diagrama…</p>
         ) : (
-          <EmptyState origin={props.origin} />
+          <EmptyState onConfig={props.onConfig} />
         )}
         {props.overlay}
       </main>
