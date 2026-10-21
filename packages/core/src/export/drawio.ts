@@ -5,7 +5,9 @@ import { c4Cells } from './drawio-c4.js';
 import { classCells } from './drawio-class.js';
 import { erCells, erEdgeStyle } from './drawio-er.js';
 import { figureCells } from './drawio-figure.js';
+import { drawioFont, drawioStroke } from './drawio-style.js';
 import { xmlElement } from './xml-escape.js';
+import { FONT } from '../shapes/types.js';
 
 export interface DrawioCell {
   id: string;
@@ -70,6 +72,7 @@ function edgeXml(rel: Relation, byId: Map<string, Element>): string {
   if (rel.kind === 'er-rel') style = style.replace('endArrow=none;', erEdgeStyle(rel));
   if (rel.kind === 'connector') style = style.replace('endArrow=open;endSize=12;', connectorEdgeStyle(rel));
   if (rel.kind === 'association' && rel.navigable === 'source-to-target') style = style.replace('endArrow=none;', 'endArrow=open;endSize=12;');
+  style = drawioFont(drawioStroke(style, rel.style), rel.style, FONT.small);
   if (route.length >= 2) style += constraint('exit', route[0]!, src?.layout) + constraint('entry', route[route.length - 1]!, tgt?.layout);
   const label = [rel.label, rel.kind === 'c4-rel' && rel.technology ? `[${rel.technology}]` : undefined].filter(Boolean).join('\n');
   const points = route.slice(1, -1).map((p) => xmlElement('mxPoint', { x: r(p.x), y: r(p.y) })).join('');
@@ -78,7 +81,7 @@ function edgeXml(rel: Relation, byId: Map<string, Element>): string {
   const end = (text: string | undefined, x: number, suffix: string, align: string) => {
     if (!text) return;
     const g = xmlElement('mxGeometry', { x, relative: '1', as: 'geometry' }, xmlElement('mxPoint', { x: x < 0 ? 10 : -10, y: -10, as: 'offset' }));
-    cells.push(xmlElement('mxCell', { id: `${rel.id}:${suffix}`, value: text, style: `edgeLabel;resizable=0;html=0;align=${align};verticalAlign=bottom;fontSize=11;`, vertex: '1', connectable: '0', parent: rel.id }, g));
+    cells.push(xmlElement('mxCell', { id: `${rel.id}:${suffix}`, value: text, style: drawioFont(`edgeLabel;resizable=0;html=0;align=${align};verticalAlign=bottom;fontSize=11;`, rel.style, FONT.small), vertex: '1', connectable: '0', parent: rel.id }, g));
   };
   end(rel.sourceMultiplicity, -1, 'source', 'left');
   end(rel.targetMultiplicity, 1, 'target', 'right');

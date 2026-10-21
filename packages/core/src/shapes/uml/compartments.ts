@@ -1,3 +1,5 @@
+import { type Style } from '../../model/style.js';
+import { paintOf, textFont } from '../style.js';
 import { lineHeight, measureText } from '../text-metrics.js';
 import { COLORS, FONT, type Primitive, type Size } from '../types.js';
 
@@ -15,6 +17,8 @@ export interface Line {
 export interface CompartmentBox {
   header: Line[];
   sections: Line[][];
+  /** Estilo del elemento: escala el texto y cambia colores y familia. */
+  style?: Style;
 }
 
 const PAD_X = 12;
@@ -22,9 +26,14 @@ const PAD_Y = 6;
 const MIN_WIDTH = 140;
 const EMPTY_SECTION = 10;
 
-function sectionHeight(lines: Line[]): number {
+/** Alto de una línea de texto, según su tamaño y el estilo del elemento. */
+export function boxLineHeight(line: Line, style?: Style): number {
+  return lineHeight(textFont(style, line.size ?? FONT.member).size);
+}
+
+function sectionHeight(lines: Line[], style?: Style): number {
   if (lines.length === 0) return EMPTY_SECTION;
-  return PAD_Y * 2 + lines.reduce((h, l) => h + lineHeight(l.size ?? FONT.member), 0);
+  return PAD_Y * 2 + lines.reduce((h, l) => h + boxLineHeight(l, style), 0);
 }
 
 export interface BoxGeometry {
@@ -34,13 +43,13 @@ export interface BoxGeometry {
 
 /** Posición de cada compartimento y línea; la usan los exportadores (p. ej. draw.io). */
 export function boxGeometry(box: CompartmentBox): BoxGeometry {
-  const headerHeight = sectionHeight(box.header);
+  const headerHeight = sectionHeight(box.header, box.style);
   let top = headerHeight;
   const sections = box.sections.map((lines) => {
-    const height = sectionHeight(lines);
+    const height = sectionHeight(lines, box.style);
     let y = top + PAD_Y;
     const placed = lines.map((line) => {
-      const h = lineHeight(line.size ?? FONT.member);
+      const h = boxLineHeight(line, box.style);
       const out = { y, height: h, line };
       y += h;
       return out;
@@ -54,26 +63,28 @@ export function boxGeometry(box: CompartmentBox): BoxGeometry {
 
 export function measureBox(box: CompartmentBox): Size {
   const lines = [box.header, ...box.sections].flat();
-  const widest = Math.max(...lines.map((l) => measureText(l.text, { size: l.size ?? FONT.member, bold: l.bold })));
+  const widest = Math.max(
+    ...lines.map((l) => measureText(l.text, { ...textFont(box.style, l.size ?? FONT.member), bold: l.bold })),
+  );
   const width = Math.max(MIN_WIDTH, Math.ceil(widest + PAD_X * 2));
-  const height = sectionHeight(box.header) + box.sections.reduce((h, s) => h + sectionHeight(s), 0);
+  const height = sectionHeight(box.header, box.style) + box.sections.reduce((h, s) => h + sectionHeight(s, box.style), 0);
   return { width, height };
 }
 
-function linePrimitives(lines: Line[], top: number, width: number): Primitive[] {
+function linePrimitives(lines: Line[], top: number, width: number, style?: Style): Primitive[] {
   const out: Primitive[] = [];
+  const color = style?.fontColor ?? COLORS.text;
   let y = top + PAD_Y;
   for (const line of lines) {
-    const size = line.size ?? FONT.member;
-    const lh = lineHeight(size);
+    const lh = boxLineHeight(line, style);
     const middle = line.align === 'middle';
     out.push({
       type: 'text',
       x: middle ? width / 2 : PAD_X,
       y: y + lh * 0.72,
       text: line.text,
-      size,
-      color: COLORS.text,
+      ...textFont(style, line.size ?? FONT.member),
+      color,
       anchor: middle ? 'middle' : 'start',
       ...(line.bold ? { bold: true } : {}),
       ...(line.italic ? { italic: true } : {}),
@@ -87,17 +98,20 @@ function linePrimitives(lines: Line[], top: number, width: number): Primitive[] 
 
 export function boxPrimitives(box: CompartmentBox, size: Size): Primitive[] {
   const { width, height } = size;
-  const headerHeight = sectionHeight(box.header);
+  const { style } = box;
+  const body = paintOf(style, { fill: COLORS.umlFill, stroke: COLORS.stroke, text: COLORS.text });
+  const header = style?.fillColor ?? COLORS.umlHeader;
+  const headerHeight = sectionHeight(box.header, style);
   const out: Primitive[] = [
-    { type: 'rect', x: 0, y: 0, width, height, fill: COLORS.umlFill, stroke: COLORS.stroke, strokeWidth: 1.5 },
-    { type: 'rect', x: 0, y: 0, width, height: headerHeight, fill: COLORS.umlHeader, stroke: COLORS.stroke, strokeWidth: 1.5 },
-    ...linePrimitives(box.header, 0, width),
+    { type: 'rect', x: 0, y: 0, width, height, fill: body.fill, stroke: body.stroke, strokeWidth: 1.5 },
+    { type: 'rect', x: 0, y: 0, width, height: headerHeight, fill: header, stroke: body.stroke, strokeWidth: 1.5 },
+    ...linePrimitives(box.header, 0, width, style),
   ];
   let top = headerHeight;
   for (const section of box.sections) {
-    out.push({ type: 'line', x1: 0, y1: top, x2: width, y2: top, stroke: COLORS.stroke, strokeWidth: 1 });
-    out.push(...linePrimitives(section, top, width));
-    top += sectionHeight(section);
+    out.push({ type: 'line', x1: 0, y1: top, x2: width, y2: top, stroke: body.stroke, strokeWidth: 1 });
+    out.push(...linePrimitives(section, top, width, style));
+    top += sectionHeight(section, style);
   }
   return out;
 }

@@ -3,7 +3,10 @@
  * independiente del navegador y de las fuentes instaladas (research R7). Cubre las dos fuentes
  * empaquetadas: Inter (app y SVG) y Excalifont (export a Excalidraw). Los valores son anchos de
  * avance redondeados hacia arriba para que el texto renderizado quepa siempre en la forma.
+ * Las familias del estilo de usuario se aproximan con esas tablas (ver `STYLE_TABLES`).
  */
+import { type StyleFontFamily } from '../model/style.js';
+
 export type FontFamily = 'clean' | 'sketch';
 
 // Inter Regular, ASCII 32..126.
@@ -26,7 +29,12 @@ const EXCALIFONT = [
   620, 620, 500, 560, 460, 620, 580, 820, 580, 580, 580, 440, 300, 440, 640,
 ];
 
+// Monoespaciada: todos los glifos miden igual (Courier y Consolas rondan 550 a 600).
+const MONO = INTER.map(() => 620);
+
 const TABLES: Record<FontFamily, number[]> = { clean: INTER, sketch: EXCALIFONT };
+/** Serif usa Inter, que es más ancha que Times y Georgia, así el texto siempre cabe. */
+const STYLE_TABLES: Record<StyleFontFamily, number[]> = { 'sans-serif': INTER, serif: INTER, monospace: MONO, handwritten: EXCALIFONT };
 const WIDE = 1000; // CJK, emoji y otros glifos anchos
 const FALLBACK = 650;
 const BOLD_FACTOR = 1.07;
@@ -39,6 +47,8 @@ export interface TextStyle {
   italic?: boolean;
   /** Por defecto `both`: el máximo de ambas fuentes, para que el layout no dependa del estilo. */
   font?: FontFamily | 'both';
+  /** Familia elegida por el usuario en el estilo del elemento; tiene prioridad sobre `font`. */
+  fontFamily?: StyleFontFamily;
 }
 
 function glyphWidth(char: string, table: number[]): number {
@@ -53,8 +63,7 @@ function glyphWidth(char: string, table: number[]): number {
   return FALLBACK;
 }
 
-function widthIn(text: string, style: TextStyle, font: FontFamily): number {
-  const table = TABLES[font];
+function widthIn(text: string, style: TextStyle, table: number[]): number {
   let units = 0;
   for (const char of text) units += glyphWidth(char, table);
   const factor = style.bold ? BOLD_FACTOR : 1;
@@ -64,8 +73,10 @@ function widthIn(text: string, style: TextStyle, font: FontFamily): number {
 /** Ancho en px de una línea de texto, redondeado hacia arriba a 0,5 px. */
 export function measureText(text: string, style: TextStyle): number {
   const font = style.font ?? 'both';
-  const width =
-    font === 'both' ? Math.max(widthIn(text, style, 'clean'), widthIn(text, style, 'sketch')) : widthIn(text, style, font);
+  let width: number;
+  if (style.fontFamily) width = widthIn(text, style, STYLE_TABLES[style.fontFamily]);
+  else if (font === 'both') width = Math.max(widthIn(text, style, INTER), widthIn(text, style, EXCALIFONT));
+  else width = widthIn(text, style, TABLES[font]);
   return Math.ceil(width * 2) / 2;
 }
 

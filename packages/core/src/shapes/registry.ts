@@ -49,5 +49,5 @@ export function elementPrimitives(element: Element, size: Size): Primitive[] {
 const NO_PADDING = { top: 0, right: 0, bottom: 0, left: 0 };
 
 export function groupPadding(element: Element) {
-  return shapeFor(element).padding ?? NO_PADDING;
+  return shapeFor(element).padding?.(element) ?? NO_PADDING;
 }

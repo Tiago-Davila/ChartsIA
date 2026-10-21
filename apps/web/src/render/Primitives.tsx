@@ -1,4 +1,4 @@
-import { type Primitive } from '@chartsia/core/shapes';
+import { CSS_FONT_FAMILIES, type Primitive } from '@chartsia/core/shapes';
 import { memo, type MouseEvent } from 'react';
 
 export interface PrimitivesProps {
@@ -45,6 +45,7 @@ export const Primitives = memo(function Primitives({ primitives, onTextDoubleCli
                 x={p.x}
                 y={p.y}
                 fontSize={p.size}
+                fontFamily={p.fontFamily ? CSS_FONT_FAMILIES[p.fontFamily] : undefined}
                 fill={p.color}
                 textAnchor={p.anchor === 'start' ? undefined : p.anchor}
                 fontWeight={p.bold ? 'bold' : undefined}

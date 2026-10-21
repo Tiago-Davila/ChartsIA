@@ -1,6 +1,8 @@
 import { type Point } from '../../model/common.js';
 import { type ElementOfKind } from '../../model/diagram.js';
 import { type FigureShape } from '../../model/enums.js';
+import { type Style } from '../../model/style.js';
+import { paintOf, textFont } from '../style.js';
 import { lineHeight, measureText, wrapText } from '../text-metrics.js';
 import { COLORS, FONT, type Primitive, type ShapeDefinition, type Size } from '../types.js';
 
@@ -104,19 +106,18 @@ function cloudPath({ width: w, height: h }: Size): string {
   ].join(' ');
 }
 
-const PAINT = { fill: COLORS.umlFill, stroke: COLORS.stroke, strokeWidth: 1.5 };
-
-function outlinePrimitive(shape: FigureShape, size: Size): Primitive {
+function outlinePrimitive(shape: FigureShape, size: Size, paint: { fill: string; stroke: string }): Primitive {
+  const look = { ...paint, strokeWidth: 1.5 };
   const { width, height } = size;
   const points = figureOutline(shape, size);
-  if (points) return { type: 'path', d: `${points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${r(p.x)} ${r(p.y)}`).join(' ')} Z`, ...PAINT };
-  if (shape === 'circle') return { type: 'ellipse', cx: width / 2, cy: height / 2, rx: width / 2, ry: height / 2, ...PAINT };
-  if (shape === 'cloud') return { type: 'path', d: cloudPath(size), ...PAINT };
-  return { type: 'rect', x: 0, y: 0, width, height, ...PAINT };
+  if (points) return { type: 'path', d: `${points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${r(p.x)} ${r(p.y)}`).join(' ')} Z`, ...look };
+  if (shape === 'circle') return { type: 'ellipse', cx: width / 2, cy: height / 2, rx: width / 2, ry: height / 2, ...look };
+  if (shape === 'cloud') return { type: 'path', d: cloudPath(size), ...look };
+  return { type: 'rect', x: 0, y: 0, width, height, ...look };
 }
 
-function textLines(name: string, width: number): string[] {
-  return wrapText(name, width, { size: FONT.name }, MAX_LINES);
+function textLines(name: string, width: number, style?: Style): string[] {
+  return wrapText(name, width, textFont(style, FONT.name), MAX_LINES);
 }
 
 /**
@@ -126,23 +127,26 @@ function textLines(name: string, width: number): string[] {
 export const figureShape: ShapeDefinition<FigureElement> = {
   measure: (el) => {
     const geometry = GEOMETRY[el.shape];
-    const lines = textLines(el.name, geometry.wrap);
+    const font = textFont(el.style, FONT.name);
+    const lines = textLines(el.name, geometry.wrap, el.style);
     const text = {
-      width: Math.max(...lines.map((l) => measureText(l, { size: FONT.name }))) + MARGIN,
-      height: lines.length * lineHeight(FONT.name) + MARGIN,
+      width: Math.max(...lines.map((l) => measureText(l, font))) + MARGIN,
+      height: lines.length * lineHeight(font.size) + MARGIN,
     };
     const size = geometry.size(text);
     return { width: Math.ceil(Math.max(geometry.min.width, size.width)), height: Math.ceil(Math.max(geometry.min.height, size.height)) };
   },
   primitives: (el, size) => {
     const area = figureTextArea(el.shape, size);
-    const lines = textLines(el.name, area.width);
-    const lh = lineHeight(FONT.name);
+    const c = paintOf(el.style, { fill: COLORS.umlFill, stroke: COLORS.stroke, text: COLORS.text });
+    const font = textFont(el.style, FONT.name);
+    const lines = textLines(el.name, area.width, el.style);
+    const lh = lineHeight(font.size);
     const top = area.y + (area.height - lines.length * lh) / 2;
     return [
-      outlinePrimitive(el.shape, size),
+      outlinePrimitive(el.shape, size, c),
       ...lines.map((text, i): Primitive => ({
-        type: 'text', x: area.x + area.width / 2, y: top + i * lh + lh * 0.75, text, size: FONT.name, color: COLORS.text, anchor: 'middle',
+        type: 'text', x: area.x + area.width / 2, y: top + i * lh + lh * 0.75, text, ...font, color: c.text, anchor: 'middle',
         ...(i === 0 ? { slot: 'name' } : {}),
       })),
     ];

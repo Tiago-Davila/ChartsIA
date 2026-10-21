@@ -1,4 +1,4 @@
-import { measureElement, type Primitive } from '@chartsia/core/shapes';
+import { CSS_FONT_FAMILIES, measureElement, type Primitive } from '@chartsia/core/shapes';
 import { Handle, NodeResizer, type NodeProps, Position } from '@xyflow/react';
 import { type CSSProperties, memo, useCallback, useMemo, useState } from 'react';
 import { slotValue } from '../canvas/slot-edits';
@@ -14,8 +14,9 @@ type TextPrimitive = Extract<Primitive, { type: 'text' }>;
 function editorStyle(p: TextPrimitive, width: number): CSSProperties {
   const height = Math.round(p.size * 1.5);
   const top = p.y - p.size * 1.05;
-  if (p.anchor === 'middle') return { left: 8, top, width: width - 16, height, fontSize: p.size, textAlign: 'center' };
-  return { left: p.x - 3, top, width: Math.max(80, width - p.x - 6), height, fontSize: p.size };
+  const fontFamily = p.fontFamily ? CSS_FONT_FAMILIES[p.fontFamily] : undefined;
+  if (p.anchor === 'middle') return { left: 8, top, width: width - 16, height, fontSize: p.size, fontFamily, textAlign: 'center' };
+  return { left: p.x - 3, top, width: Math.max(80, width - p.x - 6), height, fontSize: p.size, fontFamily };
 }
 
 /** Autocompletado de tipos para los slots de atributos y operaciones. */

@@ -8,6 +8,7 @@ type ValueListElement = ElementOfKind<'value-list'>;
 export function valueListBox(el: ValueListElement): CompartmentBox {
   return {
     header: headerLines(el.name, {}),
+    style: el.style,
     sections: [el.values.map((v, i) => ({ text: v, slot: `value:${i}` }))],
   };
 }

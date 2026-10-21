@@ -11,7 +11,7 @@ export function interfaceBox(el: InterfaceElement): CompartmentBox {
     sections.push(el.attributes.map((a, i) => ({ text: formatAttribute(a), slot: `attribute:${i}`, underline: a.static })));
   }
   sections.push(el.operations.map((m, i) => ({ text: formatMethod(m), slot: `operation:${i}`, italic: !m.default, underline: m.static })));
-  return { header: headerLines(el.name, { stereotype: 'interface', italic: true }), sections };
+  return { header: headerLines(el.name, { stereotype: 'interface', italic: true }), sections, style: el.style };
 }
 
 export const interfaceShape: ShapeDefinition<InterfaceElement> = {

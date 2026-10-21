@@ -1,6 +1,8 @@
 import { type Point } from '../model/common.js';
 import { type Relation } from '../model/relation.js';
+import { type Style } from '../model/style.js';
 import { MARKER_LENGTH, markerPrimitives, relationStyle } from '../shapes/uml/markers.js';
+import { textFont } from '../shapes/style.js';
 import { lineHeight, measureText } from '../shapes/text-metrics.js';
 import { FONT, type Primitive } from '../shapes/types.js';
 
@@ -42,26 +44,27 @@ export function edgeLabelLines(rel: Relation): string[] {
   return lines;
 }
 
-function labelPrimitives(lines: string[], at: Point, color: string, slot: string): Primitive[] {
+function labelPrimitives(lines: string[], at: Point, color: string, slot: string, style?: Style): Primitive[] {
   if (lines.length === 0) return [];
-  const lh = lineHeight(FONT.small);
-  const width = Math.max(...lines.map((l) => measureText(l, { size: FONT.small }))) + 8;
+  const font = textFont(style, FONT.small);
+  const lh = lineHeight(font.size);
+  const width = Math.max(...lines.map((l) => measureText(l, font))) + 8;
   const height = lh * lines.length + 4;
   const top = at.y - height / 2;
   return [
     { type: 'rect', x: r(at.x - width / 2), y: r(top), width: r(width), height: r(height), rx: 3, fill: '#ffffff', stroke: 'none' },
     ...lines.map((text, i): Primitive => ({
-      type: 'text', x: r(at.x), y: r(top + 2 + lh * (i + 0.75)), text, size: FONT.small, color, anchor: 'middle', ...(i === 0 ? { slot } : {}),
+      type: 'text', x: r(at.x), y: r(top + 2 + lh * (i + 0.75)), text, ...font, color, anchor: 'middle', ...(i === 0 ? { slot } : {}),
     })),
   ];
 }
 
-function multiplicity(text: string | undefined, port: Point, next: Point, color: string, slot: string): Primitive[] {
+function multiplicity(text: string | undefined, port: Point, next: Point, color: string, slot: string, style?: Style): Primitive[] {
   if (!text) return [];
   const horizontal = port.y === next.y;
   const dx = horizontal ? Math.sign(next.x - port.x) * 10 : 6;
   const dy = horizontal ? -6 : Math.sign(next.y - port.y) * 14;
-  return [{ type: 'text', x: r(port.x + dx), y: r(port.y + dy), text, size: FONT.small, color, anchor: horizontal && dx < 0 ? 'end' : 'start', slot }];
+  return [{ type: 'text', x: r(port.x + dx), y: r(port.y + dy), text, ...textFont(style, FONT.small), color, anchor: horizontal && dx < 0 ? 'end' : 'start', slot }];
 }
 
 /** Primitivas absolutas de una relación: línea, marcadores, etiqueta y multiplicidades. */
@@ -75,10 +78,11 @@ export function edgePrimitives(rel: Relation): Primitive[] {
   const out: Primitive[] = [
     { type: 'path', d: pathOf(line), fill: 'none', stroke: style.color, strokeWidth: 1.5, ...(style.dash ? { dash: style.dash } : {}) },
   ];
-  if (style.start) out.push(...markerPrimitives(style.start, route[0]!, route[1]!, style.color));
-  if (style.end) out.push(...markerPrimitives(style.end, route[route.length - 1]!, route[route.length - 2]!, style.color));
-  out.push(...labelPrimitives(edgeLabelLines(rel), labelAnchor(route), '#333333', 'label'));
-  out.push(...multiplicity(rel.sourceMultiplicity, route[0]!, route[1]!, '#333333', 'sourceMultiplicity'));
-  out.push(...multiplicity(rel.targetMultiplicity, route[route.length - 1]!, route[route.length - 2]!, '#333333', 'targetMultiplicity'));
+  if (style.start) out.push(...markerPrimitives(style.start, route[0]!, route[1]!, style.color, style.fill));
+  if (style.end) out.push(...markerPrimitives(style.end, route[route.length - 1]!, route[route.length - 2]!, style.color, style.fill));
+  const text = rel.style?.fontColor ?? '#333333';
+  out.push(...labelPrimitives(edgeLabelLines(rel), labelAnchor(route), text, 'label', rel.style));
+  out.push(...multiplicity(rel.sourceMultiplicity, route[0]!, route[1]!, text, 'sourceMultiplicity', rel.style));
+  out.push(...multiplicity(rel.targetMultiplicity, route[route.length - 1]!, route[route.length - 2]!, text, 'targetMultiplicity', rel.style));
   return out;
 }

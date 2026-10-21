@@ -4,8 +4,11 @@ import { type Cardinality, isGroupKind } from '../model/enums.js';
 import { type Relation } from '../model/relation.js';
 import { hashSeed } from '../render/hash.js';
 import { edgeLabelLines } from '../render/edges.js';
+import { type Style, type StyleFontFamily } from '../model/style.js';
 import { c4Colors, C4_PALETTE } from '../shapes/c4/palette.js';
 import { figureOutline, figureTextArea } from '../shapes/general/figure.js';
+import { paintOf, textFont } from '../shapes/style.js';
+import { FONT } from '../shapes/types.js';
 import { boxGeometry } from '../shapes/uml/compartments.js';
 import { classBox } from '../shapes/uml/class.js';
 import { enumBox } from '../shapes/uml/enum.js';
@@ -29,7 +32,28 @@ const ARROWHEADS: Record<Exclude<MarkerKind, Cardinality>, string> = {
 };
 /** Excalifont: el archivo conserva el aspecto a mano alzada propio de Excalidraw. */
 const FONT_FAMILY = 5;
+/** Familias de Excalidraw para el estilo del usuario: Helvetica, Cascadia y Excalifont (no tiene serif, así que serif usa Helvetica). */
+const STYLE_FONT_FAMILIES: Record<StyleFontFamily, number> = { 'sans-serif': 2, serif: 2, monospace: 3, handwritten: 5 };
 const r = (n: number) => Math.round(n * 100) / 100;
+
+/** Color del borde o de la línea cuando el estilo lo fija. */
+function strokeOf(style: Style | undefined): Json {
+  return style?.borderColor ? { strokeColor: style.borderColor } : {};
+}
+
+/** Borde y relleno de una forma: los del estilo o, si falta el relleno, `fill`. */
+function boxOf(style: Style | undefined, fill: string): Json {
+  return { backgroundColor: style?.fillColor ?? fill, ...strokeOf(style) };
+}
+
+/** Color, familia y tamaño de un texto cuyo tamaño sin estilo es `size`. */
+function fontOf(style: Style | undefined, size: number): Json {
+  return {
+    fontSize: textFont(style, size).size,
+    ...(style?.fontColor ? { strokeColor: style.fontColor } : {}),
+    ...(style?.fontFamily ? { fontFamily: STYLE_FONT_FAMILIES[style.fontFamily] } : {}),
+  };
+}
 
 class Builder {
   readonly elements: Json[] = [];
@@ -97,28 +121,30 @@ function addUml(b: Builder, el: Element, box: Box): void {
   const compartments = el.kind === 'class' ? classBox(el) : el.kind === 'interface' ? interfaceBox(el) : el.kind === 'enum' ? enumBox(el) : el.kind === 'table' ? tableBox(el) : el.kind === 'value-list' ? valueListBox(el) : undefined;
   if (!compartments) return;
   const group = [`${el.id}-group`];
-  const rect = b.shape(el.id, 'rectangle', box, { backgroundColor: '#fffef5', groupIds: group });
+  const rect = b.shape(el.id, 'rectangle', box, { ...boxOf(el.style, '#fffef5'), groupIds: group });
   const g = boxGeometry(compartments);
-  b.boundText(rect, compartments.header.map((l) => l.text).join('\n'), { verticalAlign: 'top', fontSize: 14, groupIds: group });
+  b.boundText(rect, compartments.header.map((l) => l.text).join('\n'), { verticalAlign: 'top', ...fontOf(el.style, FONT.name), groupIds: group });
   g.sections.forEach((section, s) => {
-    b.line(`${el.id}-sep-${s}`, { x: box.x, y: box.y + section.top }, { x: box.x + box.width, y: box.y + section.top }, { groupIds: group });
+    b.line(`${el.id}-sep-${s}`, { x: box.x, y: box.y + section.top }, { x: box.x + box.width, y: box.y + section.top }, { ...strokeOf(el.style), groupIds: group });
     section.lines.forEach((line, i) => {
-      b.text(`${el.id}-${line.line.slot ?? `${s}-${i}`}`, line.line.text, { x: box.x + 10, y: box.y + line.y, width: box.width - 20, height: line.height }, { fontSize: 13, groupIds: group });
+      b.text(`${el.id}-${line.line.slot ?? `${s}-${i}`}`, line.line.text, { x: box.x + 10, y: box.y + line.y, width: box.width - 20, height: line.height }, { ...fontOf(el.style, FONT.member), groupIds: group });
     });
   });
 }
 
 function addC4(b: Builder, el: Element, box: Box): void {
   if (el.kind === 'boundary') {
-    b.shape(el.id, 'rectangle', box, { strokeStyle: 'dashed', strokeColor: C4_PALETTE.boundary.stroke, roundness: { type: 3 } });
+    const c = paintOf(el.style, { ...C4_PALETTE.boundary, fill: 'transparent' });
+    b.shape(el.id, 'rectangle', box, { strokeStyle: 'dashed', strokeColor: c.stroke, backgroundColor: c.fill, roundness: { type: 3 } });
     const type = { enterprise: '[Enterprise]', system: '[Software System]', container: '[Container]' }[el.boundaryType];
-    b.text(`${el.id}-title`, `${el.name}\n${type}`, { x: box.x + 12, y: box.y + 10, width: box.width - 24, height: 40 }, { fontSize: 14, strokeColor: C4_PALETTE.boundary.text });
+    b.text(`${el.id}-title`, `${el.name}\n${type}`, { x: box.x + 12, y: box.y + 10, width: box.width - 24, height: 40 }, { ...fontOf(el.style, FONT.name), strokeColor: c.text });
     return;
   }
   if (el.kind !== 'person' && el.kind !== 'software-system' && el.kind !== 'container' && el.kind !== 'component') return;
   const external = 'external' in el ? el.external : undefined;
-  const c = c4Colors(el.kind, external);
+  const c = paintOf(el.style, c4Colors(el.kind, external));
   const paint = { backgroundColor: c.fill, strokeColor: c.stroke, roundness: { type: 3 } };
+  const font = { ...fontOf(el.style, FONT.name), strokeColor: c.text };
   const type =
     el.kind === 'person' ? (external ? 'Person - External' : 'Person')
       : el.kind === 'software-system' ? (external ? 'Software System - External' : 'Software System')
@@ -129,11 +155,11 @@ function addC4(b: Builder, el: Element, box: Box): void {
     const head = 56;
     b.shape(`${el.id}-head`, 'ellipse', { x: box.x + box.width / 2 - head / 2, y: box.y, width: head, height: head }, { ...paint, groupIds: group });
     const body = b.shape(el.id, 'rectangle', { x: box.x, y: box.y + head - 14, width: box.width, height: box.height - head + 14 }, { ...paint, groupIds: group });
-    b.boundText(body, label, { strokeColor: c.text, groupIds: group });
+    b.boundText(body, label, { ...font, groupIds: group });
     return;
   }
   const rect = b.shape(el.id, 'rectangle', box, paint);
-  b.boundText(rect, label, { strokeColor: c.text });
+  b.boundText(rect, label, font);
   if (el.kind === 'container' && el.variant === 'database') {
     b.shape(`${el.id}-cap`, 'ellipse', { x: box.x, y: box.y - 9, width: box.width, height: 18 }, { ...paint });
   }
@@ -143,45 +169,46 @@ function addEr(b: Builder, el: Element, box: Box): void {
   if (el.kind === 'table' || el.kind === 'value-list') return addUml(b, el, box);
   if (el.kind === 'attribute') {
     const dashed = el.derived ? { strokeStyle: 'dashed' } : {};
-    const oval = b.shape(el.id, 'ellipse', box, { backgroundColor: '#fffef5', ...dashed });
-    b.boundText(oval, el.name, { fontSize: 13 });
+    const oval = b.shape(el.id, 'ellipse', box, { ...boxOf(el.style, '#fffef5'), ...dashed });
+    b.boundText(oval, el.name, fontOf(el.style, FONT.member));
     if (el.multivalued) {
       const inner = { x: box.x + MULTIVALUED_GAP, y: box.y + MULTIVALUED_GAP, width: box.width - MULTIVALUED_GAP * 2, height: box.height - MULTIVALUED_GAP * 2 };
-      b.shape(`${el.id}-inner`, 'ellipse', inner, dashed);
+      b.shape(`${el.id}-inner`, 'ellipse', inner, { ...strokeOf(el.style), ...dashed });
     }
     return;
   }
   if (el.kind !== 'entity') return;
-  const rect = b.shape(el.id, 'rectangle', box, { backgroundColor: '#fffef5' });
-  b.boundText(rect, el.name, { fontSize: 14 });
+  const rect = b.shape(el.id, 'rectangle', box, boxOf(el.style, '#fffef5'));
+  b.boundText(rect, el.name, fontOf(el.style, FONT.name));
   if (el.weak) {
     const inner = { x: box.x + WEAK_GAP, y: box.y + WEAK_GAP, width: box.width - WEAK_GAP * 2, height: box.height - WEAK_GAP * 2 };
-    b.shape(`${el.id}-inner`, 'rectangle', inner, {});
+    b.shape(`${el.id}-inner`, 'rectangle', inner, strokeOf(el.style));
   }
 }
 
 /** Figura general: Excalidraw no tiene nube, así que se aproxima con una elipse; triángulo y hexágono son polígonos. */
 function addFigure(b: Builder, el: Element, box: Box): void {
   if (el.kind !== 'figure') return;
-  const paint = { backgroundColor: '#fffef5' };
+  const paint = boxOf(el.style, '#fffef5');
+  const font = fontOf(el.style, FONT.name);
   const outline = figureOutline(el.shape, box);
   if (!outline) {
     const container = b.shape(el.id, el.shape === 'circle' || el.shape === 'cloud' ? 'ellipse' : 'rectangle', box, paint);
-    b.boundText(container, el.name, { fontSize: 14 });
+    b.boundText(container, el.name, font);
     return;
   }
   b.polygon(el.id, outline, box, paint);
   const area = figureTextArea(el.shape, box);
-  b.text(`${el.id}-label`, el.name, { x: box.x + area.x, y: box.y + area.y, width: area.width, height: area.height }, { textAlign: 'center', verticalAlign: 'middle', fontSize: 14 });
+  b.text(`${el.id}-label`, el.name, { x: box.x + area.x, y: box.y + area.y, width: area.width, height: area.height }, { textAlign: 'center', verticalAlign: 'middle', ...font });
 }
 
 /** Marca pata de gallo como líneas y un círculo, porque Excalidraw no tiene cero-o-uno nativo. */
-function addCardinality(b: Builder, rel: Relation, kind: Cardinality, tag: string, tip: Point, from: Point, color: string): void {
+function addCardinality(b: Builder, rel: Relation, kind: Cardinality, tag: string, tip: Point, from: Point, color: string, fill = '#ffffff'): void {
   const { lines, circle } = crowFoot(kind, markerFrame(tip, from));
   lines.forEach((l, i) => b.line(`${rel.id}-${tag}-${i}`, l[0], l[1], { strokeColor: color, strokeWidth: 1.5 }));
   if (circle) {
     const box = { x: circle.x - CIRCLE_RADIUS, y: circle.y - CIRCLE_RADIUS, width: CIRCLE_RADIUS * 2, height: CIRCLE_RADIUS * 2 };
-    b.shape(`${rel.id}-${tag}-o`, 'ellipse', box, { strokeColor: color, backgroundColor: '#ffffff', strokeWidth: 1.5 });
+    b.shape(`${rel.id}-${tag}-o`, 'ellipse', box, { strokeColor: color, backgroundColor: fill, strokeWidth: 1.5 });
   }
 }
 
@@ -209,10 +236,10 @@ function addArrow(b: Builder, rel: Relation, byId: Map<string, Json>): void {
     const target = byId.get(id);
     if (target) target.boundElements = [...((target.boundElements as Json[] | null) ?? []), { type: 'arrow', id: rel.id }];
   }
-  if (style.start && isCardinality(style.start)) addCardinality(b, rel, style.start, 'src', route[0]!, route[1]!, style.color);
-  if (style.end && isCardinality(style.end)) addCardinality(b, rel, style.end, 'dst', route[route.length - 1]!, route[route.length - 2]!, style.color);
+  if (style.start && isCardinality(style.start)) addCardinality(b, rel, style.start, 'src', route[0]!, route[1]!, style.color, style.fill);
+  if (style.end && isCardinality(style.end)) addCardinality(b, rel, style.end, 'dst', route[route.length - 1]!, route[route.length - 2]!, style.color, style.fill);
   const lines = edgeLabelLines(rel);
-  if (lines.length > 0) b.boundText(arrow, lines.join('\n'), { fontSize: 12 });
+  if (lines.length > 0) b.boundText(arrow, lines.join('\n'), fontOf(rel.style, 12));
 }
 
 /**
@@ -230,8 +257,8 @@ export function exportExcalidraw(diagram: Diagram): string {
     if (el.kind === 'figure') addFigure(b, el, box);
     else if (diagram.type === 'class') {
       if (el.kind === 'package') {
-        b.shape(el.id, 'rectangle', box, {});
-        b.text(`${el.id}-title`, el.name, { x: box.x + 10, y: box.y + 6, width: box.width - 20, height: 20 }, { fontSize: 14 });
+        b.shape(el.id, 'rectangle', box, { ...strokeOf(el.style), ...(el.style?.fillColor ? { backgroundColor: el.style.fillColor } : {}) });
+        b.text(`${el.id}-title`, el.name, { x: box.x + 10, y: box.y + 6, width: box.width - 20, height: 20 }, fontOf(el.style, FONT.name));
       } else addUml(b, el, box);
     } else if (diagram.type === 'er') addEr(b, el, box);
     else addC4(b, el, box);
