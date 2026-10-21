@@ -35,6 +35,8 @@ describe('ConfigScreen', () => {
     }
     const remoto = snippet('opencode-remote', 'https://hub.example.com/mcp');
     expect(remoto.mcp.chartsia.headers.Authorization).toBe('Bearer <CHARTSIA_TOKEN>');
+  });
+
   it('lista los agentes conectados con su versión y su última llamada, o avisa si no hay', () => {
     const { unmount } = renderScreen();
     expect(screen.getByText('Ningún agente se ha conectado todavía.')).toBeInTheDocument();
