@@ -45,6 +45,18 @@ describe('ConfigScreen', () => {
     expect(remoto.mcpServers.chartsia.headers.Authorization).toBe('Bearer <CHARTSIA_TOKEN>');
   });
 
+  it('los snippets de GitHub Copilot son JSON válido con la URL del hub y sin token real', () => {
+    const snippet = (id: string, url: string) => JSON.parse(AGENTS.find((a) => a.id === id)!.snippet(url));
+    for (const id of ['copilot-remote', 'copilot-local']) {
+      const config = snippet(id, `${origin}/mcp`);
+      expect(JSON.stringify(config.servers.chartsia)).toContain(`${origin}/mcp`);
+      expect(config.inputs).toBeUndefined();
+      const remoto = snippet(id, 'https://hub.example.com/mcp');
+      expect(remoto.inputs[0]).toMatchObject({ id: 'chartsia-token', password: true });
+      expect(JSON.stringify(remoto.servers.chartsia)).toContain('${input:chartsia-token}');
+    }
+  });
+
   it('copia el comando de la tarjeta', async () => {
     const user = userEvent.setup();
     const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
