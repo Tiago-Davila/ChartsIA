@@ -5,6 +5,7 @@ import { type Relation } from '../model/relation.js';
 import { hashSeed } from '../render/hash.js';
 import { edgeLabelLines } from '../render/edges.js';
 import { c4Colors, C4_PALETTE } from '../shapes/c4/palette.js';
+import { figureOutline, figureTextArea } from '../shapes/general/figure.js';
 import { boxGeometry } from '../shapes/uml/compartments.js';
 import { classBox } from '../shapes/uml/class.js';
 import { enumBox } from '../shapes/uml/enum.js';
@@ -54,6 +55,15 @@ class Builder {
   line(id: string, from: Point, to: Point, extra: Json = {}): void {
     this.elements.push(this.base(id, 'line', { x: from.x, y: from.y, width: Math.abs(to.x - from.x), height: Math.abs(to.y - from.y) }, {
       points: [[0, 0], [r(to.x - from.x), r(to.y - from.y)]], lastCommittedPoint: null, startBinding: null, endBinding: null,
+      startArrowhead: null, endArrowhead: null, ...extra,
+    }));
+  }
+
+  /** Polígono cerrado: una línea que vuelve a su primer punto. */
+  polygon(id: string, points: Point[], box: Box, extra: Json = {}): void {
+    const closed = [...points, points[0]!];
+    this.elements.push(this.base(id, 'line', box, {
+      points: closed.map((p) => [r(p.x), r(p.y)]), polygon: true, lastCommittedPoint: null, startBinding: null, endBinding: null,
       startArrowhead: null, endArrowhead: null, ...extra,
     }));
   }
@@ -138,6 +148,21 @@ function addEr(b: Builder, el: Element, box: Box): void {
   }
 }
 
+/** Figura general: Excalidraw no tiene nube, así que se aproxima con una elipse; triángulo y hexágono son polígonos. */
+function addFigure(b: Builder, el: Element, box: Box): void {
+  if (el.kind !== 'figure') return;
+  const paint = { backgroundColor: '#fffef5' };
+  const outline = figureOutline(el.shape, box);
+  if (!outline) {
+    const container = b.shape(el.id, el.shape === 'circle' || el.shape === 'cloud' ? 'ellipse' : 'rectangle', box, paint);
+    b.boundText(container, el.name, { fontSize: 14 });
+    return;
+  }
+  b.polygon(el.id, outline, box, paint);
+  const area = figureTextArea(el.shape, box);
+  b.text(`${el.id}-label`, el.name, { x: box.x + area.x, y: box.y + area.y, width: area.width, height: area.height }, { textAlign: 'center', verticalAlign: 'middle', fontSize: 14 });
+}
+
 /** Marca pata de gallo como líneas y un círculo, porque Excalidraw no tiene cero-o-uno nativo. */
 function addCardinality(b: Builder, rel: Relation, kind: Cardinality, tag: string, tip: Point, from: Point, color: string): void {
   const { lines, circle } = crowFoot(kind, markerFrame(tip, from));
@@ -190,7 +215,8 @@ export function exportExcalidraw(diagram: Diagram): string {
     const l = el.layout;
     if (!l || l.width === undefined || l.height === undefined) continue;
     const box = { x: l.x, y: l.y, width: l.width, height: l.height };
-    if (diagram.type === 'class') {
+    if (el.kind === 'figure') addFigure(b, el, box);
+    else if (diagram.type === 'class') {
       if (el.kind === 'package') {
         b.shape(el.id, 'rectangle', box, {});
         b.text(`${el.id}-title`, el.name, { x: box.x + 10, y: box.y + 6, width: box.width - 20, height: 20 }, { fontSize: 14 });
