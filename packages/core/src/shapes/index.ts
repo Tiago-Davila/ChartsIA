@@ -1,10 +1,12 @@
 export * from './c4/legend.js';
 export * from './c4/palette.js';
+export { figureOutline, figureTextArea } from './general/figure.js';
 export * from './registry.js';
 export * from './text-metrics.js';
 export * from './types.js';
 export * from './uml/markers.js';
 export * from './uml/members.js';
+export { valueListBox } from './er/value-list.js';
 export { boxGeometry, type CompartmentBox } from './uml/compartments.js';
 export { classBox } from './uml/class.js';
 export { enumBox } from './uml/enum.js';

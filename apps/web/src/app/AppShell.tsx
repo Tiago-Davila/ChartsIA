@@ -56,6 +56,9 @@ export function AppShell(props: AppShellProps) {
           <span className="brand__mark" aria-hidden>◆</span> ChartsIA
         </div>
         <DiagramList diagrams={props.diagrams} projects={props.projects} activeDiagramId={props.activeDiagramId} openDiagramId={diagram?.id ?? null} onOpen={props.onOpen} onMove={props.onMoveDiagram} onNewProject={props.onNewProject} onRename={props.onRenameDiagram} />
+        <button type="button" className="button sidebar-config" aria-label="Configuración" aria-pressed={props.configOpen} onClick={props.onConfig}>
+          <span aria-hidden>⚙</span>
+        </button>
         <ConnectionStatus state={props.connection} />
       </aside>
       <main className="app-shell__main">

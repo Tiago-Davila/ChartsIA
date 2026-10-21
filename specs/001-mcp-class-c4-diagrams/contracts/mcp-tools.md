@@ -57,8 +57,21 @@ por columna (`PK id: INT NOT NULL`; la PK en negrita y subrayada, la FK en cursi
 apuntar a otra tabla existente y a una de sus columnas `pk`: si no, `UNKNOWN_REFERENCE` o
 `INVALID_MEMBER`; una columna repetida es `INVALID_MEMBER`. La flecha FK→PK es una `er-rel`
 normal entre las dos tablas, que declara el agente.
-En `apply_changes`, `update_element` admite `weak`, `columns` (reemplaza la lista) y `update_relation` admite
+`attribute` es un atributo de la notación Chen (óvalo): `key: true` subraya el nombre, `multivalued: true`
+lo dibuja con doble óvalo y `derived: true` con borde discontinuo; una clave no puede ser multivaluada
+ni derivada (`FIELD_NOT_ALLOWED`). `value-list` es una lista de valores (`values`, 1 a 200, sin repetidos:
+`INVALID_MEMBER`) con una fila por valor. Se unen con relaciones `er-attr` (sin cardinalidad), siempre del
+dueño a lo que cuelga de él: `entity`→`attribute`, `attribute`→`attribute` (atributo compuesto, con
+sub-atributos) o `attribute`→`value-list`; cualquier otro par es `RELATION_NOT_ALLOWED`, igual que un
+atributo o lista con dos dueños o un ciclo de atributos. Las `er-rel` solo unen `entity` o `table`.
+En `apply_changes`, `update_element` admite `weak`, `columns` (reemplaza la lista), `key`, `multivalued`,
+`derived`, `values` (reemplaza la lista) y `update_relation` admite
 `sourceCardinality`, `targetCardinality` e `identifying`.
+
+Figuras generales: `figure` es un elemento básico con `shape` (`circle`, `square`, `rectangle`,
+`triangle`, `hexagon` o `cloud`) y el `name` centrado dentro. Se permite en **todos** los tipos de
+diagrama (`class`, `c4-*` y `er`; decisión del issue #194) y se conecta con las relaciones propias
+del tipo. Un `package` también puede contenerlas. `update_element` admite `shape` para cambiar la forma.
 
 `projectId` coloca el diagrama en un proyecto existente; si no existe, `PROJECT_NOT_FOUND` y no
 se crea nada.

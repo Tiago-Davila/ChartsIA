@@ -11,8 +11,15 @@ const ARROWS: Record<Cardinality, string> = {
   'zero-many': 'ERzeroToMany',
 };
 
-/** Entidad ER como rectángulo; la débil usa `shape=ext;double=1` (doble borde). */
+/** Entidad ER como rectángulo (la débil usa `shape=ext;double=1`) y atributo Chen como óvalo (doble si es multivaluado). */
 export function erCells(el: Element, parent: string, geo: { x: number; y: number; width: number; height: number }): DrawioCell[] | undefined {
+  if (el.kind === 'attribute') {
+    const shape = el.multivalued ? 'shape=doubleEllipse;' : 'ellipse;';
+    return [{
+      id: el.id, parent, value: el.name, vertex: true, geometry: geo,
+      style: `${shape}whiteSpace=wrap;html=0;align=center;fontSize=13;${el.key ? 'fontStyle=4;' : ''}${el.derived ? 'dashed=1;' : ''}fillColor=#fffef5;strokeColor=#1f2933;`,
+    }];
+  }
   if (el.kind !== 'entity') return undefined;
   const shape = el.weak ? 'shape=ext;double=1;margin=3;' : '';
   return [{

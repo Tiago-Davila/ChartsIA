@@ -1,0 +1,327 @@
+{
+  "type": "er",
+  "title": "Cliente Chen & <Atributos>",
+  "elements": [
+    {
+      "id": "cliente",
+      "name": "Cliente",
+      "kind": "entity",
+      "layout": {
+        "x": 55,
+        "y": 30,
+        "width": 120,
+        "height": 48,
+        "pinned": false
+      }
+    },
+    {
+      "id": "pedido",
+      "name": "Pedido",
+      "kind": "entity",
+      "layout": {
+        "x": 819,
+        "y": 161,
+        "width": 120,
+        "height": 48,
+        "pinned": false
+      }
+    },
+    {
+      "id": "dni",
+      "name": "DNI",
+      "kind": "attribute",
+      "key": true,
+      "layout": {
+        "x": 30,
+        "y": 158,
+        "width": 90,
+        "height": 44,
+        "pinned": false
+      }
+    },
+    {
+      "id": "nombre",
+      "name": "Nombre completo",
+      "kind": "attribute",
+      "layout": {
+        "x": 180,
+        "y": 164.67,
+        "width": 190,
+        "height": 44,
+        "pinned": false
+      }
+    },
+    {
+      "id": "nombre_pila",
+      "name": "Nombre",
+      "kind": "attribute",
+      "layout": {
+        "x": 195.33,
+        "y": 292,
+        "width": 96,
+        "height": 44,
+        "pinned": false
+      }
+    },
+    {
+      "id": "apellido",
+      "name": "Apellido",
+      "kind": "attribute",
+      "layout": {
+        "x": 351.33,
+        "y": 292,
+        "width": 99,
+        "height": 44,
+        "pinned": false
+      }
+    },
+    {
+      "id": "telefonos",
+      "name": "Teléfonos",
+      "kind": "attribute",
+      "multivalued": true,
+      "layout": {
+        "x": 430,
+        "y": 158,
+        "width": 127,
+        "height": 54,
+        "pinned": false
+      }
+    },
+    {
+      "id": "edad",
+      "name": "Edad <años>",
+      "kind": "attribute",
+      "derived": true,
+      "layout": {
+        "x": 617,
+        "y": 158,
+        "width": 142,
+        "height": 44,
+        "pinned": false
+      }
+    },
+    {
+      "id": "estado",
+      "name": "Estado",
+      "kind": "attribute",
+      "layout": {
+        "x": 834,
+        "y": 292,
+        "width": 90,
+        "height": 44,
+        "pinned": false
+      }
+    },
+    {
+      "id": "estados",
+      "name": "Estados",
+      "kind": "value-list",
+      "values": [
+        "pendiente",
+        "enviado",
+        "entregado"
+      ],
+      "layout": {
+        "x": 809,
+        "y": 416,
+        "width": 140,
+        "height": 101,
+        "pinned": false
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "r1",
+      "kind": "er-rel",
+      "source": "cliente",
+      "target": "pedido",
+      "label": "hace",
+      "sourceCardinality": "one",
+      "targetCardinality": "zero-many",
+      "route": [
+        {
+          "x": 155,
+          "y": 78
+        },
+        {
+          "x": 155,
+          "y": 94
+        },
+        {
+          "x": 879,
+          "y": 94
+        },
+        {
+          "x": 879,
+          "y": 161
+        }
+      ]
+    },
+    {
+      "id": "a1",
+      "kind": "er-attr",
+      "source": "cliente",
+      "target": "dni",
+      "route": [
+        {
+          "x": 75,
+          "y": 78
+        },
+        {
+          "x": 75,
+          "y": 158
+        }
+      ]
+    },
+    {
+      "id": "a2",
+      "kind": "er-attr",
+      "source": "cliente",
+      "target": "nombre",
+      "route": [
+        {
+          "x": 95,
+          "y": 78
+        },
+        {
+          "x": 95,
+          "y": 94
+        },
+        {
+          "x": 275,
+          "y": 94
+        },
+        {
+          "x": 275,
+          "y": 164.67
+        }
+      ]
+    },
+    {
+      "id": "a3",
+      "kind": "er-attr",
+      "source": "nombre",
+      "target": "nombre_pila",
+      "route": [
+        {
+          "x": 243.33,
+          "y": 207.41
+        },
+        {
+          "x": 243.33,
+          "y": 292
+        }
+      ]
+    },
+    {
+      "id": "a4",
+      "kind": "er-attr",
+      "source": "nombre",
+      "target": "apellido",
+      "route": [
+        {
+          "x": 306.67,
+          "y": 207.41
+        },
+        {
+          "x": 306.67,
+          "y": 224.67
+        },
+        {
+          "x": 400.83,
+          "y": 224.67
+        },
+        {
+          "x": 400.83,
+          "y": 292
+        }
+      ]
+    },
+    {
+      "id": "a5",
+      "kind": "er-attr",
+      "source": "cliente",
+      "target": "telefonos",
+      "route": [
+        {
+          "x": 115,
+          "y": 78
+        },
+        {
+          "x": 115,
+          "y": 94
+        },
+        {
+          "x": 493.5,
+          "y": 94
+        },
+        {
+          "x": 493.5,
+          "y": 158
+        }
+      ]
+    },
+    {
+      "id": "a6",
+      "kind": "er-attr",
+      "source": "cliente",
+      "target": "edad",
+      "route": [
+        {
+          "x": 135,
+          "y": 78
+        },
+        {
+          "x": 135,
+          "y": 94
+        },
+        {
+          "x": 688,
+          "y": 94
+        },
+        {
+          "x": 688,
+          "y": 158
+        }
+      ]
+    },
+    {
+      "id": "a7",
+      "kind": "er-attr",
+      "source": "pedido",
+      "target": "estado",
+      "route": [
+        {
+          "x": 879,
+          "y": 209
+        },
+        {
+          "x": 879,
+          "y": 292
+        }
+      ]
+    },
+    {
+      "id": "a8",
+      "kind": "er-attr",
+      "source": "estado",
+      "target": "estados",
+      "route": [
+        {
+          "x": 879,
+          "y": 336
+        },
+        {
+          "x": 879,
+          "y": 416
+        }
+      ]
+    }
+  ],
+  "id": "dg_goldengolden",
+  "revision": 1,
+  "createdAt": "2026-10-20T10:00:00.000Z",
+  "updatedAt": "2026-10-20T10:00:00.000Z"
+}

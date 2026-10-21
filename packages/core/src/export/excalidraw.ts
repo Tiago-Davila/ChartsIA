@@ -5,12 +5,15 @@ import { type Relation } from '../model/relation.js';
 import { hashSeed } from '../render/hash.js';
 import { edgeLabelLines } from '../render/edges.js';
 import { c4Colors, C4_PALETTE } from '../shapes/c4/palette.js';
+import { figureOutline, figureTextArea } from '../shapes/general/figure.js';
 import { boxGeometry } from '../shapes/uml/compartments.js';
 import { classBox } from '../shapes/uml/class.js';
 import { enumBox } from '../shapes/uml/enum.js';
 import { interfaceBox } from '../shapes/uml/interface.js';
 import { WEAK_GAP } from '../shapes/er/entity.js';
+import { MULTIVALUED_GAP } from '../shapes/er/attribute.js';
 import { tableBox } from '../shapes/er/table.js';
+import { valueListBox } from '../shapes/er/value-list.js';
 import { CIRCLE_RADIUS, crowFoot, isCardinality, markerFrame, relationStyle, type MarkerKind } from '../shapes/uml/markers.js';
 import { orderKeys } from './fractional-index.js';
 
@@ -58,6 +61,15 @@ class Builder {
     }));
   }
 
+  /** Polígono cerrado: una línea que vuelve a su primer punto. */
+  polygon(id: string, points: Point[], box: Box, extra: Json = {}): void {
+    const closed = [...points, points[0]!];
+    this.elements.push(this.base(id, 'line', box, {
+      points: closed.map((p) => [r(p.x), r(p.y)]), polygon: true, lastCommittedPoint: null, startBinding: null, endBinding: null,
+      startArrowhead: null, endArrowhead: null, ...extra,
+    }));
+  }
+
   text(id: string, text: string, box: Box, extra: Json = {}): Json {
     const fontSize = (extra.fontSize as number | undefined) ?? 14;
     const el = this.base(id, 'text', box, {
@@ -82,7 +94,7 @@ class Builder {
 }
 
 function addUml(b: Builder, el: Element, box: Box): void {
-  const compartments = el.kind === 'class' ? classBox(el) : el.kind === 'interface' ? interfaceBox(el) : el.kind === 'enum' ? enumBox(el) : el.kind === 'table' ? tableBox(el) : undefined;
+  const compartments = el.kind === 'class' ? classBox(el) : el.kind === 'interface' ? interfaceBox(el) : el.kind === 'enum' ? enumBox(el) : el.kind === 'table' ? tableBox(el) : el.kind === 'value-list' ? valueListBox(el) : undefined;
   if (!compartments) return;
   const group = [`${el.id}-group`];
   const rect = b.shape(el.id, 'rectangle', box, { backgroundColor: '#fffef5', groupIds: group });
@@ -128,7 +140,17 @@ function addC4(b: Builder, el: Element, box: Box): void {
 }
 
 function addEr(b: Builder, el: Element, box: Box): void {
-  if (el.kind === 'table') return addUml(b, el, box);
+  if (el.kind === 'table' || el.kind === 'value-list') return addUml(b, el, box);
+  if (el.kind === 'attribute') {
+    const dashed = el.derived ? { strokeStyle: 'dashed' } : {};
+    const oval = b.shape(el.id, 'ellipse', box, { backgroundColor: '#fffef5', ...dashed });
+    b.boundText(oval, el.name, { fontSize: 13 });
+    if (el.multivalued) {
+      const inner = { x: box.x + MULTIVALUED_GAP, y: box.y + MULTIVALUED_GAP, width: box.width - MULTIVALUED_GAP * 2, height: box.height - MULTIVALUED_GAP * 2 };
+      b.shape(`${el.id}-inner`, 'ellipse', inner, dashed);
+    }
+    return;
+  }
   if (el.kind !== 'entity') return;
   const rect = b.shape(el.id, 'rectangle', box, { backgroundColor: '#fffef5' });
   b.boundText(rect, el.name, { fontSize: 14 });
@@ -136,6 +158,21 @@ function addEr(b: Builder, el: Element, box: Box): void {
     const inner = { x: box.x + WEAK_GAP, y: box.y + WEAK_GAP, width: box.width - WEAK_GAP * 2, height: box.height - WEAK_GAP * 2 };
     b.shape(`${el.id}-inner`, 'rectangle', inner, {});
   }
+}
+
+/** Figura general: Excalidraw no tiene nube, así que se aproxima con una elipse; triángulo y hexágono son polígonos. */
+function addFigure(b: Builder, el: Element, box: Box): void {
+  if (el.kind !== 'figure') return;
+  const paint = { backgroundColor: '#fffef5' };
+  const outline = figureOutline(el.shape, box);
+  if (!outline) {
+    const container = b.shape(el.id, el.shape === 'circle' || el.shape === 'cloud' ? 'ellipse' : 'rectangle', box, paint);
+    b.boundText(container, el.name, { fontSize: 14 });
+    return;
+  }
+  b.polygon(el.id, outline, box, paint);
+  const area = figureTextArea(el.shape, box);
+  b.text(`${el.id}-label`, el.name, { x: box.x + area.x, y: box.y + area.y, width: area.width, height: area.height }, { textAlign: 'center', verticalAlign: 'middle', fontSize: 14 });
 }
 
 /** Marca pata de gallo como líneas y un círculo, porque Excalidraw no tiene cero-o-uno nativo. */
@@ -190,7 +227,8 @@ export function exportExcalidraw(diagram: Diagram): string {
     const l = el.layout;
     if (!l || l.width === undefined || l.height === undefined) continue;
     const box = { x: l.x, y: l.y, width: l.width, height: l.height };
-    if (diagram.type === 'class') {
+    if (el.kind === 'figure') addFigure(b, el, box);
+    else if (diagram.type === 'class') {
       if (el.kind === 'package') {
         b.shape(el.id, 'rectangle', box, {});
         b.text(`${el.id}-title`, el.name, { x: box.x + 10, y: box.y + 6, width: box.width - 20, height: 20 }, { fontSize: 14 });

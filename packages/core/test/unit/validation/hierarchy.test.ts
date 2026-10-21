@@ -78,6 +78,15 @@ describe('INVALID_PARENT', () => {
     expect(errs(d)).toEqual([]);
   });
 
+  it('un package también contiene figuras generales', () => {
+    const d = classDiagram();
+    d.elements.push(
+      { id: 'pkg', kind: 'package', name: 'pkg' },
+      { id: 'nube', kind: 'figure', name: 'Nube', shape: 'cloud', parentId: 'pkg' },
+    );
+    expect(errs(d)).toEqual([]);
+  });
+
   it('en c4-component un component debe estar dentro de un boundary container', () => {
     const base = {
       type: 'c4-component' as const,

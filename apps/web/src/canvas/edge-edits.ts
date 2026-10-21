@@ -18,10 +18,17 @@ export function relationId(diagram: Pick<Diagram, 'elements' | 'relations'>): st
   for (let n = diagram.relations.length + 1; ; n++) if (!used.has(`r${n}`)) return `r${n}`;
 }
 
-/** Tipo de relación por defecto al conectar dos elementos arrastrando. */
-export function defaultRelationKind(type: Diagram['type']): RelationKind {
-  if (type === 'er') return 'er-rel';
-  return type === 'class' ? 'association' : 'c4-rel';
+/** Relación nueva al conectar dos elementos arrastrando; con un atributo o lista usa er-attr con el dueño como origen. */
+export function connectionRelation(diagram: Pick<Diagram, 'type' | 'elements' | 'relations'>, source: string, target: string): Relation {
+  const id = relationId(diagram);
+  const kindOf = (elementId: string) => diagram.elements.find((e) => e.id === elementId)?.kind;
+  const chen = (elementId: string) => kindOf(elementId) === 'attribute' || kindOf(elementId) === 'value-list';
+  if (diagram.type === 'er' && (chen(source) || chen(target))) {
+    const swap = kindOf(target) === 'entity' || kindOf(source) === 'value-list';
+    return { id, kind: 'er-attr', source: swap ? target : source, target: swap ? source : target };
+  }
+  if (diagram.type === 'er') return { id, kind: 'er-rel', source, target, sourceCardinality: 'one', targetCardinality: 'zero-many' };
+  return { id, kind: diagram.type === 'class' ? 'association' : 'c4-rel', source, target };
 }
 
 /** Tipos de flecha válidos en el diagrama. */
@@ -36,6 +43,7 @@ export function kindChanges(rel: Relation, kind: RelationKind): RelationChanges 
     kind,
     ...(!multiplicities && (rel.sourceMultiplicity || rel.targetMultiplicity) ? { sourceMultiplicity: null, targetMultiplicity: null } : {}),
     ...(kind !== 'association' && rel.navigable ? { navigable: null } : {}),
+    ...(kind === 'er-rel' && !rel.sourceCardinality ? { sourceCardinality: 'one' as const, targetCardinality: 'zero-many' as const } : {}),
     ...(kind !== 'er-rel' && (rel.sourceCardinality || rel.targetCardinality || rel.identifying !== undefined)
       ? { sourceCardinality: null, targetCardinality: null, identifying: null }
       : {}),
