@@ -20,6 +20,7 @@ export function relationId(diagram: Pick<Diagram, 'elements' | 'relations'>): st
 
 /** Tipo de relación por defecto al conectar dos elementos arrastrando. */
 export function defaultRelationKind(type: Diagram['type']): RelationKind {
+  if (type === 'er') return 'er-rel';
   return type === 'class' ? 'association' : 'c4-rel';
 }
 
@@ -35,6 +36,9 @@ export function kindChanges(rel: Relation, kind: RelationKind): RelationChanges 
     kind,
     ...(!multiplicities && (rel.sourceMultiplicity || rel.targetMultiplicity) ? { sourceMultiplicity: null, targetMultiplicity: null } : {}),
     ...(kind !== 'association' && rel.navigable ? { navigable: null } : {}),
+    ...(kind !== 'er-rel' && (rel.sourceCardinality || rel.targetCardinality || rel.identifying !== undefined)
+      ? { sourceCardinality: null, targetCardinality: null, identifying: null }
+      : {}),
   };
 }
 
@@ -45,6 +49,7 @@ export function reverseChanges(rel: Relation): RelationChanges {
     target: rel.source,
     sourceMultiplicity: rel.targetMultiplicity ?? null,
     targetMultiplicity: rel.sourceMultiplicity ?? null,
+    ...(rel.kind === 'er-rel' ? { sourceCardinality: rel.targetCardinality ?? null, targetCardinality: rel.sourceCardinality ?? null } : {}),
     sourceSide: rel.targetSide ?? null,
     targetSide: rel.sourceSide ?? null,
     ...(rel.waypoints ? { waypoints: [...rel.waypoints].reverse() } : {}),

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ElementIdSchema, PointSchema } from './common.js';
-import { NAVIGABILITIES, RELATION_KINDS, SIDES } from './enums.js';
+import { CARDINALITIES, NAVIGABILITIES, RELATION_KINDS, SIDES } from './enums.js';
 
 export const MultiplicitySchema = z
   .string()
@@ -16,6 +16,9 @@ export const RelationSchema = z.strictObject({
   targetMultiplicity: MultiplicitySchema.optional(),
   navigable: z.enum(NAVIGABILITIES).optional(),
   technology: z.string().min(1).max(120).optional(),
+  sourceCardinality: z.enum(CARDINALITIES).optional().describe('Solo er-rel: cardinalidad en el extremo source'),
+  targetCardinality: z.enum(CARDINALITIES).optional().describe('Solo er-rel: cardinalidad en el extremo target'),
+  identifying: z.boolean().optional().describe('Solo er-rel: true = identificante (línea continua); si no, discontinua'),
   sourceSide: z.enum(SIDES).optional().describe('Lado del origen por el que sale; sin él se elige solo'),
   targetSide: z.enum(SIDES).optional().describe('Lado del destino por el que entra; sin él se elige solo'),
   waypoints: z.array(PointSchema).max(20).optional().describe('Puntos de quiebre manuales por los que pasa la ruta'),

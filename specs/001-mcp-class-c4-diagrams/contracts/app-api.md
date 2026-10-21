@@ -43,6 +43,7 @@ Toda escritura pasa por el mismo servicio de operaciones que usan las herramient
 | PATCH | `/api/projects/:id` | `{ name }` → `Project`; 404 `PROJECT_NOT_FOUND` |
 | DELETE | `/api/projects/:id` | → 204; sus diagramas quedan sin proyecto; 404 `PROJECT_NOT_FOUND` |
 | PUT | `/api/diagrams/:id/project` | `{ projectId: string \| null }` → 204; 404 si no existe el diagrama o el proyecto |
+| GET | `/api/agents` | → `{ agents: { id, name, version, lastCallAt }[] }`: clientes MCP vistos desde que arrancó el hub (más reciente primero; máx. 50; `name` ≤ 64 y `version` ≤ 32 caracteres; sin ids de sesión) |
 | GET | `/api/health` | `{ status: "ok", version }` (sin auth) |
 
 ## WebSocket (Socket.IO, namespace `/live`, path de transporte `/socket.io`)
@@ -57,6 +58,7 @@ El namespace no es una ruta HTTP: el cliente conecta a `io("/live")` y el tráfi
 | hub → cliente | `diagram.created` | `{ diagramId, title, type }` |
 | hub → cliente | `projects.changed` | `{ projects: Project[] }` (a todos; cambia la lista o la asignación de un diagrama: la app vuelve a pedir `GET /api/diagrams`) |
 | hub → cliente | `active.changed` | `{ diagramId }` (la app navega al diagrama activo) |
+| hub → cliente | `agents.changed` | `{ agents }` (misma forma que `GET /api/agents`; al aparecer un agente y, por llamada, como mucho cada 2 s) |
 
 Reconexión: al reconectar, la app reenvía `subscribe` y hace `GET /api/diagrams/:id`; si la
 `revision` remota es mayor, reemplaza el estado local.

@@ -13,6 +13,7 @@ const samples: Record<string, Record<string, unknown>> = {
   container: { kind: 'container' },
   component: { kind: 'component' },
   boundary: { kind: 'boundary', boundaryType: 'container' },
+  entity: { kind: 'entity' },
 };
 
 const allowed: Record<DiagramType, string[]> = {
@@ -20,6 +21,7 @@ const allowed: Record<DiagramType, string[]> = {
   'c4-context': ['person', 'software-system', 'boundary'],
   'c4-container': ['person', 'software-system', 'container', 'boundary'],
   'c4-component': ['person', 'software-system', 'container', 'component', 'boundary'],
+  er: ['entity'],
 };
 
 function single(type: DiagramType, kind: string) {

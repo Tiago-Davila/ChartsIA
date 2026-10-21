@@ -31,13 +31,34 @@ Input:
 
 ```json
 {
-  "type": "class | c4-context | c4-container | c4-component",
+  "type": "class | c4-context | c4-container | c4-component | er",
   "title": "string",
   "elements": ["Element"],
   "relations": ["Relation"],
   "projectId": "string (opcional)"
 }
 ```
+
+Miembros UML: `abstract: true` en una clase dibuja `«abstract»` y el nombre en cursiva; un
+método de interfaz con `default: true` se dibuja como `+ default nombre()` (sin cursiva) y solo se
+admite en interfaces, sin `abstract` ni `static` (si no, `INVALID_MEMBER`); un `enum` admite
+`attributes` y `operations` opcionales además de `literals`.
+
+Diagramas `er` (entidad-relación): solo admiten `entity` (`weak: true` la dibuja con doble
+borde, como entidad débil) y relaciones `er-rel` entre entidades. Cada `er-rel` exige
+`sourceCardinality` y `targetCardinality` (`one`, `zero-one`, `one-many` o `zero-many`, notación
+pata de gallo; cada marca se dibuja en su extremo); si falta alguna, `FIELD_REQUIRED`.
+`identifying: true` la dibuja con línea continua y, sin él, discontinua. Estos campos, y las
+multiplicidades UML, no se admiten fuera de su tipo (`FIELD_NOT_ALLOWED`); los kinds y
+relaciones de `class` y C4 tampoco valen en `er` (`KIND_NOT_ALLOWED`, `RELATION_NOT_ALLOWED`).
+`table` es una tabla de base de datos: `columns` (1 a 200, nombres únicos por tabla) con
+`name`, `type`, `pk?`, `fk?: {table, column}`, `notNull?` y `unique?`. Se dibuja con una fila
+por columna (`PK id: INT NOT NULL`; la PK en negrita y subrayada, la FK en cursiva). Una `fk` debe
+apuntar a otra tabla existente y a una de sus columnas `pk`: si no, `UNKNOWN_REFERENCE` o
+`INVALID_MEMBER`; una columna repetida es `INVALID_MEMBER`. La flecha FK→PK es una `er-rel`
+normal entre las dos tablas, que declara el agente.
+En `apply_changes`, `update_element` admite `weak`, `columns` (reemplaza la lista) y `update_relation` admite
+`sourceCardinality`, `targetCardinality` e `identifying`.
 
 `projectId` coloca el diagrama en un proyecto existente; si no existe, `PROJECT_NOT_FOUND` y no
 se crea nada.

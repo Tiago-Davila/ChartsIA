@@ -1,4 +1,4 @@
-import { MULTIPLICITY_RELATION_KINDS, type Point, type Relation, type RelationKind, SIDES, type Side } from '@chartsia/core/model';
+import { CARDINALITIES, type Cardinality, MULTIPLICITY_RELATION_KINDS, type Point, type Relation, type RelationKind, SIDES, type Side } from '@chartsia/core/model';
 import { EdgeLabelRenderer, useReactFlow } from '@xyflow/react';
 import { useState } from 'react';
 import { insertWaypoint, kindChanges, relationKinds, reverseChanges, segmentMidpoints } from '../canvas/edge-edits';
@@ -13,7 +13,28 @@ const KIND_LABELS: Record<RelationKind, string> = {
   realization: 'Implementación',
   dependency: 'Dependencia',
   'c4-rel': 'Relación',
+  'er-rel': 'Relación ER',
 };
+
+const CARDINALITY_LABELS: Record<Cardinality, string> = {
+  one: 'Uno',
+  'zero-one': 'Cero o uno',
+  'one-many': 'Uno o muchos',
+  'zero-many': 'Cero o muchos',
+};
+
+/** Selector de cardinalidad (pata de gallo) de un extremo de una relación ER. */
+function CardinalitySelect({ label, value, onChange }: { label: string; value?: Cardinality; onChange(value: Cardinality): void }) {
+  return (
+    <select aria-label={label} title={label} value={value ?? 'one'} onChange={(e) => onChange(e.target.value as Cardinality)}>
+      {CARDINALITIES.map((c) => (
+        <option key={c} value={c}>
+          {label}: {CARDINALITY_LABELS[c]}
+        </option>
+      ))}
+    </select>
+  );
+}
 
 const SIDE_LABELS: Record<Side, string> = { top: 'Arriba', right: 'Derecha', bottom: 'Abajo', left: 'Izquierda' };
 
@@ -137,6 +158,15 @@ export function EdgePanel({ relation, editingText, onEditText }: { relation: Rel
       <button type="button" className="button" onClick={() => update(reverseChanges(relation))}>
         Invertir
       </button>
+      {relation.kind === 'er-rel' ? (
+        <>
+          <CardinalitySelect label="Cardinalidad origen" value={relation.sourceCardinality} onChange={(value) => update({ sourceCardinality: value })} />
+          <CardinalitySelect label="Cardinalidad destino" value={relation.targetCardinality} onChange={(value) => update({ targetCardinality: value })} />
+          <label>
+            <input type="checkbox" checked={relation.identifying ?? false} onChange={(e) => update({ identifying: e.target.checked })} /> Identificante
+          </label>
+        </>
+      ) : null}
       <SideSelect label="Salida" value={relation.sourceSide} onChange={(side) => update({ sourceSide: side })} />
       <SideSelect label="Llegada" value={relation.targetSide} onChange={(side) => update({ targetSide: side })} />
       <button type="button" className="button" onClick={() => onEditText(true)}>

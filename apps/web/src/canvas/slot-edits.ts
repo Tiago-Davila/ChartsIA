@@ -17,10 +17,11 @@ export function parseAttribute(text: string, previous?: Attribute): Attribute | 
   };
 }
 
-/** "+ pagar(monto: Decimal, x): void" → operación. Conserva `static`/`abstract`. */
+/** "+ pagar(monto: Decimal, x): void" → operación. Conserva `static`/`abstract` y lee el prefijo `default`. */
 export function parseMethod(text: string, previous?: Method): Method | undefined {
   const vis = VISIBILITY.exec(text)![1] as Method['visibility'] | undefined;
-  const rest = text.replace(VISIBILITY, '');
+  const withDefault = /^default\s+/.test(text.replace(VISIBILITY, ''));
+  const rest = text.replace(VISIBILITY, '').replace(/^default\s+/, '');
   const match = /^([^(]+?)\s*\(([^)]*)\)\s*(?::\s*(.+))?$/.exec(rest);
   if (!match?.[1]) return undefined;
   const parameters = match[2]!
@@ -38,6 +39,7 @@ export function parseMethod(text: string, previous?: Method): Method | undefined
     ...(match[3] ? { returnType: match[3].trim() } : {}),
     ...(previous?.static ? { static: true } : {}),
     ...(previous?.abstract ? { abstract: true } : {}),
+    ...(withDefault ? { default: true } : {}),
   };
 }
 
@@ -72,7 +74,7 @@ export function changesForSlot(element: Element, slot: string, value: string): E
       return { attributes: element.attributes.map((a, i) => (i === index ? parsed : a)) };
     }
     case 'operation': {
-      if (!('operations' in element)) return undefined;
+      if (!('operations' in element) || !element.operations) return undefined;
       const parsed = parseMethod(value, element.operations[index]);
       if (!parsed) return undefined;
       return { operations: element.operations.map((m, i) => (i === index ? parsed : m)) };

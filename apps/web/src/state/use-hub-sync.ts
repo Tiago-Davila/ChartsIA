@@ -33,6 +33,7 @@ export function useHubSync(api: ApiClient, route: Route): { live: React.RefObjec
   };
   const reload = () => {
     reloadList();
+    api.listAgents().then((agents) => diagramStore.getState().setAgents(agents)).catch(report);
     const open = diagramStore.getState().openDiagramId;
     if (open) api.getDiagram(open).then((d) => diagramStore.getState().reconcile(d)).catch(report);
   };
@@ -55,6 +56,7 @@ export function useHubSync(api: ApiClient, route: Route): { live: React.RefObjec
         store().setActive(diagramId);
         navigate(diagramPath(diagramId));
       },
+      onAgentsChanged: ({ agents }) => store().setAgents(agents),
       onStatus: (s) => store().setConnection(s),
       onConnected: () => reloadRef.current(),
       onUnauthorized: () => store().setNeedsToken(true),

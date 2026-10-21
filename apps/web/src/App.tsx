@@ -30,6 +30,7 @@ function ConnectedApp() {
   const { live, reload } = useHubSync(api, route);
   const diagrams = useDiagramStore((s) => s.diagrams);
   const projects = useDiagramStore((s) => s.projects);
+  const agents = useDiagramStore((s) => s.agents);
   const activeDiagramId = useDiagramStore((s) => s.activeDiagramId);
   const diagram = useDiagramStore((s) => s.diagram);
   const loading = useDiagramStore((s) => s.openDiagramId !== null && s.diagram === undefined);
@@ -75,6 +76,21 @@ function ConnectedApp() {
     }
   }, []);
 
+  // Renombra un diagrama; el abierto entra al historial y los demás se actualizan pidiendo la lista de nuevo.
+  const onRenameDiagram = useCallback(
+    async (diagramId: string, title: string) => {
+      if (diagramId === diagramStore.getState().openDiagramId) return edits.rename(title);
+      const baseRevision = diagramStore.getState().diagrams.find((d) => d.diagramId === diagramId)?.revision;
+      try {
+        await api.applyOperations(diagramId, { baseRevision, operations: [{ op: 'set_title', title }] });
+        diagramStore.getState().setList(await api.listDiagrams());
+      } catch (error) {
+        reportError(error);
+      }
+    },
+    [edits.rename],
+  );
+
   const onExport = useCallback(async (format: ExportFormat) => {
     const current = diagramStore.getState().diagram;
     if (!current) return;
@@ -105,6 +121,7 @@ function ConnectedApp() {
         <AppShell
           diagrams={diagrams}
           projects={projects}
+          agents={agents}
           activeDiagramId={activeDiagramId}
           connection={connection}
           diagram={diagram}
@@ -118,7 +135,9 @@ function ConnectedApp() {
           onOpen={openDiagram}
           onMoveDiagram={onMoveDiagram}
           onNewProject={onNewProject}
+          onRenameDiagram={onRenameDiagram}
           onExport={onExport}
+          onRename={edits.rename}
           onNodeDragStop={edits.onNodeDragStop}
           onDelete={edits.onDelete}
           onConnect={edits.onConnect}

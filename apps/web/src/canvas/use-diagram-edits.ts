@@ -150,7 +150,7 @@ export function useDiagramEdits(api: ApiClient) {
     ({ source, target }: Connection) => {
       const diagram = diagramStore.getState().diagram;
       if (!diagram || !source || !target) return;
-      void send([{ op: 'add_relation', relation: { id: relationId(diagram), kind: defaultRelationKind(diagram.type), source, target } }]);
+      void send([{ op: 'add_relation', relation: { id: relationId(diagram), kind: defaultRelationKind(diagram.type), source, target, ...(diagram.type === 'er' ? { sourceCardinality: 'one', targetCardinality: 'zero-many' } : {}) } }]);
     },
     [send],
   );
@@ -190,6 +190,7 @@ export function useDiagramEdits(api: ApiClient) {
     [selectedBoxes, send],
   );
 
+  const rename = useCallback((title: string) => void send([{ op: 'set_title', title }]), [send]);
   const leaveGroup = useCallback((id: string) => void send([{ op: 'update_element', id, changes: { parentId: null } }]), [send]);
   const ungroup = useCallback((id: string) => void send([{ op: 'remove_element', id, cascade: 'reparent' }]), [send]);
 
@@ -198,5 +199,5 @@ export function useDiagramEdits(api: ApiClient) {
     [editText, resize, updateRelation, leaveGroup, ungroup],
   );
 
-  return { onNodeDragStop, onDelete, onConnect, editText, editActions, history, duplicate, align };
+  return { onNodeDragStop, onDelete, onConnect, editText, editActions, history, duplicate, align, rename };
 }

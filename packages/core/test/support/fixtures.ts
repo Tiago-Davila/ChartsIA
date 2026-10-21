@@ -46,6 +46,24 @@ export function c4ContainerDiagram(overrides: Partial<DiagramInput> = {}): Diagr
   } as DiagramInput;
 }
 
+/** Diagrama ER mínimo y válido: una entidad débil y relaciones de los dos tipos. */
+export function erDiagram(overrides: Partial<DiagramInput> = {}): DiagramInput {
+  return {
+    type: 'er',
+    title: 'Tienda',
+    elements: [
+      { id: 'cliente', kind: 'entity', name: 'Cliente' },
+      { id: 'pedido', kind: 'entity', name: 'Pedido' },
+      { id: 'linea', kind: 'entity', name: 'Línea', weak: true },
+    ],
+    relations: [
+      { id: 'r1', kind: 'er-rel', source: 'cliente', target: 'pedido', label: 'hace', sourceCardinality: 'one', targetCardinality: 'zero-many' },
+      { id: 'r2', kind: 'er-rel', source: 'pedido', target: 'linea', identifying: true, sourceCardinality: 'one', targetCardinality: 'one-many' },
+    ],
+    ...overrides,
+  } as DiagramInput;
+}
+
 export function codes(errors: { code: string }[]): string[] {
   return errors.map((e) => e.code);
 }

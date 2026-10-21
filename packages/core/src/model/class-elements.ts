@@ -26,6 +26,7 @@ export const MethodSchema = z.strictObject({
   visibility: z.enum(VISIBILITIES),
   static: z.boolean().optional(),
   abstract: z.boolean().optional(),
+  default: z.boolean().optional(),
 });
 export type Method = z.infer<typeof MethodSchema>;
 
@@ -53,6 +54,8 @@ export const EnumElementSchema = z.strictObject({
     .min(1)
     .max(200)
     .refine((l) => new Set(l).size === l.length, 'los literales deben ser únicos'),
+  attributes: z.array(AttributeSchema).max(200).optional(),
+  operations: z.array(MethodSchema).max(200).optional(),
 });
 
 export const PackageElementSchema = z.strictObject({

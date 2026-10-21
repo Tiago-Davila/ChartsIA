@@ -10,6 +10,7 @@ const base: AppShellProps = {
     { diagramId: 'dg_bbbbbbbbbbbb', type: 'c4-container', title: 'Tienda', revision: 1, updatedAt: '2026-10-19T10:00:00.000Z' },
   ],
   projects: [],
+  agents: [],
   activeDiagramId: 'dg_bbbbbbbbbbbb',
   connection: 'connected',
   nodes: [],
@@ -20,6 +21,7 @@ const base: AppShellProps = {
   onOpen: vi.fn(),
   onMoveDiagram: vi.fn(),
   onNewProject: vi.fn(),
+  onRenameDiagram: vi.fn(),
   onExport: vi.fn(),
 };
 
@@ -98,6 +100,23 @@ describe('AppShell', () => {
     prompt.mockRestore();
   });
 
+  it('"Renombrar…" no llama al hub si está cancelado, vacío o igual, y llama con el id correcto', async () => {
+    const onRenameDiagram = vi.fn();
+    const prompt = vi.spyOn(window, 'prompt');
+    renderShell({ onRenameDiagram });
+    const renombrar = async (respuesta: string | null) => {
+      prompt.mockReturnValueOnce(respuesta);
+      await userEvent.click(screen.getByRole('button', { name: 'Opciones de Biblioteca' }));
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Renombrar…' }));
+    };
+    for (const respuesta of [null, '   ', 'Biblioteca']) await renombrar(respuesta);
+    expect(onRenameDiagram).not.toHaveBeenCalled();
+    await renombrar(' Otro ');
+    expect(prompt).toHaveBeenLastCalledWith('Nuevo título del diagrama', 'Biblioteca');
+    expect(onRenameDiagram).toHaveBeenCalledWith('dg_aaaaaaaaaaaa', 'Otro');
+    prompt.mockRestore();
+  });
+
   it('Escape cierra el menú', async () => {
     renderShell();
     const boton = screen.getByRole('button', { name: 'Opciones de Biblioteca' });
@@ -132,5 +151,44 @@ describe('AppShell', () => {
     const legend = screen.getByRole('complementary', { name: 'Leyenda C4' });
     expect(legend).toHaveTextContent('Persona');
     expect(legend).toHaveTextContent('Externo');
+  });
+});
+
+describe('AppShell: título editable', () => {
+  const diagram = { id: 'dg_bbbbbbbbbbbb', type: 'class', title: 'Tienda', revision: 1, elements: [], relations: [] } as unknown as AppShellProps['diagram'];
+  const abrirEditor = async (props: Partial<AppShellProps> = {}) => {
+    const user = userEvent.setup();
+    const onRename = vi.fn();
+    renderShell({ diagram, onRename, ...props });
+    await user.dblClick(screen.getByRole('heading', { name: /Tienda/ }));
+    return { user, onRename, input: screen.queryByRole('textbox', { name: 'Título del diagrama' }) };
+  };
+
+  it('Enter guarda el título nuevo', async () => {
+    const { user, onRename, input } = await abrirEditor();
+    await user.clear(input!);
+    await user.type(input!, 'Mercado{Enter}');
+    expect(onRename).toHaveBeenCalledWith('Mercado');
+  });
+
+  it('Escape cancela sin llamar al hub', async () => {
+    const { user, onRename, input } = await abrirEditor();
+    await user.type(input!, 'X{Escape}');
+    expect(onRename).not.toHaveBeenCalled();
+    expect(screen.getByRole('heading', { name: /Tienda/ })).toBeInTheDocument();
+  });
+
+  it('un título vacío o igual al actual no llama al hub', async () => {
+    const { user, onRename, input } = await abrirEditor();
+    await user.clear(input!);
+    await user.keyboard('{Enter}');
+    await user.dblClick(screen.getByRole('heading', { name: /Tienda/ }));
+    await user.keyboard('{Enter}');
+    expect(onRename).not.toHaveBeenCalled();
+  });
+
+  it('en solo lectura no se edita', async () => {
+    const { input } = await abrirEditor({ readOnly: true });
+    expect(input).toBeNull();
   });
 });

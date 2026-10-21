@@ -9,7 +9,7 @@ export function formatAttribute(a: Attribute): string {
 
 export function formatMethod(m: Method): string {
   const params = m.parameters.map((p) => (p.type ? `${p.name}: ${p.type}` : p.name)).join(', ');
-  let text = `${m.visibility} ${m.name}(${params})`;
+  let text = `${m.visibility} ${m.default ? 'default ' : ''}${m.name}(${params})`;
   if (m.returnType) text += `: ${m.returnType}`;
   return text;
 }

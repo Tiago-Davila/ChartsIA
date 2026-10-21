@@ -17,6 +17,14 @@ export interface Project {
   createdAt: string;
 }
 
+/** Agente MCP visto por el hub; `lastCallAt` es una fecha ISO. */
+export interface ConnectedAgent {
+  id: number;
+  name: string;
+  version: string;
+  lastCallAt: string;
+}
+
 export interface DiagramListResponse {
   activeDiagramId: string | null;
   diagrams: DiagramSummary[];
@@ -73,6 +81,7 @@ export function createApiClient({ baseUrl = '', getToken, fetch: fetchImpl = (..
 
   return {
     listDiagrams: () => json<DiagramListResponse>('/api/diagrams'),
+    listAgents: async () => (await json<{ agents: ConnectedAgent[] }>('/api/agents')).agents,
     getDiagram: (diagramId: string) => json<Diagram>(`/api/diagrams/${id(diagramId)}`),
     applyOperations: (diagramId: string, body: { baseRevision?: number; operations: Operation[] }) =>
       json<ApplyResponse>(`/api/diagrams/${id(diagramId)}/operations`, { method: 'POST', body: JSON.stringify(body) }),
