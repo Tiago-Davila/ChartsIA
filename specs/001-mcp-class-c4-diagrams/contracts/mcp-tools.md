@@ -85,6 +85,14 @@ las multiplicidades, `navigable`, `technology` y las cardinalidades tampoco se a
 `update_relation` admite `arrowheads` y `dashed` (`null` los elimina) y `kind` para convertir una
 relación en conector o al revés.
 
+Estilo: todo elemento y relación admite `style` opcional, un objeto estricto con `borderColor?`,
+`fillColor?` y `fontColor?` (`#rrggbb`), `fontFamily?` (`sans-serif`, `serif`, `monospace` o
+`handwritten`) y `fontSize?` (entero de 8 a 48). En una relación, `borderColor` es el color de la
+línea y `fillColor` el relleno de sus marcas (rombos y puntas). Un valor inválido es
+`SCHEMA_VIOLATION` con el `path` del campo (p. ej. `/elements/0/style/fontSize`). En `apply_changes`,
+`update_element` y `update_relation` admiten `style`: reemplaza el estilo completo y `null` lo elimina.
+Úsalo solo si la persona pide colores o fuentes.
+
 `projectId` coloca el diagrama en un proyecto existente; si no existe, `PROJECT_NOT_FOUND` y no
 se crea nada.
 
