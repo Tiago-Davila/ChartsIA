@@ -8,17 +8,19 @@ test.describe('nuevo diagrama desde la app', () => {
     const lista = page.getByRole('navigation', { name: 'Diagramas' });
 
     await page.getByRole('button', { name: 'Nuevo diagrama' }).click();
-    await page.getByLabel('Tipo').selectOption('er');
-    await page.getByLabel('Título').fill('Mi diagrama nuevo');
-    await page.getByRole('button', { name: 'Crear' }).click();
+    const formulario = page.getByRole('form', { name: 'Nuevo diagrama' });
+    await formulario.getByLabel('Tipo').selectOption('er');
+    await formulario.getByLabel('Título').fill('Mi diagrama nuevo');
+    await formulario.getByRole('button', { name: 'Crear' }).click();
 
     await expect(page.getByRole('heading', { name: /Mi diagrama nuevo/ })).toBeVisible();
-    await expect(lista.getByRole('button', { name: /Mi diagrama nuevo/ })).toHaveAttribute('aria-current', 'page');
-    await expect(lista.getByText('Entidad-relación', { exact: false })).toBeVisible();
+    const nuevo = lista.getByRole('button', { name: /Mi diagrama nuevo/ });
+    await expect(nuevo).toHaveAttribute('aria-current', 'page');
+    await expect(nuevo).toContainText('Entidad-relación');
     await expect(page).toHaveURL(/\/d\/dg_/);
     expect(page.url()).not.toContain(existente);
 
     await page.reload();
-    await expect(lista.getByRole('button', { name: /Mi diagrama nuevo/ })).toBeVisible();
+    await expect(nuevo).toBeVisible();
   });
 });
