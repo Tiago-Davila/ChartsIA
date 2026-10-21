@@ -2,11 +2,12 @@ import { type Diagram, type DiagramType } from '@chartsia/core/model';
 import { type ValidationError } from '@chartsia/core/validation';
 import { createStore, useStore } from 'zustand';
 import { type ConnectionState } from '../app/ConnectionStatus';
-import { type DiagramListResponse, type DiagramSummary } from './api-client';
+import { type DiagramListResponse, type DiagramSummary, type Project } from './api-client';
 import { type DiagramUpdatedEvent } from './live-client';
 
 export interface DiagramState {
   diagrams: DiagramSummary[];
+  projects: Project[];
   activeDiagramId: string | null;
   openDiagramId: string | null;
   diagram?: Diagram;
@@ -45,14 +46,17 @@ function summarize(d: Diagram): DiagramSummary {
   return { diagramId: d.id, type: d.type, title: d.title, revision: d.revision, updatedAt: d.updatedAt };
 }
 
+/** Inserta o actualiza un resumen sin perder el proyecto que ya tenía. */
 function upsert(list: DiagramSummary[], summary: DiagramSummary): DiagramSummary[] {
   const rest = list.filter((s) => s.diagramId !== summary.diagramId);
-  return [summary, ...rest].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  const projectId = list.find((s) => s.diagramId === summary.diagramId)?.projectId;
+  return [{ ...summary, ...(projectId ? { projectId } : {}) }, ...rest].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
 export function createDiagramStore() {
   return createStore<DiagramState>()((set, get) => ({
     diagrams: [],
+    projects: [],
     activeDiagramId: null,
     openDiagramId: null,
     diagram: undefined,
@@ -63,7 +67,7 @@ export function createDiagramStore() {
     lastChangedIds: [],
     viewVersion: 0,
 
-    setList: (list) => set({ diagrams: list.diagrams, activeDiagramId: list.activeDiagramId }),
+    setList: (list) => set({ diagrams: list.diagrams, projects: list.projects, activeDiagramId: list.activeDiagramId }),
     open: (diagramId) =>
       set((s) => (s.openDiagramId === diagramId ? s : { openDiagramId: diagramId, diagram: undefined, errors: [], lastOrigin: undefined, lastChangedIds: [] })),
     receiveDiagram: (diagram) => {

@@ -45,6 +45,7 @@ export class LiveGateway implements OnGatewayInit, OnModuleDestroy {
           this.server.to(room(event.payload.diagramId)).emit(event.name, event.payload);
           break;
         case 'diagram.created':
+        case 'projects.changed':
         case 'active.changed':
           this.server.emit(event.name, event.payload);
           break;

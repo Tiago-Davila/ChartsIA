@@ -18,10 +18,18 @@ import { useHubSync } from './state/use-hub-sync';
 
 const openDiagram = (diagramId: string) => navigate(diagramPath(diagramId));
 
+/** Muestra el error del hub en el aviso; si no hay respuesta del hub, un mensaje genérico. */
+function reportError(error: unknown) {
+  const store = diagramStore.getState();
+  if (error instanceof ApiError && error.errors.length > 0) store.showErrors(error.errors);
+  else store.showErrors([{ code: 'SCHEMA_VIOLATION', path: '', message: 'No se pudo contactar con el hub.', hint: 'Comprueba que el hub está en marcha y vuelve a intentarlo.' }]);
+}
+
 function ConnectedApp() {
   const route = useRoute();
   const { live, reload } = useHubSync(api, route);
   const diagrams = useDiagramStore((s) => s.diagrams);
+  const projects = useDiagramStore((s) => s.projects);
   const activeDiagramId = useDiagramStore((s) => s.activeDiagramId);
   const diagram = useDiagramStore((s) => s.diagram);
   const loading = useDiagramStore((s) => s.openDiagramId !== null && s.diagram === undefined);
@@ -46,6 +54,25 @@ function ConnectedApp() {
     if (latest.diagramId === diagramStore.getState().openDiagramId) return false;
     openDiagram(latest.diagramId);
     return true;
+  }, []);
+
+  // Mueve un diagrama de proyecto; la lista se actualiza con el evento `projects.changed`.
+  const onMoveDiagram = useCallback(async (diagramId: string, projectId: string | null) => {
+    try {
+      await api.setDiagramProject(diagramId, projectId);
+    } catch (error) {
+      reportError(error);
+    }
+  }, []);
+
+  // Crea el proyecto y mueve el diagrama a él.
+  const onNewProject = useCallback(async (diagramId: string, name: string) => {
+    try {
+      const project = await api.createProject(name);
+      await api.setDiagramProject(diagramId, project.id);
+    } catch (error) {
+      reportError(error);
+    }
   }, []);
 
   const onExport = useCallback(async (format: ExportFormat) => {
@@ -77,6 +104,7 @@ function ConnectedApp() {
       <div className={`app-root${animate ? ' animate-agent' : ''}`}>
         <AppShell
           diagrams={diagrams}
+          projects={projects}
           activeDiagramId={activeDiagramId}
           connection={connection}
           diagram={diagram}
@@ -85,6 +113,8 @@ function ConnectedApp() {
           edges={flow.edges}
           origin={window.location.origin}
           onOpen={openDiagram}
+          onMoveDiagram={onMoveDiagram}
+          onNewProject={onNewProject}
           onExport={onExport}
           onNodeDragStop={edits.onNodeDragStop}
           onDelete={edits.onDelete}

@@ -31,11 +31,12 @@ describe('DiagramQueryService', () => {
 
   it('list devuelve el activo y los resúmenes', async () => {
     const { commands, query } = createServices();
-    expect(await query.list()).toEqual({ activeDiagramId: null, diagrams: [] });
+    expect(await query.list()).toEqual({ activeDiagramId: null, diagrams: [], projects: [] });
     const { diagram } = await commands.create(libraryInput);
     expect(await query.list()).toEqual({
       activeDiagramId: diagram.id,
       diagrams: [{ diagramId: diagram.id, type: 'class', title: 'Biblioteca', revision: 1, updatedAt: diagram.updatedAt }],
+      projects: [],
     });
   });
 });

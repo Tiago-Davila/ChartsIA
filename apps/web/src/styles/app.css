@@ -72,6 +72,30 @@
   margin: 0;
   padding: 0;
 }
+.diagram-list__section ul {
+  flex: none;
+  overflow: visible;
+}
+.diagram-list__section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--text-muted);
+  background: none;
+  border: 0;
+  border-radius: 6px;
+}
+.diagram-list__section-title:hover {
+  background: var(--surface-muted);
+}
+.diagram-list__count {
+  margin-left: auto;
+}
 .diagram-list__empty {
   margin: 8px;
   color: var(--text-muted);
@@ -98,7 +122,54 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding-right: 52px;
+  padding-right: 80px;
+}
+.diagram-list__row {
+  position: relative;
+}
+.diagram-list__row .badge {
+  right: 40px;
+}
+.diagram-list__menu-button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 0 8px;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--text-muted);
+  background: none;
+  border: 0;
+  border-radius: 6px;
+}
+.diagram-list__menu-button:hover,
+.diagram-list__menu-button[aria-expanded='true'] {
+  background: var(--surface-muted);
+}
+.diagram-list .diagram-list__menu {
+  position: absolute;
+  top: 32px;
+  right: 6px;
+  z-index: 20;
+  flex: none;
+  min-width: 200px;
+  padding: 4px;
+  overflow: visible;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.diagram-list__menu li button {
+  width: 100%;
+  padding: 8px 10px;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+}
+.diagram-list__menu li button:hover {
+  background: var(--surface-muted);
 }
 .diagram-list__meta {
   font-size: 12px;

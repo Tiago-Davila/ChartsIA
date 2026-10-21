@@ -22,7 +22,7 @@ export function useHubSync(api: ApiClient, route: Route): { live: React.RefObjec
   const activeDiagramId = useDiagramStore((s) => s.activeDiagramId);
   const listLoaded = useRef(false);
 
-  const reload = () => {
+  const reloadList = () => {
     api
       .listDiagrams()
       .then((list) => {
@@ -30,18 +30,27 @@ export function useHubSync(api: ApiClient, route: Route): { live: React.RefObjec
         diagramStore.getState().setList(list);
       })
       .catch(report);
+  };
+  const reload = () => {
+    reloadList();
     const open = diagramStore.getState().openDiagramId;
     if (open) api.getDiagram(open).then((d) => diagramStore.getState().reconcile(d)).catch(report);
   };
   const reloadRef = useRef(reload);
   reloadRef.current = reload;
+  const reloadListRef = useRef(reloadList);
+  reloadListRef.current = reloadList;
 
   // Canal en vivo: se abre una vez por montaje.
   useEffect(() => {
     const store = diagramStore.getState;
     const client = createLiveClient(getToken, {
       onUpdated: (e) => store().applyUpdate(e),
-      onCreated: (e) => store().diagramCreated(e),
+      onCreated: (e) => {
+        store().diagramCreated(e);
+        reloadListRef.current(); // el evento no trae el proyecto
+      },
+      onProjectsChanged: () => reloadListRef.current(),
       onActiveChanged: ({ diagramId }) => {
         store().setActive(diagramId);
         navigate(diagramPath(diagramId));

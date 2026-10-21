@@ -1,13 +1,15 @@
 import { randomBytes } from 'node:crypto';
 import * as fsp from 'node:fs/promises';
 import { join } from 'node:path';
-import { type Diagram, DiagramSchema, isDiagramId } from '@chartsia/core/model';
+import { type Diagram, DiagramSchema, isDiagramId, isProjectId, type Project, ProjectSchema } from '@chartsia/core/model';
 import { type DiagramRepository, type DiagramSummary, sortSummaries, summarize } from './diagram.repository.js';
 
 interface IndexFile {
   version: 1;
   activeDiagramId: string | null;
   diagrams: DiagramSummary[];
+  /** Ausente en los índices anteriores a los proyectos. */
+  projects?: Project[];
 }
 
 export interface FsOps {
@@ -27,6 +29,7 @@ const INDEX_FILE = 'index.json';
  */
 export class JsonFileDiagramRepository implements DiagramRepository {
   private summaries = new Map<string, DiagramSummary>();
+  private projects = new Map<string, Project>();
   private activeId: string | null = null;
   private readonly fs: FsOps;
 
@@ -43,6 +46,10 @@ export class JsonFileDiagramRepository implements DiagramRepository {
     const index = await this.readIndex();
     if (index) {
       this.summaries = new Map(index.diagrams.map((s) => [s.diagramId, s]));
+      const projects = (index.projects ?? []).filter((p) => ProjectSchema.safeParse(p).success);
+      this.projects = new Map(projects.map((p) => [p.id, p]));
+      // Un diagrama no puede apuntar a un proyecto que ya no existe.
+      for (const s of this.summaries.values()) if (s.projectId && !this.projects.has(s.projectId)) delete s.projectId;
       this.activeId = index.activeDiagramId && this.summaries.has(index.activeDiagramId) ? index.activeDiagramId : null;
     } else {
       await this.rebuildIndex();
@@ -57,7 +64,33 @@ export class JsonFileDiagramRepository implements DiagramRepository {
   async save(diagram: Diagram): Promise<void> {
     if (!isDiagramId(diagram.id)) throw new Error(`id de diagrama inválido: ${diagram.id}`);
     await this.writeAtomic(`${diagram.id}.json`, JSON.stringify(diagram, null, 2));
-    this.summaries.set(diagram.id, summarize(diagram));
+    const projectId = this.summaries.get(diagram.id)?.projectId;
+    this.summaries.set(diagram.id, projectId ? { ...summarize(diagram), projectId } : summarize(diagram));
+    await this.writeIndex();
+  }
+
+  async listProjects(): Promise<Project[]> {
+    return structuredClone([...this.projects.values()]);
+  }
+
+  async saveProject(project: Project): Promise<void> {
+    if (!isProjectId(project.id)) throw new Error(`id de proyecto inválido: ${project.id}`);
+    this.projects.set(project.id, ProjectSchema.parse(project));
+    await this.writeIndex();
+  }
+
+  async deleteProject(id: string): Promise<void> {
+    if (!this.projects.delete(id)) return;
+    for (const s of this.summaries.values()) if (s.projectId === id) delete s.projectId;
+    await this.writeIndex();
+  }
+
+  async setDiagramProject(diagramId: string, projectId: string | null): Promise<void> {
+    const summary = this.summaries.get(diagramId);
+    if (!summary) throw new Error(`diagrama inexistente: ${diagramId}`);
+    if (projectId !== null && !this.projects.has(projectId)) throw new Error(`proyecto inexistente: ${projectId}`);
+    if (projectId === null) delete summary.projectId;
+    else summary.projectId = projectId;
     await this.writeIndex();
   }
 
@@ -120,7 +153,12 @@ export class JsonFileDiagramRepository implements DiagramRepository {
   }
 
   private writeIndex(): Promise<void> {
-    const index: IndexFile = { version: 1, activeDiagramId: this.activeId, diagrams: sortSummaries([...this.summaries.values()]) };
+    const index: IndexFile = {
+      version: 1,
+      activeDiagramId: this.activeId,
+      diagrams: sortSummaries([...this.summaries.values()]),
+      projects: [...this.projects.values()],
+    };
     return this.writeAtomic(INDEX_FILE, JSON.stringify(index, null, 2));
   }
 

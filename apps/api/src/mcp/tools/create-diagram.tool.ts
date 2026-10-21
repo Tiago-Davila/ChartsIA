@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { DiagramInputSchema } from '@chartsia/core/model';
 import { type DiagramCommandService } from '../../diagrams/diagram-command.service.js';
 import { type ToolResultFormatter } from '../tool-result.js';
+import { ProjectIdSchema } from './schemas.js';
 import { defineTool } from './tool-definition.js';
 
 const EXAMPLE = {
@@ -26,10 +27,11 @@ export const createDiagramTool = (commands: DiagramCommandService, results: Tool
       'Kinds: class → class, interface, enum, package (grupo). c4-context → person, software-system, boundary. c4-container → además container (variant: default|database|queue|web). c4-component → además component, que debe ir dentro de un boundary con boundaryType "container".',
       'No agrupes por tu cuenta: usa package solo si la persona pide agrupar en paquetes, y boundary solo si lo pide o si el tipo lo exige (component dentro de su container).',
       'Relaciones UML: association, aggregation, composition (el rombo va en source), inheritance (class→class o interface→interface), realization (class→interface), dependency. En C4 usa solo c4-rel con label y technology.',
+      'projectId (opcional) coloca el diagrama en un proyecto existente; úsalo solo si la persona lo pidió.',
       'Si algo es inválido no se crea nada y recibes errores con code, path (JSON Pointer), message y hint para corregirlos. La guía completa por tipo está en el recurso chartsia://schema/{type}.',
       `Ejemplo de entrada: ${JSON.stringify(EXAMPLE)}`,
     ].join('\n'),
-    input: DiagramInputSchema,
+    input: DiagramInputSchema.extend({ projectId: ProjectIdSchema.optional() }),
     output: z.strictObject({
       diagramId: z.string(),
       revision: z.number().int(),
@@ -38,7 +40,8 @@ export const createDiagramTool = (commands: DiagramCommandService, results: Tool
       warnings: z.array(z.string()),
     }),
     run: async (args) => {
-      const { diagram, warnings } = await commands.create(args);
+      const { projectId, ...input } = args;
+      const { diagram, warnings } = await commands.create(input, projectId);
       const viewUrl = results.viewUrl(diagram.id);
       return {
         linkDiagramId: diagram.id,
