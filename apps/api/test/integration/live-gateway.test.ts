@@ -63,6 +63,12 @@ describe('gateway en vivo (Socket.IO /live)', () => {
     expect(received).toEqual([]);
   });
 
+  it('difunde projects.changed a todos al crear un proyecto', async () => {
+    const changed = next<{ projects: { name: string }[] }>(socket, 'projects.changed');
+    await mcp.callTool({ name: 'create_project', arguments: { name: 'En vivo' } });
+    expect((await changed).projects).toEqual([expect.objectContaining({ name: 'En vivo' })]);
+  });
+
   it('subscribe con datos inválidos responde ok: false', async () => {
     expect(await socket.emitWithAck('subscribe', { diagramId: 42 })).toEqual({ ok: false });
   });

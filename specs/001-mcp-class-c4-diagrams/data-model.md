@@ -90,6 +90,7 @@ origen, destino o grupo contenedor (FR-018).
 | `LIMIT_EXCEEDED` | elementos > máximo o petición > `CHARTSIA_MAX_REQUEST_BYTES` (1 MiB) |
 | `SCHEMA_VIOLATION` | cualquier error estructural de esquema (incluye lote vacío o > 200 operaciones); el `path` apunta al campo del error de Zod |
 | `DIAGRAM_NOT_FOUND` / `NO_ACTIVE_DIAGRAM` | diagrama inexistente o sin diagrama activo |
+| `PROJECT_NOT_FOUND` | proyecto inexistente (o id con formato inválido) |
 
 Cada error: `{ code, path (JSON Pointer), message, hint }`. Un lote con algún error se
 rechaza completo (FR-017).

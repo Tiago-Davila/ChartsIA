@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { type Diagram, type DiagramType } from '@chartsia/core/model';
+import { type Diagram, type DiagramType, type Project } from '@chartsia/core/model';
 
 export type Origin = 'agent' | 'app';
 
 export type DiagramEvent =
   | { name: 'diagram.created'; payload: { diagramId: string; title: string; type: DiagramType } }
   | { name: 'diagram.updated'; payload: { diagramId: string; revision: number; origin: Origin; diagram: Diagram } }
+  | { name: 'projects.changed'; payload: { projects: Project[] } }
   | { name: 'active.changed'; payload: { diagramId: string } };
 
 export type DiagramEventListener = (event: DiagramEvent) => void;

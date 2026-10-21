@@ -17,7 +17,7 @@ describe('contract sobre HTTP real (Streamable HTTP)', () => {
   });
 
   it('crear → aplicar → exportar', async () => {
-    expect((await client.listTools()).tools).toHaveLength(7);
+    expect((await client.listTools()).tools).toHaveLength(9);
     const created = await client.callTool({ name: 'create_diagram', arguments: sampleDiagram });
     const diagramId = (created.structuredContent as { diagramId: string }).diagramId;
     expect(created.isError).toBeFalsy();

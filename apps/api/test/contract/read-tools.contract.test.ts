@@ -10,7 +10,7 @@ describe('contract: get_diagram y list_diagrams', () => {
 
   it('list_diagrams sin diagramas', async () => {
     const res = await h.call('list_diagrams');
-    expect(res.structuredContent).toEqual({ activeDiagramId: null, diagrams: [] });
+    expect(res.structuredContent).toEqual({ activeDiagramId: null, diagrams: [], projects: [] });
   });
 
   it('list_diagrams devuelve el activo y los resúmenes', async () => {
