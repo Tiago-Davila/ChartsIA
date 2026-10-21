@@ -1,3 +1,5 @@
+import { type Diagram, RELATION_KINDS, type Relation, type RelationKind } from '@chartsia/core/model';
+import { applyOperations } from '@chartsia/core/operations';
 import { describe, expect, it } from 'vitest';
 import { alignBoxes } from '../../../src/canvas/align';
 import { connectionRelation, freeId, insertWaypoint, kindChanges, relationId, reverseChanges, segmentMidpoints } from '../../../src/canvas/edge-edits';
@@ -16,7 +18,7 @@ describe('ediciones de flechas', () => {
 
   it('cambiar el tipo quita multiplicidades y navegabilidad que el tipo nuevo no admite', () => {
     const rel = { id: 'r', kind: 'association' as const, source: 'A', target: 'B', targetMultiplicity: '1', navigable: 'both' as const };
-    expect(kindChanges(rel, 'dependency')).toEqual({ kind: 'dependency', sourceMultiplicity: null, targetMultiplicity: null, navigable: null });
+    expect(kindChanges(rel, 'dependency')).toEqual({ kind: 'dependency', targetMultiplicity: null, navigable: null });
     expect(kindChanges(rel, 'composition')).toEqual({ kind: 'composition', navigable: null });
   });
 
@@ -24,6 +26,17 @@ describe('ediciones de flechas', () => {
     const rel = { id: 'r', kind: 'connector' as const, source: 'A', target: 'B', arrowheads: 'both' as const, dashed: true };
     expect(kindChanges(rel, 'association')).toEqual({ kind: 'association', arrowheads: null, dashed: null });
     expect(kindChanges(rel, 'connector')).toEqual({ kind: 'connector' });
+  });
+
+  it('pasar de c4-rel a otro tipo quita technology', () => {
+    const rel = { id: 'r', kind: 'c4-rel' as const, source: 'A', target: 'B', technology: 'HTTPS' };
+    expect(kindChanges(rel, 'connector')).toEqual({ kind: 'connector', technology: null });
+    expect(kindChanges(rel, 'c4-rel')).toEqual({ kind: 'c4-rel' });
+  });
+
+  it('pasar de er-rel a otro tipo quita cardinalidades e identifying', () => {
+    const rel = { id: 'r', kind: 'er-rel' as const, source: 'A', target: 'B', sourceCardinality: 'one' as const, targetCardinality: 'one-many' as const, identifying: true };
+    expect(kindChanges(rel, 'connector')).toEqual({ kind: 'connector', sourceCardinality: null, targetCardinality: null, identifying: null });
   });
 
   it('invertir intercambia extremos, multiplicidades, lados y quiebres', () => {
@@ -78,7 +91,23 @@ describe('conectar arrastrando', () => {
 
   it('en clases y C4 mantiene el tipo por defecto', () => {
     expect(connectionRelation({ ...diagram, type: 'class' }, 'Libro', 'Libro').kind).toBe('association');
-    expect(connectionRelation({ ...diagram, type: 'c4-context' }, 'A', 'B').kind).toBe('c4-rel');
+    const c4 = {
+      type: 'c4-context' as const,
+      elements: [
+        { id: 'A', kind: 'person' as const, name: 'A' },
+        { id: 'B', kind: 'software-system' as const, name: 'B' },
+      ],
+      relations: [],
+    };
+    expect(connectionRelation(c4, 'A', 'B').kind).toBe('c4-rel');
+  });
+
+  it('en er crea un conector entre pares que ninguna relación semántica admite', () => {
+    const withTable = { ...er, elements: [...er.elements, { id: 'T', kind: 'table' as const, name: 'T', columns: [] }] };
+    expect(connectionRelation(withTable, 'a', 'T')).toEqual({ id: 'r1', kind: 'connector', source: 'a', target: 'T' });
+    expect(connectionRelation(withTable, 'T', 'a')).toMatchObject({ kind: 'connector' });
+    expect(connectionRelation(withTable, 'L', 'E')).toMatchObject({ kind: 'connector' });
+    expect(connectionRelation(withTable, 'E', 'T')).toMatchObject({ kind: 'er-rel' });
   });
 
   it('pasar a er-rel desde er-attr agrega las cardinalidades obligatorias', () => {
@@ -104,4 +133,37 @@ describe('alinear y repartir', () => {
     expect(alignBoxes(boxes, 'distribute-x')).toEqual([{ id: 'b', x: 225, y: 40 }]);
     expect(alignBoxes([boxes[0]!], 'left')).toEqual([]);
   });
+});
+
+describe('cambiar el tipo de flecha produce siempre campos válidos', () => {
+  const elements: Diagram['elements'] = [
+    { id: 'A', kind: 'class', name: 'A', attributes: [], operations: [] },
+    { id: 'B', kind: 'class', name: 'B', attributes: [], operations: [] },
+  ];
+  const diagramWith = (relation: Relation): Diagram => ({
+    id: 'dg_aaaaaaaaaaaa', type: 'class', title: 'T', revision: 1, elements, relations: [relation],
+  }) as Diagram;
+  // Relación del tipo dado con todos los campos opcionales que ese tipo admite.
+  const full = (kind: RelationKind): Relation => ({
+    id: 'r', kind, source: 'A', target: 'B', label: 'x',
+    ...(['association', 'aggregation', 'composition'].includes(kind) ? { sourceMultiplicity: '1', targetMultiplicity: '0..*' } : {}),
+    ...(kind === 'association' ? { navigable: 'both' as const } : {}),
+    ...(kind === 'c4-rel' ? { technology: 'HTTPS' } : {}),
+    ...(kind === 'er-rel' ? { sourceCardinality: 'one' as const, targetCardinality: 'zero-many' as const, identifying: true } : {}),
+    ...(kind === 'connector' ? { arrowheads: 'both' as const, dashed: true } : {}),
+  });
+
+  // Los pares de extremos no se evalúan aquí: solo que no sobren ni falten campos.
+  const fieldErrors = (relation: Relation, kind: RelationKind) => {
+    const result = applyOperations(diagramWith(relation), [{ op: 'update_relation', id: 'r', changes: kindChanges(relation, kind) }]);
+    return result.ok ? [] : result.errors.filter((e) => e.code === 'FIELD_NOT_ALLOWED' || e.code === 'FIELD_REQUIRED');
+  };
+
+  for (const from of RELATION_KINDS) {
+    for (const to of RELATION_KINDS) {
+      it(`${from} a ${to}`, () => {
+        expect(fieldErrors(full(from), to)).toEqual([]);
+      });
+    }
+  }
 });
