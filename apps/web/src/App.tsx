@@ -153,6 +153,7 @@ function ConnectedApp() {
           onNodeDragStop={edits.onNodeDragStop}
           onDelete={edits.onDelete}
           onConnect={edits.onConnect}
+          onDraw={edits.onDraw}
           onAlign={edits.align}
           changedIds={changedIds}
           onOpenLatest={onOpenLatest}

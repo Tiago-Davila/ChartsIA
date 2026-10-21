@@ -1,5 +1,5 @@
 import { type ExportFormat } from '@chartsia/core/export';
-import { type Diagram, type DiagramType } from '@chartsia/core/model';
+import { type Diagram, type DiagramType, type Point } from '@chartsia/core/model';
 import { type Edge, type Node } from '@xyflow/react';
 import { type ReactNode } from 'react';
 import { type ConnectedAgent, type Project } from '../state/api-client';
@@ -40,6 +40,7 @@ export interface AppShellProps {
   onNodeDragStop?: DiagramCanvasProps['onNodeDragStop'];
   onDelete?: DiagramCanvasProps['onDelete'];
   onConnect?: DiagramCanvasProps['onConnect'];
+  onDraw?: (points: Point[], screenPoints: Point[], color: string) => void;
   onAlign?(mode: AlignMode): void;
   changedIds?: string[];
   onOpenLatest?(): Promise<boolean>;
@@ -89,6 +90,7 @@ export function AppShell(props: AppShellProps) {
                 onNodeDragStop={props.onNodeDragStop}
                 onDelete={props.onDelete}
                 onConnect={props.onConnect}
+                onDraw={props.onDraw}
               />
               <C4Legend diagram={diagram} />
             </div>

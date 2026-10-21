@@ -8,6 +8,8 @@ function paint(p: Paint): string {
   let out = ` fill="${escapeXml(p.fill ?? 'none')}" stroke="${escapeXml(p.stroke ?? 'none')}"`;
   if (p.strokeWidth !== undefined) out += ` stroke-width="${n(p.strokeWidth)}"`;
   if (p.dash) out += ` stroke-dasharray="${p.dash.map(n).join(' ')}"`;
+  if (p.lineCap) out += ` stroke-linecap="${p.lineCap}"`;
+  if (p.lineJoin) out += ` stroke-linejoin="${p.lineJoin}"`;
   return out;
 }
 

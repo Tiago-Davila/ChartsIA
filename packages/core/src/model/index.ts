@@ -4,6 +4,7 @@ export * from './common.js';
 export * from './diagram.js';
 export * from './er-elements.js';
 export * from './figure-elements.js';
+export * from './drawing-elements.js';
 export * from './enums.js';
 export * from './json-schema.js';
 export * from './operations.js';

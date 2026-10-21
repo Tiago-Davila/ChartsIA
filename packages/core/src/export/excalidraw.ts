@@ -94,6 +94,14 @@ class Builder {
     }));
   }
 
+  /** Trazo abierto con puntos relativos a la caja del elemento. */
+  polyline(id: string, points: Point[], box: Box, extra: Json = {}): void {
+    this.elements.push(this.base(id, 'line', box, {
+      points: points.map((p) => [r(p.x), r(p.y)]), lastCommittedPoint: null, startBinding: null, endBinding: null,
+      startArrowhead: null, endArrowhead: null, ...extra,
+    }));
+  }
+
   text(id: string, text: string, box: Box, extra: Json = {}): Json {
     const fontSize = (extra.fontSize as number | undefined) ?? 14;
     const el = this.base(id, 'text', box, {
@@ -202,6 +210,12 @@ function addFigure(b: Builder, el: Element, box: Box): void {
   b.text(`${el.id}-label`, el.name, { x: box.x + area.x, y: box.y + area.y, width: area.width, height: area.height }, { textAlign: 'center', verticalAlign: 'middle', ...font });
 }
 
+/** Trazo libre con color y grosor editables en Excalidraw. */
+function addDrawing(b: Builder, el: Element, box: Box): void {
+  if (el.kind !== 'drawing') return;
+  b.polyline(el.id, el.points, box, { strokeColor: el.strokeColor, strokeWidth: el.strokeWidth });
+}
+
 /** Marca pata de gallo como líneas y un círculo, porque Excalidraw no tiene cero-o-uno nativo. */
 function addCardinality(b: Builder, rel: Relation, kind: Cardinality, tag: string, tip: Point, from: Point, color: string, fill = '#ffffff'): void {
   const { lines, circle } = crowFoot(kind, markerFrame(tip, from));
@@ -254,7 +268,8 @@ export function exportExcalidraw(diagram: Diagram): string {
     const l = el.layout;
     if (!l || l.width === undefined || l.height === undefined) continue;
     const box = { x: l.x, y: l.y, width: l.width, height: l.height };
-    if (el.kind === 'figure') addFigure(b, el, box);
+    if (el.kind === 'drawing') addDrawing(b, el, box);
+    else if (el.kind === 'figure') addFigure(b, el, box);
     else if (diagram.type === 'class') {
       if (el.kind === 'package') {
         b.shape(el.id, 'rectangle', box, { ...strokeOf(el.style), ...(el.style?.fillColor ? { backgroundColor: el.style.fillColor } : {}) });

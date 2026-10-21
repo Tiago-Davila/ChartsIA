@@ -15,6 +15,7 @@ import {
 import { EntityElementSchema, ErAttributeElementSchema, TableElementSchema, ValueListElementSchema } from './er-elements.js';
 import { type Layout } from './common.js';
 import { FigureElementSchema } from './figure-elements.js';
+import { DrawingElementSchema } from './drawing-elements.js';
 import { DIAGRAM_TYPES } from './enums.js';
 import { RelationSchema } from './relation.js';
 
@@ -32,6 +33,7 @@ export const ElementSchema = z.discriminatedUnion('kind', [
   EntityElementSchema,
   TableElementSchema,
   FigureElementSchema,
+  DrawingElementSchema,
   ErAttributeElementSchema,
   ValueListElementSchema,
 ]);

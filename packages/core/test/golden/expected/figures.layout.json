@@ -7,7 +7,7 @@
       "name": "Usuario",
       "kind": "person",
       "layout": {
-        "x": 563,
+        "x": 672.75,
         "y": 30,
         "width": 220,
         "height": 142,
@@ -59,7 +59,7 @@
       "kind": "figure",
       "shape": "triangle",
       "layout": {
-        "x": 585,
+        "x": 694.75,
         "y": 566,
         "width": 176,
         "height": 104,
@@ -72,7 +72,7 @@
       "kind": "figure",
       "shape": "hexagon",
       "layout": {
-        "x": 609,
+        "x": 718.75,
         "y": 422,
         "width": 128,
         "height": 64,
@@ -85,10 +85,38 @@
       "kind": "figure",
       "shape": "cloud",
       "layout": {
-        "x": 603,
+        "x": 712.75,
         "y": 252,
         "width": 140,
         "height": 90,
+        "pinned": false
+      }
+    },
+    {
+      "id": "trazo",
+      "name": "Trazo",
+      "kind": "drawing",
+      "points": [
+        {
+          "x": 2,
+          "y": 3
+        },
+        {
+          "x": 30,
+          "y": 18
+        },
+        {
+          "x": 48,
+          "y": 40
+        }
+      ],
+      "strokeColor": "#b42318",
+      "strokeWidth": 3.5,
+      "layout": {
+        "x": 563,
+        "y": 80.13,
+        "width": 49.75,
+        "height": 41.75,
         "pinned": false
       }
     }
@@ -102,11 +130,11 @@
       "label": "usa",
       "route": [
         {
-          "x": 673,
+          "x": 782.75,
           "y": 172
         },
         {
-          "x": 673,
+          "x": 782.75,
           "y": 252
         }
       ]
@@ -118,11 +146,11 @@
       "target": "hexagono",
       "route": [
         {
-          "x": 673,
+          "x": 782.75,
           "y": 342
         },
         {
-          "x": 673,
+          "x": 782.75,
           "y": 422
         }
       ]
@@ -134,11 +162,11 @@
       "target": "triangulo",
       "route": [
         {
-          "x": 673,
+          "x": 782.75,
           "y": 486
         },
         {
-          "x": 673,
+          "x": 782.75,
           "y": 566
         }
       ]

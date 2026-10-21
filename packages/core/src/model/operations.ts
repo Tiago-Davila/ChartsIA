@@ -4,6 +4,7 @@ import { AttributeSchema, MethodSchema } from './class-elements.js';
 import { ColumnSchema } from './er-elements.js';
 import { DescriptionSchema, ElementIdSchema, LayoutSchema, NameSchema, PointSchema } from './common.js';
 import { ElementSchema, TitleSchema } from './diagram.js';
+import { DrawingPointsSchema, DRAWING_MAX_STROKE_WIDTH, DRAWING_MIN_STROKE_WIDTH } from './drawing-elements.js';
 import { MultiplicitySchema, RelationSchema } from './relation.js';
 import { StyleSchema } from './style.js';
 
@@ -29,6 +30,9 @@ export const ElementChangesSchema = z
     columns: z.array(ColumnSchema).min(1).max(200).optional(),
     weak: z.boolean().nullable().optional(),
     shape: z.enum(FIGURE_SHAPES).optional(),
+    points: DrawingPointsSchema.optional(),
+    strokeColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+    strokeWidth: z.number().finite().min(DRAWING_MIN_STROKE_WIDTH).max(DRAWING_MAX_STROKE_WIDTH).optional(),
     key: z.boolean().nullable().optional(),
     multivalued: z.boolean().nullable().optional(),
     derived: z.boolean().nullable().optional(),
