@@ -1,0 +1,115 @@
+{
+  "type": "class",
+  "title": "Figuras y miembros",
+  "elements": [
+    {
+      "id": "Figura",
+      "name": "Figura",
+      "kind": "interface",
+      "operations": [
+        {
+          "name": "area",
+          "parameters": [],
+          "returnType": "double",
+          "visibility": "+"
+        },
+        {
+          "name": "describir",
+          "parameters": [],
+          "returnType": "String",
+          "visibility": "+",
+          "default": true
+        }
+      ],
+      "layout": {
+        "x": 230,
+        "y": 92,
+        "width": 216,
+        "height": 98,
+        "pinned": false
+      }
+    },
+    {
+      "id": "Base",
+      "name": "FiguraBase<T>",
+      "kind": "class",
+      "abstract": true,
+      "attributes": [
+        {
+          "name": "nombre",
+          "type": "String",
+          "visibility": "#"
+        }
+      ],
+      "operations": [
+        {
+          "name": "area",
+          "parameters": [],
+          "returnType": "double",
+          "visibility": "+",
+          "abstract": true
+        }
+      ],
+      "layout": {
+        "x": 266,
+        "y": 270,
+        "width": 144,
+        "height": 110,
+        "pinned": false
+      }
+    },
+    {
+      "id": "Color",
+      "name": "Color & Tono",
+      "kind": "enum",
+      "literals": [
+        "ROJO",
+        "VERDE"
+      ],
+      "attributes": [
+        {
+          "name": "hex",
+          "type": "String",
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        {
+          "name": "hex",
+          "parameters": [],
+          "returnType": "String",
+          "visibility": "+"
+        }
+      ],
+      "layout": {
+        "x": 30,
+        "y": 30,
+        "width": 140,
+        "height": 160,
+        "pinned": false
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "r1",
+      "kind": "realization",
+      "source": "Base",
+      "target": "Figura",
+      "route": [
+        {
+          "x": 338,
+          "y": 270
+        },
+        {
+          "x": 338,
+          "y": 190
+        }
+      ]
+    }
+  ],
+  "id": "dg_goldengolden",
+  "revision": 1,
+  "createdAt": "2026-10-20T10:00:00.000Z",
+  "updatedAt": "2026-10-20T10:00:00.000Z"
+}

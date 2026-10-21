@@ -1,0 +1,118 @@
+{
+  "type": "er",
+  "title": "Tienda ER & <Pedidos>",
+  "elements": [
+    {
+      "id": "cliente",
+      "name": "Cliente",
+      "kind": "entity",
+      "layout": {
+        "x": 70,
+        "y": 30,
+        "width": 120,
+        "height": 48,
+        "pinned": false
+      }
+    },
+    {
+      "id": "pedido",
+      "name": "Pedido",
+      "kind": "entity",
+      "layout": {
+        "x": 70,
+        "y": 158,
+        "width": 120,
+        "height": 48,
+        "pinned": false
+      }
+    },
+    {
+      "id": "linea",
+      "name": "Línea <de> \"pedido\"",
+      "kind": "entity",
+      "weak": true,
+      "layout": {
+        "x": 30,
+        "y": 286,
+        "width": 200,
+        "height": 58,
+        "pinned": false
+      }
+    },
+    {
+      "id": "producto",
+      "name": "Producto",
+      "kind": "entity",
+      "layout": {
+        "x": 70,
+        "y": 424,
+        "width": 120,
+        "height": 48,
+        "pinned": false
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "r1",
+      "kind": "er-rel",
+      "source": "cliente",
+      "target": "pedido",
+      "label": "hace",
+      "sourceCardinality": "one",
+      "targetCardinality": "zero-many",
+      "route": [
+        {
+          "x": 130,
+          "y": 78
+        },
+        {
+          "x": 130,
+          "y": 158
+        }
+      ]
+    },
+    {
+      "id": "r2",
+      "kind": "er-rel",
+      "source": "pedido",
+      "target": "linea",
+      "sourceCardinality": "one",
+      "targetCardinality": "one-many",
+      "identifying": true,
+      "route": [
+        {
+          "x": 130,
+          "y": 206
+        },
+        {
+          "x": 130,
+          "y": 286
+        }
+      ]
+    },
+    {
+      "id": "r3",
+      "kind": "er-rel",
+      "source": "linea",
+      "target": "producto",
+      "label": "refiere",
+      "sourceCardinality": "zero-many",
+      "targetCardinality": "zero-one",
+      "route": [
+        {
+          "x": 130,
+          "y": 344
+        },
+        {
+          "x": 130,
+          "y": 424
+        }
+      ]
+    }
+  ],
+  "id": "dg_goldengolden",
+  "revision": 1,
+  "createdAt": "2026-10-20T10:00:00.000Z",
+  "updatedAt": "2026-10-20T10:00:00.000Z"
+}

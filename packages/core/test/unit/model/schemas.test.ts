@@ -74,6 +74,16 @@ describe('esquemas del modelo', () => {
     expect(ElementSchema.safeParse(en(['A', 'A'])).success).toBe(false);
   });
 
+  it('enum admite attributes y operations opcionales; method.default es opcional', () => {
+    const en = { id: 'E', kind: 'enum', name: 'E', literals: ['A'] };
+    expect(ElementSchema.safeParse(en).success).toBe(true);
+    const full = { ...en, attributes: [{ name: 'x', visibility: '-' }], operations: [{ name: 'f', parameters: [], visibility: '+' }] };
+    expect(ElementSchema.safeParse(full).success).toBe(true);
+    const itf = { id: 'I', kind: 'interface', name: 'I', operations: [{ name: 'f', parameters: [], visibility: '+', default: true }] };
+    expect(ElementSchema.safeParse(itf).success).toBe(true);
+    expect(ElementSchema.safeParse({ ...itf, operations: [{ name: 'f', parameters: [], visibility: '+', default: 'si' }] }).success).toBe(false);
+  });
+
   it('rechaza propiedades adicionales', () => {
     expect(ElementSchema.safeParse(cls({ color: 'red' })).success).toBe(false);
     expect(RelationSchema.safeParse(rel({ style: 'x' })).success).toBe(false);

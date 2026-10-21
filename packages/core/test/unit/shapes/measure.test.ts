@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Element } from '../../../src/model/index.js';
-import { measureElement, measureText } from '../../../src/shapes/index.js';
+import { elementPrimitives, measureElement, measureText } from '../../../src/shapes/index.js';
 
 const cls = (attrs: number, ops: number, name = 'Pedido'): Element => ({
   id: 'A',
@@ -51,5 +51,36 @@ describe('medida de formas', () => {
     const size = measureElement(el);
     expect(size.width).toBeGreaterThan(0);
     expect(size.height).toBeGreaterThan(0);
+  });
+});
+
+describe('miembros UML', () => {
+  const itf = (def: boolean): Element => ({
+    id: 'I', kind: 'interface', name: 'I',
+    operations: [{ name: 'describir', parameters: [], visibility: '+', ...(def ? { default: true } : {}) }],
+  });
+  const prims = (el: Element) => elementPrimitives(el, measureElement(el));
+  const slot = (el: Element, name: string) => prims(el).find((p) => p.type === 'text' && p.slot === name);
+
+  it('el método default lleva la palabra default y no va en cursiva', () => {
+    expect(slot(itf(true), 'operation:0')).toMatchObject({ text: '+ default describir()' });
+    expect(slot(itf(true), 'operation:0')).not.toHaveProperty('italic');
+    expect(slot(itf(false), 'operation:0')).toMatchObject({ italic: true });
+  });
+
+  it('la clase abstracta muestra «abstract» y crece una línea', () => {
+    const base = cls(0, 0);
+    const abs = { ...base, abstract: true } as Element;
+    expect(slot(abs, 'abstract')).toMatchObject({ text: '«abstract»' });
+    expect(slot(base, 'abstract')).toBeUndefined();
+    expect(measureElement(abs).height).toBeGreaterThan(measureElement(base).height);
+  });
+
+  it('el enum crece con atributos y operaciones', () => {
+    const en: Element = { id: 'E', kind: 'enum', name: 'E', literals: ['A'] };
+    const full: Element = { ...en, attributes: [{ name: 'x', visibility: '-' }], operations: [{ name: 'f', parameters: [], visibility: '+' }] };
+    expect(measureElement(full).height).toBeGreaterThan(measureElement(en).height);
+    expect(slot(full, 'attribute:0')).toBeDefined();
+    expect(slot(full, 'operation:0')).toBeDefined();
   });
 });

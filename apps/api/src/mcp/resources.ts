@@ -13,18 +13,20 @@ import { type ExportService } from '../diagrams/export.service.js';
 export const RESOURCE_TEMPLATES: ResourceTemplate[] = [
   { uriTemplate: 'chartsia://diagrams/{id}', name: 'diagram', title: 'Diagrama (JSON)', description: 'Estado del diagrama, igual que get_diagram.', mimeType: 'application/json' },
   { uriTemplate: 'chartsia://diagrams/{id}/export.{ext}', name: 'diagram-export', title: 'Diagrama exportado', description: 'Exportación en svg, drawio o excalidraw.' },
-  { uriTemplate: 'chartsia://schema/{type}', name: 'diagram-schema', title: 'Guía por tipo de diagrama', description: 'Kinds, campos y relaciones permitidas para class, c4-context, c4-container o c4-component.', mimeType: 'text/markdown' },
+  { uriTemplate: 'chartsia://schema/{type}', name: 'diagram-schema', title: 'Guía por tipo de diagrama', description: 'Kinds, campos y relaciones permitidas para class, c4-context, c4-container, c4-component o er.', mimeType: 'text/markdown' },
 ];
 
 const KIND_FIELDS: Record<string, string> = {
-  class: 'attributes[] {name, type?, visibility: + - # ~, static?, defaultValue?}, operations[] {name, parameters[] {name, type?}, returnType?, visibility, static?, abstract?}, abstract?, stereotype?',
-  interface: 'operations[], attributes[]?',
-  enum: 'literals[] (≥1, únicos)',
+  class: 'attributes[] {name, type?, visibility: + - # ~, static?, defaultValue?}, operations[] {name, parameters[] {name, type?}, returnType?, visibility, static?, abstract?}, abstract? (se dibuja «abstract» y el nombre en cursiva), stereotype?',
+  interface: 'operations[] (igual que en class; default?: true marca un método default de Java, se dibuja con la palabra default y sin cursiva; solo en interfaces, no con abstract ni static), attributes[]?',
+  enum: 'literals[] (≥1, únicos), attributes[]? y operations[]? (como en class)',
   package: 'grupo: otros elementos lo referencian con parentId. Úsalo solo si la persona pide agrupar en paquetes',
   person: 'external?, description?',
   'software-system': 'external?, description?',
   container: 'technology?, variant?: default | database | queue | web, description?',
   component: 'technology?, description?; parentId de un boundary con boundaryType "container"',
+  entity: 'weak?: true (entidad débil, se dibuja con doble borde), description?',
+  table: 'columns[] (≥1, máx. 200, nombres únicos) {name, type, pk?, fk?: {table, column}, notNull?, unique?}; una fila por columna ("PK id: INT NOT NULL"; PK en negrita y subrayada, FK en cursiva). fk debe apuntar a una columna pk de otra tabla; la flecha FK→PK la dibujas tú con una er-rel entre las dos tablas',
   boundary: 'grupo; boundaryType: enterprise | system | container. Úsalo solo si la persona lo pide o si hace falta para un component',
 };
 
@@ -36,6 +38,7 @@ const RELATION_RULES: Record<string, string> = {
   realization: 'class→interface',
   dependency: 'label?',
   'c4-rel': 'label? (qué hace) y technology? (protocolo); solo en diagramas C4',
+  'er-rel': 'sourceCardinality y targetCardinality obligatorias (one | zero-one | one-many | zero-many, pata de gallo; cada marca va en su extremo), identifying?: true (línea continua; sin él es discontinua), label?; solo en diagramas er',
 };
 
 export function schemaGuide(type: DiagramType): string {

@@ -1,0 +1,20 @@
+{
+  "type": "class",
+  "title": "Figuras y miembros",
+  "elements": [
+    { "id": "Figura", "kind": "interface", "name": "Figura",
+      "operations": [
+        { "name": "area", "parameters": [], "returnType": "double", "visibility": "+" },
+        { "name": "describir", "parameters": [], "returnType": "String", "visibility": "+", "default": true }
+      ] },
+    { "id": "Base", "kind": "class", "name": "FiguraBase<T>", "abstract": true,
+      "attributes": [{ "name": "nombre", "type": "String", "visibility": "#" }],
+      "operations": [{ "name": "area", "parameters": [], "returnType": "double", "visibility": "+", "abstract": true }] },
+    { "id": "Color", "kind": "enum", "name": "Color & Tono", "literals": ["ROJO", "VERDE"],
+      "attributes": [{ "name": "hex", "type": "String", "visibility": "-" }],
+      "operations": [{ "name": "hex", "parameters": [], "returnType": "String", "visibility": "+" }] }
+  ],
+  "relations": [
+    { "id": "r1", "kind": "realization", "source": "Base", "target": "Figura" }
+  ]
+}
