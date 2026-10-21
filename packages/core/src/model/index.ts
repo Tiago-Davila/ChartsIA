@@ -5,5 +5,6 @@ export * from './diagram.js';
 export * from './enums.js';
 export * from './json-schema.js';
 export * from './operations.js';
+export * from './project.js';
 export * from './relation.js';
 export * from './ids.js';

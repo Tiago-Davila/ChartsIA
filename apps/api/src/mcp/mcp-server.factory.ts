@@ -22,6 +22,8 @@ import { applyChangesTool } from './tools/apply-changes.tool.js';
 import { createDiagramTool } from './tools/create-diagram.tool.js';
 import { exportDiagramTool } from './tools/export-diagram.tool.js';
 import { getDiagramTool } from './tools/get-diagram.tool.js';
+import { createProjectTool } from './tools/create-project.tool.js';
+import { moveDiagramTool } from './tools/move-diagram.tool.js';
 import { listDiagramsTool } from './tools/list-diagrams.tool.js';
 import { openDiagramTool } from './tools/open-diagram.tool.js';
 import { undoChangesTool } from './tools/undo-changes.tool.js';
@@ -36,6 +38,7 @@ const INSTRUCTIONS = [
   'Flujo habitual: create_diagram con la estructura (sin coordenadas) → apply_changes para cada refinamiento → export_diagram si piden un archivo. undo_changes deshace o rehace el último cambio.',
   'Cada pedido de un diagrama nuevo o distinto (otro tema, sistema o tipo) va con create_diagram, que no toca los diagramas anteriores; apply_changes solo refina el diagrama existente del que se habla (por defecto el activo).',
   'Usa get_diagram para conocer los ids actuales antes de editar y list_diagrams / open_diagram para cambiar de diagrama.',
+  'No agrupes diagramas en proyectos (create_project, move_diagram, projectId de create_diagram) salvo que la persona lo pida.',
   'No agrupes elementos en package o boundary salvo que la persona lo pida (o que un component lo exija).',
   'Si una herramienta devuelve isError, lee code, path y hint de cada error, corrige la entrada y vuelve a llamarla.',
 ].join(' ');
@@ -66,6 +69,8 @@ export class McpServerFactory {
       openDiagramTool(commands, results),
       exportDiagramTool(exports, results),
       undoChangesTool(commands, results),
+      createProjectTool(commands),
+      moveDiagramTool(commands),
     ];
     const failure = toToolJsonSchema(FailureSchema);
     this.listing = this.tools.map((tool) => ({

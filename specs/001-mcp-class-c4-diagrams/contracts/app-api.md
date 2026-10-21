@@ -33,11 +33,16 @@ Toda escritura pasa por el mismo servicio de operaciones que usan las herramient
 
 | Método | Ruta | Cuerpo / Respuesta |
 |--------|------|--------------------|
-| GET | `/api/diagrams` | → `list_diagrams` output |
+| GET | `/api/diagrams` | → `list_diagrams` output (incluye `projects` y `projectId` por diagrama) |
 | GET | `/api/diagrams/:id` | → `Diagram` con `layout` y `route`; 404 si no existe |
 | POST | `/api/diagrams/:id/operations` | `{ baseRevision, operations }` → `apply_changes` output; 422 con `{errors}` |
 | POST | `/api/diagrams/:id/activate` | marca diagrama activo (igual que la tool `open_diagram`) → 204 |
 | GET | `/api/diagrams/:id/export?format=svg\|drawio\|excalidraw&style=` | archivo con `Content-Disposition` |
+| GET | `/api/projects` | → `{ projects: Project[] }` |
+| POST | `/api/projects` | `{ name }` → 201 `Project`; 422 si el nombre es vacío o pasa de 100 |
+| PATCH | `/api/projects/:id` | `{ name }` → `Project`; 404 `PROJECT_NOT_FOUND` |
+| DELETE | `/api/projects/:id` | → 204; sus diagramas quedan sin proyecto; 404 `PROJECT_NOT_FOUND` |
+| PUT | `/api/diagrams/:id/project` | `{ projectId: string \| null }` → 204; 404 si no existe el diagrama o el proyecto |
 | GET | `/api/health` | `{ status: "ok", version }` (sin auth) |
 
 ## WebSocket (Socket.IO, namespace `/live`, path de transporte `/socket.io`)
@@ -50,6 +55,7 @@ El namespace no es una ruta HTTP: el cliente conecta a `io("/live")` y el tráfi
 | cliente → hub | `subscribe` | `{ diagramId }` (une a la room del diagrama) |
 | hub → cliente | `diagram.updated` | `{ diagramId, revision, origin: "agent"\|"app", diagram }` |
 | hub → cliente | `diagram.created` | `{ diagramId, title, type }` |
+| hub → cliente | `projects.changed` | `{ projects: Project[] }` (a todos; cambia la lista o la asignación de un diagrama: la app vuelve a pedir `GET /api/diagrams`) |
 | hub → cliente | `active.changed` | `{ diagramId }` (la app navega al diagrama activo) |
 
 Reconexión: al reconectar, la app reenvía `subscribe` y hace `GET /api/diagrams/:id`; si la

@@ -34,9 +34,13 @@ Input:
   "type": "class | c4-context | c4-container | c4-component",
   "title": "string",
   "elements": ["Element"],
-  "relations": ["Relation"]
+  "relations": ["Relation"],
+  "projectId": "string (opcional)"
 }
 ```
+
+`projectId` coloca el diagrama en un proyecto existente; si no existe, `PROJECT_NOT_FOUND` y no
+se crea nada.
 
 Output: `{ diagramId, revision, viewUrl, counts: {elements, relations}, warnings: string[] }`
 
@@ -67,7 +71,9 @@ Output: `Diagram` (sin `layout`/`route` salvo `includeLayout`), refleja edicione
 
 ## `list_diagrams`
 
-Input: `{}` → Output: `{ activeDiagramId: string|null, diagrams: [{diagramId, type, title, revision, updatedAt}] }`
+Input: `{}` → Output: `{ activeDiagramId: string|null, diagrams: [{diagramId, type, title, revision, updatedAt, projectId?}], projects: [{id, name, createdAt}] }`
+
+`projectId` solo aparece si el diagrama pertenece a un proyecto.
 
 ## `open_diagram`
 
@@ -76,6 +82,20 @@ Convierte un diagrama existente en el activo y hace que la app navegue a él (ev
 capacidad existe solo en una superficie (principio I).
 
 Input: `{ diagramId: string }` → Output: `{ diagramId, viewUrl }`
+
+## `create_project`
+
+Crea un proyecto vacío para agrupar diagramas. Solo si la persona lo pide. Equivale a
+`POST /api/projects`. Renombrar y borrar proyectos son solo de la app (REST).
+
+Input: `{ name: string (1..100, se recorta) }` → Output: `{ projectId, name }`
+
+## `move_diagram`
+
+Mueve un diagrama a un proyecto existente o lo saca con `null`. Equivale a
+`PUT /api/diagrams/:id/project`. Errores: `DIAGRAM_NOT_FOUND`, `PROJECT_NOT_FOUND`.
+
+Input: `{ diagramId: string, projectId: string | null }` → Output: `{ diagramId, projectId }`
 
 ## `export_diagram`
 

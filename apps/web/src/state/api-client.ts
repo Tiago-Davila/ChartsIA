@@ -8,11 +8,19 @@ export interface DiagramSummary {
   title: string;
   revision: number;
   updatedAt: string;
+  projectId?: string;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  createdAt: string;
 }
 
 export interface DiagramListResponse {
   activeDiagramId: string | null;
   diagrams: DiagramSummary[];
+  projects: Project[];
 }
 
 export interface ApplyResponse {
@@ -72,6 +80,10 @@ export function createApiClient({ baseUrl = '', getToken, fetch: fetchImpl = (..
       json<{ diagramId: string; revision: number }>(`/api/diagrams/${id(diagramId)}/${direction}`, { method: 'POST' }),
     activate: async (diagramId: string) => {
       await request(`/api/diagrams/${id(diagramId)}/activate`, { method: 'POST' });
+    },
+    createProject: (name: string) => json<Project>('/api/projects', { method: 'POST', body: JSON.stringify({ name }) }),
+    setDiagramProject: async (diagramId: string, projectId: string | null) => {
+      await request(`/api/diagrams/${id(diagramId)}/project`, { method: 'PUT', body: JSON.stringify({ projectId }) });
     },
     exportFile: async (diagramId: string, format: ExportFormat) => {
       const res = await request(`/api/diagrams/${id(diagramId)}/export?format=${format}`);

@@ -1,11 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { type Diagram } from '@chartsia/core/model';
+import { type Diagram, type Project } from '@chartsia/core/model';
 import { DomainValidationError, validationError } from '@chartsia/core/validation';
 import { DIAGRAM_REPOSITORY, type DiagramRepository, type DiagramSummary } from './persistence/diagram.repository.js';
 
 export interface DiagramList {
   activeDiagramId: string | null;
   diagrams: DiagramSummary[];
+  projects: Project[];
 }
 
 export function notFound(diagramId: string): DomainValidationError {
@@ -15,6 +16,17 @@ export function notFound(diagramId: string): DomainValidationError {
       '/diagramId',
       `No existe el diagrama "${diagramId}".`,
       'Usa list_diagrams para ver los ids disponibles u omite diagramId para usar el diagrama activo.',
+    ),
+  ]);
+}
+
+export function projectNotFound(projectId: string): DomainValidationError {
+  return new DomainValidationError([
+    validationError(
+      'PROJECT_NOT_FOUND',
+      '/projectId',
+      `No existe el proyecto "${projectId}".`,
+      'Usa list_diagrams para ver los proyectos disponibles o crea uno con create_project.',
     ),
   ]);
 }
@@ -57,6 +69,6 @@ export class DiagramQueryService {
   }
 
   async list(): Promise<DiagramList> {
-    return { activeDiagramId: await this.repo.getActiveId(), diagrams: await this.repo.list() };
+    return { activeDiagramId: await this.repo.getActiveId(), diagrams: await this.repo.list(), projects: await this.repo.listProjects() };
   }
 }

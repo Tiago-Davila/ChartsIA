@@ -1,15 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { layoutDiagram, relayoutDiagram } from '@chartsia/core/layout';
-import { type Diagram, DiagramInputSchema, newDiagramId } from '@chartsia/core/model';
+import { type Diagram, DiagramInputSchema, newDiagramId, newProjectId, type Project, ProjectSchema } from '@chartsia/core/model';
 import { applyOperations } from '@chartsia/core/operations';
-import { DomainValidationError, validateDiagram, validationError } from '@chartsia/core/validation';
+import { DomainValidationError, fromZodError, validateDiagram, validationError } from '@chartsia/core/validation';
 import { APP_CONFIG, type AppConfig } from '../config/config.js';
 import { DiagramEvents, type Origin } from './diagram-events.js';
 import { DiagramHistory, type HistoryDirection } from './diagram-history.js';
-import { DiagramQueryService, notFound } from './diagram-query.service.js';
+import { DiagramQueryService, notFound, projectNotFound } from './diagram-query.service.js';
 import { DiagramLock } from './persistence/diagram-lock.js';
 import { DIAGRAM_REPOSITORY, type DiagramRepository } from './persistence/diagram.repository.js';
 import { CLOCK, type Clock, DIAGRAM_ID_GENERATOR, type IdGenerator } from './tokens.js';
+
+const PROJECTS_KEY = 'projects';
 
 export interface ApplyParams {
   diagramId?: string;
@@ -41,7 +43,8 @@ export class DiagramCommandService {
     @Inject(DIAGRAM_ID_GENERATOR) private readonly newId: IdGenerator = newDiagramId,
   ) {}
 
-  async create(input: unknown): Promise<CommandResult> {
+  async create(input: unknown, projectId?: string): Promise<CommandResult> {
+    if (projectId !== undefined) await this.requireProject(projectId);
     const checked = validateDiagram(input, { schema: DiagramInputSchema, maxElements: this.config.maxElements });
     if (!checked.ok) throw new DomainValidationError(checked.errors);
     const now = this.clock().toISOString();
@@ -53,6 +56,7 @@ export class DiagramCommandService {
       updatedAt: now,
     });
     await this.repo.save(diagram);
+    if (projectId !== undefined) await this.repo.setDiagramProject(diagram.id, projectId);
     await this.repo.setActiveId(diagram.id);
     this.events.emit({ name: 'diagram.created', payload: { diagramId: diagram.id, title: diagram.title, type: diagram.type } });
     this.events.emit({ name: 'active.changed', payload: { diagramId: diagram.id } });
@@ -107,5 +111,60 @@ export class DiagramCommandService {
     if (!(await this.repo.get(diagramId))) throw notFound(diagramId);
     await this.repo.setActiveId(diagramId);
     this.events.emit({ name: 'active.changed', payload: { diagramId } });
+  }
+
+  /** Crea un proyecto con ese nombre (se guarda como texto, sin interpretar). */
+  createProject(name: unknown): Promise<Project> {
+    return this.lock.run(PROJECTS_KEY, async () => {
+      const project = this.parseProject({ id: newProjectId(), name, createdAt: this.clock().toISOString() });
+      await this.repo.saveProject(project);
+      await this.emitProjects();
+      return project;
+    });
+  }
+
+  /** Cambia el nombre de un proyecto existente. */
+  renameProject(projectId: string, name: unknown): Promise<Project> {
+    return this.lock.run(PROJECTS_KEY, async () => {
+      const project = this.parseProject({ ...(await this.requireProject(projectId)), name });
+      await this.repo.saveProject(project);
+      await this.emitProjects();
+      return project;
+    });
+  }
+
+  /** Borra un proyecto; sus diagramas quedan sin proyecto. */
+  deleteProject(projectId: string): Promise<void> {
+    return this.lock.run(PROJECTS_KEY, async () => {
+      await this.requireProject(projectId);
+      await this.repo.deleteProject(projectId);
+      await this.emitProjects();
+    });
+  }
+
+  /** Mueve un diagrama a un proyecto o lo saca con `null`. */
+  moveDiagram(diagramId: string, projectId: string | null): Promise<void> {
+    return this.lock.run(PROJECTS_KEY, async () => {
+      if (!(await this.repo.get(diagramId))) throw notFound(diagramId);
+      if (projectId !== null) await this.requireProject(projectId);
+      await this.repo.setDiagramProject(diagramId, projectId);
+      await this.emitProjects();
+    });
+  }
+
+  private parseProject(candidate: unknown): Project {
+    const parsed = ProjectSchema.safeParse(candidate);
+    if (!parsed.success) throw new DomainValidationError(fromZodError(parsed.error));
+    return parsed.data;
+  }
+
+  private async requireProject(projectId: string): Promise<Project> {
+    const project = (await this.repo.listProjects()).find((p) => p.id === projectId);
+    if (!project) throw projectNotFound(projectId);
+    return project;
+  }
+
+  private async emitProjects(): Promise<void> {
+    this.events.emit({ name: 'projects.changed', payload: { projects: await this.repo.listProjects() } });
   }
 }

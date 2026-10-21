@@ -36,7 +36,7 @@ describe('diagram store', () => {
   });
 
   it('ignora actualizaciones de otro diagrama pero actualiza su resumen en la lista', () => {
-    store.getState().setList({ activeDiagramId: null, diagrams: [{ diagramId: 'dg_bbbbbbbbbbbb', type: 'class', title: 'B', revision: 1, updatedAt: '' }] });
+    store.getState().setList({ activeDiagramId: null, projects: [], diagrams: [{ diagramId: 'dg_bbbbbbbbbbbb', type: 'class', title: 'B', revision: 1, updatedAt: '' }] });
     store.getState().applyUpdate({ diagramId: 'dg_bbbbbbbbbbbb', revision: 5, origin: 'agent', diagram: d(5, 'B2', 'dg_bbbbbbbbbbbb') });
     expect(store.getState().diagram?.id).toBe('dg_aaaaaaaaaaaa');
     expect(store.getState().diagrams[0]).toMatchObject({ title: 'B2', revision: 5 });

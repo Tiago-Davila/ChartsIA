@@ -8,7 +8,7 @@ test.describe('barra lateral con muchos diagramas', () => {
     }
     await page.goto('/');
     const lista = page.getByRole('navigation', { name: 'Diagramas' });
-    const items = lista.getByRole('button');
+    const items = lista.locator('.diagram-list__item');
     await expect(items.nth(49)).toBeAttached();
 
     const scroll = lista.locator('ul');
