@@ -1,4 +1,4 @@
-import { type Diagram, type DiagramType } from '@chartsia/core/model';
+import { type Diagram, type DiagramType, type Project } from '@chartsia/core/model';
 
 export interface DiagramSummary {
   diagramId: string;
@@ -6,6 +6,8 @@ export interface DiagramSummary {
   title: string;
   revision: number;
   updatedAt: string;
+  /** Proyecto al que pertenece; sin valor, el diagrama no tiene proyecto. */
+  projectId?: string;
 }
 
 /** Almacenamiento de diagramas; la escritura siempre pasa por los servicios de aplicación. */
@@ -16,6 +18,13 @@ export interface DiagramRepository {
   list(): Promise<DiagramSummary[]>;
   getActiveId(): Promise<string | null>;
   setActiveId(id: string | null): Promise<void>;
+  listProjects(): Promise<Project[]>;
+  /** Crea el proyecto o, si ya existe, lo reemplaza. */
+  saveProject(project: Project): Promise<void>;
+  /** Borra el proyecto y deja sus diagramas sin proyecto. */
+  deleteProject(id: string): Promise<void>;
+  /** Asigna el diagrama a un proyecto existente o lo saca con `null`. */
+  setDiagramProject(diagramId: string, projectId: string | null): Promise<void>;
 }
 
 export const DIAGRAM_REPOSITORY = Symbol('DIAGRAM_REPOSITORY');
