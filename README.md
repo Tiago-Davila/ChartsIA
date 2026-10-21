@@ -51,6 +51,23 @@ pnpm --filter @chartsia/api start      # app y MCP en http://127.0.0.1:3333
   `claude mcp add --transport http chartsia http://127.0.0.1:3333/mcp`
 - **Claude Desktop (stdio)**: comando `pnpm --filter @chartsia/api exec chartsia-mcp`
   (puente stdio → hub; el hub debe estar corriendo). Variables: `CHARTSIA_URL`, `CHARTSIA_TOKEN`.
+- **OpenCode**: en `opencode.json` (proyecto) bajo `mcp`; la pantalla de configuración de la app
+  muestra estos JSON con la URL real. Esquema: `https://opencode.ai/config.json`.
+  - HTTP:
+    ```json
+    { "mcp": { "chartsia": { "type": "remote", "url": "http://127.0.0.1:3333/mcp" } } }
+    ```
+    Fuera de loopback añade `"headers": { "Authorization": "Bearer <CHARTSIA_TOKEN>" }`.
+  - stdio (puente `chartsia-mcp`; el hub debe estar corriendo):
+    ```json
+    { "mcp": { "chartsia": { "type": "local",
+      "command": ["pnpm", "--filter", "@chartsia/api", "exec", "chartsia-mcp"],
+      "cwd": "<RUTA_AL_REPO_CHARTSIA>",
+      "environment": { "CHARTSIA_URL": "http://127.0.0.1:3333/mcp" } } } }
+    ```
+    Fuera de loopback añade `"CHARTSIA_TOKEN": "<CHARTSIA_TOKEN>"` en `environment`.
+  - No subas el token real al repositorio: usa un `opencode.json` local o ignorado por git.
+  - Comprueba la conexión con `opencode mcp list`.
 - **OpenAI Responses API**: herramienta
   `{"type":"mcp","server_label":"chartsia","server_url":"https://<túnel>/mcp","authorization":"<CHARTSIA_TOKEN>"}`;
   el hub debe ser accesible desde internet (p. ej. un túnel) con `CHARTSIA_HOST=0.0.0.0`.
