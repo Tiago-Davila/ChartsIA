@@ -9,6 +9,7 @@ const base: AppShellProps = {
     { diagramId: 'dg_aaaaaaaaaaaa', type: 'class', title: 'Biblioteca', revision: 3, updatedAt: '2026-10-20T10:00:00.000Z' },
     { diagramId: 'dg_bbbbbbbbbbbb', type: 'c4-container', title: 'Tienda', revision: 1, updatedAt: '2026-10-19T10:00:00.000Z' },
   ],
+  projects: [],
   activeDiagramId: 'dg_bbbbbbbbbbbb',
   connection: 'connected',
   nodes: [],

@@ -22,6 +22,7 @@ function ConnectedApp() {
   const route = useRoute();
   const { live, reload } = useHubSync(api, route);
   const diagrams = useDiagramStore((s) => s.diagrams);
+  const projects = useDiagramStore((s) => s.projects);
   const activeDiagramId = useDiagramStore((s) => s.activeDiagramId);
   const diagram = useDiagramStore((s) => s.diagram);
   const loading = useDiagramStore((s) => s.openDiagramId !== null && s.diagram === undefined);
@@ -77,6 +78,7 @@ function ConnectedApp() {
       <div className={`app-root${animate ? ' animate-agent' : ''}`}>
         <AppShell
           diagrams={diagrams}
+          projects={projects}
           activeDiagramId={activeDiagramId}
           connection={connection}
           diagram={diagram}

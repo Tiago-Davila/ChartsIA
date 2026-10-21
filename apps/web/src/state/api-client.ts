@@ -8,11 +8,19 @@ export interface DiagramSummary {
   title: string;
   revision: number;
   updatedAt: string;
+  projectId?: string;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  createdAt: string;
 }
 
 export interface DiagramListResponse {
   activeDiagramId: string | null;
   diagrams: DiagramSummary[];
+  projects: Project[];
 }
 
 export interface ApplyResponse {

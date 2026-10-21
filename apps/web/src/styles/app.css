@@ -72,6 +72,30 @@
   margin: 0;
   padding: 0;
 }
+.diagram-list__section ul {
+  flex: none;
+  overflow: visible;
+}
+.diagram-list__section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--text-muted);
+  background: none;
+  border: 0;
+  border-radius: 6px;
+}
+.diagram-list__section-title:hover {
+  background: var(--surface-muted);
+}
+.diagram-list__count {
+  margin-left: auto;
+}
 .diagram-list__empty {
   margin: 8px;
   color: var(--text-muted);

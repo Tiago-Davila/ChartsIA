@@ -12,6 +12,7 @@ export interface DiagramUpdatedEvent {
 export interface LiveHandlers {
   onUpdated(event: DiagramUpdatedEvent): void;
   onCreated(event: { diagramId: string; title: string; type: DiagramType }): void;
+  onProjectsChanged(): void;
   onActiveChanged(event: { diagramId: string }): void;
   onStatus(state: ConnectionState): void;
   /** Tras cada (re)conexión: la app reconcilia el estado con `GET`. */
@@ -50,6 +51,7 @@ export function createLiveClient(getToken: () => string | undefined, handlers: L
   });
   socket.on('diagram.updated', handlers.onUpdated);
   socket.on('diagram.created', handlers.onCreated);
+  socket.on('projects.changed', handlers.onProjectsChanged);
   socket.on('active.changed', handlers.onActiveChanged);
 
   return {
