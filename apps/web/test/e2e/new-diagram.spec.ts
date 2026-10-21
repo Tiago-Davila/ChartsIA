@@ -14,7 +14,7 @@ test.describe('nuevo diagrama desde la app', () => {
     await formulario.getByRole('button', { name: 'Crear' }).click();
 
     await expect(page.getByRole('heading', { name: /Mi diagrama nuevo/ })).toBeVisible();
-    const nuevo = lista.getByRole('button', { name: /Mi diagrama nuevo/ });
+    const nuevo = lista.getByRole('button', { name: /^Mi diagrama nuevo/ });
     await expect(nuevo).toHaveAttribute('aria-current', 'page');
     await expect(nuevo).toContainText('Entidad-relación');
     await expect(page).toHaveURL(/\/d\/dg_/);
