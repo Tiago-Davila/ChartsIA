@@ -207,4 +207,64 @@ describe('applyOperations', () => {
     const res = applyOperations(base(), [{ op: 'add_element', element: { id: 'X', kind: 'package', name: 'X' } }], { maxElements: 5 });
     expect(!res.ok && codes(res.errors)).toEqual(['LIMIT_EXCEEDED']);
   });
+
+  it('update_element y update_relation fijan, reemplazan y quitan el estilo', () => {
+    const style = { fillColor: '#ffeecc', fontFamily: 'monospace', fontSize: 16 };
+    const res = apply([
+      { op: 'update_element', id: 'Libro', changes: { style } },
+      { op: 'update_relation', id: 'r1', changes: { style: { borderColor: '#ff0000' } } },
+    ]);
+    expect(res.ok && res.diagram.elements.find((e) => e.id === 'Libro')?.style).toEqual(style);
+    expect(res.ok && res.diagram.relations[0]?.style).toEqual({ borderColor: '#ff0000' });
+
+    const replaced = apply([{ op: 'update_element', id: 'Libro', changes: { style: { fontColor: '#000000' } } }], res.ok ? res.diagram : base());
+    expect(replaced.ok && replaced.diagram.elements.find((e) => e.id === 'Libro')?.style).toEqual({ fontColor: '#000000' });
+
+    const cleared = apply(
+      [
+        { op: 'update_element', id: 'Libro', changes: { style: null } },
+        { op: 'update_relation', id: 'r1', changes: { style: null } },
+      ],
+      res.ok ? res.diagram : base(),
+    );
+    expect(cleared.ok && cleared.diagram.elements.find((e) => e.id === 'Libro')).not.toHaveProperty('style');
+    expect(cleared.ok && cleared.diagram.relations[0]).not.toHaveProperty('style');
+  });
+
+  it('add_element y add_relation conservan el estilo', () => {
+    const res = apply([
+      { op: 'add_element', element: { id: 'Editorial', kind: 'class', name: 'Editorial', attributes: [], operations: [], style: { borderColor: '#123456' } } },
+      { op: 'add_relation', relation: { id: 'r3', kind: 'association', source: 'Libro', target: 'Editorial', style: { fontSize: 10 } } },
+    ]);
+    expect(res.ok && res.diagram.elements.at(-1)?.style).toEqual({ borderColor: '#123456' });
+    expect(res.ok && res.diagram.relations.at(-1)?.style).toEqual({ fontSize: 10 });
+  });
+
+  it.each([
+    ['fillColor', 'rojo'],
+    ['borderColor', '#fff'],
+    ['fontColor', '#12345g'],
+    ['fontFamily', 'Comic Sans'],
+    ['fontSize', 7],
+    ['fontSize', 49],
+    ['fontSize', 12.5],
+  ])('estilo inválido (%s = %s) ⇒ SCHEMA_VIOLATION con path y hint', (campo, valor) => {
+    const res = apply([{ op: 'update_element', id: 'Libro', changes: { style: { [campo]: valor } } }]);
+    expect(res.ok).toBe(false);
+    if (!res.ok) {
+      expect(res.errors[0]).toMatchObject({ code: 'SCHEMA_VIOLATION', path: `/operations/0/changes/style/${campo}` });
+      expect(res.errors[0]?.message).toBeTruthy();
+      expect(res.errors[0]?.hint).toBeTruthy();
+    }
+  });
+
+  it('estilo inválido en una relación indica su path', () => {
+    const res = apply([{ op: 'update_relation', id: 'r1', changes: { style: { fillColor: 'azul' } } }]);
+    expect(!res.ok && res.errors[0]).toMatchObject({ code: 'SCHEMA_VIOLATION', path: '/operations/0/changes/style/fillColor' });
+  });
+
+  it('un campo desconocido dentro de style se rechaza', () => {
+    const res = apply([{ op: 'update_element', id: 'Libro', changes: { style: { color: '#000000' } } }]);
+    expect(res.ok).toBe(false);
+  });
 });

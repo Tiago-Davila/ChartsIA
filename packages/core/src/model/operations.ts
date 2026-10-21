@@ -5,6 +5,7 @@ import { ColumnSchema } from './er-elements.js';
 import { DescriptionSchema, ElementIdSchema, LayoutSchema, NameSchema, PointSchema } from './common.js';
 import { ElementSchema, TitleSchema } from './diagram.js';
 import { MultiplicitySchema, RelationSchema } from './relation.js';
+import { StyleSchema } from './style.js';
 
 /**
  * Cambios parciales de un elemento: unión de los campos editables de todos los `kind`.
@@ -27,6 +28,7 @@ export const ElementChangesSchema = z
     boundaryType: z.enum(BOUNDARY_TYPES).optional(),
     columns: z.array(ColumnSchema).min(1).max(200).optional(),
     weak: z.boolean().nullable().optional(),
+    style: StyleSchema.nullable().optional().describe('Reemplaza el estilo completo; null lo elimina'),
   })
   .describe('Campos a cambiar, p. ej. {"name":"Usuario"}; null elimina un campo opcional');
 export type ElementChanges = z.infer<typeof ElementChangesSchema>;
@@ -47,6 +49,7 @@ export const RelationChangesSchema = z
     sourceSide: z.enum(SIDES).nullable().optional(),
     targetSide: z.enum(SIDES).nullable().optional(),
     waypoints: z.array(PointSchema).max(20).nullable().optional(),
+    style: StyleSchema.nullable().optional().describe('Reemplaza el estilo completo; null lo elimina'),
   })
   .describe('Campos a cambiar, p. ej. {"label":"usa"}; null elimina un campo opcional');
 export type RelationChanges = z.infer<typeof RelationChangesSchema>;
