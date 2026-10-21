@@ -74,4 +74,42 @@ export const AGENTS: Agent[] = [
         2,
       ),
   },
+  {
+    id: 'gemini-remote',
+    name: 'Gemini CLI (HTTP)',
+    help: 'Añádelo a "mcpServers" en .gemini/settings.json del proyecto (mejor que el global ~/.gemini/settings.json). Fuera de loopback, sustituye <CHARTSIA_TOKEN> y no lo subas al repositorio.',
+    snippet: (mcpUrl) =>
+      JSON.stringify(
+        {
+          mcpServers: {
+            chartsia: {
+              httpUrl: mcpUrl,
+              ...(esLoopback(mcpUrl) ? {} : { headers: { Authorization: 'Bearer <CHARTSIA_TOKEN>' } }),
+            },
+          },
+        },
+        null,
+        2,
+      ),
+  },
+  {
+    id: 'gemini-local',
+    name: 'Gemini CLI (stdio)',
+    help: 'Puente stdio hacia el hub (debe estar corriendo y el repositorio compilado con pnpm build). Va en .gemini/settings.json del proyecto; sustituye la ruta del repositorio. Fuera de loopback sustituye <CHARTSIA_TOKEN> y no lo subas al repositorio.',
+    snippet: (mcpUrl) =>
+      JSON.stringify(
+        {
+          mcpServers: {
+            chartsia: {
+              command: 'node',
+              args: ['apps/api/dist/stdio-bridge.js'],
+              cwd: '<RUTA_AL_REPO_CHARTSIA>',
+              env: { CHARTSIA_URL: mcpUrl, ...(esLoopback(mcpUrl) ? {} : { CHARTSIA_TOKEN: '<CHARTSIA_TOKEN>' }) },
+            },
+          },
+        },
+        null,
+        2,
+      ),
+  },
 ];

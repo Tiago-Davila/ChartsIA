@@ -46,6 +46,17 @@ describe('ConfigScreen', () => {
     expect(item.querySelector('b')).toBeNull();
   });
 
+  it('los snippets de Gemini CLI son JSON válido con la URL del hub', () => {
+    const snippet = (id: string, url: string) => JSON.parse(AGENTS.find((a) => a.id === id)!.snippet(url));
+    for (const id of ['gemini-remote', 'gemini-local']) {
+      const config = snippet(id, `${origin}/mcp`);
+      expect(JSON.stringify(config.mcpServers.chartsia)).toContain(`${origin}/mcp`);
+      expect(JSON.stringify(config)).not.toContain('Bearer');
+    }
+    const remoto = snippet('gemini-remote', 'https://hub.example.com/mcp');
+    expect(remoto.mcpServers.chartsia.headers.Authorization).toBe('Bearer <CHARTSIA_TOKEN>');
+  });
+
   it('copia el comando de la tarjeta', async () => {
     const user = userEvent.setup();
     const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
