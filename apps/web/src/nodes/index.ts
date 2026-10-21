@@ -29,6 +29,7 @@ export const nodeTypes = {
   table: ErTableNode,
   figure: ElementNode,
   drawing: ElementNode,
+  image: ElementNode,
   attribute: ErAttributeNode,
   'value-list': ErValueListNode,
 } satisfies Record<ElementKind, NodeTypes[string]> as NodeTypes;

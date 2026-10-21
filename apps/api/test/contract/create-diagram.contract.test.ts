@@ -54,6 +54,16 @@ describe('contract: create_diagram', () => {
     expect(h.errorCodes(bad)).toEqual(['INVALID_MEMBER']);
   });
 
+  it('rechaza SVG con contenido activo en la frontera MCP y no persiste el diagrama', async () => {
+    const src = `data:image/svg+xml;base64,${Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>').toString('base64')}`;
+    const result = await h.call('create_diagram', {
+      type: 'class', title: 'Malicioso', elements: [{ id: 'img', kind: 'image', name: 'Imagen', src }], relations: [],
+    });
+    expect(h.errorCodes(result)).toContain('SCHEMA_VIOLATION');
+    expect(await h.repo.list()).toEqual([]);
+    expect(h.emitted).toEqual([]);
+  });
+
   it.each([
     ['SCHEMA_VIOLATION', { ...minimalClass, title: '' }],
     ['DUPLICATE_ID', { ...minimalClass, elements: [...minimalClass.elements, { id: 'Pedido', kind: 'enum', name: 'X', literals: ['A'] }] }],

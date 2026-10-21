@@ -17,6 +17,7 @@ export interface ToolbarProps {
   onOpenLatest?(): Promise<boolean>;
   /** Se llama tras encuadrar lo cambiado, para que el siguiente clic encuadre todo el diagrama. */
   onChangedFitted?(): void;
+  onInsertImages?(files: File[]): void;
 }
 
 const EXPORTS: { value: ExportFormat; label: string }[] = [
@@ -66,9 +67,10 @@ function Menu<T extends string>({ label, items, primary, disabled, onSelect }: {
 }
 
 /** Título, encuadre, alineación de la selección y exportación (FR-027). */
-export function Toolbar({ title, revision, disabled = false, onExport, onRename, onAlign, changedIds = [], onOpenLatest, onChangedFitted }: ToolbarProps) {
+export function Toolbar({ title, revision, disabled = false, onExport, onRename, onAlign, changedIds = [], onOpenLatest, onChangedFitted, onInsertImages }: ToolbarProps) {
   const { getNodes, getNodesBounds, setViewport } = useReactFlow();
   const store = useStoreApi();
+  const imageInput = useRef<HTMLInputElement>(null);
   // Encuadra los nodos del último cambio (o todos) con su tamaño declarado, porque fitView espera nodos medidos y tras un cambio del hub no responde.
   const fit = async () => {
     if (await onOpenLatest?.()) return;
@@ -113,6 +115,26 @@ export function Toolbar({ title, revision, disabled = false, onExport, onRename,
       <button type="button" className="button" disabled={disabled} onClick={() => void fit()}>
         Ajustar
       </button>
+      {onInsertImages ? (
+        <>
+          <input
+            ref={imageInput}
+            className="sr-only"
+            type="file"
+            accept="image/png,image/jpeg,image/svg+xml,.png,.jpg,.jpeg,.svg"
+            multiple
+            aria-label="Seleccionar imágenes"
+            onChange={(event) => {
+              const files = Array.from(event.currentTarget.files ?? []);
+              event.currentTarget.value = '';
+              if (files.length > 0) onInsertImages(files);
+            }}
+          />
+          <button type="button" className="button" disabled={disabled} onClick={() => imageInput.current?.click()}>
+            Imagen
+          </button>
+        </>
+      ) : null}
       <Menu label="Exportar" items={EXPORTS} primary disabled={disabled} onSelect={onExport} />
     </header>
   );

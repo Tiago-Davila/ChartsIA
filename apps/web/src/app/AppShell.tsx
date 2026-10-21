@@ -1,7 +1,7 @@
 import { type ExportFormat } from '@chartsia/core/export';
 import { type Diagram, type DiagramType, type Point } from '@chartsia/core/model';
 import { type Edge, type Node } from '@xyflow/react';
-import { type ReactNode } from 'react';
+import { type ClipboardEvent, type DragEvent, type ReactNode, useRef } from 'react';
 import { type ConnectedAgent, type Project } from '../state/api-client';
 import { type AlignMode } from '../canvas/align';
 import { DiagramCanvas, type DiagramCanvasProps } from '../canvas/DiagramCanvas';
@@ -36,6 +36,7 @@ export interface AppShellProps {
   onNewProject(diagramId: string, name: string): void;
   onRenameDiagram(diagramId: string, title: string): void;
   onExport(format: ExportFormat): void;
+  onImportImages?(files: File[], screenPosition?: { x: number; y: number }): void;
   onRename?(title: string): void;
   onNodeDragStop?: DiagramCanvasProps['onNodeDragStop'];
   onDelete?: DiagramCanvasProps['onDelete'];
@@ -52,6 +53,31 @@ export interface AppShellProps {
 /** Composición de la app: barra lateral, toolbar, lienzo, leyenda y estado vacío. */
 export function AppShell(props: AppShellProps) {
   const { diagram } = props;
+  const canvas = useRef<HTMLDivElement>(null);
+  const center = () => {
+    const rect = canvas.current?.getBoundingClientRect();
+    return rect ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 } : { x: 0, y: 0 };
+  };
+  const onPaste = (event: ClipboardEvent<HTMLElement>) => {
+    if (props.readOnly || !props.onImportImages) return;
+    const files = Array.from(event.clipboardData.items)
+      .filter((item) => item.kind === 'file' && item.type.startsWith('image/'))
+      .map((item) => item.getAsFile())
+      .filter((file): file is File => file !== null);
+    if (files.length === 0) return;
+    event.preventDefault();
+    props.onImportImages(files, center());
+  };
+  const onDragOver = (event: DragEvent<HTMLDivElement>) => {
+    if (props.readOnly || !props.onImportImages || !Array.from(event.dataTransfer.types).includes('Files')) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
+  };
+  const onDrop = (event: DragEvent<HTMLDivElement>) => {
+    if (props.readOnly || !props.onImportImages || event.dataTransfer.files.length === 0) return;
+    event.preventDefault();
+    props.onImportImages(Array.from(event.dataTransfer.files), { x: event.clientX, y: event.clientY });
+  };
   return (
     <div className="app-shell">
       <aside className="app-shell__sidebar">
@@ -65,7 +91,7 @@ export function AppShell(props: AppShellProps) {
         </button>
         <ConnectionStatus state={props.connection} />
       </aside>
-      <main className="app-shell__main">
+      <main className="app-shell__main" onPaste={onPaste}>
         {props.configOpen ? (
           <ConfigScreen origin={props.origin} agents={props.agents} connection={props.connection} onBack={props.onCloseConfig} />
         ) : diagram ? (
@@ -80,8 +106,9 @@ export function AppShell(props: AppShellProps) {
               changedIds={props.changedIds}
               onOpenLatest={props.onOpenLatest}
               onChangedFitted={props.onChangedFitted}
+              onInsertImages={(files) => props.onImportImages?.(files, center())}
             />
-            <div className="app-shell__canvas">
+            <div className="app-shell__canvas" ref={canvas} onDragOver={onDragOver} onDrop={onDrop}>
               <DiagramCanvas
                 diagramId={diagram.id}
                 nodes={props.nodes}

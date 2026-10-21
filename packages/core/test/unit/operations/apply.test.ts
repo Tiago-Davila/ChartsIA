@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { Diagram } from '../../../src/model/index.js';
+import { DiagramSchema, DiagramInputSchema } from '../../../src/model/index.js';
 import { applyOperations } from '../../../src/operations/index.js';
 import { codes } from '../../support/fixtures.js';
+import { pngDataUrl } from '../../support/images.js';
 
 function base(): Diagram {
   return {
@@ -206,6 +208,39 @@ describe('applyOperations', () => {
   it('respeta el máximo de elementos', () => {
     const res = applyOperations(base(), [{ op: 'add_element', element: { id: 'X', kind: 'package', name: 'X' } }], { maxElements: 5 });
     expect(!res.ok && codes(res.errors)).toEqual(['LIMIT_EXCEEDED']);
+  });
+
+  it('rechaza de forma atómica el presupuesto de imágenes acumulado al crear y actualizar', () => {
+    const usual = pngDataUrl({ ancillaryBytes: Math.floor(4.3 * 1024 * 1024) });
+    const replacement = pngDataUrl({ ancillaryBytes: Math.floor(4.9 * 1024 * 1024) });
+    const images = Array.from({ length: 6 }, (_, index) => ({ id: `img${index}`, kind: 'image', name: `Imagen ${index}`, src: usual }));
+    expect(DiagramInputSchema.safeParse({ type: 'class', title: 'Imágenes', elements: images, relations: [] }).success).toBe(false);
+
+    const before = DiagramSchema.parse({
+      ...base(),
+      elements: images.slice(0, 5),
+    });
+    const result = applyOperations(before, [
+      { op: 'set_title', title: 'Debe ser atómico' },
+      { op: 'update_element', id: 'img0', changes: { src: replacement } },
+      { op: 'add_element', element: images[5] },
+    ]);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors).toContainEqual(expect.objectContaining({ code: 'LIMIT_EXCEEDED', message: expect.stringContaining('25 MiB') }));
+    expect(before.title).toBe('Biblioteca');
+    expect(before.elements[0]?.kind).toBe('image');
+    if (before.elements[0]?.kind === 'image') expect(before.elements[0].src).toBe(usual);
+  }, 30_000);
+
+  it('rechaza el presupuesto acumulado de píxeles raster en una operación', () => {
+    const before = DiagramSchema.parse({
+      ...base(),
+      elements: [{ id: 'img0', kind: 'image', name: 'Imagen 0', src: pngDataUrl({ width: 7_000, height: 4_000 }) }],
+    });
+    const next = { id: 'img1', kind: 'image', name: 'Imagen 1', src: pngDataUrl({ width: 4_000, height: 4_000 }) };
+    const result = applyOperations(before, [{ op: 'add_element', element: next }]);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors).toContainEqual(expect.objectContaining({ code: 'LIMIT_EXCEEDED', message: expect.stringContaining('40 millones') }));
   });
 
   it('update_element y update_relation fijan, reemplazan y quitan el estilo', () => {

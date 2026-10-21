@@ -5,6 +5,7 @@ import { type Relation } from '../model/relation.js';
 import { hashSeed } from '../render/hash.js';
 import { edgeLabelLines } from '../render/edges.js';
 import { type Style, type StyleFontFamily } from '../model/style.js';
+import { imageDataUrlDimensions } from '../model/image-data.js';
 import { c4Colors, C4_PALETTE } from '../shapes/c4/palette.js';
 import { figureOutline, figureTextArea } from '../shapes/general/figure.js';
 import { paintOf, textFont } from '../shapes/style.js';
@@ -57,6 +58,7 @@ function fontOf(style: Style | undefined, size: number): Json {
 
 class Builder {
   readonly elements: Json[] = [];
+  readonly files: Json = {};
   private readonly updated: number;
   constructor(private readonly diagram: Diagram) {
     this.updated = Date.parse(diagram.updatedAt) || 0;
@@ -110,6 +112,19 @@ class Builder {
     });
     this.elements.push(el);
     return el;
+  }
+
+  image(id: string, box: Box, dataURL: string): void {
+    const fileId = `file_${id}`;
+    const mimeType = /^data:(image\/(?:png|jpeg|svg\+xml));base64,/.exec(dataURL)?.[1];
+    if (!mimeType) throw new Error('La imagen no tiene un data URL válido.');
+    const dimensions = imageDataUrlDimensions(dataURL);
+    const aspect = dimensions ? dimensions.width / dimensions.height : box.width / box.height;
+    const width = Math.min(box.width, box.height * aspect);
+    const height = Math.min(box.height, box.width / aspect);
+    const fitted = { x: box.x + (box.width - width) / 2, y: box.y + (box.height - height) / 2, width, height };
+    this.elements.push(this.base(id, 'image', fitted, { fileId, status: 'saved', scale: [1, 1], crop: null }));
+    this.files[fileId] = { id: fileId, dataURL, mimeType, created: this.updated, lastRetrieved: this.updated };
   }
 
   /** Texto ligado a un contenedor: el contenedor declara el vínculo en `boundElements`. */
@@ -269,6 +284,7 @@ export function exportExcalidraw(diagram: Diagram): string {
     if (!l || l.width === undefined || l.height === undefined) continue;
     const box = { x: l.x, y: l.y, width: l.width, height: l.height };
     if (el.kind === 'drawing') addDrawing(b, el, box);
+    else if (el.kind === 'image') b.image(el.id, box, el.src);
     else if (el.kind === 'figure') addFigure(b, el, box);
     else if (diagram.type === 'class') {
       if (el.kind === 'package') {
@@ -284,7 +300,7 @@ export function exportExcalidraw(diagram: Diagram): string {
   const keys = orderKeys(b.elements.length);
   const elements = b.elements.map((e, i) => ({ ...e, index: keys[i] }));
   return JSON.stringify(
-    { type: 'excalidraw', version: 2, source: 'https://github.com/chartsia/chartsia', elements, appState: { gridSize: 20, viewBackgroundColor: '#ffffff' }, files: {} },
+    { type: 'excalidraw', version: 2, source: 'https://github.com/chartsia/chartsia', elements, appState: { gridSize: 20, viewBackgroundColor: '#ffffff' }, files: b.files },
     null,
     2,
   ) + '\n';
