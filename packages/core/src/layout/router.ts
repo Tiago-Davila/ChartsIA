@@ -43,6 +43,23 @@ function portAt(r: Rect, side: Side, fraction: number): Point {
   }
 }
 
+/** Punto del borde del óvalo inscrito en `r` que queda en línea con el puerto `at` de su caja. */
+function ovalPoint(r: Rect, side: Side, at: Point): Point {
+  const vertical = side === 'top' || side === 'bottom';
+  const offset = vertical ? (at.x - (r.x + r.width / 2)) / (r.width / 2) : (at.y - (r.y + r.height / 2)) / (r.height / 2);
+  const inset = (vertical ? r.height / 2 : r.width / 2) * (1 - Math.sqrt(Math.max(0, 1 - offset * offset)));
+  switch (side) {
+    case 'top':
+      return { x: at.x, y: r.y + inset };
+    case 'bottom':
+      return { x: at.x, y: r.y + r.height - inset };
+    case 'left':
+      return { x: r.x + inset, y: at.y };
+    case 'right':
+      return { x: r.x + r.width - inset, y: at.y };
+  }
+}
+
 interface Obstacle extends Rect {
   id: string;
   /** Rectángulo real del nodo, sin margen. */
@@ -207,9 +224,10 @@ function selfLoop(r: Rect): Point[] {
 
 /**
  * Enruta las relaciones como polilíneas ortogonales que no atraviesan nodos (FR-018). Los
- * puertos se reparten a lo largo de cada lado según la posición del otro extremo.
+ * puertos se reparten a lo largo de cada lado según la posición del otro extremo. Los
+ * extremos en `ovalIds` (óvalos) terminan sobre el borde del óvalo y no en el de su caja.
  */
-export function routeEdges(requests: RouteRequest[], rects: Map<string, Rect>, obstacleIds: string[]): Map<string, Point[]> {
+export function routeEdges(requests: RouteRequest[], rects: Map<string, Rect>, obstacleIds: string[], ovalIds: Set<string> = new Set()): Map<string, Point[]> {
   const sorted = [...requests].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const sides = new Map<string, [Side, Side]>();
   const slots = new Map<string, { edge: string; end: 0 | 1; along: number }[]>();
@@ -269,7 +287,11 @@ export function routeEdges(requests: RouteRequest[], rects: Map<string, Rect>, o
       return searchPath(a, b, buckets.near(box), buckets, exempt) ?? searchPath(a, b, obstacles, buckets, exempt) ?? [a, { x: b.x, y: a.y }, b];
     };
     const path = stops.slice(1).flatMap((stop, i) => segment(stops[i]!, stop));
-    routes.set(req.id, simplify([from, ...path, to]).map((p) => ({ x: r2(p.x), y: r2(p.y) })));
+    // La rejilla trabaja con coordenadas redondeadas: se redondean también los puntos del óvalo.
+    const round = (p: Point): Point => ({ x: r2(p.x), y: r2(p.y) });
+    const start = ovalIds.has(req.source) ? [round(ovalPoint(s, sSide, from)), round(from)] : [from];
+    const end = ovalIds.has(req.target) ? [round(to), round(ovalPoint(t, tSide, to))] : [to];
+    routes.set(req.id, simplify([...start, ...path, ...end]).map((p) => ({ x: r2(p.x), y: r2(p.y) })));
   }
   return routes;
 }

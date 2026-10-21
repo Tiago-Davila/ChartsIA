@@ -83,6 +83,9 @@ export function changesForSlot(element: Element, slot: string, value: string): E
     case 'literal':
       if (element.kind !== 'enum') return undefined;
       return { literals: element.literals.map((l, i) => (i === index ? value : l)) };
+    case 'value':
+      if (element.kind !== 'value-list') return undefined;
+      return { values: element.values.map((v, i) => (i === index ? value : v)) };
     default:
       return undefined;
   }

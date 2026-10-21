@@ -28,6 +28,10 @@ export const ElementChangesSchema = z
     columns: z.array(ColumnSchema).min(1).max(200).optional(),
     weak: z.boolean().nullable().optional(),
     shape: z.enum(FIGURE_SHAPES).optional(),
+    key: z.boolean().nullable().optional(),
+    multivalued: z.boolean().nullable().optional(),
+    derived: z.boolean().nullable().optional(),
+    values: z.array(z.string().min(1).max(200)).min(1).max(200).optional(),
   })
   .describe('Campos a cambiar, p. ej. {"name":"Usuario"}; null elimina un campo opcional');
 export type ElementChanges = z.infer<typeof ElementChangesSchema>;

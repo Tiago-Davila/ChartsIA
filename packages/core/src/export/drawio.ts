@@ -32,6 +32,7 @@ const EDGE_STYLES: Record<Relation['kind'], string> = {
   association: 'endArrow=none;',
   'c4-rel': 'endArrow=blockThin;endFill=1;endSize=12;strokeColor=#707070;fontColor=#404040;dashed=1;',
   'er-rel': 'endArrow=none;',
+  'er-attr': 'endArrow=none;',
 };
 
 function vertexXml(cell: DrawioCell): string {

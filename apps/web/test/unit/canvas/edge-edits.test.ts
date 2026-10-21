@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { alignBoxes } from '../../../src/canvas/align';
-import { freeId, insertWaypoint, kindChanges, relationId, reverseChanges, segmentMidpoints } from '../../../src/canvas/edge-edits';
+import { connectionRelation, freeId, insertWaypoint, kindChanges, relationId, reverseChanges, segmentMidpoints } from '../../../src/canvas/edge-edits';
 
 const diagram = {
   elements: [{ id: 'Libro', kind: 'class' as const, name: 'Libro', attributes: [], operations: [] }],
@@ -37,6 +37,41 @@ describe('ediciones de flechas', () => {
     const existing = [{ x: 100, y: 100 }];
     expect(insertWaypoint(route, existing, 0, { x: 50, y: -40 })).toEqual([{ x: 50, y: -40 }, { x: 100, y: 100 }]);
     expect(insertWaypoint(route, existing, 2, { x: 150, y: 140 })).toEqual([{ x: 100, y: 100 }, { x: 150, y: 140 }]);
+  });
+});
+
+describe('conectar arrastrando', () => {
+  const er = {
+    type: 'er' as const,
+    elements: [
+      { id: 'E', kind: 'entity' as const, name: 'E' },
+      { id: 'F', kind: 'entity' as const, name: 'F' },
+      { id: 'a', kind: 'attribute' as const, name: 'a' },
+      { id: 'b', kind: 'attribute' as const, name: 'b' },
+      { id: 'L', kind: 'value-list' as const, name: 'L', values: ['x'] },
+    ],
+    relations: [],
+  };
+
+  it('entre dos entidades crea una er-rel con cardinalidades', () => {
+    expect(connectionRelation(er, 'E', 'F')).toEqual({ id: 'r1', kind: 'er-rel', source: 'E', target: 'F', sourceCardinality: 'one', targetCardinality: 'zero-many' });
+  });
+
+  it('con un atributo o lista crea una er-attr con el dueño como origen', () => {
+    expect(connectionRelation(er, 'E', 'a')).toEqual({ id: 'r1', kind: 'er-attr', source: 'E', target: 'a' });
+    expect(connectionRelation(er, 'a', 'E')).toEqual({ id: 'r1', kind: 'er-attr', source: 'E', target: 'a' });
+    expect(connectionRelation(er, 'a', 'b')).toMatchObject({ source: 'a', target: 'b' });
+    expect(connectionRelation(er, 'L', 'a')).toMatchObject({ source: 'a', target: 'L' });
+  });
+
+  it('en clases y C4 mantiene el tipo por defecto', () => {
+    expect(connectionRelation({ ...diagram, type: 'class' }, 'Libro', 'Libro').kind).toBe('association');
+    expect(connectionRelation({ ...diagram, type: 'c4-context' }, 'A', 'B').kind).toBe('c4-rel');
+  });
+
+  it('pasar a er-rel desde er-attr agrega las cardinalidades obligatorias', () => {
+    const rel = { id: 'r', kind: 'er-attr' as const, source: 'A', target: 'B' };
+    expect(kindChanges(rel, 'er-rel')).toEqual({ kind: 'er-rel', sourceCardinality: 'one', targetCardinality: 'zero-many' });
   });
 });
 

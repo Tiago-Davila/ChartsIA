@@ -8,6 +8,22 @@ export const EntityElementSchema = z.strictObject({
   weak: z.boolean().optional(),
 });
 
+/** Atributo Chen (óvalo): `key` lo subraya, `multivalued` lo dobla y `derived` lo hace discontinuo. */
+export const ErAttributeElementSchema = z.strictObject({
+  ...elementBaseShape,
+  kind: z.literal('attribute'),
+  key: z.boolean().optional().describe('Atributo clave (nombre subrayado); no puede ser multivaluado ni derivado'),
+  multivalued: z.boolean().optional().describe('Atributo multivaluado (doble óvalo)'),
+  derived: z.boolean().optional().describe('Atributo derivado (óvalo discontinuo)'),
+});
+
+/** Lista de valores: figura con título y un valor por fila, que se une a un atributo. */
+export const ValueListElementSchema = z.strictObject({
+  ...elementBaseShape,
+  kind: z.literal('value-list'),
+  values: z.array(z.string().min(1).max(200)).min(1).max(200),
+});
+
 /** Columna de una tabla; `fk` apunta a la columna PK de otra tabla. */
 export const ColumnSchema = z.strictObject({
   name: z.string().min(1).max(200),

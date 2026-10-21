@@ -15,6 +15,8 @@ const samples: Record<string, Record<string, unknown>> = {
   boundary: { kind: 'boundary', boundaryType: 'container' },
   entity: { kind: 'entity' },
   figure: { kind: 'figure', shape: 'hexagon' },
+  attribute: { kind: 'attribute' },
+  'value-list': { kind: 'value-list', values: ['A'] },
 };
 
 // Las figuras generales se permiten en todos los tipos de diagrama.
@@ -23,7 +25,7 @@ const allowed: Record<DiagramType, string[]> = {
   'c4-context': ['person', 'software-system', 'boundary', 'figure'],
   'c4-container': ['person', 'software-system', 'container', 'boundary', 'figure'],
   'c4-component': ['person', 'software-system', 'container', 'component', 'boundary', 'figure'],
-  er: ['entity', 'figure'],
+  er: ['entity', 'attribute', 'value-list', 'figure'],
 };
 
 function single(type: DiagramType, kind: string) {
