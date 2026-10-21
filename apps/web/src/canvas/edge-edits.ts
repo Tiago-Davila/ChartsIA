@@ -18,11 +18,12 @@ export function relationId(diagram: Pick<Diagram, 'elements' | 'relations'>): st
   for (let n = diagram.relations.length + 1; ; n++) if (!used.has(`r${n}`)) return `r${n}`;
 }
 
-/** Relación nueva al conectar dos elementos arrastrando; con un atributo o lista usa er-attr con el dueño como origen. */
+/** Relación nueva al conectar arrastrando; con una figura en er usa un conector, y con un atributo o lista una er-attr con el dueño como origen. */
 export function connectionRelation(diagram: Pick<Diagram, 'type' | 'elements' | 'relations'>, source: string, target: string): Relation {
   const id = relationId(diagram);
   const kindOf = (elementId: string) => diagram.elements.find((e) => e.id === elementId)?.kind;
   const chen = (elementId: string) => kindOf(elementId) === 'attribute' || kindOf(elementId) === 'value-list';
+  if (diagram.type === 'er' && (kindOf(source) === 'figure' || kindOf(target) === 'figure')) return { id, kind: 'connector', source, target };
   if (diagram.type === 'er' && (chen(source) || chen(target))) {
     const swap = kindOf(target) === 'entity' || kindOf(source) === 'value-list';
     return { id, kind: 'er-attr', source: swap ? target : source, target: swap ? source : target };
@@ -44,6 +45,7 @@ export function kindChanges(rel: Relation, kind: RelationKind): RelationChanges 
     ...(!multiplicities && (rel.sourceMultiplicity || rel.targetMultiplicity) ? { sourceMultiplicity: null, targetMultiplicity: null } : {}),
     ...(kind !== 'association' && rel.navigable ? { navigable: null } : {}),
     ...(kind === 'er-rel' && !rel.sourceCardinality ? { sourceCardinality: 'one' as const, targetCardinality: 'zero-many' as const } : {}),
+    ...(kind !== 'connector' && (rel.arrowheads || rel.dashed !== undefined) ? { arrowheads: null, dashed: null } : {}),
     ...(kind !== 'er-rel' && (rel.sourceCardinality || rel.targetCardinality || rel.identifying !== undefined)
       ? { sourceCardinality: null, targetCardinality: null, identifying: null }
       : {}),

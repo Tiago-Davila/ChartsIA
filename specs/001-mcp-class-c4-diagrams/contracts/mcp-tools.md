@@ -71,7 +71,19 @@ En `apply_changes`, `update_element` admite `weak`, `columns` (reemplaza la list
 Figuras generales: `figure` es un elemento básico con `shape` (`circle`, `square`, `rectangle`,
 `triangle`, `hexagon` o `cloud`) y el `name` centrado dentro. Se permite en **todos** los tipos de
 diagrama (`class`, `c4-*` y `er`; decisión del issue #194) y se conecta con las relaciones propias
-del tipo. Un `package` también puede contenerlas. `update_element` admite `shape` para cambiar la forma.
+del tipo (en `er`, las figuras solo se unen con `connector`). Un `package` también puede contenerlas.
+`update_element` admite `shape` para cambiar la forma.
+
+Conectores libres: `connector` es una relación sin semántica UML/C4 para unir figuras entre sí y con
+cualquier otro elemento, y para uniones libres (decisión del issue #195). Se permite en **todos** los
+tipos de diagrama y entre cualquier par de elementos que no sean grupos; si el tipo tiene una relación
+propia para esa unión (herencia, `c4-rel`, `er-rel`, `er-attr`…), se usa esa. Campos: `label?` (≤200),
+`arrowheads?` (`none`: sin punta; `end`: punta abierta en el destino, por defecto; `both`: punta en ambos
+extremos) y `dashed?: true` (línea discontinua), además de `sourceSide`, `targetSide`, `waypoints` y
+`style` como el resto de relaciones. `arrowheads` y `dashed` en otra relación son `FIELD_NOT_ALLOWED`;
+las multiplicidades, `navigable`, `technology` y las cardinalidades tampoco se admiten en un `connector`.
+`update_relation` admite `arrowheads` y `dashed` (`null` los elimina) y `kind` para convertir una
+relación en conector o al revés.
 
 `projectId` coloca el diagrama en un proyecto existente; si no existe, `PROJECT_NOT_FOUND` y no
 se crea nada.

@@ -88,6 +88,11 @@ export function checkRelations({ diagram, elementsById }: RuleContext): Validati
       field('sourceMultiplicity', why);
       field('targetMultiplicity', why);
     }
+    if (rel.kind !== 'connector') {
+      const why = 'las puntas y el trazo discontinuo solo aplican a relaciones connector';
+      field('arrowheads', why);
+      field('dashed', why);
+    }
     if (rel.kind !== 'association') field('navigable', 'navigable solo aplica a association');
     if (rel.kind !== 'c4-rel') field('technology', 'technology solo aplica a relaciones c4-rel');
     if (rel.kind === 'er-rel') {
