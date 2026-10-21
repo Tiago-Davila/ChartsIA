@@ -24,6 +24,8 @@ export interface AppShellProps {
   origin: string;
   readOnly?: boolean;
   onOpen(diagramId: string): void;
+  onMoveDiagram(diagramId: string, projectId: string | null): void;
+  onNewProject(diagramId: string, name: string): void;
   onExport(format: ExportFormat): void;
   onNodeDragStop?: DiagramCanvasProps['onNodeDragStop'];
   onDelete?: DiagramCanvasProps['onDelete'];
@@ -45,7 +47,7 @@ export function AppShell(props: AppShellProps) {
         <div className="brand">
           <span className="brand__mark" aria-hidden>◆</span> ChartsIA
         </div>
-        <DiagramList diagrams={props.diagrams} projects={props.projects} activeDiagramId={props.activeDiagramId} openDiagramId={diagram?.id ?? null} onOpen={props.onOpen} />
+        <DiagramList diagrams={props.diagrams} projects={props.projects} activeDiagramId={props.activeDiagramId} openDiagramId={diagram?.id ?? null} onOpen={props.onOpen} onMove={props.onMoveDiagram} onNewProject={props.onNewProject} />
         <ConnectionStatus state={props.connection} />
       </aside>
       <main className="app-shell__main">

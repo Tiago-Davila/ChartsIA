@@ -81,6 +81,10 @@ export function createApiClient({ baseUrl = '', getToken, fetch: fetchImpl = (..
     activate: async (diagramId: string) => {
       await request(`/api/diagrams/${id(diagramId)}/activate`, { method: 'POST' });
     },
+    createProject: (name: string) => json<Project>('/api/projects', { method: 'POST', body: JSON.stringify({ name }) }),
+    setDiagramProject: async (diagramId: string, projectId: string | null) => {
+      await request(`/api/diagrams/${id(diagramId)}/project`, { method: 'PUT', body: JSON.stringify({ projectId }) });
+    },
     exportFile: async (diagramId: string, format: ExportFormat) => {
       const res = await request(`/api/diagrams/${id(diagramId)}/export?format=${format}`);
       const disposition = res.headers.get('Content-Disposition') ?? '';

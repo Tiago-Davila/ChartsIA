@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { type DiagramType } from '@chartsia/core/model';
 import { type Project } from '../state/api-client';
 import { DIAGRAM_TYPE_LABELS, formatDate } from './labels';
@@ -18,6 +18,10 @@ export interface DiagramListProps {
   activeDiagramId: string | null;
   openDiagramId: string | null;
   onOpen(diagramId: string): void;
+  /** Mueve el diagrama a un proyecto, o lo saca de él con `null`. */
+  onMove(diagramId: string, projectId: string | null): void;
+  /** Crea un proyecto con ese nombre y mueve el diagrama a él. */
+  onNewProject(diagramId: string, name: string): void;
 }
 
 /** Quita mayúsculas y acentos para comparar títulos. */
@@ -51,11 +55,31 @@ export function agruparPorProyecto(diagramas: DiagramListItem[], proyectos: Proj
 }
 
 /** Barra lateral con los diagramas agrupados por proyecto (FR-025); el activo de los agentes va marcado. */
-export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId, onOpen }: DiagramListProps) {
+export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId, onOpen, onMove, onNewProject }: DiagramListProps) {
   const [busqueda, setBusqueda] = useState('');
   const [plegadas, setPlegadas] = useState<ReadonlySet<string>>(new Set());
+  const [menuAbierto, setMenuAbierto] = useState<string | null>(null);
   const visibles = filtrarDiagramas(diagrams, busqueda);
   const secciones = agruparPorProyecto(diagrams, projects, busqueda);
+
+  // Escape o un clic fuera del menú lo cierran.
+  useEffect(() => {
+    if (menuAbierto === null) return;
+    const cerrarConEscape = (e: KeyboardEvent) => e.key === 'Escape' && setMenuAbierto(null);
+    const cerrarFuera = (e: MouseEvent) => !(e.target as Element).closest('.diagram-list__menu-wrap') && setMenuAbierto(null);
+    document.addEventListener('keydown', cerrarConEscape);
+    document.addEventListener('mousedown', cerrarFuera);
+    return () => {
+      document.removeEventListener('keydown', cerrarConEscape);
+      document.removeEventListener('mousedown', cerrarFuera);
+    };
+  }, [menuAbierto]);
+
+  // Pide el nombre del proyecto nuevo; un nombre vacío o cancelado no llama al hub.
+  const pedirProyecto = (diagramId: string) => {
+    const nombre = window.prompt('Nombre del proyecto nuevo')?.trim();
+    if (nombre) onNewProject(diagramId, nombre);
+  };
 
   const alternar = (clave: string) =>
     setPlegadas((actuales) => {
@@ -64,8 +88,14 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
       return nuevas;
     });
 
-  const renderItem = (d: DiagramListItem) => (
-    <li key={d.diagramId}>
+  const renderItem = (d: DiagramListItem) => {
+    const elegir = (accion: () => void) => {
+      setMenuAbierto(null);
+      accion();
+    };
+    const tieneProyecto = d.projectId !== undefined && projects.some((p) => p.id === d.projectId);
+    return (
+    <li key={d.diagramId} className="diagram-list__row">
       <button
         type="button"
         className={`diagram-list__item${d.diagramId === openDiagramId ? ' is-open' : ''}`}
@@ -79,8 +109,46 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
         </span>
         {d.diagramId === activeDiagramId ? <span className="badge">Activo</span> : null}
       </button>
+      <div className="diagram-list__menu-wrap">
+        <button
+          type="button"
+          className="diagram-list__menu-button"
+          aria-label={`Opciones de ${d.title}`}
+          aria-haspopup="menu"
+          aria-expanded={menuAbierto === d.diagramId}
+          onClick={() => setMenuAbierto(menuAbierto === d.diagramId ? null : d.diagramId)}
+        >
+          ⋯
+        </button>
+        {menuAbierto === d.diagramId ? (
+          <ul role="menu" className="diagram-list__menu">
+            {projects
+              .filter((p) => p.id !== d.projectId)
+              .map((p) => (
+                <li key={p.id} role="none">
+                  <button type="button" role="menuitem" onClick={() => elegir(() => onMove(d.diagramId, p.id))}>
+                    Mover a {p.name}
+                  </button>
+                </li>
+              ))}
+            <li role="none">
+              <button type="button" role="menuitem" onClick={() => elegir(() => pedirProyecto(d.diagramId))}>
+                Nuevo proyecto…
+              </button>
+            </li>
+            {tieneProyecto ? (
+              <li role="none">
+                <button type="button" role="menuitem" onClick={() => elegir(() => onMove(d.diagramId, null))}>
+                  Quitar del proyecto
+                </button>
+              </li>
+            ) : null}
+          </ul>
+        ) : null}
+      </div>
     </li>
-  );
+    );
+  };
 
   return (
     <nav className="diagram-list" aria-label="Diagramas">

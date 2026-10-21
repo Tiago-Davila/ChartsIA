@@ -16,6 +16,8 @@ const base: AppShellProps = {
   edges: [],
   origin: 'http://127.0.0.1:3333',
   onOpen: vi.fn(),
+  onMoveDiagram: vi.fn(),
+  onNewProject: vi.fn(),
   onExport: vi.fn(),
 };
 
@@ -40,6 +42,53 @@ describe('AppShell', () => {
     expect(screen.getByText('Activo').closest('button')).toHaveTextContent('Tienda');
     await userEvent.click(screen.getByText('Biblioteca'));
     expect(onOpen).toHaveBeenCalledWith('dg_aaaaaaaaaaaa');
+  });
+
+  it('el menú ⋯ no abre el diagrama, excluye el proyecto actual y ofrece quitar', async () => {
+    const onOpen = vi.fn();
+    const onMoveDiagram = vi.fn();
+    const projects = [
+      { id: 'pr_1', name: 'Uno', createdAt: '' },
+      { id: 'pr_2', name: 'Dos', createdAt: '' },
+    ];
+    const diagrams = [{ ...base.diagrams[0]!, projectId: 'pr_1' }, base.diagrams[1]!];
+    renderShell({ onOpen, onMoveDiagram, projects, diagrams });
+    await userEvent.click(screen.getByRole('button', { name: 'Opciones de Biblioteca' }));
+    expect(onOpen).not.toHaveBeenCalled();
+    expect(screen.queryByRole('menuitem', { name: 'Mover a Uno' })).toBeNull();
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Quitar del proyecto' }));
+    expect(onMoveDiagram).toHaveBeenCalledWith('dg_aaaaaaaaaaaa', null);
+    // Sin proyecto no ofrece quitar.
+    await userEvent.click(screen.getByRole('button', { name: 'Opciones de Tienda' }));
+    expect(screen.queryByRole('menuitem', { name: 'Quitar del proyecto' })).toBeNull();
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Mover a Dos' }));
+    expect(onMoveDiagram).toHaveBeenCalledWith('dg_bbbbbbbbbbbb', 'pr_2');
+  });
+
+  it('"Nuevo proyecto…" no llama al hub si el nombre está vacío o se cancela', async () => {
+    const onNewProject = vi.fn();
+    const prompt = vi.spyOn(window, 'prompt');
+    renderShell({ onNewProject });
+    for (const respuesta of [null, '   ']) {
+      prompt.mockReturnValueOnce(respuesta);
+      await userEvent.click(screen.getByRole('button', { name: 'Opciones de Biblioteca' }));
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Nuevo proyecto…' }));
+    }
+    expect(onNewProject).not.toHaveBeenCalled();
+    prompt.mockReturnValueOnce(' Nuevo ');
+    await userEvent.click(screen.getByRole('button', { name: 'Opciones de Biblioteca' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Nuevo proyecto…' }));
+    expect(onNewProject).toHaveBeenCalledWith('dg_aaaaaaaaaaaa', 'Nuevo');
+    prompt.mockRestore();
+  });
+
+  it('Escape cierra el menú', async () => {
+    renderShell();
+    const boton = screen.getByRole('button', { name: 'Opciones de Biblioteca' });
+    await userEvent.click(boton);
+    expect(boton).toHaveAttribute('aria-expanded', 'true');
+    await userEvent.keyboard('{Escape}');
+    expect(boton).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('con diagrama abierto muestra toolbar y exportación', async () => {
