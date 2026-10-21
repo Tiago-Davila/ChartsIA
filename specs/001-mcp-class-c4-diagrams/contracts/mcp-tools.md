@@ -70,8 +70,17 @@ En `apply_changes`, `update_element` admite `weak`, `columns` (reemplaza la list
 
 Figuras generales: `figure` es un elemento básico con `shape` (`circle`, `square`, `rectangle`,
 `triangle`, `hexagon` o `cloud`) y el `name` centrado dentro. Se permite en **todos** los tipos de
-diagrama (`class`, `c4-*` y `er`; decisión del issue #194) y se conecta con las relaciones propias
-del tipo. Un `package` también puede contenerlas. `update_element` admite `shape` para cambiar la forma.
+diagrama (`class`, `c4-*` y `er`; decisión del issue #194). En clases y C4 se conecta con las
+relaciones propias del tipo; en `er`, `er-rel` y `er-attr` no admiten figuras. Un `package` también
+puede contenerlas. `update_element` admite `shape` para cambiar la forma.
+
+Estilo: todo elemento y relación admite `style` opcional, un objeto estricto con `borderColor?`,
+`fillColor?` y `fontColor?` (`#rrggbb`), `fontFamily?` (`sans-serif`, `serif`, `monospace` o
+`handwritten`) y `fontSize?` (entero de 8 a 48). En una relación, `borderColor` es el color de la
+línea y `fillColor` el relleno de sus marcas (rombos y puntas). Un valor inválido es
+`SCHEMA_VIOLATION` con el `path` del campo (p. ej. `/elements/0/style/fontSize`). En `apply_changes`,
+`update_element` y `update_relation` admiten `style`: reemplaza el estilo completo y `null` lo elimina.
+Úsalo solo si la persona pide colores o fuentes.
 
 `projectId` coloca el diagrama en un proyecto existente; si no existe, `PROJECT_NOT_FOUND` y no
 se crea nada.
