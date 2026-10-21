@@ -34,15 +34,19 @@ test('SC-006: 200 elementos, pan y zoom sostenidos ≥ 50 fps', async ({ page, a
     requestAnimationFrame(tick);
   });
 
-  // Pan con arrastre y zoom con rueda durante ~2 s.
+  // Pan con espacio y arrastre y zoom con Control + rueda durante ~2 s.
   await page.mouse.move(cx, cy);
+  await page.keyboard.down('Space');
   await page.mouse.down();
   for (let i = 0; i < 40; i++) await page.mouse.move(cx + Math.sin(i / 5) * 200, cy + Math.cos(i / 5) * 120, { steps: 2 });
   await page.mouse.up();
+  await page.keyboard.up('Space');
+  await page.keyboard.down('Control');
   for (let i = 0; i < 20; i++) {
     await page.mouse.wheel(0, i < 10 ? -120 : 120);
     await page.waitForTimeout(30);
   }
+  await page.keyboard.up('Control');
 
   const frames = await page.evaluate(() => {
     const w = window as unknown as { __frames: number[]; __stop: boolean };
