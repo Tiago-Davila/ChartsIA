@@ -12,12 +12,15 @@ export interface Paint {
   strokeWidth?: number;
   /** Patrón de trazo discontinuo, p. ej. [6, 4]. */
   dash?: number[];
+  lineCap?: 'butt' | 'round' | 'square';
+  lineJoin?: 'miter' | 'round' | 'bevel';
 }
 
 export type RectPrimitive = { type: 'rect'; x: number; y: number; width: number; height: number; rx?: number } & Paint;
 export type EllipsePrimitive = { type: 'ellipse'; cx: number; cy: number; rx: number; ry: number } & Paint;
 export type PathPrimitive = { type: 'path'; d: string } & Paint;
 export type LinePrimitive = { type: 'line'; x1: number; y1: number; x2: number; y2: number } & Paint;
+export type ImagePrimitive = { type: 'image'; href: string; x: number; y: number; width: number; height: number };
 
 /**
  * Texto con su línea base en `y`. `slot` identifica qué dato muestra (p. ej. `name`,
@@ -39,7 +42,7 @@ export interface TextPrimitive {
   slot?: string;
 }
 
-export type Primitive = RectPrimitive | EllipsePrimitive | PathPrimitive | LinePrimitive | TextPrimitive;
+export type Primitive = RectPrimitive | EllipsePrimitive | PathPrimitive | LinePrimitive | ImagePrimitive | TextPrimitive;
 
 /**
  * Geometría declarativa de una forma. Las coordenadas de las primitivas son relativas a la

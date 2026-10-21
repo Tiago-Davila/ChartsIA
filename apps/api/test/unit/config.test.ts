@@ -7,7 +7,7 @@ describe('config', () => {
     expect(config.port).toBe(3333);
     expect(config.host).toBe('127.0.0.1');
     expect(config.maxElements).toBe(500);
-    expect(config.maxRequestBytes).toBe(1024 * 1024);
+    expect(config.maxRequestBytes).toBe(8 * 1024 * 1024);
     expect(config.publicUrl).toBe('http://127.0.0.1:3333');
     expect(config.authRequired).toBe(false);
   });

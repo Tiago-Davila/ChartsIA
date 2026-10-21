@@ -42,8 +42,10 @@ pnpm --filter @chartsia/api start      # app y MCP en http://127.0.0.1:3333
 | `CHARTSIA_PUBLIC_URL` | `http://<host>:<port>` | Base de `viewUrl` y de las descargas |
 | `CHARTSIA_DATA_DIR` | `~/.chartsia/diagrams` | Diagramas en JSON (escritura atómica) |
 | `CHARTSIA_MAX_ELEMENTS` | `500` | Máximo de elementos por diagrama |
-| `CHARTSIA_MAX_REQUEST_BYTES` | `1048576` | Tamaño máximo de petición |
+| `CHARTSIA_MAX_REQUEST_BYTES` | `8388608` | Tamaño máximo de petición |
 | `CHARTSIA_WEB_ORIGIN` | `http://127.0.0.1:5173` | Origen CORS de la app en desarrollo |
+
+Las imágenes se insertan como datos embebidos en el diagrama y se guardan en el JSON del hub; no se guardan rutas del equipo ni se descargan URLs remotas. Se aceptan PNG y JPG válidos y SVG con un subconjunto de primitivas y texto, sin scripts, enlaces ni estilos activos. El límite es 5 MiB por archivo, 25 MiB y 40 millones de píxeles raster por diagrama. El límite HTTP predeterminado de 8 MiB permite enviar una imagen de hasta 5 MiB codificada en base64; `CHARTSIA_MAX_REQUEST_BYTES` se puede ajustar para instalaciones que necesiten otro tamaño.
 
 ## Conectar agentes
 

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="368" height="268" viewBox="6 6 368 268">
+<title>Imágenes embebidas</title>
+<rect x="6" y="6" width="368" height="268" fill="#ffffff"/>
+<g font-family="Inter, &apos;Helvetica Neue&apos;, Arial, sans-serif">
+<g data-id="foto" transform="translate(30 30)"><image href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAYAAAD0In+KAAAAEUlEQVR4nGM4H2zxX6NsxX8AE2IEn6hGtYAAAAAASUVORK5CYII=" x="0" y="0" width="320" height="220" preserveAspectRatio="xMidYMid meet"/></g>
+</g>
+</svg>

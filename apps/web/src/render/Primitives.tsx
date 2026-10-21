@@ -33,10 +33,12 @@ export const Primitives = memo(function Primitives({ primitives, onTextDoubleCli
               <line key={i} x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.stroke ?? 'none'} strokeWidth={p.strokeWidth}
                 strokeDasharray={dash(p.dash)} />
             );
+          case 'image':
+            return <image key={i} href={p.href} x={p.x} y={p.y} width={p.width} height={p.height} preserveAspectRatio="xMidYMid meet" />;
           case 'path':
             return (
               <path key={i} d={p.d} fill={p.fill ?? 'none'} stroke={p.stroke ?? 'none'} strokeWidth={p.strokeWidth}
-                strokeDasharray={dash(p.dash)} />
+                strokeDasharray={dash(p.dash)} strokeLinecap={p.lineCap} strokeLinejoin={p.lineJoin} />
             );
           case 'text':
             return (

@@ -84,7 +84,10 @@ export function arrange({ diagram, positions, sizes, pinned, isNew }: ArrangeInp
         fitGroup(kid);
       }
     }
-    const boxes: LayoutBox[] = kids.map((k) => ({ id: k.id, ...rects.get(k.id)!, pinned: pinned.has(k.id), isNew: isNew?.has(k.id) ?? false }));
+    // Los trazos son anotaciones superpuestas: nunca desplazan figuras ni grupos vecinos.
+    const boxes: LayoutBox[] = kids
+      .filter((k) => k.kind !== 'drawing')
+      .map((k) => ({ id: k.id, ...rects.get(k.id)!, pinned: pinned.has(k.id), isNew: isNew?.has(k.id) ?? false }));
     const result = removeOverlaps(boxes);
     warnings.push(...result.warnings);
     for (const box of result.boxes) {

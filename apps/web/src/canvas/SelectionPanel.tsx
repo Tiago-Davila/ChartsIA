@@ -36,10 +36,12 @@ function GroupActions({ node }: { node: Node }) {
 /** Objetivos del panel de estilo: los elementos y flechas seleccionados. */
 function styleTargets(nodes: Node[], edges: Edge[]): StyleTarget[] {
   return [
-    ...nodes.map((n) => {
-      const { element } = n.data as ElementNodeData;
-      return { id: element.id, relation: false, style: element.style };
-    }),
+    ...nodes
+      .filter((n) => (n.data as ElementNodeData).element.kind !== 'drawing')
+      .map((n) => {
+        const { element } = n.data as ElementNodeData;
+        return { id: element.id, relation: false, style: element.style };
+      }),
     ...edges.map((e) => {
       const { relation } = e.data as RoutedEdgeData;
       return { id: relation.id, relation: true, style: relation.style };

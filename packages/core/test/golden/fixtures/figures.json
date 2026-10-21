@@ -8,7 +8,8 @@
     { "id": "rectangulo", "kind": "figure", "name": "Rectángulo con un nombre largo <y> \"raro\"", "shape": "rectangle" },
     { "id": "triangulo", "kind": "figure", "name": "Triángulo", "shape": "triangle" },
     { "id": "hexagono", "kind": "figure", "name": "Hexágono", "shape": "hexagon" },
-    { "id": "nube", "kind": "figure", "name": "Nube", "shape": "cloud" }
+    { "id": "nube", "kind": "figure", "name": "Nube", "shape": "cloud" },
+    { "id": "trazo", "kind": "drawing", "name": "Trazo", "points": [{ "x": 2, "y": 3 }, { "x": 30, "y": 18 }, { "x": 48, "y": 40 }], "strokeColor": "#b42318", "strokeWidth": 3.5 }
   ],
   "relations": [
     { "id": "r1", "kind": "c4-rel", "source": "usuario", "target": "nube", "label": "usa" },
