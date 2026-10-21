@@ -19,6 +19,7 @@ const base: AppShellProps = {
   onConfig: vi.fn(),
   onCloseConfig: vi.fn(),
   onOpen: vi.fn(),
+  onCreateDiagram: vi.fn(),
   onMoveDiagram: vi.fn(),
   onNewProject: vi.fn(),
   onRenameDiagram: vi.fn(),

@@ -1,5 +1,5 @@
 import { type ExportFormat } from '@chartsia/core/export';
-import { type Diagram } from '@chartsia/core/model';
+import { type Diagram, type DiagramType } from '@chartsia/core/model';
 import { type Edge, type Node } from '@xyflow/react';
 import { type ReactNode } from 'react';
 import { type ConnectedAgent, type Project } from '../state/api-client';
@@ -10,6 +10,7 @@ import { ConfigScreen } from './ConfigScreen';
 import { ConnectionStatus, type ConnectionState } from './ConnectionStatus';
 import { DiagramList, type DiagramListItem } from './DiagramList';
 import { EmptyState } from './EmptyState';
+import { NewDiagram } from './NewDiagram';
 import { Toolbar } from './Toolbar';
 
 export interface AppShellProps {
@@ -30,6 +31,7 @@ export interface AppShellProps {
   onCloseConfig(): void;
   readOnly?: boolean;
   onOpen(diagramId: string): void;
+  onCreateDiagram(type: DiagramType, title: string, projectId?: string): void;
   onMoveDiagram(diagramId: string, projectId: string | null): void;
   onNewProject(diagramId: string, name: string): void;
   onRenameDiagram(diagramId: string, title: string): void;
@@ -55,6 +57,7 @@ export function AppShell(props: AppShellProps) {
         <div className="brand">
           <span className="brand__mark" aria-hidden>◆</span> ChartsIA
         </div>
+        <NewDiagram projects={props.projects} onCreate={props.onCreateDiagram} />
         <DiagramList diagrams={props.diagrams} projects={props.projects} activeDiagramId={props.activeDiagramId} openDiagramId={diagram?.id ?? null} onOpen={props.onOpen} onMove={props.onMoveDiagram} onNewProject={props.onNewProject} onRename={props.onRenameDiagram} />
         <button type="button" className="button sidebar-config" aria-label="Configuración" aria-pressed={props.configOpen} onClick={props.onConfig}>
           <span aria-hidden>⚙</span>
