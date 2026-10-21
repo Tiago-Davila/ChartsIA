@@ -81,6 +81,8 @@ export function createApiClient({ baseUrl = '', getToken, fetch: fetchImpl = (..
 
   return {
     listDiagrams: () => json<DiagramListResponse>('/api/diagrams'),
+    createDiagram: (body: { type: DiagramType; title: string; projectId?: string }) =>
+      json<{ diagramId: string; revision: number; viewUrl: string }>('/api/diagrams', { method: 'POST', body: JSON.stringify(body) }),
     listAgents: async () => (await json<{ agents: ConnectedAgent[] }>('/api/agents')).agents,
     getDiagram: (diagramId: string) => json<Diagram>(`/api/diagrams/${id(diagramId)}`),
     applyOperations: (diagramId: string, body: { baseRevision?: number; operations: Operation[] }) =>

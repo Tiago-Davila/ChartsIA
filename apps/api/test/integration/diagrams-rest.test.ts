@@ -84,3 +84,41 @@ describe('API REST /api', () => {
     expect((await body(res)).errors[0].path).toBe('/query/format');
   });
 });
+
+describe('POST /api/diagrams', () => {
+  let hub: TestHub;
+  const json = (path: string, init: RequestInit = {}) =>
+    fetch(`${hub.url}${path}`, { ...init, headers: { 'content-type': 'application/json', ...(init.headers ?? {}) } });
+
+  beforeAll(async () => {
+    hub = await startHub();
+  });
+  afterAll(() => hub.close());
+
+  it('POST /api/diagrams ⇒ 201 con un diagrama vacío que queda activo; 422 si el tipo o el título no valen', async () => {
+    const res = await json('/api/diagrams', { method: 'POST', body: JSON.stringify({ type: 'er', title: 'Vacío' }) });
+    expect(res.status).toBe(201);
+    const created = await body(res);
+    expect(created).toEqual({ diagramId: expect.stringMatching(/^dg_/), revision: 1, viewUrl: expect.stringContaining(`/d/${created.diagramId}`) });
+    const diagram = await body(await json(`/api/diagrams/${created.diagramId}`));
+    expect(diagram).toMatchObject({ type: 'er', title: 'Vacío', elements: [], relations: [] });
+    expect((await body(await json('/api/diagrams'))).activeDiagramId).toBe(created.diagramId);
+
+    const badType = await json('/api/diagrams', { method: 'POST', body: JSON.stringify({ type: 'secuencia', title: 'X' }) });
+    expect(badType.status).toBe(422);
+    const noTitle = await json('/api/diagrams', { method: 'POST', body: JSON.stringify({ type: 'class', title: '' }) });
+    expect(noTitle.status).toBe(422);
+    const extra = await json('/api/diagrams', { method: 'POST', body: JSON.stringify({ type: 'class', title: 'X', elements: [] }) });
+    expect(extra.status).toBe(422);
+    const noProject = await json('/api/diagrams', { method: 'POST', body: JSON.stringify({ type: 'class', title: 'X', projectId: 'pr_inexistente' }) });
+    expect(noProject.status).toBe(404);
+  });
+
+  it('con projectId lo coloca en ese proyecto', async () => {
+    const project = await body(await json('/api/projects', { method: 'POST', body: JSON.stringify({ name: 'Tienda' }) }));
+    const res = await json('/api/diagrams', { method: 'POST', body: JSON.stringify({ type: 'class', title: 'En proyecto', projectId: project.id }) });
+    expect(res.status).toBe(201);
+    const list = await body(await json('/api/diagrams'));
+    expect(list.diagrams.find((d: { title: string }) => d.title === 'En proyecto')).toMatchObject({ projectId: project.id });
+  });
+});

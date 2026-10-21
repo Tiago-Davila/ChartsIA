@@ -12,6 +12,12 @@ const OperationsBodySchema = z.strictObject({
   operations: z.unknown(),
 });
 
+const CreateBodySchema = z.strictObject({
+  type: z.unknown(),
+  title: z.unknown(),
+  projectId: z.string().max(64).optional(),
+});
+
 /** API interna de la app ([app-api.md]): misma ruta de escritura que las herramientas MCP. */
 @Controller('api/diagrams')
 export class DiagramsController {
@@ -28,6 +34,16 @@ export class DiagramsController {
   @Get()
   list(): Promise<DiagramList> {
     return this.query.list();
+  }
+
+  /** Crea un diagrama vacío por la misma ruta que `create_diagram`; el tipo y el título los valida el servicio. */
+  @Post()
+  async create(@Body() body: unknown) {
+    const parsed = CreateBodySchema.safeParse(body ?? {});
+    if (!parsed.success) throw new DomainValidationError(fromZodError(parsed.error));
+    const { type, title, projectId } = parsed.data;
+    const { diagram } = await this.commands.create({ type, title, elements: [], relations: [] }, projectId);
+    return { diagramId: diagram.id, revision: diagram.revision, viewUrl: this.urls.view(diagram.id) };
   }
 
   @Get(':id')
