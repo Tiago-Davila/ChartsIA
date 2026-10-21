@@ -1,5 +1,6 @@
 import { type ElementOfKind } from '../../model/diagram.js';
 import { type Primitive, type ShapeDefinition } from '../types.js';
+import { paintOf } from '../style.js';
 import { c4Colors } from './palette.js';
 import { C4_MIN_HEIGHT, c4TextHeight, c4TextPrimitives, c4Width, type C4Text, typeLabel } from './text-block.js';
 
@@ -9,7 +10,7 @@ const CAP = 18; // alto de la tapa del cilindro (ry * 2)
 const BAR = 24; // barra superior de la ventana web
 
 function text(el: ContainerElement): C4Text {
-  return { name: el.name, typeLabel: typeLabel('Container', el.technology), description: el.description };
+  return { name: el.name, typeLabel: typeLabel('Container', el.technology), description: el.description, style: el.style };
 }
 
 function extra(el: ContainerElement): { w: number; h: number } {
@@ -34,7 +35,7 @@ export const containerShape: ShapeDefinition<ContainerElement> = {
     return { width, height: Math.max(C4_MIN_HEIGHT, textHeight + 28) + e.h };
   },
   primitives: (el, { width: w, height: h }) => {
-    const c = c4Colors('container');
+    const c = paintOf(el.style, c4Colors('container'));
     const paint = { fill: c.fill, stroke: c.stroke, strokeWidth: 1.5 };
     const ry = CAP / 2;
     let body: Primitive[];

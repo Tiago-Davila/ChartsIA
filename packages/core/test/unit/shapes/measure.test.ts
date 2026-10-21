@@ -84,3 +84,59 @@ describe('miembros UML', () => {
     expect(slot(full, 'operation:0')).toBeDefined();
   });
 });
+
+describe('medida con estilo', () => {
+  const styled = (style: Extract<Element, { kind: 'class' }>['style'], name = 'Pedido'): Element => ({ ...cls(1, 1, name), style }) as Element;
+
+  it('un fontSize mayor agranda el elemento y uno menor lo achica en alto', () => {
+    const base = measureElement(cls(1, 1));
+    const big = measureElement(styled({ fontSize: 24 }));
+    const small = measureElement(styled({ fontSize: 10 }));
+    expect(big.height).toBeGreaterThan(base.height);
+    expect(small.height).toBeLessThan(base.height);
+    expect(big.width).toBeGreaterThanOrEqual(base.width);
+  });
+
+  it('un fontSize igual al de referencia mide igual que sin estilo', () => {
+    expect(measureElement(styled({ fontSize: 14 }))).toEqual(measureElement(cls(1, 1)));
+    expect(measureElement(styled({ borderColor: '#000000', fillColor: '#ffffff' }))).toEqual(measureElement(cls(1, 1)));
+  });
+
+  it('el ancho depende de la familia: monoespaciada y manuscrita son distintas de la sans', () => {
+    const text = 'Pedido de ejemplo con texto largo';
+    const widths = (['sans-serif', 'serif', 'monospace', 'handwritten'] as const).map((fontFamily) => measureText(text, { size: 14, fontFamily }));
+    expect(new Set(widths).size).toBeGreaterThanOrEqual(3);
+    expect(widths.every((w) => w > 0)).toBe(true);
+  });
+
+  it('la monoespaciada mide igual cualquier carácter ASCII', () => {
+    expect(measureText('iiiiii', { size: 14, fontFamily: 'monospace' })).toBe(measureText('WWWWWW', { size: 14, fontFamily: 'monospace' }));
+  });
+
+  it('la medida con estilo es determinista', () => {
+    const el = styled({ fontFamily: 'handwritten', fontSize: 31 }, 'Préstamo «€»');
+    expect(JSON.stringify(measureElement(el))).toBe(JSON.stringify(measureElement(el)));
+  });
+
+  it.each([
+    { id: 'p', kind: 'person', name: 'Cliente', description: 'Compra productos en la tienda' },
+    { id: 'c', kind: 'container', name: 'API', technology: 'Nest', variant: 'database' },
+    { id: 'pk', kind: 'package', name: 'pkg' },
+    { id: 'b', kind: 'boundary', name: 'Sistema', boundaryType: 'system' },
+    { id: 'en', kind: 'entity', name: 'Cliente' },
+    { id: 'at', kind: 'attribute', name: 'Nombre' },
+    { id: 'f', kind: 'figure', name: 'Figura', shape: 'circle' },
+  ] as Element[])('un fontSize mayor agranda $kind', (el) => {
+    const base = measureElement(el);
+    const big = measureElement({ ...el, style: { fontSize: 32 } } as Element);
+    expect(big.width * big.height).toBeGreaterThan(base.width * base.height);
+  });
+
+  it('el texto dibujado usa la familia, el color y el tamaño del estilo', () => {
+    const el = styled({ fontColor: '#112233', fontFamily: 'serif', fontSize: 28 });
+    const texts = elementPrimitives(el, measureElement(el)).filter((p) => p.type === 'text');
+    expect(texts.length).toBeGreaterThan(0);
+    for (const t of texts) expect(t).toMatchObject({ color: '#112233', fontFamily: 'serif' });
+    expect(texts.find((t) => t.type === 'text' && t.slot === 'name')).toMatchObject({ size: 28 });
+  });
+});

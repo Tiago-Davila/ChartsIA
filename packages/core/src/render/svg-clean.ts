@@ -1,4 +1,5 @@
 import { escapeXml } from '../export/xml-escape.js';
+import { CSS_FONT_FAMILIES } from '../shapes/style.js';
 import { type Paint, type Primitive } from '../shapes/types.js';
 
 const n = (v: number) => String(Math.round(v * 100) / 100);
@@ -25,6 +26,7 @@ export function primitivesToSvg(primitives: Primitive[]): string {
           return `<path d="${escapeXml(p.d)}"${paint(p)}/>`;
         case 'text': {
           let attrs = ` x="${n(p.x)}" y="${n(p.y)}" font-size="${n(p.size)}" fill="${escapeXml(p.color)}"`;
+          if (p.fontFamily) attrs += ` font-family="${escapeXml(CSS_FONT_FAMILIES[p.fontFamily])}"`;
           if (p.anchor !== 'start') attrs += ` text-anchor="${p.anchor}"`;
           if (p.bold) attrs += ' font-weight="bold"';
           if (p.italic) attrs += ' font-style="italic"';

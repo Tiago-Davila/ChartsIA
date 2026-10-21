@@ -1,7 +1,9 @@
 import { type Cardinality } from '../model/enums.js';
 import { type Element } from '../model/diagram.js';
 import { type Relation } from '../model/relation.js';
+import { FONT } from '../shapes/types.js';
 import { type DrawioCell } from './drawio.js';
+import { drawioBox, drawioFont } from './drawio-style.js';
 
 /** Flechas nativas de draw.io para cada cardinalidad pata de gallo. */
 const ARROWS: Record<Cardinality, string> = {
@@ -17,14 +19,22 @@ export function erCells(el: Element, parent: string, geo: { x: number; y: number
     const shape = el.multivalued ? 'shape=doubleEllipse;' : 'ellipse;';
     return [{
       id: el.id, parent, value: el.name, vertex: true, geometry: geo,
-      style: `${shape}whiteSpace=wrap;html=0;align=center;fontSize=13;${el.key ? 'fontStyle=4;' : ''}${el.derived ? 'dashed=1;' : ''}fillColor=#fffef5;strokeColor=#1f2933;`,
+      style: drawioFont(
+        drawioBox(`${shape}whiteSpace=wrap;html=0;align=center;fontSize=13;${el.key ? 'fontStyle=4;' : ''}${el.derived ? 'dashed=1;' : ''}fillColor=#fffef5;strokeColor=#1f2933;`, el.style),
+        el.style,
+        FONT.member,
+      ),
     }];
   }
   if (el.kind !== 'entity') return undefined;
   const shape = el.weak ? 'shape=ext;double=1;margin=3;' : '';
   return [{
     id: el.id, parent, value: el.name, vertex: true, geometry: geo,
-    style: `${shape}rounded=0;whiteSpace=wrap;html=0;align=center;fontStyle=1;fontSize=14;fillColor=#fffef5;strokeColor=#1f2933;`,
+    style: drawioFont(
+      drawioBox(`${shape}rounded=0;whiteSpace=wrap;html=0;align=center;fontStyle=1;fontSize=14;fillColor=#fffef5;strokeColor=#1f2933;`, el.style),
+      el.style,
+      FONT.name,
+    ),
   }];
 }
 

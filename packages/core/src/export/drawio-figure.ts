@@ -1,6 +1,8 @@
 import { type Element } from '../model/diagram.js';
 import { type FigureShape } from '../model/enums.js';
+import { FONT } from '../shapes/types.js';
 import { type DrawioCell } from './drawio.js';
+import { drawioBox, drawioFont } from './drawio-style.js';
 
 const COMMON = 'whiteSpace=wrap;html=0;align=center;fontSize=14;fillColor=#fffef5;strokeColor=#1f2933;';
 
@@ -25,5 +27,5 @@ function figureStyle(shape: FigureShape, geo: { width: number; height: number })
 /** Figura general como la forma equivalente de draw.io, con el nombre como texto de la celda. */
 export function figureCells(el: Element, parent: string, geo: { x: number; y: number; width: number; height: number }): DrawioCell[] | undefined {
   if (el.kind !== 'figure') return undefined;
-  return [{ id: el.id, parent, value: el.name, vertex: true, geometry: geo, style: `${figureStyle(el.shape, geo)}${COMMON}` }];
+  return [{ id: el.id, parent, value: el.name, vertex: true, geometry: geo, style: drawioFont(drawioBox(`${figureStyle(el.shape, geo)}${COMMON}`, el.style), el.style, FONT.name) }];
 }

@@ -1,4 +1,5 @@
 import { type Element } from '../model/diagram.js';
+import { type StyleFontFamily } from '../model/style.js';
 
 export interface Size {
   width: number;
@@ -33,6 +34,8 @@ export interface TextPrimitive {
   bold?: boolean;
   italic?: boolean;
   underline?: boolean;
+  /** Familia elegida en el estilo; sin ella se usa la fuente por defecto. */
+  fontFamily?: StyleFontFamily;
   slot?: string;
 }
 
@@ -47,7 +50,7 @@ export interface ShapeDefinition<E extends Element = Element> {
   measure(element: E): Size;
   primitives(element: E, size: Size): Primitive[];
   /** Grupos: margen interior que deben respetar los hijos. */
-  padding?: { top: number; right: number; bottom: number; left: number };
+  padding?: (element: E) => { top: number; right: number; bottom: number; left: number };
 }
 
 export const COLORS = {

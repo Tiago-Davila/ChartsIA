@@ -13,6 +13,8 @@ export type MarkerKind =
 
 export interface RelationStyle {
   color: string;
+  /** Relleno de las marcas (rombos, puntas) fijado por el estilo; sin él, cada marca usa el suyo. */
+  fill?: string;
   dash?: number[];
   /** Marcador en el extremo `source`. */
   start?: MarkerKind;
@@ -26,7 +28,18 @@ const DASH = [6, 4];
  * Notación de cada relación. En composición y agregación el rombo va en el extremo del
  * "todo", que en el modelo es `source` (p. ej. Pedido ◆— LineaPedido).
  */
-export function relationStyle(rel: Pick<Relation, 'kind' | 'navigable' | 'sourceCardinality' | 'targetCardinality' | 'identifying'>): RelationStyle {
+export function relationStyle(
+  rel: Pick<Relation, 'kind' | 'navigable' | 'sourceCardinality' | 'targetCardinality' | 'identifying' | 'style'>,
+): RelationStyle {
+  const base = defaultRelationStyle(rel);
+  return {
+    ...base,
+    color: rel.style?.borderColor ?? base.color,
+    ...(rel.style?.fillColor ? { fill: rel.style.fillColor } : {}),
+  };
+}
+
+function defaultRelationStyle(rel: Pick<Relation, 'kind' | 'navigable' | 'sourceCardinality' | 'targetCardinality' | 'identifying'>): RelationStyle {
   switch (rel.kind) {
     case 'inheritance':
       return { color: COLORS.edge, end: 'triangle-hollow' };
@@ -98,15 +111,15 @@ export function crowFoot(kind: Cardinality, at: Frame): { lines: [Point, Point][
   }
 }
 
-/** Primitivas del marcador con la punta en `tip`, orientado según la dirección `from → tip`. */
-export function markerPrimitives(kind: MarkerKind, tip: Point, from: Point, color: string): Primitive[] {
+/** Primitivas del marcador con la punta en `tip`, orientado según la dirección `from → tip`; `fill` sustituye su relleno. */
+export function markerPrimitives(kind: MarkerKind, tip: Point, from: Point, color: string, fill?: string): Primitive[] {
   const at = markerFrame(tip, from);
   if (isCardinality(kind)) {
     const { lines, circle } = crowFoot(kind, at);
     const stroke = { stroke: color, strokeWidth: 1.5 };
     return [
       ...lines.map((l): Primitive => ({ type: 'path', d: `M ${l[0].x} ${l[0].y} L ${l[1].x} ${l[1].y}`, fill: 'none', ...stroke })),
-      ...(circle ? [{ type: 'ellipse' as const, cx: circle.x, cy: circle.y, rx: CIRCLE_RADIUS, ry: CIRCLE_RADIUS, fill: '#ffffff', ...stroke }] : []),
+      ...(circle ? [{ type: 'ellipse' as const, cx: circle.x, cy: circle.y, rx: CIRCLE_RADIUS, ry: CIRCLE_RADIUS, fill: fill ?? '#ffffff', ...stroke }] : []),
     ];
   }
   const poly = (pts: Point[], fill: string): Primitive => ({
@@ -118,13 +131,13 @@ export function markerPrimitives(kind: MarkerKind, tip: Point, from: Point, colo
   });
   switch (kind) {
     case 'triangle-hollow':
-      return [poly([at(0, 0), at(14, 8), at(14, -8)], '#ffffff')];
+      return [poly([at(0, 0), at(14, 8), at(14, -8)], fill ?? '#ffffff')];
     case 'diamond-filled':
-      return [poly([at(0, 0), at(10, 6), at(20, 0), at(10, -6)], color)];
+      return [poly([at(0, 0), at(10, 6), at(20, 0), at(10, -6)], fill ?? color)];
     case 'diamond-hollow':
-      return [poly([at(0, 0), at(10, 6), at(20, 0), at(10, -6)], '#ffffff')];
+      return [poly([at(0, 0), at(10, 6), at(20, 0), at(10, -6)], fill ?? '#ffffff')];
     case 'arrow-filled':
-      return [poly([at(0, 0), at(12, 6), at(12, -6)], color)];
+      return [poly([at(0, 0), at(12, 6), at(12, -6)], fill ?? color)];
     case 'arrow-open': {
       const a = at(12, 7);
       const b = at(12, -7);
