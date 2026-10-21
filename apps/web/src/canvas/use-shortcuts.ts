@@ -5,9 +5,11 @@ export interface ShortcutActions {
   duplicate(): void;
 }
 
-/** Ignora los atajos mientras se escribe en un campo de texto. */
+/** Ignora los atajos mientras se escribe en un campo de texto (no en listas ni selectores de color). */
 function isTyping(target: EventTarget | null): boolean {
-  return target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
+  if (!(target instanceof HTMLElement)) return false;
+  if (target instanceof HTMLInputElement && target.type === 'color') return false;
+  return target.isContentEditable || ['INPUT', 'TEXTAREA'].includes(target.tagName);
 }
 
 /** Atajos globales del lienzo: Ctrl+Z deshace, Ctrl+Shift+Z y Ctrl+Y rehacen, Ctrl+D duplica. */

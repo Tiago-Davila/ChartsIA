@@ -7,6 +7,7 @@ import { diagramStore } from '../state/diagram-store';
 import { type AlignMode, alignBoxes } from './align';
 import { connectionRelation, freeId } from './edge-edits';
 import { changesForSlot } from './slot-edits';
+import { type StyleUpdate } from './style-edits';
 
 function depth(id: string, byId: Map<string, Element>): number {
   let d = 0;
@@ -145,6 +146,13 @@ export function useDiagramEdits(api: ApiClient) {
 
   const updateRelation = useCallback((id: string, changes: RelationChanges) => void send([{ op: 'update_relation', id, changes }]), [send]);
 
+  /** Panel de estilo: un `update_element` o `update_relation` por objetivo, todos en un lote. */
+  const updateStyles = useCallback(
+    (updates: StyleUpdate[]) =>
+      void send(updates.map((u): Operation => (u.relation ? { op: 'update_relation', id: u.id, changes: { style: u.style } } : { op: 'update_element', id: u.id, changes: { style: u.style } }))),
+    [send],
+  );
+
   /** Conectar arrastrando de un elemento a otro: crea una relación con el tipo por defecto. */
   const onConnect = useCallback(
     ({ source, target }: Connection) => {
@@ -195,8 +203,8 @@ export function useDiagramEdits(api: ApiClient) {
   const ungroup = useCallback((id: string) => void send([{ op: 'remove_element', id, cascade: 'reparent' }]), [send]);
 
   const editActions = useMemo<DiagramEditActions>(
-    () => ({ editText, resize, updateRelation, leaveGroup, ungroup, readOnly: false }),
-    [editText, resize, updateRelation, leaveGroup, ungroup],
+    () => ({ editText, resize, updateRelation, updateStyles, leaveGroup, ungroup, readOnly: false }),
+    [editText, resize, updateRelation, updateStyles, leaveGroup, ungroup],
   );
 
   return { onNodeDragStop, onDelete, onConnect, editText, editActions, history, duplicate, align, rename };

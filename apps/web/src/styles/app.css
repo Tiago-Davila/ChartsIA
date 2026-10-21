@@ -361,6 +361,62 @@ button:disabled,
 .edge-toolbar .button {
   padding: 4px 8px;
 }
+/* Panel de estilo del elemento o la flecha seleccionada. */
+.style-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 220px;
+  padding: 8px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  pointer-events: all;
+}
+.style-panel__row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.style-panel__label {
+  color: var(--text-muted);
+}
+.style-panel__swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.style-panel__swatch {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.style-panel__swatch[aria-pressed='true'] {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.style-panel select,
+.style-panel input[type='number'] {
+  height: 28px;
+  padding: 0 6px;
+  font: inherit;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.style-panel input[type='color'] {
+  width: 24px;
+  height: 20px;
+  padding: 0;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
 .edge-form {
   display: flex;
   gap: 4px;
