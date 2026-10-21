@@ -12,6 +12,7 @@ import {
   InterfaceElementSchema,
   PackageElementSchema,
 } from './class-elements.js';
+import { EntityElementSchema, TableElementSchema } from './er-elements.js';
 import { type Layout } from './common.js';
 import { DIAGRAM_TYPES } from './enums.js';
 import { RelationSchema } from './relation.js';
@@ -27,6 +28,8 @@ export const ElementSchema = z.discriminatedUnion('kind', [
   ContainerElementSchema,
   ComponentElementSchema,
   BoundaryElementSchema,
+  EntityElementSchema,
+  TableElementSchema,
 ]);
 
 export type ElementInput = z.infer<typeof ElementSchema>;

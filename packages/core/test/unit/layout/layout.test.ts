@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { layoutDiagram, relayoutDiagram, warmUpLayout } from '../../../src/layout/index.js';
 import type { Diagram, DiagramInput } from '../../../src/model/index.js';
 import { applyOperations } from '../../../src/operations/index.js';
-import { c4ContainerDiagram, classDiagram } from '../../support/fixtures.js';
+import { c4ContainerDiagram, classDiagram, erDiagram } from '../../support/fixtures.js';
 import { contains, edgesCrossingNodes, layoutOf, overlappingPairs } from '../../support/geometry.js';
 
 function asDiagram(input: DiagramInput): Diagram {
@@ -163,5 +163,29 @@ describe('relayoutDiagram (incremental)', () => {
     const a = await edit(prev, ops);
     const b = await edit(prev, ops);
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
+  });
+});
+
+describe('layout de diagramas er', () => {
+  it('dispone las entidades sin solapes y es determinista', async () => {
+    const a = await layoutDiagram(asDiagram(erDiagram()));
+    const b = await layoutDiagram(asDiagram(erDiagram()));
+    expect(JSON.stringify(a)).toBe(JSON.stringify(b));
+    expect(overlappingPairs(a)).toEqual([]);
+    expect(a.relations.every((r) => (r.route?.length ?? 0) >= 2)).toBe(true);
+  });
+
+  it('el layout incremental acepta un er-rel nuevo sin mover lo fijado', async () => {
+    const prev = await layoutDiagram(asDiagram(erDiagram()));
+    const before = layoutOf(prev, 'cliente');
+    const ops = [
+      { op: 'add_element', element: { id: 'prod', kind: 'entity', name: 'Producto' } },
+      { op: 'add_relation', relation: { id: 'r3', kind: 'er-rel', source: 'linea', target: 'prod', sourceCardinality: 'zero-many', targetCardinality: 'one' } },
+    ];
+    const res = applyOperations(prev, ops);
+    if (!res.ok) throw new Error(JSON.stringify(res.errors));
+    const { diagram } = await relayoutDiagram(prev, res.diagram);
+    expect(layoutOf(diagram, 'cliente')).toEqual(before);
+    expect(diagram.relations.find((r) => r.id === 'r3')?.route?.length).toBeGreaterThanOrEqual(2);
   });
 });

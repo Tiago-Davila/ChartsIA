@@ -1,0 +1,34 @@
+{
+  "type": "er",
+  "title": "Tablas <Tienda> & \"pedidos\"",
+  "elements": [
+    {
+      "id": "cliente", "kind": "table", "name": "cliente",
+      "columns": [
+        { "name": "id", "type": "INT", "pk": true, "notNull": true },
+        { "name": "email", "type": "VARCHAR(255)", "notNull": true, "unique": true },
+        { "name": "tags", "type": "Map<K,V>" }
+      ]
+    },
+    {
+      "id": "pedido", "kind": "table", "name": "pedido",
+      "columns": [
+        { "name": "id", "type": "INT", "pk": true, "notNull": true },
+        { "name": "cliente_id", "type": "INT", "fk": { "table": "cliente", "column": "id" }, "notNull": true },
+        { "name": "total", "type": "DECIMAL(10,2)" }
+      ]
+    },
+    {
+      "id": "linea", "kind": "table", "name": "linea_pedido",
+      "columns": [
+        { "name": "pedido_id", "type": "INT", "pk": true, "fk": { "table": "pedido", "column": "id" } },
+        { "name": "item", "type": "INT", "pk": true },
+        { "name": "nota", "type": "TEXT" }
+      ]
+    }
+  ],
+  "relations": [
+    { "id": "r1", "kind": "er-rel", "source": "cliente", "target": "pedido", "label": "cliente_id", "sourceCardinality": "one", "targetCardinality": "zero-many" },
+    { "id": "r2", "kind": "er-rel", "source": "pedido", "target": "linea", "label": "pedido_id", "identifying": true, "sourceCardinality": "one", "targetCardinality": "one-many" }
+  ]
+}

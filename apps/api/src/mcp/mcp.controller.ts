@@ -1,6 +1,7 @@
 import { All, Controller, HttpCode, Logger, Post, Req, Res } from '@nestjs/common';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { type Request, type Response } from 'express';
+import { AgentRegistry } from '../agents/agent-registry.js';
 import { McpServerFactory } from './mcp-server.factory.js';
 
 /**
@@ -11,11 +12,15 @@ import { McpServerFactory } from './mcp-server.factory.js';
 export class McpController {
   private readonly logger = new Logger('McpController');
 
-  constructor(private readonly factory: McpServerFactory) {}
+  constructor(
+    private readonly factory: McpServerFactory,
+    private readonly agents: AgentRegistry,
+  ) {}
 
   @Post()
   @HttpCode(200)
   async handle(@Req() req: Request, @Res() res: Response): Promise<void> {
+    this.trackAgent(req, res);
     const server = this.factory.create();
     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
     res.on('close', () => {
@@ -30,6 +35,21 @@ export class McpController {
       if (!res.headersSent) {
         res.status(500).json({ jsonrpc: '2.0', error: { code: -32603, message: 'Error interno del servidor' }, id: null });
       }
+    }
+  }
+
+  /**
+   * El transporte es sin estado: en `initialize` se da al cliente un `Mcp-Session-Id` propio
+   * (el SDK cliente y el puente stdio lo reenvían) para atribuirle después sus llamadas.
+   */
+  private trackAgent(req: Request, res: Response): void {
+    const body = req.body as { method?: unknown; params?: { clientInfo?: unknown } } | undefined;
+    if (body?.method === 'initialize') {
+      const sessionId = this.agents.register(body.params?.clientInfo);
+      if (sessionId) res.setHeader('Mcp-Session-Id', sessionId);
+    } else {
+      const sessionId = req.headers['mcp-session-id'];
+      if (typeof sessionId === 'string') this.agents.touch(sessionId);
     }
   }
 

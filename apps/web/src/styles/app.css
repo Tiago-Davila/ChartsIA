@@ -230,6 +230,15 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.toolbar__title--input {
+  padding: 2px 6px;
+  font-family: inherit;
+  font-weight: 700;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
 .toolbar__revision {
   margin-left: 8px;
   font-size: 12px;
@@ -568,3 +577,10 @@ button:disabled,
   margin: 20vh auto 0;
   color: var(--text-muted);
 }
+
+/* Configuración */
+.sidebar-config { margin: 8px 16px; align-self: flex-start; }
+.config { max-width: 640px; margin: 0 auto; padding: 24px; overflow-y: auto; }
+.config code { display: block; margin: 6px 0; padding: 8px 10px; overflow-x: auto; white-space: nowrap; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
+.config__card { margin-bottom: 16px; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; }
+.config__card h3 { margin: 0 0 4px; }

@@ -2,10 +2,11 @@ import { type ExportFormat } from '@chartsia/core/export';
 import { type Diagram } from '@chartsia/core/model';
 import { type Edge, type Node } from '@xyflow/react';
 import { type ReactNode } from 'react';
-import { type Project } from '../state/api-client';
+import { type ConnectedAgent, type Project } from '../state/api-client';
 import { type AlignMode } from '../canvas/align';
 import { DiagramCanvas, type DiagramCanvasProps } from '../canvas/DiagramCanvas';
 import { C4Legend } from '../legend/C4Legend';
+import { ConfigScreen } from './ConfigScreen';
 import { ConnectionStatus, type ConnectionState } from './ConnectionStatus';
 import { DiagramList, type DiagramListItem } from './DiagramList';
 import { EmptyState } from './EmptyState';
@@ -14,6 +15,7 @@ import { Toolbar } from './Toolbar';
 export interface AppShellProps {
   diagrams: DiagramListItem[];
   projects: Project[];
+  agents: ConnectedAgent[];
   activeDiagramId: string | null;
   connection: ConnectionState;
   diagram?: Diagram;
@@ -22,11 +24,17 @@ export interface AppShellProps {
   nodes: Node[];
   edges: Edge[];
   origin: string;
+  /** Muestra la pantalla de configuración en lugar del lienzo. */
+  configOpen?: boolean;
+  onConfig(): void;
+  onCloseConfig(): void;
   readOnly?: boolean;
   onOpen(diagramId: string): void;
   onMoveDiagram(diagramId: string, projectId: string | null): void;
   onNewProject(diagramId: string, name: string): void;
+  onRenameDiagram(diagramId: string, title: string): void;
   onExport(format: ExportFormat): void;
+  onRename?(title: string): void;
   onNodeDragStop?: DiagramCanvasProps['onNodeDragStop'];
   onDelete?: DiagramCanvasProps['onDelete'];
   onConnect?: DiagramCanvasProps['onConnect'];
@@ -47,17 +55,20 @@ export function AppShell(props: AppShellProps) {
         <div className="brand">
           <span className="brand__mark" aria-hidden>◆</span> ChartsIA
         </div>
-        <DiagramList diagrams={props.diagrams} projects={props.projects} activeDiagramId={props.activeDiagramId} openDiagramId={diagram?.id ?? null} onOpen={props.onOpen} onMove={props.onMoveDiagram} onNewProject={props.onNewProject} />
+        <DiagramList diagrams={props.diagrams} projects={props.projects} activeDiagramId={props.activeDiagramId} openDiagramId={diagram?.id ?? null} onOpen={props.onOpen} onMove={props.onMoveDiagram} onNewProject={props.onNewProject} onRename={props.onRenameDiagram} />
         <ConnectionStatus state={props.connection} />
       </aside>
       <main className="app-shell__main">
-        {diagram ? (
+        {props.configOpen ? (
+          <ConfigScreen origin={props.origin} agents={props.agents} connection={props.connection} onBack={props.onCloseConfig} />
+        ) : diagram ? (
           <>
             <Toolbar
               title={diagram.title}
               revision={diagram.revision}
               disabled={props.readOnly}
               onExport={props.onExport}
+              onRename={props.onRename}
               onAlign={props.readOnly ? undefined : props.onAlign}
               changedIds={props.changedIds}
               onOpenLatest={props.onOpenLatest}
@@ -79,7 +90,7 @@ export function AppShell(props: AppShellProps) {
         ) : props.loading ? (
           <p className="loading" role="status">Cargando diagrama…</p>
         ) : (
-          <EmptyState origin={props.origin} />
+          <EmptyState onConfig={props.onConfig} />
         )}
         {props.overlay}
       </main>

@@ -4,6 +4,8 @@ import { C4ComponentNode } from './c4/C4ComponentNode';
 import { C4ContainerNode } from './c4/C4ContainerNode';
 import { C4PersonNode } from './c4/C4PersonNode';
 import { C4SystemNode } from './c4/C4SystemNode';
+import { ErEntityNode } from './er/ErEntityNode';
+import { ErTableNode } from './er/ErTableNode';
 import { GroupNode } from './GroupNode';
 import { UmlClassNode } from './uml/UmlClassNode';
 import { UmlEnumNode } from './uml/UmlEnumNode';
@@ -20,6 +22,8 @@ export const nodeTypes = {
   container: C4ContainerNode,
   component: C4ComponentNode,
   boundary: GroupNode,
+  entity: ErEntityNode,
+  table: ErTableNode,
 } satisfies Record<ElementKind, NodeTypes[string]> as NodeTypes;
 
 export type { ElementFlowNode, ElementNodeData } from './types';

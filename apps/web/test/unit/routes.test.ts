@@ -6,6 +6,7 @@ describe('rutas', () => {
     ['/', { name: 'home' }],
     ['/d/dg_abcdefghijkl', { name: 'diagram', diagramId: 'dg_abcdefghijkl' }],
     ['/d/dg_abcdefghijkl/', { name: 'diagram', diagramId: 'dg_abcdefghijkl' }],
+    ['/config', { name: 'config' }],
     ['/otra', { name: 'home' }],
   ])('%s', (path, route) => {
     expect(parseRoute(path)).toEqual(route);

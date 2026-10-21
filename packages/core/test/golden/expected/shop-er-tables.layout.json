@@ -1,0 +1,146 @@
+{
+  "type": "er",
+  "title": "Tablas <Tienda> & \"pedidos\"",
+  "elements": [
+    {
+      "id": "cliente",
+      "name": "cliente",
+      "kind": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INT",
+          "pk": true,
+          "notNull": true
+        },
+        {
+          "name": "email",
+          "type": "VARCHAR(255)",
+          "notNull": true,
+          "unique": true
+        },
+        {
+          "name": "tags",
+          "type": "Map<K,V>"
+        }
+      ],
+      "layout": {
+        "x": 30,
+        "y": 30,
+        "width": 308,
+        "height": 101,
+        "pinned": false
+      }
+    },
+    {
+      "id": "pedido",
+      "name": "pedido",
+      "kind": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INT",
+          "pk": true,
+          "notNull": true
+        },
+        {
+          "name": "cliente_id",
+          "type": "INT",
+          "fk": {
+            "table": "cliente",
+            "column": "id"
+          },
+          "notNull": true
+        },
+        {
+          "name": "total",
+          "type": "DECIMAL(10,2)"
+        }
+      ],
+      "layout": {
+        "x": 73,
+        "y": 211,
+        "width": 222,
+        "height": 101,
+        "pinned": false
+      }
+    },
+    {
+      "id": "linea",
+      "name": "linea_pedido",
+      "kind": "table",
+      "columns": [
+        {
+          "name": "pedido_id",
+          "type": "INT",
+          "pk": true,
+          "fk": {
+            "table": "pedido",
+            "column": "id"
+          }
+        },
+        {
+          "name": "item",
+          "type": "INT",
+          "pk": true
+        },
+        {
+          "name": "nota",
+          "type": "TEXT"
+        }
+      ],
+      "layout": {
+        "x": 94.5,
+        "y": 392,
+        "width": 179,
+        "height": 101,
+        "pinned": false
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "r1",
+      "kind": "er-rel",
+      "source": "cliente",
+      "target": "pedido",
+      "label": "cliente_id",
+      "sourceCardinality": "one",
+      "targetCardinality": "zero-many",
+      "route": [
+        {
+          "x": 184,
+          "y": 131
+        },
+        {
+          "x": 184,
+          "y": 211
+        }
+      ]
+    },
+    {
+      "id": "r2",
+      "kind": "er-rel",
+      "source": "pedido",
+      "target": "linea",
+      "label": "pedido_id",
+      "sourceCardinality": "one",
+      "targetCardinality": "one-many",
+      "identifying": true,
+      "route": [
+        {
+          "x": 184,
+          "y": 312
+        },
+        {
+          "x": 184,
+          "y": 392
+        }
+      ]
+    }
+  ],
+  "id": "dg_goldengolden",
+  "revision": 1,
+  "createdAt": "2026-10-20T10:00:00.000Z",
+  "updatedAt": "2026-10-20T10:00:00.000Z"
+}

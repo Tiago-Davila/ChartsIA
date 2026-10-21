@@ -102,8 +102,9 @@ export function boxPrimitives(box: CompartmentBox, size: Size): Primitive[] {
   return out;
 }
 
-export function headerLines(name: string, opts: { stereotype?: string; italic?: boolean }): Line[] {
+export function headerLines(name: string, opts: { stereotype?: string; italic?: boolean; abstract?: boolean }): Line[] {
   const lines: Line[] = [];
+  if (opts.abstract) lines.push({ text: '«abstract»', size: FONT.small, align: 'middle', slot: 'abstract' });
   if (opts.stereotype) lines.push({ text: `«${opts.stereotype}»`, size: FONT.small, align: 'middle', slot: 'stereotype' });
   lines.push({ text: name, bold: true, size: FONT.name, align: 'middle', slot: 'name', ...(opts.italic ? { italic: true } : {}) });
   return lines;

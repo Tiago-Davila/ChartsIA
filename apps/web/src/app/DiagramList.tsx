@@ -22,6 +22,8 @@ export interface DiagramListProps {
   onMove(diagramId: string, projectId: string | null): void;
   /** Crea un proyecto con ese nombre y mueve el diagrama a él. */
   onNewProject(diagramId: string, name: string): void;
+  /** Cambia el título del diagrama sin abrirlo. */
+  onRename(diagramId: string, title: string): void;
 }
 
 /** Quita mayúsculas y acentos para comparar títulos. */
@@ -55,7 +57,7 @@ export function agruparPorProyecto(diagramas: DiagramListItem[], proyectos: Proj
 }
 
 /** Barra lateral con los diagramas agrupados por proyecto (FR-025); el activo de los agentes va marcado. */
-export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId, onOpen, onMove, onNewProject }: DiagramListProps) {
+export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId, onOpen, onMove, onNewProject, onRename }: DiagramListProps) {
   const [busqueda, setBusqueda] = useState('');
   const [plegadas, setPlegadas] = useState<ReadonlySet<string>>(new Set());
   const [menuAbierto, setMenuAbierto] = useState<string | null>(null);
@@ -79,6 +81,12 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
   const pedirProyecto = (diagramId: string) => {
     const nombre = window.prompt('Nombre del proyecto nuevo')?.trim();
     if (nombre) onNewProject(diagramId, nombre);
+  };
+
+  // Pide el título nuevo (máximo 120); uno vacío, igual al actual o cancelado no llama al hub.
+  const pedirTitulo = (d: DiagramListItem) => {
+    const titulo = window.prompt('Nuevo título del diagrama', d.title)?.trim().slice(0, 120);
+    if (titulo && titulo !== d.title) onRename(d.diagramId, titulo);
   };
 
   const alternar = (clave: string) =>
@@ -122,6 +130,11 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
         </button>
         {menuAbierto === d.diagramId ? (
           <ul role="menu" className="diagram-list__menu">
+            <li role="none">
+              <button type="button" role="menuitem" onClick={() => elegir(() => pedirTitulo(d))}>
+                Renombrar…
+              </button>
+            </li>
             {projects
               .filter((p) => p.id !== d.projectId)
               .map((p) => (

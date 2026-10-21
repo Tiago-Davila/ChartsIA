@@ -1,6 +1,6 @@
 import { type ExportFormat } from '@chartsia/core/export';
 import { getViewportForBounds, useNodes, useReactFlow, useStoreApi } from '@xyflow/react';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { type AlignMode } from '../canvas/align';
 import { FIT_VIEW_OPTIONS } from '../canvas/DiagramCanvas';
 
@@ -9,6 +9,7 @@ export interface ToolbarProps {
   revision?: number;
   disabled?: boolean;
   onExport(format: ExportFormat): void;
+  onRename?(title: string): void;
   onAlign?(mode: AlignMode): void;
   /** Ids que tocó el último cambio; vacío encuadra todo el diagrama. */
   changedIds?: string[];
@@ -65,7 +66,7 @@ function Menu<T extends string>({ label, items, primary, disabled, onSelect }: {
 }
 
 /** Título, encuadre, alineación de la selección y exportación (FR-027). */
-export function Toolbar({ title, revision, disabled = false, onExport, onAlign, changedIds = [], onOpenLatest, onChangedFitted }: ToolbarProps) {
+export function Toolbar({ title, revision, disabled = false, onExport, onRename, onAlign, changedIds = [], onOpenLatest, onChangedFitted }: ToolbarProps) {
   const { getNodes, getNodesBounds, setViewport } = useReactFlow();
   const store = useStoreApi();
   // Encuadra los nodos del último cambio (o todos) con su tamaño declarado, porque fitView espera nodos medidos y tras un cambio del hub no responde.
@@ -78,13 +79,36 @@ export function Toolbar({ title, revision, disabled = false, onExport, onAlign, 
     const viewport = getViewportForBounds(getNodesBounds(changed.length > 0 ? changed : all), width, height, minZoom, FIT_VIEW_OPTIONS.maxZoom, FIT_VIEW_OPTIONS.padding);
     void setViewport(viewport, { duration: 300 });
   };
+  const [editing, setEditing] = useState(false);
+  // Guarda el título editado salvo que esté vacío o no cambie; Escape lo descarta antes de llegar aquí.
+  const finishRename = (value: string) => {
+    setEditing(false);
+    const next = value.trim();
+    if (next && next !== title) onRename?.(next);
+  };
   const selected = useNodes().filter((n) => n.selected).length;
   return (
     <header className="toolbar">
-      <h1 className="toolbar__title" title={title}>
-        {title}
-        {revision !== undefined ? <span className="toolbar__revision">rev {revision}</span> : null}
-      </h1>
+      {editing ? (
+        <input
+          className="toolbar__title toolbar__title--input"
+          aria-label="Título del diagrama"
+          defaultValue={title}
+          maxLength={120}
+          autoFocus
+          onFocus={(e) => e.currentTarget.select()}
+          onBlur={(e) => finishRename(e.currentTarget.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') e.currentTarget.blur();
+            if (e.key === 'Escape') setEditing(false);
+          }}
+        />
+      ) : (
+        <h1 className="toolbar__title" title={title} onDoubleClick={() => !disabled && onRename && setEditing(true)}>
+          {title}
+          {revision !== undefined ? <span className="toolbar__revision">rev {revision}</span> : null}
+        </h1>
+      )}
       {onAlign && selected >= 2 ? <Menu label="Alinear" items={ALIGNS} disabled={disabled} onSelect={onAlign} /> : null}
       <button type="button" className="button" disabled={disabled} onClick={() => void fit()}>
         Ajustar
