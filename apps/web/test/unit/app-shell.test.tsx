@@ -193,4 +193,25 @@ describe('AppShell: título editable', () => {
     const { input } = await abrirEditor({ readOnly: true });
     expect(input).toBeNull();
   });
+
+  it('el lápiz y el marcador son herramientas excluyentes con su propio color', async () => {
+    renderShell({ diagram: { id: 'dg_aaaaaaaaaaaa', type: 'class', title: 'Biblioteca', revision: 3, createdAt: '', updatedAt: '', elements: [], relations: [] } });
+    const pen = screen.getByRole('button', { name: 'Lápiz' });
+    const marker = screen.getByRole('button', { name: 'Marcador' });
+    expect(pen).toHaveAttribute('aria-pressed', 'false');
+    expect(marker).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.queryByLabelText('Color del marcador')).toBeNull();
+
+    await userEvent.click(marker);
+    expect(marker).toHaveAttribute('aria-pressed', 'true');
+    expect(pen).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByLabelText('Color del marcador')).toHaveValue('#facc15');
+
+    await userEvent.click(pen);
+    expect(marker).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByLabelText('Color del lápiz')).toHaveValue('#1f2933');
+
+    await userEvent.click(pen);
+    expect(screen.queryByLabelText('Color del lápiz')).toBeNull();
+  });
 });

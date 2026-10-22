@@ -183,8 +183,8 @@ export function useDiagramEdits(api: ApiClient) {
 
   const updateRelation = useCallback((id: string, changes: RelationChanges) => void send([{ op: 'update_relation', id, changes }]), [send]);
 
-  /** Crea un trazo libre desde puntos absolutos del lienzo. */
-  const addDrawing = useCallback((points: Point[], screenPoints: Point[], strokeColor: string, strokeWidth: number) => {
+  /** Crea un trazo de lápiz o de marcador desde puntos absolutos del lienzo. */
+  const addDrawing = useCallback((points: Point[], screenPoints: Point[], strokeColor: string, strokeWidth: number, highlighter = false) => {
     const diagram = diagramStore.getState().diagram;
     if (!diagram) return;
     const simplified = simplifyStroke(points, screenPoints);
@@ -212,13 +212,15 @@ export function useDiagramEdits(api: ApiClient) {
       return;
     }
     const draft = { elements: diagram.elements, relations: diagram.relations };
+    const name = highlighter ? 'Marcador' : 'Trazo';
     const element: Element = {
-      id: freeId(draft, 'Trazo'),
+      id: freeId(draft, name),
       kind: 'drawing',
-      name: 'Trazo',
+      name,
       points: local,
       strokeColor,
       strokeWidth,
+      ...(highlighter ? { highlighter: true as const } : {}),
       layout: { x, y },
     };
     void send([{ op: 'add_element', element }]);

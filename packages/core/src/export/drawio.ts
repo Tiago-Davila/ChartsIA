@@ -1,4 +1,5 @@
 import { type Point } from '../model/common.js';
+import { isHighlighter } from '../model/drawing-elements.js';
 import { type Diagram, type Element } from '../model/diagram.js';
 import { type Relation } from '../model/relation.js';
 import { c4Cells } from './drawio-c4.js';
@@ -100,7 +101,8 @@ function edgeXml(rel: Relation, byId: Map<string, Element>): string {
 export function exportDrawio(diagram: Diagram): string {
   const byId = new Map(diagram.elements.map((e) => [e.id, e]));
   const depth = (el: Element): number => (el.parentId && byId.has(el.parentId) ? 1 + depth(byId.get(el.parentId)!) : 0);
-  const ordered = [...diagram.elements].sort((a, b) => depth(a) - depth(b) || (a.id < b.id ? -1 : 1));
+  // Los marcadores van antes que las figuras de su mismo nivel para quedar detrás.
+  const ordered = [...diagram.elements].sort((a, b) => depth(a) - depth(b) || Number(!isHighlighter(a)) - Number(!isHighlighter(b)) || (a.id < b.id ? -1 : 1));
   const cells: string[] = [xmlElement('mxCell', { id: '0' }), xmlElement('mxCell', { id: '1', parent: '0' })];
   for (const el of ordered) {
     const l = el.layout ?? { x: 0, y: 0, width: 120, height: 60 };
