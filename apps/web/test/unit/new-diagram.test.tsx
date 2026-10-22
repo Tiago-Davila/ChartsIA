@@ -17,7 +17,7 @@ describe('NewDiagram', () => {
     render(<NewDiagram projects={[]} onCreate={vi.fn()} />);
     await userEvent.click(screen.getByRole('button', { name: 'Nuevo diagrama' }));
     const opciones = screen.getAllByRole('option').map((o) => (o as HTMLOptionElement).value);
-    expect(opciones).toEqual(['class', 'c4-context', 'c4-container', 'c4-component', 'er']);
+    expect(opciones).toEqual(['class', 'c4-context', 'c4-container', 'c4-component', 'er', 'nosql']);
   });
 
   it('crea con el tipo y el título elegidos, recortado, y se cierra', async () => {

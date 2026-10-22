@@ -18,7 +18,7 @@ describe('contract: conectores libres', () => {
   });
   afterEach(() => h.close());
 
-  it.each(['class', 'c4-context', 'c4-container', 'c4-component', 'er'])('se permite en un diagrama %s', async (type) => {
+  it.each(['class', 'c4-context', 'c4-container', 'c4-component', 'er', 'nosql'])('se permite en un diagrama %s', async (type) => {
     const res = await h.call('create_diagram', diagram(type));
     expect(res.isError).toBeFalsy();
     expect(res.structuredContent!.counts).toEqual({ elements: 2, relations: 1 });
@@ -57,7 +57,7 @@ describe('contract: conectores libres', () => {
   });
 
   it('la guía por tipo de diagrama documenta connector', async () => {
-    for (const type of ['class', 'c4-container', 'er']) {
+    for (const type of ['class', 'c4-container', 'er', 'nosql']) {
       const res = await h.client.readResource({ uri: `chartsia://schema/${type}` });
       const text = (res.contents[0] as { text: string }).text;
       expect(text).toContain('`connector`');

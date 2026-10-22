@@ -7,6 +7,7 @@ export * from './figure-elements.js';
 export * from './drawing-elements.js';
 export * from './image-data.js';
 export * from './image-elements.js';
+export * from './nosql-elements.js';
 export * from './enums.js';
 export * from './json-schema.js';
 export * from './operations.js';

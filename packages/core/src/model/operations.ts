@@ -8,6 +8,7 @@ import { DrawingPointsSchema, DRAWING_MAX_STROKE_WIDTH, DRAWING_MIN_STROKE_WIDTH
 import { MultiplicitySchema, RelationSchema } from './relation.js';
 import { StyleSchema } from './style.js';
 import { ImageDataUrlSchema } from './image-elements.js';
+import { NoSqlFieldsSchema } from './nosql-elements.js';
 
 /**
  * Cambios parciales de un elemento: unión de los campos editables de todos los `kind`.
@@ -31,6 +32,7 @@ export const ElementChangesSchema = z
     columns: z.array(ColumnSchema).min(1).max(200).optional(),
     weak: z.boolean().nullable().optional(),
     shape: z.enum(FIGURE_SHAPES).optional(),
+    fields: NoSqlFieldsSchema.optional(),
     points: DrawingPointsSchema.optional(),
     strokeColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
     strokeWidth: z.number().finite().min(DRAWING_MIN_STROKE_WIDTH).max(DRAWING_MAX_STROKE_WIDTH).optional(),

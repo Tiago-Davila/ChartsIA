@@ -6,6 +6,7 @@ export const DIAGRAM_TYPE_LABELS: Record<DiagramType, string> = {
   'c4-container': 'C4 · Contenedores',
   'c4-component': 'C4 · Componentes',
   er: 'Entidad-relación',
+  nosql: 'NoSQL · Documentos',
 };
 
 const dateFormat = new Intl.DateTimeFormat('es', { dateStyle: 'short', timeStyle: 'short' });

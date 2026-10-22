@@ -14,6 +14,7 @@ const samples: Record<string, Record<string, unknown>> = {
   component: { kind: 'component' },
   boundary: { kind: 'boundary', boundaryType: 'container' },
   entity: { kind: 'entity' },
+  collection: { kind: 'collection', fields: [] },
   figure: { kind: 'figure', shape: 'hexagon' },
   attribute: { kind: 'attribute' },
   'value-list': { kind: 'value-list', values: ['A'] },
@@ -26,6 +27,7 @@ const allowed: Record<DiagramType, string[]> = {
   'c4-container': ['person', 'software-system', 'container', 'boundary', 'figure'],
   'c4-component': ['person', 'software-system', 'container', 'component', 'boundary', 'figure'],
   er: ['entity', 'attribute', 'value-list', 'figure'],
+  nosql: ['collection', 'figure'],
 };
 
 function single(type: DiagramType, kind: string) {

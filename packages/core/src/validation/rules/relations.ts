@@ -33,6 +33,10 @@ const ENDPOINT_RULES: Partial<Record<Relation['kind'], { pairs: [string, string]
     ],
     text: 'er-attr va del dueño al elemento que cuelga de él: entity→attribute, attribute→attribute (compuesto) o attribute→value-list',
   },
+  'nosql-rel': {
+    pairs: [['collection', 'collection']],
+    text: 'nosql-rel solo une colecciones',
+  },
 };
 
 export function checkRelations({ diagram, elementsById }: RuleContext): ValidationError[] {
