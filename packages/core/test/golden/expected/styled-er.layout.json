@@ -1,0 +1,182 @@
+{
+  "type": "er",
+  "title": "ER con estilo",
+  "elements": [
+    {
+      "id": "cliente",
+      "name": "Cliente",
+      "style": {
+        "borderColor": "#175cd3",
+        "fillColor": "#eff8ff",
+        "fontFamily": "serif",
+        "fontSize": 20
+      },
+      "kind": "entity",
+      "layout": {
+        "x": 45,
+        "y": 59,
+        "width": 120,
+        "height": 53,
+        "pinned": false
+      }
+    },
+    {
+      "id": "pedido",
+      "name": "Pedido",
+      "style": {
+        "borderColor": "#b42318"
+      },
+      "kind": "entity",
+      "weak": true,
+      "layout": {
+        "x": 352,
+        "y": 192,
+        "width": 120,
+        "height": 58,
+        "pinned": false
+      }
+    },
+    {
+      "id": "dni",
+      "name": "DNI",
+      "style": {
+        "fillColor": "#fef0c7",
+        "fontColor": "#93370d",
+        "fontFamily": "monospace"
+      },
+      "kind": "attribute",
+      "key": true,
+      "layout": {
+        "x": 30,
+        "y": 192,
+        "width": 90,
+        "height": 44,
+        "pinned": false
+      }
+    },
+    {
+      "id": "telefonos",
+      "name": "Teléfonos",
+      "style": {
+        "borderColor": "#067647",
+        "fontSize": 12
+      },
+      "kind": "attribute",
+      "multivalued": true,
+      "layout": {
+        "x": 180,
+        "y": 192,
+        "width": 112,
+        "height": 54,
+        "pinned": false
+      }
+    },
+    {
+      "id": "items",
+      "name": "Items",
+      "style": {
+        "borderColor": "#6941c6",
+        "fillColor": "#f4ebff",
+        "fontFamily": "handwritten"
+      },
+      "kind": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INT",
+          "pk": true
+        },
+        {
+          "name": "precio",
+          "type": "DECIMAL"
+        }
+      ],
+      "layout": {
+        "x": 225,
+        "y": 30,
+        "width": 140,
+        "height": 82,
+        "pinned": false
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "r1",
+      "kind": "er-rel",
+      "source": "cliente",
+      "target": "pedido",
+      "label": "hace",
+      "sourceCardinality": "one",
+      "targetCardinality": "zero-many",
+      "style": {
+        "borderColor": "#175cd3",
+        "fillColor": "#d1e9ff",
+        "fontColor": "#175cd3",
+        "fontSize": 16
+      },
+      "route": [
+        {
+          "x": 135,
+          "y": 112
+        },
+        {
+          "x": 135,
+          "y": 128
+        },
+        {
+          "x": 412,
+          "y": 128
+        },
+        {
+          "x": 412,
+          "y": 192
+        }
+      ]
+    },
+    {
+      "id": "a1",
+      "kind": "er-attr",
+      "source": "cliente",
+      "target": "dni",
+      "route": [
+        {
+          "x": 75,
+          "y": 112
+        },
+        {
+          "x": 75,
+          "y": 192
+        }
+      ]
+    },
+    {
+      "id": "a2",
+      "kind": "er-attr",
+      "source": "cliente",
+      "target": "telefonos",
+      "route": [
+        {
+          "x": 105,
+          "y": 112
+        },
+        {
+          "x": 105,
+          "y": 128
+        },
+        {
+          "x": 236,
+          "y": 128
+        },
+        {
+          "x": 236,
+          "y": 192
+        }
+      ]
+    }
+  ],
+  "id": "dg_goldengolden",
+  "revision": 1,
+  "createdAt": "2026-10-20T10:00:00.000Z",
+  "updatedAt": "2026-10-20T10:00:00.000Z"
+}

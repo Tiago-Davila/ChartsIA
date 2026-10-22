@@ -1,4 +1,5 @@
 import { type Element } from '../model/diagram.js';
+import { type StyleFontFamily } from '../model/style.js';
 
 export interface Size {
   width: number;
@@ -11,12 +12,15 @@ export interface Paint {
   strokeWidth?: number;
   /** Patrón de trazo discontinuo, p. ej. [6, 4]. */
   dash?: number[];
+  lineCap?: 'butt' | 'round' | 'square';
+  lineJoin?: 'miter' | 'round' | 'bevel';
 }
 
 export type RectPrimitive = { type: 'rect'; x: number; y: number; width: number; height: number; rx?: number } & Paint;
 export type EllipsePrimitive = { type: 'ellipse'; cx: number; cy: number; rx: number; ry: number } & Paint;
 export type PathPrimitive = { type: 'path'; d: string } & Paint;
 export type LinePrimitive = { type: 'line'; x1: number; y1: number; x2: number; y2: number } & Paint;
+export type ImagePrimitive = { type: 'image'; href: string; x: number; y: number; width: number; height: number };
 
 /**
  * Texto con su línea base en `y`. `slot` identifica qué dato muestra (p. ej. `name`,
@@ -33,10 +37,12 @@ export interface TextPrimitive {
   bold?: boolean;
   italic?: boolean;
   underline?: boolean;
+  /** Familia elegida en el estilo; sin ella se usa la fuente por defecto. */
+  fontFamily?: StyleFontFamily;
   slot?: string;
 }
 
-export type Primitive = RectPrimitive | EllipsePrimitive | PathPrimitive | LinePrimitive | TextPrimitive;
+export type Primitive = RectPrimitive | EllipsePrimitive | PathPrimitive | LinePrimitive | ImagePrimitive | TextPrimitive;
 
 /**
  * Geometría declarativa de una forma. Las coordenadas de las primitivas son relativas a la
@@ -47,7 +53,7 @@ export interface ShapeDefinition<E extends Element = Element> {
   measure(element: E): Size;
   primitives(element: E, size: Size): Primitive[];
   /** Grupos: margen interior que deben respetar los hijos. */
-  padding?: { top: number; right: number; bottom: number; left: number };
+  padding?: (element: E) => { top: number; right: number; bottom: number; left: number };
 }
 
 export const COLORS = {

@@ -1,10 +1,14 @@
 import { z } from 'zod';
-import { BOUNDARY_TYPES, CARDINALITIES, CONTAINER_VARIANTS, MAX_OPERATIONS_PER_BATCH, NAVIGABILITIES, RELATION_KINDS, SIDES } from './enums.js';
+import { ARROWHEADS, BOUNDARY_TYPES, CARDINALITIES, CONTAINER_VARIANTS, FIGURE_SHAPES, MAX_OPERATIONS_PER_BATCH, NAVIGABILITIES, RELATION_KINDS, SIDES } from './enums.js';
 import { AttributeSchema, MethodSchema } from './class-elements.js';
 import { ColumnSchema } from './er-elements.js';
 import { DescriptionSchema, ElementIdSchema, LayoutSchema, NameSchema, PointSchema } from './common.js';
 import { ElementSchema, TitleSchema } from './diagram.js';
+import { DrawingPointsSchema, DRAWING_MAX_STROKE_WIDTH, DRAWING_MIN_STROKE_WIDTH } from './drawing-elements.js';
 import { MultiplicitySchema, RelationSchema } from './relation.js';
+import { StyleSchema } from './style.js';
+import { ImageDataUrlSchema } from './image-elements.js';
+import { NoSqlFieldsSchema } from './nosql-elements.js';
 
 /**
  * Cambios parciales de un elemento: unión de los campos editables de todos los `kind`.
@@ -27,6 +31,17 @@ export const ElementChangesSchema = z
     boundaryType: z.enum(BOUNDARY_TYPES).optional(),
     columns: z.array(ColumnSchema).min(1).max(200).optional(),
     weak: z.boolean().nullable().optional(),
+    shape: z.enum(FIGURE_SHAPES).optional(),
+    fields: NoSqlFieldsSchema.optional(),
+    points: DrawingPointsSchema.optional(),
+    strokeColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+    strokeWidth: z.number().finite().min(DRAWING_MIN_STROKE_WIDTH).max(DRAWING_MAX_STROKE_WIDTH).optional(),
+    src: ImageDataUrlSchema.optional().describe('Reemplaza la imagen con un data URL PNG/JPG o SVG saneado'),
+    key: z.boolean().nullable().optional(),
+    multivalued: z.boolean().nullable().optional(),
+    derived: z.boolean().nullable().optional(),
+    values: z.array(z.string().min(1).max(200)).min(1).max(200).optional(),
+    style: StyleSchema.nullable().optional().describe('Reemplaza el estilo completo; null lo elimina'),
   })
   .describe('Campos a cambiar, p. ej. {"name":"Usuario"}; null elimina un campo opcional');
 export type ElementChanges = z.infer<typeof ElementChangesSchema>;
@@ -44,9 +59,12 @@ export const RelationChangesSchema = z
     sourceCardinality: z.enum(CARDINALITIES).nullable().optional(),
     targetCardinality: z.enum(CARDINALITIES).nullable().optional(),
     identifying: z.boolean().nullable().optional(),
+    arrowheads: z.enum(ARROWHEADS).nullable().optional(),
+    dashed: z.boolean().nullable().optional(),
     sourceSide: z.enum(SIDES).nullable().optional(),
     targetSide: z.enum(SIDES).nullable().optional(),
     waypoints: z.array(PointSchema).max(20).nullable().optional(),
+    style: StyleSchema.nullable().optional().describe('Reemplaza el estilo completo; null lo elimina'),
   })
   .describe('Campos a cambiar, p. ej. {"label":"usa"}; null elimina un campo opcional');
 export type RelationChanges = z.infer<typeof RelationChangesSchema>;

@@ -1,0 +1,201 @@
+{
+  "type": "class",
+  "title": "Clases con estilo",
+  "elements": [
+    {
+      "id": "Pedido",
+      "name": "Pedido",
+      "style": {
+        "borderColor": "#b42318",
+        "fillColor": "#fee4e2",
+        "fontColor": "#7a271a",
+        "fontFamily": "serif",
+        "fontSize": 18
+      },
+      "kind": "class",
+      "attributes": [
+        {
+          "name": "total",
+          "type": "double",
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        {
+          "name": "pagar",
+          "parameters": [],
+          "visibility": "+"
+        }
+      ],
+      "layout": {
+        "x": 57.33,
+        "y": 162,
+        "width": 143,
+        "height": 112,
+        "pinned": false
+      }
+    },
+    {
+      "id": "Linea",
+      "name": "Línea",
+      "style": {
+        "fontFamily": "monospace"
+      },
+      "kind": "class",
+      "attributes": [
+        {
+          "name": "cantidad",
+          "type": "int",
+          "visibility": "-"
+        }
+      ],
+      "operations": [],
+      "layout": {
+        "x": 30,
+        "y": 359,
+        "width": 150,
+        "height": 73,
+        "pinned": false
+      }
+    },
+    {
+      "id": "Pagable",
+      "name": "Pagable",
+      "style": {
+        "borderColor": "#175cd3",
+        "fontColor": "#175cd3",
+        "fontFamily": "handwritten",
+        "fontSize": 12
+      },
+      "kind": "interface",
+      "operations": [],
+      "layout": {
+        "x": 58.83,
+        "y": 30,
+        "width": 140,
+        "height": 52,
+        "pinned": false
+      }
+    },
+    {
+      "id": "Modelo",
+      "name": "Modelo",
+      "style": {
+        "borderColor": "#067647",
+        "fillColor": "#ecfdf3"
+      },
+      "kind": "package",
+      "layout": {
+        "x": 240,
+        "y": 359,
+        "width": 180,
+        "height": 164,
+        "pinned": false
+      }
+    },
+    {
+      "id": "Estado",
+      "name": "Estado",
+      "parentId": "Modelo",
+      "kind": "enum",
+      "literals": [
+        "ABIERTO",
+        "CERRADO"
+      ],
+      "layout": {
+        "x": 260,
+        "y": 405,
+        "width": 140,
+        "height": 98,
+        "pinned": false
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "r1",
+      "kind": "composition",
+      "source": "Pedido",
+      "target": "Linea",
+      "label": "contiene",
+      "style": {
+        "borderColor": "#b42318",
+        "fillColor": "#fda29b",
+        "fontColor": "#b42318",
+        "fontFamily": "serif",
+        "fontSize": 16
+      },
+      "route": [
+        {
+          "x": 105,
+          "y": 274
+        },
+        {
+          "x": 105,
+          "y": 290
+        },
+        {
+          "x": 105,
+          "y": 359
+        }
+      ]
+    },
+    {
+      "id": "r2",
+      "kind": "realization",
+      "source": "Pedido",
+      "target": "Pagable",
+      "style": {
+        "borderColor": "#175cd3",
+        "fillColor": "#d1e9ff"
+      },
+      "route": [
+        {
+          "x": 128.83,
+          "y": 162
+        },
+        {
+          "x": 128.83,
+          "y": 146
+        },
+        {
+          "x": 128.83,
+          "y": 98
+        },
+        {
+          "x": 128.83,
+          "y": 82
+        }
+      ]
+    },
+    {
+      "id": "r3",
+      "kind": "association",
+      "source": "Pedido",
+      "target": "Estado",
+      "targetMultiplicity": "1",
+      "route": [
+        {
+          "x": 152.66,
+          "y": 274
+        },
+        {
+          "x": 152.66,
+          "y": 290
+        },
+        {
+          "x": 330,
+          "y": 290
+        },
+        {
+          "x": 330,
+          "y": 405
+        }
+      ]
+    }
+  ],
+  "id": "dg_goldengolden",
+  "revision": 1,
+  "createdAt": "2026-10-20T10:00:00.000Z",
+  "updatedAt": "2026-10-20T10:00:00.000Z"
+}

@@ -21,8 +21,9 @@ export function measureAll(diagram: Diagram): Map<string, Size> {
 /** Escribe layouts y rutas en una copia del diagrama, con elementos y relaciones en orden. */
 export function withGeometry(diagram: Diagram, layouts: PositionMap): Diagram {
   const rects = new Map([...layouts].map(([id, l]) => [id, { x: l.x, y: l.y, width: l.width, height: l.height }]));
-  const leaves = diagram.elements.filter((e) => !isGroupKind(e.kind)).map((e) => e.id);
-  const routes = routeEdges(diagram.relations, rects, leaves);
+  const leaves = diagram.elements.filter((e) => !isGroupKind(e.kind) && e.kind !== 'drawing').map((e) => e.id);
+  const ovals = new Set(diagram.elements.filter((e) => e.kind === 'attribute').map((e) => e.id));
+  const routes = routeEdges(diagram.relations, rects, leaves, ovals);
   return {
     ...diagram,
     elements: diagram.elements.map((el) => ({ ...el, layout: { ...layouts.get(el.id)!, ...(el.layout?.resized ? { resized: true } : {}) } })),

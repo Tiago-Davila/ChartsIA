@@ -13,7 +13,7 @@ describe('smoke del puente stdio chartsia-mcp', () => {
   let hub: TestHub;
   beforeAll(async () => {
     // El puente se ejecuta compilado, como lo lanzaría Claude Desktop.
-    execFileSync('pnpm', ['--filter', '@chartsia/core', '--filter', '@chartsia/api', 'build'], { cwd: apiRoot, stdio: 'ignore' });
+    execFileSync('pnpm', ['--filter', '@chartsia/core', '--filter', '@chartsia/api', 'build'], { cwd: apiRoot, stdio: 'ignore', shell: process.platform === 'win32' });
     hub = await startHub();
   }, 120_000);
   afterAll(() => hub.close());

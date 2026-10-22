@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { ElementIdSchema, PointSchema } from './common.js';
-import { CARDINALITIES, NAVIGABILITIES, RELATION_KINDS, SIDES } from './enums.js';
+import { StyleSchema } from './style.js';
+import { ARROWHEADS, CARDINALITIES, NAVIGABILITIES, RELATION_KINDS, SIDES } from './enums.js';
 
 export const MultiplicitySchema = z
   .string()
@@ -19,9 +20,12 @@ export const RelationSchema = z.strictObject({
   sourceCardinality: z.enum(CARDINALITIES).optional().describe('Solo er-rel: cardinalidad en el extremo source'),
   targetCardinality: z.enum(CARDINALITIES).optional().describe('Solo er-rel: cardinalidad en el extremo target'),
   identifying: z.boolean().optional().describe('Solo er-rel: true = identificante (línea continua); si no, discontinua'),
+  arrowheads: z.enum(ARROWHEADS).optional().describe('Solo connector: none (sin punta), end (punta en el destino, por defecto) o both (punta en ambos extremos)'),
+  dashed: z.boolean().optional().describe('Solo connector: true = línea discontinua'),
   sourceSide: z.enum(SIDES).optional().describe('Lado del origen por el que sale; sin él se elige solo'),
   targetSide: z.enum(SIDES).optional().describe('Lado del destino por el que entra; sin él se elige solo'),
   waypoints: z.array(PointSchema).max(20).optional().describe('Puntos de quiebre manuales por los que pasa la ruta'),
+  style: StyleSchema.optional(),
   route: z.array(PointSchema).max(200).optional().describe('Lo rellena el servidor'),
 });
 export type Relation = z.infer<typeof RelationSchema>;

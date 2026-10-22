@@ -33,6 +33,18 @@ describe('nodos C4', () => {
     expect(screen.getByText('[Component: Nest]')).toBeInTheDocument();
   });
 
+  it('el estilo del elemento cambia colores, fuente y tamaño del lienzo', () => {
+    const style = { fillColor: '#112233', borderColor: '#445566', fontColor: '#778899', fontFamily: 'monospace', fontSize: 20 } as const;
+    const { container } = renderFlow([{ id: 's', kind: 'software-system', name: 'Tienda', style }]);
+    const shape = container.querySelector('[data-testid="shape-s"]')!;
+    expect(shape.querySelector('rect')?.getAttribute('fill')).toBe('#112233');
+    expect(shape.querySelector('rect')?.getAttribute('stroke')).toBe('#445566');
+    const name = screen.getByText('Tienda');
+    expect(name.getAttribute('fill')).toBe('#778899');
+    expect(name.getAttribute('font-family')).toContain('monospace');
+    expect(name.getAttribute('font-size')).toBe('21');
+  });
+
   it('límite discontinuo con "[tipo]"', () => {
     const { container } = renderFlow([{ id: 'b', kind: 'boundary', name: 'Tienda', boundaryType: 'system', layout: { x: 0, y: 0, width: 400, height: 300, pinned: false } }]);
     expect(container.querySelector('[data-testid="shape-b"] rect')?.getAttribute('stroke-dasharray')).toBeTruthy();

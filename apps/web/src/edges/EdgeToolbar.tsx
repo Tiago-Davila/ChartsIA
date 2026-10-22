@@ -1,4 +1,4 @@
-import { CARDINALITIES, type Cardinality, MULTIPLICITY_RELATION_KINDS, type Point, type Relation, type RelationKind, SIDES, type Side } from '@chartsia/core/model';
+import { ARROWHEADS, type Arrowheads, CARDINALITIES, type Cardinality, MULTIPLICITY_RELATION_KINDS, type Point, type Relation, type RelationKind, SIDES, type Side } from '@chartsia/core/model';
 import { EdgeLabelRenderer, useReactFlow } from '@xyflow/react';
 import { useState } from 'react';
 import { insertWaypoint, kindChanges, relationKinds, reverseChanges, segmentMidpoints } from '../canvas/edge-edits';
@@ -14,6 +14,9 @@ const KIND_LABELS: Record<RelationKind, string> = {
   dependency: 'Dependencia',
   'c4-rel': 'Relación',
   'er-rel': 'Relación ER',
+  'er-attr': 'Atributo ER',
+  'nosql-rel': 'Referencia NoSQL',
+  connector: 'Conector libre',
 };
 
 const CARDINALITY_LABELS: Record<Cardinality, string> = {
@@ -35,6 +38,8 @@ function CardinalitySelect({ label, value, onChange }: { label: string; value?: 
     </select>
   );
 }
+
+const ARROWHEAD_LABELS: Record<Arrowheads, string> = { none: 'Sin punta', end: 'Punta en destino', both: 'Punta en ambos' };
 
 const SIDE_LABELS: Record<Side, string> = { top: 'Arriba', right: 'Derecha', bottom: 'Abajo', left: 'Izquierda' };
 
@@ -164,6 +169,20 @@ export function EdgePanel({ relation, editingText, onEditText }: { relation: Rel
           <CardinalitySelect label="Cardinalidad destino" value={relation.targetCardinality} onChange={(value) => update({ targetCardinality: value })} />
           <label>
             <input type="checkbox" checked={relation.identifying ?? false} onChange={(e) => update({ identifying: e.target.checked })} /> Identificante
+          </label>
+        </>
+      ) : null}
+      {relation.kind === 'connector' ? (
+        <>
+          <select aria-label="Puntas" title="Puntas" value={relation.arrowheads ?? 'end'} onChange={(e) => update({ arrowheads: e.target.value as Arrowheads })}>
+            {ARROWHEADS.map((a) => (
+              <option key={a} value={a}>
+                {ARROWHEAD_LABELS[a]}
+              </option>
+            ))}
+          </select>
+          <label>
+            <input type="checkbox" checked={relation.dashed ?? false} onChange={(e) => update({ dashed: e.target.checked })} /> Discontinua
           </label>
         </>
       ) : null}

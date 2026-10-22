@@ -84,6 +84,24 @@ describe('layoutDiagram (completo)', () => {
     expect(edgesCrossingNodes(out)).toEqual([]);
   });
 
+  it('no desvía las relaciones para esquivar trazos de anotación', async () => {
+    const elements = [
+      { id: 'A', kind: 'class' as const, name: 'A', attributes: [], operations: [], layout: { x: 0, y: 0, width: 100, height: 50 } },
+      { id: 'B', kind: 'class' as const, name: 'B', attributes: [], operations: [], layout: { x: 300, y: 0, width: 100, height: 50 } },
+    ];
+    const relations = [{ id: 'r', kind: 'association' as const, source: 'A', target: 'B' }];
+    const withoutDrawing = await layoutDiagram(asDiagram({ type: 'class', title: 'Sin trazo', elements, relations }));
+    const withDrawing = await layoutDiagram(asDiagram({
+      type: 'class', title: 'Dibujo sobre relación',
+      elements: [
+        ...elements,
+        { id: 'Trazo', kind: 'drawing', name: 'Trazo', points: [{ x: 1, y: 25 }, { x: 90, y: 25 }], strokeColor: '#000000', strokeWidth: 2, layout: { x: 150, y: 0 } },
+      ],
+      relations,
+    }));
+    expect(withDrawing.relations[0]!.route).toEqual(withoutDrawing.relations[0]!.route);
+  });
+
   it('dispone 200 elementos en menos de 1 s (servidor en caliente)', async () => {
     await warmUpLayout();
     await layoutDiagram(grid(200));
@@ -111,6 +129,24 @@ describe('relayoutDiagram (incremental)', () => {
     expect(layoutOf(diagram, 'Editorial').width).toBeGreaterThan(0);
     expect(overlappingPairs(diagram)).toEqual([]);
     expect(edgesCrossingNodes(diagram)).toEqual([]);
+  });
+
+  it('conserva una figura cuando se dibuja una anotación encima', async () => {
+    const prev = await layoutDiagram({
+      ...asDiagram({ type: 'class', title: 'Dibujo', elements: [{ id: 'Clase', kind: 'class', name: 'Clase', attributes: [], operations: [] }], relations: [] }),
+    });
+    const before = layoutOf(prev, 'Clase');
+    const added = applyOperations(prev, [{
+      op: 'add_element', element: {
+        id: 'Trazo', kind: 'drawing', name: 'Trazo', points: [{ x: 1, y: 1 }, { x: 50, y: 40 }],
+        strokeColor: '#000000', strokeWidth: 2, layout: { x: before.x, y: before.y },
+      },
+    }]);
+    expect(added.ok).toBe(true);
+    if (!added.ok) return;
+    const { diagram } = await relayoutDiagram(prev, added.diagram);
+    expect(layoutOf(diagram, 'Clase')).toEqual(before);
+    expect(layoutOf(diagram, 'Trazo')).toMatchObject({ x: before.x, y: before.y, pinned: true });
   });
 
   it('los fijados nunca se mueven; los no fijados solo si hace falta eliminar un solape', async () => {

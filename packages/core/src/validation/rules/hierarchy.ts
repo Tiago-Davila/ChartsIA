@@ -10,15 +10,22 @@ export function checkParents({ diagram, elementsById }: RuleContext): Validation
       errors.push(validationError('INVALID_PARENT', path, message, hint));
 
     if (el.kind === 'component' && diagram.type === 'c4-component') {
-      const parent = el.parentId ? elementsById.get(el.parentId) : undefined;
-      if (!parent || parent.kind !== 'boundary' || parent.boundaryType !== 'container') {
-        if (!el.parentId || parent) {
-          invalid(
-            `El componente "${el.id}" debe estar dentro de un boundary de tipo "container".`,
-            'Crea un elemento {"kind":"boundary","boundaryType":"container"} para el contenedor y pon su id en parentId.',
-          );
-        }
-        return;
+      let container = el.parentId ? elementsById.get(el.parentId) : undefined;
+      const parentExists = Boolean(container);
+      const visited = new Set<string>();
+      while (container?.kind === 'frame' && !visited.has(container.id) && visited.size < elementsById.size) {
+        visited.add(container.id);
+        container = container.parentId ? elementsById.get(container.parentId) : undefined;
+      }
+      // La regla general de ciclos reporta esta cadena; no diagnosticarla también como
+      // boundary inválido ni volver a recorrerla indefinidamente.
+      if (container?.kind === 'frame' && visited.has(container.id)) {
+        // PARENT_CYCLE se agrega luego en checkParentCycles.
+      } else if ((!el.parentId || parentExists) && (!container || container.kind !== 'boundary' || container.boundaryType !== 'container')) {
+        invalid(
+          `El componente "${el.id}" debe estar dentro de un boundary de tipo "container".`,
+          'Crea un elemento {"kind":"boundary","boundaryType":"container"} y pon su id en parentId, directamente o mediante un frame.',
+        );
       }
     }
 
@@ -28,11 +35,11 @@ export function checkParents({ diagram, elementsById }: RuleContext): Validation
     if (!isGroupKind(parent.kind)) {
       invalid(
         `"${el.id}" tiene como padre a "${parent.id}", que es un ${parent.kind} y no un grupo.`,
-        'parentId solo puede apuntar a un package (clases) o a un boundary (C4).',
+        'parentId solo puede apuntar a un package, boundary o frame.',
       );
-    } else if (parent.kind === 'package' && !(CLASS_ELEMENT_KINDS as readonly string[]).includes(el.kind)) {
+    } else if (parent.kind === 'package' && el.kind !== 'figure' && el.kind !== 'drawing' && el.kind !== 'image' && el.kind !== 'frame' && !(CLASS_ELEMENT_KINDS as readonly string[]).includes(el.kind)) {
       invalid(
-        `Un package solo contiene elementos de clases; "${el.id}" es ${el.kind}.`,
+        `Un package solo contiene elementos de clases, figuras, trazos, imágenes o marcos; "${el.id}" es ${el.kind}.`,
         'Mueve el elemento fuera del package o usa un boundary en diagramas C4.',
       );
     }

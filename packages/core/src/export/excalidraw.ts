@@ -4,13 +4,23 @@ import { type Cardinality, isGroupKind } from '../model/enums.js';
 import { type Relation } from '../model/relation.js';
 import { hashSeed } from '../render/hash.js';
 import { edgeLabelLines } from '../render/edges.js';
+import { type Style, type StyleFontFamily } from '../model/style.js';
+import { imageDataUrlDimensions } from '../model/image-data.js';
 import { c4Colors, C4_PALETTE } from '../shapes/c4/palette.js';
+import { figureOutline, figureTextArea } from '../shapes/general/figure.js';
+import { paintOf, textFont } from '../shapes/style.js';
+import { FONT } from '../shapes/types.js';
 import { boxGeometry } from '../shapes/uml/compartments.js';
 import { classBox } from '../shapes/uml/class.js';
 import { enumBox } from '../shapes/uml/enum.js';
 import { interfaceBox } from '../shapes/uml/interface.js';
 import { WEAK_GAP } from '../shapes/er/entity.js';
+import { MULTIVALUED_GAP } from '../shapes/er/attribute.js';
 import { tableBox } from '../shapes/er/table.js';
+import { valueListBox } from '../shapes/er/value-list.js';
+import { collectionShape } from '../shapes/nosql/collection.js';
+import { lineHeight } from '../shapes/text-metrics.js';
+import { type Primitive } from '../shapes/types.js';
 import { CIRCLE_RADIUS, crowFoot, isCardinality, markerFrame, relationStyle, type MarkerKind } from '../shapes/uml/markers.js';
 import { orderKeys } from './fractional-index.js';
 
@@ -26,10 +36,32 @@ const ARROWHEADS: Record<Exclude<MarkerKind, Cardinality>, string> = {
 };
 /** Excalifont: el archivo conserva el aspecto a mano alzada propio de Excalidraw. */
 const FONT_FAMILY = 5;
+/** Familias de Excalidraw para el estilo del usuario: Helvetica, Cascadia y Excalifont (no tiene serif, así que serif usa Helvetica). */
+const STYLE_FONT_FAMILIES: Record<StyleFontFamily, number> = { 'sans-serif': 2, serif: 2, monospace: 3, handwritten: 5 };
 const r = (n: number) => Math.round(n * 100) / 100;
+
+/** Color del borde o de la línea cuando el estilo lo fija. */
+function strokeOf(style: Style | undefined): Json {
+  return style?.borderColor ? { strokeColor: style.borderColor } : {};
+}
+
+/** Borde y relleno de una forma: los del estilo o, si falta el relleno, `fill`. */
+function boxOf(style: Style | undefined, fill: string): Json {
+  return { backgroundColor: style?.fillColor ?? fill, ...strokeOf(style) };
+}
+
+/** Color, familia y tamaño de un texto cuyo tamaño sin estilo es `size`. */
+function fontOf(style: Style | undefined, size: number): Json {
+  return {
+    fontSize: textFont(style, size).size,
+    ...(style?.fontColor ? { strokeColor: style.fontColor } : {}),
+    ...(style?.fontFamily ? { fontFamily: STYLE_FONT_FAMILIES[style.fontFamily] } : {}),
+  };
+}
 
 class Builder {
   readonly elements: Json[] = [];
+  readonly files: Json = {};
   private readonly updated: number;
   constructor(private readonly diagram: Diagram) {
     this.updated = Date.parse(diagram.updatedAt) || 0;
@@ -58,6 +90,23 @@ class Builder {
     }));
   }
 
+  /** Polígono cerrado: una línea que vuelve a su primer punto. */
+  polygon(id: string, points: Point[], box: Box, extra: Json = {}): void {
+    const closed = [...points, points[0]!];
+    this.elements.push(this.base(id, 'line', box, {
+      points: closed.map((p) => [r(p.x), r(p.y)]), polygon: true, lastCommittedPoint: null, startBinding: null, endBinding: null,
+      startArrowhead: null, endArrowhead: null, ...extra,
+    }));
+  }
+
+  /** Trazo abierto con puntos relativos a la caja del elemento. */
+  polyline(id: string, points: Point[], box: Box, extra: Json = {}): void {
+    this.elements.push(this.base(id, 'line', box, {
+      points: points.map((p) => [r(p.x), r(p.y)]), lastCommittedPoint: null, startBinding: null, endBinding: null,
+      startArrowhead: null, endArrowhead: null, ...extra,
+    }));
+  }
+
   text(id: string, text: string, box: Box, extra: Json = {}): Json {
     const fontSize = (extra.fontSize as number | undefined) ?? 14;
     const el = this.base(id, 'text', box, {
@@ -66,6 +115,19 @@ class Builder {
     });
     this.elements.push(el);
     return el;
+  }
+
+  image(id: string, box: Box, dataURL: string): void {
+    const fileId = `file_${id}`;
+    const mimeType = /^data:(image\/(?:png|jpeg|svg\+xml));base64,/.exec(dataURL)?.[1];
+    if (!mimeType) throw new Error('La imagen no tiene un data URL válido.');
+    const dimensions = imageDataUrlDimensions(dataURL);
+    const aspect = dimensions ? dimensions.width / dimensions.height : box.width / box.height;
+    const width = Math.min(box.width, box.height * aspect);
+    const height = Math.min(box.height, box.width / aspect);
+    const fitted = { x: box.x + (box.width - width) / 2, y: box.y + (box.height - height) / 2, width, height };
+    this.elements.push(this.base(id, 'image', fitted, { fileId, status: 'saved', scale: [1, 1], crop: null }));
+    this.files[fileId] = { id: fileId, dataURL, mimeType, created: this.updated, lastRetrieved: this.updated };
   }
 
   /** Texto ligado a un contenedor: el contenedor declara el vínculo en `boundElements`. */
@@ -82,31 +144,33 @@ class Builder {
 }
 
 function addUml(b: Builder, el: Element, box: Box): void {
-  const compartments = el.kind === 'class' ? classBox(el) : el.kind === 'interface' ? interfaceBox(el) : el.kind === 'enum' ? enumBox(el) : el.kind === 'table' ? tableBox(el) : undefined;
+  const compartments = el.kind === 'class' ? classBox(el) : el.kind === 'interface' ? interfaceBox(el) : el.kind === 'enum' ? enumBox(el) : el.kind === 'table' ? tableBox(el) : el.kind === 'value-list' ? valueListBox(el) : undefined;
   if (!compartments) return;
   const group = [`${el.id}-group`];
-  const rect = b.shape(el.id, 'rectangle', box, { backgroundColor: '#fffef5', groupIds: group });
+  const rect = b.shape(el.id, 'rectangle', box, { ...boxOf(el.style, '#fffef5'), groupIds: group });
   const g = boxGeometry(compartments);
-  b.boundText(rect, compartments.header.map((l) => l.text).join('\n'), { verticalAlign: 'top', fontSize: 14, groupIds: group });
+  b.boundText(rect, compartments.header.map((l) => l.text).join('\n'), { verticalAlign: 'top', ...fontOf(el.style, FONT.name), groupIds: group });
   g.sections.forEach((section, s) => {
-    b.line(`${el.id}-sep-${s}`, { x: box.x, y: box.y + section.top }, { x: box.x + box.width, y: box.y + section.top }, { groupIds: group });
+    b.line(`${el.id}-sep-${s}`, { x: box.x, y: box.y + section.top }, { x: box.x + box.width, y: box.y + section.top }, { ...strokeOf(el.style), groupIds: group });
     section.lines.forEach((line, i) => {
-      b.text(`${el.id}-${line.line.slot ?? `${s}-${i}`}`, line.line.text, { x: box.x + 10, y: box.y + line.y, width: box.width - 20, height: line.height }, { fontSize: 13, groupIds: group });
+      b.text(`${el.id}-${line.line.slot ?? `${s}-${i}`}`, line.line.text, { x: box.x + 10, y: box.y + line.y, width: box.width - 20, height: line.height }, { ...fontOf(el.style, FONT.member), groupIds: group });
     });
   });
 }
 
 function addC4(b: Builder, el: Element, box: Box): void {
   if (el.kind === 'boundary') {
-    b.shape(el.id, 'rectangle', box, { strokeStyle: 'dashed', strokeColor: C4_PALETTE.boundary.stroke, roundness: { type: 3 } });
+    const c = paintOf(el.style, { ...C4_PALETTE.boundary, fill: 'transparent' });
+    b.shape(el.id, 'rectangle', box, { strokeStyle: 'dashed', strokeColor: c.stroke, backgroundColor: c.fill, roundness: { type: 3 } });
     const type = { enterprise: '[Enterprise]', system: '[Software System]', container: '[Container]' }[el.boundaryType];
-    b.text(`${el.id}-title`, `${el.name}\n${type}`, { x: box.x + 12, y: box.y + 10, width: box.width - 24, height: 40 }, { fontSize: 14, strokeColor: C4_PALETTE.boundary.text });
+    b.text(`${el.id}-title`, `${el.name}\n${type}`, { x: box.x + 12, y: box.y + 10, width: box.width - 24, height: 40 }, { ...fontOf(el.style, FONT.name), strokeColor: c.text });
     return;
   }
   if (el.kind !== 'person' && el.kind !== 'software-system' && el.kind !== 'container' && el.kind !== 'component') return;
   const external = 'external' in el ? el.external : undefined;
-  const c = c4Colors(el.kind, external);
+  const c = paintOf(el.style, c4Colors(el.kind, external));
   const paint = { backgroundColor: c.fill, strokeColor: c.stroke, roundness: { type: 3 } };
+  const font = { ...fontOf(el.style, FONT.name), strokeColor: c.text };
   const type =
     el.kind === 'person' ? (external ? 'Person - External' : 'Person')
       : el.kind === 'software-system' ? (external ? 'Software System - External' : 'Software System')
@@ -117,34 +181,134 @@ function addC4(b: Builder, el: Element, box: Box): void {
     const head = 56;
     b.shape(`${el.id}-head`, 'ellipse', { x: box.x + box.width / 2 - head / 2, y: box.y, width: head, height: head }, { ...paint, groupIds: group });
     const body = b.shape(el.id, 'rectangle', { x: box.x, y: box.y + head - 14, width: box.width, height: box.height - head + 14 }, { ...paint, groupIds: group });
-    b.boundText(body, label, { strokeColor: c.text, groupIds: group });
+    b.boundText(body, label, { ...font, groupIds: group });
     return;
   }
   const rect = b.shape(el.id, 'rectangle', box, paint);
-  b.boundText(rect, label, { strokeColor: c.text });
+  b.boundText(rect, label, font);
   if (el.kind === 'container' && el.variant === 'database') {
     b.shape(`${el.id}-cap`, 'ellipse', { x: box.x, y: box.y - 9, width: box.width, height: 18 }, { ...paint });
   }
 }
 
 function addEr(b: Builder, el: Element, box: Box): void {
-  if (el.kind === 'table') return addUml(b, el, box);
+  if (el.kind === 'table' || el.kind === 'value-list') return addUml(b, el, box);
+  if (el.kind === 'attribute') {
+    const dashed = el.derived ? { strokeStyle: 'dashed' } : {};
+    const oval = b.shape(el.id, 'ellipse', box, { ...boxOf(el.style, '#fffef5'), ...dashed });
+    b.boundText(oval, el.name, fontOf(el.style, FONT.member));
+    if (el.multivalued) {
+      const inner = { x: box.x + MULTIVALUED_GAP, y: box.y + MULTIVALUED_GAP, width: box.width - MULTIVALUED_GAP * 2, height: box.height - MULTIVALUED_GAP * 2 };
+      b.shape(`${el.id}-inner`, 'ellipse', inner, { ...strokeOf(el.style), ...dashed });
+    }
+    return;
+  }
   if (el.kind !== 'entity') return;
-  const rect = b.shape(el.id, 'rectangle', box, { backgroundColor: '#fffef5' });
-  b.boundText(rect, el.name, { fontSize: 14 });
+  const rect = b.shape(el.id, 'rectangle', box, boxOf(el.style, '#fffef5'));
+  b.boundText(rect, el.name, fontOf(el.style, FONT.name));
   if (el.weak) {
     const inner = { x: box.x + WEAK_GAP, y: box.y + WEAK_GAP, width: box.width - WEAK_GAP * 2, height: box.height - WEAK_GAP * 2 };
-    b.shape(`${el.id}-inner`, 'rectangle', inner, {});
+    b.shape(`${el.id}-inner`, 'rectangle', inner, strokeOf(el.style));
   }
 }
 
+/** Figura general: Excalidraw no tiene nube, así que se aproxima con una elipse; triángulo y hexágono son polígonos. */
+function addFigure(b: Builder, el: Element, box: Box): void {
+  if (el.kind !== 'figure') return;
+  const paint = boxOf(el.style, '#fffef5');
+  const font = fontOf(el.style, FONT.name);
+  const outline = figureOutline(el.shape, box);
+  if (!outline) {
+    const container = b.shape(el.id, el.shape === 'circle' || el.shape === 'cloud' ? 'ellipse' : 'rectangle', box, paint);
+    b.boundText(container, el.name, font);
+    return;
+  }
+  b.polygon(el.id, outline, box, paint);
+  const area = figureTextArea(el.shape, box);
+  b.text(`${el.id}-label`, el.name, { x: box.x + area.x, y: box.y + area.y, width: area.width, height: area.height }, { textAlign: 'center', verticalAlign: 'middle', ...font });
+}
+
+/** Marco exportado como una forma con título; `groupIds` hacen que mueva a sus miembros. */
+function addFrame(b: Builder, el: Element, box: Box): void {
+  if (el.kind !== 'frame') return;
+  const c = paintOf(el.style, { fill: 'transparent', stroke: '#8492a6', text: '#475569' });
+  const groupIds = [`${el.id}-frame`];
+  b.shape(el.id, 'rectangle', box, {
+    strokeColor: c.stroke,
+    backgroundColor: c.fill,
+    strokeStyle: 'dashed',
+    roundness: { type: 3 },
+    groupIds,
+  });
+  b.text(`${el.id}-title`, el.name, { x: box.x + 12, y: box.y + 8, width: box.width - 24, height: 24 }, {
+    ...fontOf(el.style, FONT.name),
+    strokeColor: c.text,
+    groupIds,
+  });
+}
+
+/** Trazo libre con color y grosor editables en Excalidraw. */
+function addDrawing(b: Builder, el: Element, box: Box): void {
+  if (el.kind !== 'drawing') return;
+  b.polyline(el.id, el.points, box, { strokeColor: el.strokeColor, strokeWidth: el.strokeWidth });
+}
+
+/** Colección documental exportada con las mismas cajas anidadas que la app. */
+function addCollection(b: Builder, el: Element, box: Box): void {
+  if (el.kind !== 'collection') return;
+  const primitives = collectionShape.primitives(el, { width: box.width, height: box.height });
+  const outer = primitives[0];
+  if (!outer || outer.type !== 'rect') return;
+  const paintColor = (color: string | undefined, fallback: string) => !color || color === 'none' ? fallback : color;
+  const groupIds = [`${el.id}-group`];
+  b.shape(el.id, 'rectangle', box, {
+    backgroundColor: paintColor(outer.fill, '#f8fafc'),
+    strokeColor: paintColor(outer.stroke, '#1f2933'),
+    strokeWidth: outer.strokeWidth ?? 1,
+    roundness: { type: 3 },
+    groupIds,
+    customData: { kind: 'collection', fields: el.fields },
+  });
+  primitives.slice(1).forEach((primitive: Primitive, i) => {
+    const index = i + 1;
+    if (primitive.type === 'rect') {
+      b.shape(`${el.id}-nosql-${index}`, 'rectangle', {
+        x: box.x + primitive.x,
+        y: box.y + primitive.y,
+        width: primitive.width,
+        height: primitive.height,
+      }, {
+        backgroundColor: paintColor(primitive.fill, 'transparent'),
+        strokeColor: paintColor(primitive.stroke, 'transparent'),
+        strokeWidth: primitive.strokeWidth ?? 1,
+        roundness: { type: 3 },
+        groupIds,
+      });
+    } else if (primitive.type === 'text') {
+      b.text(`${el.id}-nosql-${index}`, primitive.text, {
+        x: box.x + primitive.x,
+        y: box.y + primitive.y - primitive.size * 0.875,
+        width: Math.max(0, box.width - primitive.x),
+        height: lineHeight(primitive.size),
+      }, {
+        fontSize: primitive.size,
+        fontFamily: primitive.fontFamily ? STYLE_FONT_FAMILIES[primitive.fontFamily] : FONT_FAMILY,
+        strokeColor: primitive.color,
+        textAlign: primitive.anchor === 'middle' ? 'center' : primitive.anchor === 'end' ? 'right' : 'left',
+        verticalAlign: 'middle',
+        groupIds,
+      });
+    }
+  });
+}
+
 /** Marca pata de gallo como líneas y un círculo, porque Excalidraw no tiene cero-o-uno nativo. */
-function addCardinality(b: Builder, rel: Relation, kind: Cardinality, tag: string, tip: Point, from: Point, color: string): void {
+function addCardinality(b: Builder, rel: Relation, kind: Cardinality, tag: string, tip: Point, from: Point, color: string, fill = '#ffffff'): void {
   const { lines, circle } = crowFoot(kind, markerFrame(tip, from));
   lines.forEach((l, i) => b.line(`${rel.id}-${tag}-${i}`, l[0], l[1], { strokeColor: color, strokeWidth: 1.5 }));
   if (circle) {
     const box = { x: circle.x - CIRCLE_RADIUS, y: circle.y - CIRCLE_RADIUS, width: CIRCLE_RADIUS * 2, height: CIRCLE_RADIUS * 2 };
-    b.shape(`${rel.id}-${tag}-o`, 'ellipse', box, { strokeColor: color, backgroundColor: '#ffffff', strokeWidth: 1.5 });
+    b.shape(`${rel.id}-${tag}-o`, 'ellipse', box, { strokeColor: color, backgroundColor: fill, strokeWidth: 1.5 });
   }
 }
 
@@ -172,10 +336,10 @@ function addArrow(b: Builder, rel: Relation, byId: Map<string, Json>): void {
     const target = byId.get(id);
     if (target) target.boundElements = [...((target.boundElements as Json[] | null) ?? []), { type: 'arrow', id: rel.id }];
   }
-  if (style.start && isCardinality(style.start)) addCardinality(b, rel, style.start, 'src', route[0]!, route[1]!, style.color);
-  if (style.end && isCardinality(style.end)) addCardinality(b, rel, style.end, 'dst', route[route.length - 1]!, route[route.length - 2]!, style.color);
+  if (style.start && isCardinality(style.start)) addCardinality(b, rel, style.start, 'src', route[0]!, route[1]!, style.color, style.fill);
+  if (style.end && isCardinality(style.end)) addCardinality(b, rel, style.end, 'dst', route[route.length - 1]!, route[route.length - 2]!, style.color, style.fill);
   const lines = edgeLabelLines(rel);
-  if (lines.length > 0) b.boundText(arrow, lines.join('\n'), { fontSize: 12 });
+  if (lines.length > 0) b.boundText(arrow, lines.join('\n'), fontOf(rel.style, 12));
 }
 
 /**
@@ -185,26 +349,67 @@ function addArrow(b: Builder, rel: Relation, byId: Map<string, Json>): void {
  */
 export function exportExcalidraw(diagram: Diagram): string {
   const b = new Builder(diagram);
+  const byId = new Map(diagram.elements.map((el) => [el.id, el]));
+  const depth = (element: Element) => {
+    let result = 0;
+    let parent = element.parentId ? byId.get(element.parentId) : undefined;
+    const visited = new Set<string>();
+    while (parent && !visited.has(parent.id)) {
+      visited.add(parent.id);
+      result++;
+      parent = parent.parentId ? byId.get(parent.parentId) : undefined;
+    }
+    return result;
+  };
+  const frameGroupIds = (element: Element) => {
+    const frames: string[] = [];
+    let current: Element | undefined = element;
+    const visited = new Set<string>();
+    while (current && !visited.has(current.id)) {
+      visited.add(current.id);
+      if (current.kind === 'frame') frames.push(`${current.id}-frame`);
+      current = current.parentId ? byId.get(current.parentId) : undefined;
+    }
+    return frames;
+  };
   const groupsFirst = [...diagram.elements].sort((a, c) => Number(!isGroupKind(a.kind)) - Number(!isGroupKind(c.kind)) || (a.id < c.id ? -1 : 1));
+  if (diagram.elements.some((element) => element.kind === 'frame')) {
+    const orderedGroups = groupsFirst.filter((element) => isGroupKind(element.kind)).sort((a, c) => depth(a) - depth(c) || (a.id < c.id ? -1 : 1));
+    let nextGroup = 0;
+    for (let i = 0; i < groupsFirst.length; i++) if (isGroupKind(groupsFirst[i]!.kind)) groupsFirst[i] = orderedGroups[nextGroup++]!;
+  }
   for (const el of groupsFirst) {
     const l = el.layout;
     if (!l || l.width === undefined || l.height === undefined) continue;
     const box = { x: l.x, y: l.y, width: l.width, height: l.height };
-    if (diagram.type === 'class') {
+    const start = b.elements.length;
+    if (el.kind === 'drawing') addDrawing(b, el, box);
+    else if (el.kind === 'image') b.image(el.id, box, el.src);
+    else if (el.kind === 'collection') addCollection(b, el, box);
+    else if (el.kind === 'figure') addFigure(b, el, box);
+    else if (el.kind === 'frame') addFrame(b, el, box);
+    else if (diagram.type === 'class') {
       if (el.kind === 'package') {
-        b.shape(el.id, 'rectangle', box, {});
-        b.text(`${el.id}-title`, el.name, { x: box.x + 10, y: box.y + 6, width: box.width - 20, height: 20 }, { fontSize: 14 });
+        b.shape(el.id, 'rectangle', box, { ...strokeOf(el.style), ...(el.style?.fillColor ? { backgroundColor: el.style.fillColor } : {}) });
+        b.text(`${el.id}-title`, el.name, { x: box.x + 10, y: box.y + 6, width: box.width - 20, height: 20 }, fontOf(el.style, FONT.name));
       } else addUml(b, el, box);
     } else if (diagram.type === 'er') addEr(b, el, box);
     else addC4(b, el, box);
+    const groupIds = frameGroupIds(el);
+    if (groupIds.length > 0) {
+      for (const generated of b.elements.slice(start)) {
+        const own = Array.isArray(generated.groupIds) ? generated.groupIds as string[] : [];
+        generated.groupIds = [...new Set([...own, ...groupIds])];
+      }
+    }
   }
-  const byId = new Map(b.elements.filter((e) => diagram.elements.some((d) => d.id === e.id)).map((e) => [e.id as string, e]));
-  for (const rel of [...diagram.relations].sort((a, c) => (a.id < c.id ? -1 : 1))) addArrow(b, rel, byId);
+  const exportedById = new Map(b.elements.filter((e) => diagram.elements.some((d) => d.id === e.id)).map((e) => [e.id as string, e]));
+  for (const rel of [...diagram.relations].sort((a, c) => (a.id < c.id ? -1 : 1))) addArrow(b, rel, exportedById);
 
   const keys = orderKeys(b.elements.length);
   const elements = b.elements.map((e, i) => ({ ...e, index: keys[i] }));
   return JSON.stringify(
-    { type: 'excalidraw', version: 2, source: 'https://github.com/chartsia/chartsia', elements, appState: { gridSize: 20, viewBackgroundColor: '#ffffff' }, files: {} },
+    { type: 'excalidraw', version: 2, source: 'https://github.com/chartsia/chartsia', elements, appState: { gridSize: 20, viewBackgroundColor: '#ffffff' }, files: b.files },
     null,
     2,
   ) + '\n';

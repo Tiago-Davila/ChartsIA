@@ -1,0 +1,26 @@
+{
+  "type": "c4-container",
+  "title": "C4 con estilo",
+  "elements": [
+    { "id": "cliente", "kind": "person", "name": "Cliente", "description": "Compra en la tienda",
+      "style": { "fillColor": "#7a2e8e", "borderColor": "#4a148c", "fontSize": 16 } },
+    { "id": "tienda", "kind": "boundary", "name": "Tienda online", "boundaryType": "system",
+      "style": { "borderColor": "#b54708", "fontColor": "#b54708", "fillColor": "#fffaeb" } },
+    { "id": "web", "kind": "container", "name": "Web", "technology": "React", "variant": "web", "parentId": "tienda",
+      "style": { "fontFamily": "monospace", "fontColor": "#fefefe" } },
+    { "id": "db", "kind": "container", "name": "BD", "technology": "PostgreSQL", "variant": "database", "parentId": "tienda",
+      "style": { "fillColor": "#0e7090", "borderColor": "#164c63", "fontFamily": "handwritten" } },
+    { "id": "pagos", "kind": "software-system", "name": "Pasarela", "external": true,
+      "style": { "fontFamily": "serif", "fontSize": 20 } },
+    { "id": "nube", "kind": "figure", "name": "Nube", "shape": "cloud",
+      "style": { "fillColor": "#e0f2fe", "borderColor": "#0369a1", "fontColor": "#0c4a6e", "fontFamily": "monospace" } },
+    { "id": "hexagono", "kind": "figure", "name": "Hexágono", "shape": "hexagon",
+      "style": { "fillColor": "#fce7f3", "fontSize": 18 } }
+  ],
+  "relations": [
+    { "id": "r1", "kind": "c4-rel", "source": "cliente", "target": "web", "label": "Usa",
+      "style": { "borderColor": "#b54708", "fontColor": "#b54708", "fontSize": 14 } },
+    { "id": "r2", "kind": "c4-rel", "source": "web", "target": "db", "label": "Lee y escribe", "technology": "SQL" },
+    { "id": "r3", "kind": "c4-rel", "source": "web", "target": "pagos", "label": "Cobra" }
+  ]
+}

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { DiagramInput } from '../../../src/model/index.js';
 import { validateDiagram } from '../../../src/validation/index.js';
 import { c4ContainerDiagram, classDiagram, codes } from '../../support/fixtures.js';
+import { pngDataUrl } from '../../support/images.js';
 
 const errs = (d: DiagramInput) => {
   const res = validateDiagram(d);
@@ -59,6 +60,20 @@ describe('PARENT_CYCLE', () => {
     d.elements.push({ id: 'p1', kind: 'package', name: 'p1', parentId: 'p1' });
     expect(codes(errs(d))).toContain('PARENT_CYCLE');
   });
+
+  it('detecta ciclos de frames antes de que una cadena de component quede atrapada', () => {
+    const res = errs({
+      type: 'c4-component', title: 'API', relations: [],
+      elements: [
+        { id: 'container', kind: 'boundary', name: 'API', boundaryType: 'container' },
+        { id: 'outer', kind: 'frame', name: 'Exterior', parentId: 'inner' },
+        { id: 'inner', kind: 'frame', name: 'Interior', parentId: 'outer' },
+        { id: 'ctrl', kind: 'component', name: 'Controller', parentId: 'inner' },
+      ],
+    } as DiagramInput);
+    expect(codes(res)).toContain('PARENT_CYCLE');
+    expect(codes(res)).not.toContain('INVALID_PARENT');
+  });
 });
 
 describe('INVALID_PARENT', () => {
@@ -78,6 +93,50 @@ describe('INVALID_PARENT', () => {
     expect(errs(d)).toEqual([]);
   });
 
+  it('un package también contiene figuras generales', () => {
+    const d = classDiagram();
+    d.elements.push(
+      { id: 'pkg', kind: 'package', name: 'pkg' },
+      { id: 'nube', kind: 'figure', name: 'Nube', shape: 'cloud', parentId: 'pkg' },
+    );
+    expect(errs(d)).toEqual([]);
+  });
+
+  it('un package también contiene trazos libres', () => {
+    const d = classDiagram();
+    d.elements.push(
+      { id: 'pkg', kind: 'package', name: 'pkg' },
+      { id: 'trazo', kind: 'drawing', name: 'Trazo', points: [{ x: 0, y: 0 }, { x: 12, y: 8 }], strokeColor: '#1f2933', strokeWidth: 2, parentId: 'pkg' },
+    );
+    expect(errs(d)).toEqual([]);
+  });
+
+  it('un package puede contener un frame y este puede anidar otros grupos', () => {
+    const d = classDiagram({
+      elements: [
+        { id: 'pkg', kind: 'package', name: 'Paquete' },
+        { id: 'outer', kind: 'frame', name: 'Exterior', parentId: 'pkg' },
+        { id: 'inner', kind: 'frame', name: 'Interior', parentId: 'outer' },
+        { id: 'A', kind: 'class', name: 'A', attributes: [], operations: [], parentId: 'inner' },
+      ],
+      relations: [],
+    });
+    expect(errs(d)).toEqual([]);
+  });
+
+  it('un frame ER puede contener imágenes, trazos y elementos del diagrama', () => {
+    const d: DiagramInput = {
+      type: 'er', title: 'Tienda', relations: [],
+      elements: [
+        { id: 'marco', kind: 'frame', name: 'Contexto' },
+        { id: 'cliente', kind: 'entity', name: 'Cliente', parentId: 'marco' },
+        { id: 'logo', kind: 'image', name: 'Logo', src: pngDataUrl(), parentId: 'marco' },
+        { id: 'trazo', kind: 'drawing', name: 'Trazo', points: [{ x: 0, y: 0 }, { x: 12, y: 8 }], strokeColor: '#1f2933', strokeWidth: 2, parentId: 'marco' },
+      ],
+    };
+    expect(errs(d)).toEqual([]);
+  });
+
   it('en c4-component un component debe estar dentro de un boundary container', () => {
     const base = {
       type: 'c4-component' as const,
@@ -92,6 +151,17 @@ describe('INVALID_PARENT', () => {
       ],
     } as DiagramInput);
     expect(ok).toEqual([]);
+
+    const throughFrames = errs({
+      ...base,
+      elements: [
+        { id: 'api', kind: 'boundary', name: 'API', boundaryType: 'container' },
+        { id: 'outer', kind: 'frame', name: 'Exterior', parentId: 'api' },
+        { id: 'inner', kind: 'frame', name: 'Interior', parentId: 'outer' },
+        { id: 'c1', kind: 'component', name: 'Ctrl', parentId: 'inner' },
+      ],
+    } as DiagramInput);
+    expect(throughFrames).toEqual([]);
 
     const sinPadre = errs({
       ...base,

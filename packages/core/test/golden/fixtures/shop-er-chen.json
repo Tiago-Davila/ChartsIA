@@ -1,0 +1,27 @@
+{
+  "type": "er",
+  "title": "Cliente Chen & <Atributos>",
+  "elements": [
+    { "id": "cliente", "kind": "entity", "name": "Cliente" },
+    { "id": "pedido", "kind": "entity", "name": "Pedido" },
+    { "id": "dni", "kind": "attribute", "name": "DNI", "key": true },
+    { "id": "nombre", "kind": "attribute", "name": "Nombre completo" },
+    { "id": "nombre_pila", "kind": "attribute", "name": "Nombre" },
+    { "id": "apellido", "kind": "attribute", "name": "Apellido" },
+    { "id": "telefonos", "kind": "attribute", "name": "Teléfonos", "multivalued": true },
+    { "id": "edad", "kind": "attribute", "name": "Edad <años>", "derived": true },
+    { "id": "estado", "kind": "attribute", "name": "Estado" },
+    { "id": "estados", "kind": "value-list", "name": "Estados", "values": ["pendiente", "enviado", "entregado"] }
+  ],
+  "relations": [
+    { "id": "r1", "kind": "er-rel", "source": "cliente", "target": "pedido", "label": "hace", "sourceCardinality": "one", "targetCardinality": "zero-many" },
+    { "id": "a1", "kind": "er-attr", "source": "cliente", "target": "dni" },
+    { "id": "a2", "kind": "er-attr", "source": "cliente", "target": "nombre" },
+    { "id": "a3", "kind": "er-attr", "source": "nombre", "target": "nombre_pila" },
+    { "id": "a4", "kind": "er-attr", "source": "nombre", "target": "apellido" },
+    { "id": "a5", "kind": "er-attr", "source": "cliente", "target": "telefonos" },
+    { "id": "a6", "kind": "er-attr", "source": "cliente", "target": "edad" },
+    { "id": "a7", "kind": "er-attr", "source": "pedido", "target": "estado" },
+    { "id": "a8", "kind": "er-attr", "source": "estado", "target": "estados" }
+  ]
+}

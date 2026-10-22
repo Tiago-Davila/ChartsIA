@@ -1,6 +1,8 @@
 import { type Element } from '../model/diagram.js';
 import { C4_PALETTE } from '../shapes/c4/palette.js';
+import { FONT } from '../shapes/types.js';
 import { type DrawioCell } from './drawio.js';
+import { drawioBox, drawioFont } from './drawio-style.js';
 
 const POINTS = 'points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[1,1,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];';
 const COMMON = 'whiteSpace=wrap;html=0;align=center;metaEdit=1;labelBackgroundColor=none;fontSize=12;';
@@ -18,6 +20,12 @@ function colors(kind: 'person' | 'software-system' | 'container' | 'component', 
  * marcadores de posición y `html=0`, así ningún texto se interpreta como HTML.
  */
 export function c4Cells(el: Element, parent: string, geo: { x: number; y: number; width: number; height: number }): DrawioCell[] | undefined {
+  const cells = c4BaseCells(el, parent, geo);
+  return cells?.map((cell) => ({ ...cell, style: drawioFont(drawioBox(cell.style, el.style), el.style, FONT.c4Description) }));
+}
+
+/** Celdas C4 con la paleta y la fuente por defecto. */
+function c4BaseCells(el: Element, parent: string, geo: { x: number; y: number; width: number; height: number }): DrawioCell[] | undefined {
   const object = (c4Type: string, label: string, technology?: string) => ({
     placeholders: '1', label, c4Name: el.name, c4Type, c4Description: el.description ?? '', ...(technology !== undefined ? { c4Technology: technology } : {}),
   });

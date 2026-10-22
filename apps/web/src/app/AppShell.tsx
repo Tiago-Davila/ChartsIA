@@ -1,7 +1,7 @@
 import { type ExportFormat } from '@chartsia/core/export';
-import { type Diagram } from '@chartsia/core/model';
+import { type Diagram, type DiagramType, type Point } from '@chartsia/core/model';
 import { type Edge, type Node } from '@xyflow/react';
-import { type ReactNode } from 'react';
+import { type ClipboardEvent, type DragEvent, type ReactNode, useRef } from 'react';
 import { type ConnectedAgent, type Project } from '../state/api-client';
 import { type AlignMode } from '../canvas/align';
 import { DiagramCanvas, type DiagramCanvasProps } from '../canvas/DiagramCanvas';
@@ -10,6 +10,7 @@ import { ConfigScreen } from './ConfigScreen';
 import { ConnectionStatus, type ConnectionState } from './ConnectionStatus';
 import { DiagramList, type DiagramListItem } from './DiagramList';
 import { EmptyState } from './EmptyState';
+import { NewDiagram } from './NewDiagram';
 import { Toolbar } from './Toolbar';
 
 export interface AppShellProps {
@@ -30,14 +31,18 @@ export interface AppShellProps {
   onCloseConfig(): void;
   readOnly?: boolean;
   onOpen(diagramId: string): void;
+  onCreateDiagram(type: DiagramType, title: string, projectId?: string): void;
+  onImportMermaid(source: string, title?: string, projectId?: string): Promise<string[] | null>;
   onMoveDiagram(diagramId: string, projectId: string | null): void;
   onNewProject(diagramId: string, name: string): void;
   onRenameDiagram(diagramId: string, title: string): void;
   onExport(format: ExportFormat): void;
+  onImportImages?(files: File[], screenPosition?: { x: number; y: number }): void;
   onRename?(title: string): void;
   onNodeDragStop?: DiagramCanvasProps['onNodeDragStop'];
   onDelete?: DiagramCanvasProps['onDelete'];
   onConnect?: DiagramCanvasProps['onConnect'];
+  onDraw?: (points: Point[], screenPoints: Point[], color: string) => void;
   onAlign?(mode: AlignMode): void;
   changedIds?: string[];
   onOpenLatest?(): Promise<boolean>;
@@ -49,16 +54,45 @@ export interface AppShellProps {
 /** Composición de la app: barra lateral, toolbar, lienzo, leyenda y estado vacío. */
 export function AppShell(props: AppShellProps) {
   const { diagram } = props;
+  const canvas = useRef<HTMLDivElement>(null);
+  const center = () => {
+    const rect = canvas.current?.getBoundingClientRect();
+    return rect ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 } : { x: 0, y: 0 };
+  };
+  const onPaste = (event: ClipboardEvent<HTMLElement>) => {
+    if (props.readOnly || !props.onImportImages) return;
+    const files = Array.from(event.clipboardData.items)
+      .filter((item) => item.kind === 'file' && item.type.startsWith('image/'))
+      .map((item) => item.getAsFile())
+      .filter((file): file is File => file !== null);
+    if (files.length === 0) return;
+    event.preventDefault();
+    props.onImportImages(files, center());
+  };
+  const onDragOver = (event: DragEvent<HTMLDivElement>) => {
+    if (props.readOnly || !props.onImportImages || !Array.from(event.dataTransfer.types).includes('Files')) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
+  };
+  const onDrop = (event: DragEvent<HTMLDivElement>) => {
+    if (props.readOnly || !props.onImportImages || event.dataTransfer.files.length === 0) return;
+    event.preventDefault();
+    props.onImportImages(Array.from(event.dataTransfer.files), { x: event.clientX, y: event.clientY });
+  };
   return (
     <div className="app-shell">
       <aside className="app-shell__sidebar">
         <div className="brand">
           <span className="brand__mark" aria-hidden>◆</span> ChartsIA
         </div>
+        <NewDiagram projects={props.projects} onCreate={props.onCreateDiagram} onImportMermaid={props.onImportMermaid} />
         <DiagramList diagrams={props.diagrams} projects={props.projects} activeDiagramId={props.activeDiagramId} openDiagramId={diagram?.id ?? null} onOpen={props.onOpen} onMove={props.onMoveDiagram} onNewProject={props.onNewProject} onRename={props.onRenameDiagram} />
+        <button type="button" className="button sidebar-config" aria-label="Configuración" aria-pressed={props.configOpen} onClick={props.onConfig}>
+          <span aria-hidden>⚙</span>
+        </button>
         <ConnectionStatus state={props.connection} />
       </aside>
-      <main className="app-shell__main">
+      <main className="app-shell__main" onPaste={onPaste}>
         {props.configOpen ? (
           <ConfigScreen origin={props.origin} agents={props.agents} connection={props.connection} onBack={props.onCloseConfig} />
         ) : diagram ? (
@@ -73,8 +107,9 @@ export function AppShell(props: AppShellProps) {
               changedIds={props.changedIds}
               onOpenLatest={props.onOpenLatest}
               onChangedFitted={props.onChangedFitted}
+              onInsertImages={(files) => props.onImportImages?.(files, center())}
             />
-            <div className="app-shell__canvas">
+            <div className="app-shell__canvas" ref={canvas} onDragOver={onDragOver} onDrop={onDrop}>
               <DiagramCanvas
                 diagramId={diagram.id}
                 nodes={props.nodes}
@@ -83,6 +118,7 @@ export function AppShell(props: AppShellProps) {
                 onNodeDragStop={props.onNodeDragStop}
                 onDelete={props.onDelete}
                 onConnect={props.onConnect}
+                onDraw={props.onDraw}
               />
               <C4Legend diagram={diagram} />
             </div>

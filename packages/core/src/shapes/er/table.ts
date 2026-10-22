@@ -15,6 +15,7 @@ export function formatColumn(c: Column): string {
 export function tableBox(el: TableElement): CompartmentBox {
   return {
     header: headerLines(el.name, {}),
+    style: el.style,
     sections: [el.columns.map((c, i) => ({ text: formatColumn(c), slot: `column:${i}`, bold: c.pk, underline: c.pk, italic: !!c.fk && !c.pk }))],
   };
 }

@@ -43,11 +43,15 @@ for (const [nombre, diagrama] of [
     await nodes.first().click({ position: { x: 20, y: 8 } });
     const box = (await canvas.boundingBox())!;
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.keyboard.down('Control');
     await page.mouse.wheel(0, 600);
+    await page.keyboard.up('Control');
     await page.mouse.move(box.x + 10, box.y + 10);
+    await page.keyboard.down('Space');
     await page.mouse.down();
     await page.mouse.move(box.x + 1500, box.y + 600, { steps: 5 });
     await page.mouse.up();
+    await page.keyboard.up('Space');
 
     // El primer clic muestra el cambio; el segundo deja todo el diagrama a la vista.
     await page.getByRole('button', { name: 'Ajustar', exact: true }).click();

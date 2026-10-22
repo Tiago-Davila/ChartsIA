@@ -57,8 +57,41 @@ por columna (`PK id: INT NOT NULL`; la PK en negrita y subrayada, la FK en cursi
 apuntar a otra tabla existente y a una de sus columnas `pk`: si no, `UNKNOWN_REFERENCE` o
 `INVALID_MEMBER`; una columna repetida es `INVALID_MEMBER`. La flecha FK→PK es una `er-rel`
 normal entre las dos tablas, que declara el agente.
-En `apply_changes`, `update_element` admite `weak`, `columns` (reemplaza la lista) y `update_relation` admite
+`attribute` es un atributo de la notación Chen (óvalo): `key: true` subraya el nombre, `multivalued: true`
+lo dibuja con doble óvalo y `derived: true` con borde discontinuo; una clave no puede ser multivaluada
+ni derivada (`FIELD_NOT_ALLOWED`). `value-list` es una lista de valores (`values`, 1 a 200, sin repetidos:
+`INVALID_MEMBER`) con una fila por valor. Se unen con relaciones `er-attr` (sin cardinalidad), siempre del
+dueño a lo que cuelga de él: `entity`→`attribute`, `attribute`→`attribute` (atributo compuesto, con
+sub-atributos) o `attribute`→`value-list`; cualquier otro par es `RELATION_NOT_ALLOWED`, igual que un
+atributo o lista con dos dueños o un ciclo de atributos. Las `er-rel` solo unen `entity` o `table`.
+En `apply_changes`, `update_element` admite `weak`, `columns` (reemplaza la lista), `key`, `multivalued`,
+`derived`, `values` (reemplaza la lista) y `update_relation` admite
 `sourceCardinality`, `targetCardinality` e `identifying`.
+
+Figuras generales: `figure` es un elemento básico con `shape` (`circle`, `square`, `rectangle`,
+`triangle`, `hexagon` o `cloud`) y el `name` centrado dentro. Se permite en **todos** los tipos de
+diagrama (`class`, `c4-*` y `er`; decisión del issue #194) y se conecta con las relaciones propias
+del tipo (en `er`, las figuras solo se unen con `connector`). Un `package` también puede contenerlas.
+`update_element` admite `shape` para cambiar la forma.
+
+Conectores libres: `connector` es una relación sin semántica UML/C4 para unir figuras entre sí y con
+cualquier otro elemento, y para uniones libres (decisión del issue #195). Se permite en **todos** los
+tipos de diagrama y entre cualquier par de elementos que no sean grupos; si el tipo tiene una relación
+propia para esa unión (herencia, `c4-rel`, `er-rel`, `er-attr`…), se usa esa. Campos: `label?` (≤200),
+`arrowheads?` (`none`: sin punta; `end`: punta abierta en el destino, por defecto; `both`: punta en ambos
+extremos) y `dashed?: true` (línea discontinua), además de `sourceSide`, `targetSide`, `waypoints` y
+`style` como el resto de relaciones. `arrowheads` y `dashed` en otra relación son `FIELD_NOT_ALLOWED`;
+las multiplicidades, `navigable`, `technology` y las cardinalidades tampoco se admiten en un `connector`.
+`update_relation` admite `arrowheads` y `dashed` (`null` los elimina) y `kind` para convertir una
+relación en conector o al revés.
+
+Estilo: todo elemento y relación admite `style` opcional, un objeto estricto con `borderColor?`,
+`fillColor?` y `fontColor?` (`#rrggbb`), `fontFamily?` (`sans-serif`, `serif`, `monospace` o
+`handwritten`) y `fontSize?` (entero de 8 a 48). En una relación, `borderColor` es el color de la
+línea y `fillColor` el relleno de sus marcas (rombos y puntas). Un valor inválido es
+`SCHEMA_VIOLATION` con el `path` del campo (p. ej. `/elements/0/style/fontSize`). En `apply_changes`,
+`update_element` y `update_relation` admiten `style`: reemplaza el estilo completo y `null` lo elimina.
+Úsalo solo si la persona pide colores o fuentes.
 
 `projectId` coloca el diagrama en un proyecto existente; si no existe, `PROJECT_NOT_FOUND` y no
 se crea nada.

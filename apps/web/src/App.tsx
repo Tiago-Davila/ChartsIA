@@ -1,4 +1,5 @@
 import { type ExportFormat } from '@chartsia/core/export';
+import { type DiagramType } from '@chartsia/core/model';
 import { ReactFlowProvider } from '@xyflow/react';
 import { useCallback, useMemo } from 'react';
 import { AppShell } from './app/AppShell';
@@ -55,6 +56,27 @@ function ConnectedApp() {
     if (latest.diagramId === diagramStore.getState().openDiagramId) return false;
     openDiagram(latest.diagramId);
     return true;
+  }, []);
+
+  // Crea un diagrama vacío en el hub y lo abre; el evento `diagram.created` actualiza la lista.
+  const onCreateDiagram = useCallback(async (type: DiagramType, title: string, projectId?: string) => {
+    try {
+      const { diagramId } = await api.createDiagram({ type, title, projectId });
+      openDiagram(diagramId);
+    } catch (error) {
+      reportError(error);
+    }
+  }, []);
+
+  const onImportMermaid = useCallback(async (source: string, title?: string, projectId?: string) => {
+    try {
+      const { diagramId, warnings } = await api.importMermaid({ source, ...(title ? { title } : {}), ...(projectId ? { projectId } : {}) });
+      openDiagram(diagramId);
+      return warnings;
+    } catch (error) {
+      reportError(error);
+      return null;
+    }
   }, []);
 
   // Mueve un diagrama de proyecto; la lista se actualiza con el evento `projects.changed`.
@@ -133,14 +155,18 @@ function ConnectedApp() {
           onConfig={() => navigate('/config')}
           onCloseConfig={() => navigate(diagram ? diagramPath(diagram.id) : '/')}
           onOpen={openDiagram}
+          onCreateDiagram={onCreateDiagram}
+          onImportMermaid={onImportMermaid}
           onMoveDiagram={onMoveDiagram}
           onNewProject={onNewProject}
           onRenameDiagram={onRenameDiagram}
           onExport={onExport}
+          onImportImages={edits.insertImages}
           onRename={edits.rename}
           onNodeDragStop={edits.onNodeDragStop}
           onDelete={edits.onDelete}
           onConnect={edits.onConnect}
+          onDraw={edits.onDraw}
           onAlign={edits.align}
           changedIds={changedIds}
           onOpenLatest={onOpenLatest}

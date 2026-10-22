@@ -1,4 +1,4 @@
-import { measureElement, type Primitive } from '@chartsia/core/shapes';
+import { CSS_FONT_FAMILIES, measureElement, type Primitive } from '@chartsia/core/shapes';
 import { Handle, NodeResizer, type NodeProps, Position } from '@xyflow/react';
 import { type CSSProperties, memo, useCallback, useMemo, useState } from 'react';
 import { slotValue } from '../canvas/slot-edits';
@@ -14,8 +14,9 @@ type TextPrimitive = Extract<Primitive, { type: 'text' }>;
 function editorStyle(p: TextPrimitive, width: number): CSSProperties {
   const height = Math.round(p.size * 1.5);
   const top = p.y - p.size * 1.05;
-  if (p.anchor === 'middle') return { left: 8, top, width: width - 16, height, fontSize: p.size, textAlign: 'center' };
-  return { left: p.x - 3, top, width: Math.max(80, width - p.x - 6), height, fontSize: p.size };
+  const fontFamily = p.fontFamily ? CSS_FONT_FAMILIES[p.fontFamily] : undefined;
+  if (p.anchor === 'middle') return { left: 8, top, width: width - 16, height, fontSize: p.size, fontFamily, textAlign: 'center' };
+  return { left: p.x - 3, top, width: Math.max(80, width - p.x - 6), height, fontSize: p.size, fontFamily };
 }
 
 /** Autocompletado de tipos para los slots de atributos y operaciones. */
@@ -50,7 +51,7 @@ function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<Elemen
   return (
     <div className={`chartsia-node${selected ? ' is-selected' : ''}`} style={{ width: size.width, height: size.height }} data-element-id={id}>
       <CleanShape element={element} size={size} onTextDoubleClick={onTextDoubleClick} />
-      {selected && !readOnly ? (
+      {selected && !readOnly && element.kind !== 'drawing' ? (
         <NodeResizer minWidth={minimum.width} minHeight={minimum.height} color="var(--accent)" onResizeEnd={(_, box) => resize(id, box)} />
       ) : null}
       <Handle type="target" position={Position.Top} isConnectable={!readOnly} className="chartsia-handle" />

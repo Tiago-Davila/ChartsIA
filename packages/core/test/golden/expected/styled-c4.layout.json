@@ -1,0 +1,217 @@
+{
+  "type": "c4-container",
+  "title": "C4 con estilo",
+  "elements": [
+    {
+      "id": "cliente",
+      "name": "Cliente",
+      "description": "Compra en la tienda",
+      "style": {
+        "borderColor": "#4a148c",
+        "fillColor": "#7a2e8e",
+        "fontSize": 16
+      },
+      "kind": "person",
+      "layout": {
+        "x": 90.67,
+        "y": 30,
+        "width": 220,
+        "height": 142,
+        "pinned": false
+      }
+    },
+    {
+      "id": "tienda",
+      "name": "Tienda online",
+      "style": {
+        "borderColor": "#b54708",
+        "fillColor": "#fffaeb",
+        "fontColor": "#b54708"
+      },
+      "kind": "boundary",
+      "boundaryType": "system",
+      "layout": {
+        "x": 30,
+        "y": 257,
+        "width": 304.67,
+        "height": 441,
+        "pinned": false
+      }
+    },
+    {
+      "id": "web",
+      "name": "Web",
+      "parentId": "tienda",
+      "style": {
+        "fontColor": "#fefefe",
+        "fontFamily": "monospace"
+      },
+      "kind": "container",
+      "technology": "React",
+      "variant": "web",
+      "layout": {
+        "x": 90.67,
+        "y": 323,
+        "width": 220,
+        "height": 134,
+        "pinned": false
+      }
+    },
+    {
+      "id": "db",
+      "name": "BD",
+      "parentId": "tienda",
+      "style": {
+        "borderColor": "#164c63",
+        "fillColor": "#0e7090",
+        "fontFamily": "handwritten"
+      },
+      "kind": "container",
+      "technology": "PostgreSQL",
+      "variant": "database",
+      "layout": {
+        "x": 54,
+        "y": 537,
+        "width": 220,
+        "height": 137,
+        "pinned": false
+      }
+    },
+    {
+      "id": "pagos",
+      "name": "Pasarela",
+      "style": {
+        "fontFamily": "serif",
+        "fontSize": 20
+      },
+      "kind": "software-system",
+      "external": true,
+      "layout": {
+        "x": 175,
+        "y": 783,
+        "width": 258,
+        "height": 110,
+        "pinned": false
+      }
+    },
+    {
+      "id": "nube",
+      "name": "Nube",
+      "style": {
+        "borderColor": "#0369a1",
+        "fillColor": "#e0f2fe",
+        "fontColor": "#0c4a6e",
+        "fontFamily": "monospace"
+      },
+      "kind": "figure",
+      "shape": "cloud",
+      "layout": {
+        "x": 579.67,
+        "y": 56,
+        "width": 140,
+        "height": 90,
+        "pinned": false
+      }
+    },
+    {
+      "id": "hexagono",
+      "name": "Hexágono",
+      "style": {
+        "fillColor": "#fce7f3",
+        "fontSize": 18
+      },
+      "kind": "figure",
+      "shape": "hexagon",
+      "layout": {
+        "x": 370.67,
+        "y": 69,
+        "width": 149,
+        "height": 64,
+        "pinned": false
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "r1",
+      "kind": "c4-rel",
+      "source": "cliente",
+      "target": "web",
+      "label": "Usa",
+      "style": {
+        "borderColor": "#b54708",
+        "fontColor": "#b54708",
+        "fontSize": 14
+      },
+      "route": [
+        {
+          "x": 200.67,
+          "y": 172
+        },
+        {
+          "x": 200.67,
+          "y": 188
+        },
+        {
+          "x": 200.67,
+          "y": 307
+        },
+        {
+          "x": 200.67,
+          "y": 323
+        }
+      ]
+    },
+    {
+      "id": "r2",
+      "kind": "c4-rel",
+      "source": "web",
+      "target": "db",
+      "label": "Lee y escribe",
+      "technology": "SQL",
+      "route": [
+        {
+          "x": 164,
+          "y": 457
+        },
+        {
+          "x": 164,
+          "y": 473
+        },
+        {
+          "x": 164,
+          "y": 537
+        }
+      ]
+    },
+    {
+      "id": "r3",
+      "kind": "c4-rel",
+      "source": "web",
+      "target": "pagos",
+      "label": "Cobra",
+      "route": [
+        {
+          "x": 237.34,
+          "y": 457
+        },
+        {
+          "x": 237.34,
+          "y": 473
+        },
+        {
+          "x": 304,
+          "y": 473
+        },
+        {
+          "x": 304,
+          "y": 783
+        }
+      ]
+    }
+  ],
+  "id": "dg_goldengolden",
+  "revision": 1,
+  "createdAt": "2026-10-20T10:00:00.000Z",
+  "updatedAt": "2026-10-20T10:00:00.000Z"
+}

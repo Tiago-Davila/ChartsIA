@@ -45,6 +45,7 @@ export function parseMethod(text: string, previous?: Method): Method | undefined
 
 /** Valor editable de un slot (la descripción completa, no solo la línea visible). */
 export function slotValue(element: Element, slot: string, shown: string): string {
+  if (slot === 'name' && element.kind === 'figure') return element.name; // el nombre se muestra partido en líneas
   if (slot === 'description' && 'description' in element && element.description) return element.description;
   if (slot === 'stereotype') return shown.replace(/^«|»$/g, '');
   if (slot === 'type' && 'technology' in element) return element.technology ?? '';
@@ -82,6 +83,9 @@ export function changesForSlot(element: Element, slot: string, value: string): E
     case 'literal':
       if (element.kind !== 'enum') return undefined;
       return { literals: element.literals.map((l, i) => (i === index ? value : l)) };
+    case 'value':
+      if (element.kind !== 'value-list') return undefined;
+      return { values: element.values.map((v, i) => (i === index ? value : v)) };
     default:
       return undefined;
   }

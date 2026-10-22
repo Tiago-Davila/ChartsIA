@@ -1,0 +1,18 @@
+{
+  "type": "er",
+  "title": "Conectores <libres> & figuras",
+  "elements": [
+    { "id": "cliente", "kind": "entity", "name": "Cliente" },
+    { "id": "nombre", "kind": "attribute", "name": "nombre" },
+    { "id": "nube", "kind": "figure", "name": "Nube", "shape": "cloud" },
+    { "id": "circulo", "kind": "figure", "name": "Círculo", "shape": "circle" },
+    { "id": "cuadrado", "kind": "figure", "name": "Cuadrado", "shape": "square" }
+  ],
+  "relations": [
+    { "id": "r1", "kind": "er-attr", "source": "cliente", "target": "nombre" },
+    { "id": "r2", "kind": "connector", "source": "cliente", "target": "nube", "label": "se conecta <a>" },
+    { "id": "r3", "kind": "connector", "source": "nube", "target": "circulo", "arrowheads": "both", "dashed": true },
+    { "id": "r4", "kind": "connector", "source": "circulo", "target": "cuadrado", "arrowheads": "none" },
+    { "id": "r5", "kind": "connector", "source": "nombre", "target": "cuadrado", "dashed": true, "label": "libre" }
+  ]
+}

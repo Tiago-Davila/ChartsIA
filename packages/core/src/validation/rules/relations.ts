@@ -16,6 +16,27 @@ const ENDPOINT_RULES: Partial<Record<Relation['kind'], { pairs: [string, string]
     text: 'inheritance solo une class→class o interface→interface',
   },
   realization: { pairs: [['class', 'interface']], text: 'realization solo une class→interface' },
+  'er-rel': {
+    pairs: [
+      ['entity', 'entity'],
+      ['entity', 'table'],
+      ['table', 'entity'],
+      ['table', 'table'],
+    ],
+    text: 'er-rel solo une entities o tables; los atributos y listas se unen con er-attr',
+  },
+  'er-attr': {
+    pairs: [
+      ['entity', 'attribute'],
+      ['attribute', 'attribute'],
+      ['attribute', 'value-list'],
+    ],
+    text: 'er-attr va del dueño al elemento que cuelga de él: entity→attribute, attribute→attribute (compuesto) o attribute→value-list',
+  },
+  'nosql-rel': {
+    pairs: [['collection', 'collection']],
+    text: 'nosql-rel solo une colecciones',
+  },
 };
 
 export function checkRelations({ diagram, elementsById }: RuleContext): ValidationError[] {
@@ -47,7 +68,7 @@ export function checkRelations({ diagram, elementsById }: RuleContext): Validati
           if (rule && !rule.pairs.some(([s, t]) => s === source.kind && t === target.kind)) {
             notAllowed(
               `"${rel.id}": ${source.id} (${source.kind}) → ${target.id} (${target.kind}) no es válido.`,
-              `Regla UML: ${rule.text}.`,
+              `Regla: ${rule.text}.`,
             );
           }
         }
@@ -70,6 +91,11 @@ export function checkRelations({ diagram, elementsById }: RuleContext): Validati
       const why = 'las multiplicidades solo aplican a association, aggregation y composition';
       field('sourceMultiplicity', why);
       field('targetMultiplicity', why);
+    }
+    if (rel.kind !== 'connector') {
+      const why = 'las puntas y el trazo discontinuo solo aplican a relaciones connector';
+      field('arrowheads', why);
+      field('dashed', why);
     }
     if (rel.kind !== 'association') field('navigable', 'navigable solo aplica a association');
     if (rel.kind !== 'c4-rel') field('technology', 'technology solo aplica a relaciones c4-rel');

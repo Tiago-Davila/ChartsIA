@@ -34,6 +34,7 @@ Toda escritura pasa por el mismo servicio de operaciones que usan las herramient
 | Método | Ruta | Cuerpo / Respuesta |
 |--------|------|--------------------|
 | GET | `/api/diagrams` | → `list_diagrams` output (incluye `projects` y `projectId` por diagrama) |
+| POST | `/api/diagrams` | `{ type, title, projectId? }` → 201 `{ diagramId, revision, viewUrl }`; crea un diagrama vacío por la misma ruta que `create_diagram` y lo deja activo; 422 con `{errors}` si el tipo o el título no valen, 404 si el proyecto no existe |
 | GET | `/api/diagrams/:id` | → `Diagram` con `layout` y `route`; 404 si no existe |
 | POST | `/api/diagrams/:id/operations` | `{ baseRevision, operations }` → `apply_changes` output; 422 con `{errors}` |
 | POST | `/api/diagrams/:id/activate` | marca diagrama activo (igual que la tool `open_diagram`) → 204 |

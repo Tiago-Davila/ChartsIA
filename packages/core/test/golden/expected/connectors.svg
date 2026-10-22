@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="321" height="626" viewBox="6 6 321 626">
+<title>Conectores &lt;libres&gt; &amp; figuras</title>
+<rect x="6" y="6" width="321" height="626" fill="#ffffff"/>
+<g font-family="Inter, &apos;Helvetica Neue&apos;, Arial, sans-serif">
+<g data-id="circulo" transform="translate(183 328)"><ellipse cx="50" cy="50" rx="50" ry="50" fill="#fffef5" stroke="#1f2933" stroke-width="1.5"/><text x="50" y="55" font-size="14" fill="#1f2933" text-anchor="middle">Círculo</text></g>
+<g data-id="cliente" transform="translate(36.5 30)"><rect x="0" y="0" width="120" height="48" fill="#fffef5" stroke="#1f2933" stroke-width="1.5"/><text x="60" y="29" font-size="14" fill="#1f2933" text-anchor="middle" font-weight="bold">Cliente</text></g>
+<g data-id="cuadrado" transform="translate(43.17 508)"><rect x="0" y="0" width="100" height="100" fill="#fffef5" stroke="#1f2933" stroke-width="1.5"/><text x="50" y="55" font-size="14" fill="#1f2933" text-anchor="middle">Cuadrado</text></g>
+<g data-id="nombre" transform="translate(30 356)"><ellipse cx="46.5" cy="22" rx="46.5" ry="22" fill="#fffef5" stroke="#1f2933" stroke-width="1.5"/><text x="46.5" y="26.75" font-size="13" fill="#1f2933" text-anchor="middle">nombre</text></g>
+<g data-id="nube" transform="translate(163 158)"><path d="M 35 22.5 C 7 22.5 0 45 22.4 49.5 C 0 59.4 25.2 81 43.4 72 C 56 90 98 90 112 72 C 140 72 140 54 122.5 45 C 140 27 112 9 87.5 18 C 70 4.5 42 4.5 35 22.5 Z" fill="#fffef5" stroke="#1f2933" stroke-width="1.5"/><text x="70" y="47.75" font-size="14" fill="#1f2933" text-anchor="middle">Nube</text></g>
+<g data-id="r1"><path d="M 76.5 78 L 76.5 356" fill="none" stroke="#3e4c59" stroke-width="1.5"/></g>
+<g data-id="r2"><path d="M 116.5 78 L 116.5 94 L 233 94 L 233 146" fill="none" stroke="#3e4c59" stroke-width="1.5"/><path d="M 226 146 L 233 158 L 240 146" fill="none" stroke="#3e4c59" stroke-width="1.5"/><rect x="127" y="84" width="95.5" height="20" rx="3" fill="#ffffff" stroke="none"/><text x="174.75" y="98" font-size="11" fill="#333333" text-anchor="middle">se conecta &lt;a&gt;</text></g>
+<g data-id="r3"><path d="M 233 260 L 233 316" fill="none" stroke="#3e4c59" stroke-width="1.5" stroke-dasharray="6 4"/><path d="M 240 260 L 233 248 L 226 260" fill="none" stroke="#3e4c59" stroke-width="1.5"/><path d="M 226 316 L 233 328 L 240 316" fill="none" stroke="#3e4c59" stroke-width="1.5"/></g>
+<g data-id="r4"><path d="M 233 428 L 233 444 L 109.84 444 L 109.84 492 L 109.84 508" fill="none" stroke="#3e4c59" stroke-width="1.5"/></g>
+<g data-id="r5"><path d="M 76.5 400 L 76.5 492 L 76.5 496" fill="none" stroke="#3e4c59" stroke-width="1.5" stroke-dasharray="6 4"/><path d="M 69.5 496 L 76.5 508 L 83.5 496" fill="none" stroke="#3e4c59" stroke-width="1.5"/><rect x="59" y="436" width="35" height="20" rx="3" fill="#ffffff" stroke="none"/><text x="76.5" y="450" font-size="11" fill="#333333" text-anchor="middle">libre</text></g>
+</g>
+</svg>

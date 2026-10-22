@@ -8,20 +8,29 @@ const samples: Record<string, Record<string, unknown>> = {
   interface: { kind: 'interface', operations: [] },
   enum: { kind: 'enum', literals: ['A'] },
   package: { kind: 'package' },
+  frame: { kind: 'frame' },
   person: { kind: 'person' },
   'software-system': { kind: 'software-system' },
   container: { kind: 'container' },
   component: { kind: 'component' },
   boundary: { kind: 'boundary', boundaryType: 'container' },
   entity: { kind: 'entity' },
+  collection: { kind: 'collection', fields: [] },
+  figure: { kind: 'figure', shape: 'hexagon' },
+  drawing: { kind: 'drawing', points: [{ x: 0, y: 0 }, { x: 12, y: 8 }], strokeColor: '#1f2933', strokeWidth: 2 },
+  image: { kind: 'image', src: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+nZl8AAAAASUVORK5CYII=' },
+  attribute: { kind: 'attribute' },
+  'value-list': { kind: 'value-list', values: ['A'] },
 };
 
+// Figuras, trazos, imágenes y marcos se permiten en todos los tipos de diagrama.
 const allowed: Record<DiagramType, string[]> = {
-  class: ['class', 'interface', 'enum', 'package'],
-  'c4-context': ['person', 'software-system', 'boundary'],
-  'c4-container': ['person', 'software-system', 'container', 'boundary'],
-  'c4-component': ['person', 'software-system', 'container', 'component', 'boundary'],
-  er: ['entity'],
+  class: ['class', 'interface', 'enum', 'package', 'figure', 'drawing', 'image', 'frame'],
+  'c4-context': ['person', 'software-system', 'boundary', 'figure', 'drawing', 'image', 'frame'],
+  'c4-container': ['person', 'software-system', 'container', 'boundary', 'figure', 'drawing', 'image', 'frame'],
+  'c4-component': ['person', 'software-system', 'container', 'component', 'boundary', 'figure', 'drawing', 'image', 'frame'],
+  er: ['entity', 'attribute', 'value-list', 'figure', 'drawing', 'image', 'frame'],
+  nosql: ['collection', 'figure', 'drawing', 'image', 'frame'],
 };
 
 function single(type: DiagramType, kind: string) {

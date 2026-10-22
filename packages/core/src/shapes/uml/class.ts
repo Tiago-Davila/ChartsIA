@@ -8,6 +8,7 @@ type ClassElement = ElementOfKind<'class'>;
 export function classBox(el: ClassElement): CompartmentBox {
   return {
     header: headerLines(el.name, { stereotype: el.stereotype, italic: el.abstract, abstract: el.abstract }),
+    style: el.style,
     sections: [
       el.attributes.map((a, i) => ({ text: formatAttribute(a), slot: `attribute:${i}`, underline: a.static })),
       el.operations.map((m, i) => ({ text: formatMethod(m), slot: `operation:${i}`, underline: m.static, italic: m.abstract })),

@@ -9,7 +9,7 @@ export function enumBox(el: EnumElement): CompartmentBox {
   const sections: Line[][] = [el.literals.map((l, i) => ({ text: l, slot: `literal:${i}` }))];
   if (el.attributes?.length) sections.push(el.attributes.map((a, i) => ({ text: formatAttribute(a), slot: `attribute:${i}`, underline: a.static })));
   if (el.operations?.length) sections.push(el.operations.map((m, i) => ({ text: formatMethod(m), slot: `operation:${i}`, underline: m.static, italic: m.abstract })));
-  return { header: headerLines(el.name, { stereotype: 'enumeration' }), sections };
+  return { header: headerLines(el.name, { stereotype: 'enumeration' }), sections, style: el.style };
 }
 
 export const enumShape: ShapeDefinition<EnumElement> = {
