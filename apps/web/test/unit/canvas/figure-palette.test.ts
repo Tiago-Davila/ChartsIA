@@ -44,6 +44,11 @@ describe('barra de figuras', () => {
     }]);
   });
 
+  it('ofrece el óvalo, el rombo y el paralelogramo como figuras generales', () => {
+    const claves = paletteFor('class').map((item) => item.key);
+    expect(claves).toEqual(expect.arrayContaining(['figure-oval', 'figure-diamond', 'figure-parallelogram']));
+  });
+
   it('repite la figura sin chocar con ids existentes', () => {
     const clase = paletteFor('class').find((item) => item.key === 'class')!;
     const [primera] = newPaletteElements(vacio('class'), clase, { x: 0, y: 0 });
