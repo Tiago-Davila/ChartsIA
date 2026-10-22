@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { createEvent, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@xyflow/react';
 import { describe, expect, it, vi } from 'vitest';
@@ -213,5 +213,44 @@ describe('AppShell: título editable', () => {
 
     await userEvent.click(pen);
     expect(screen.queryByLabelText('Color del lápiz')).toBeNull();
+  });
+});
+
+describe('AppShell: barra de figuras', () => {
+  const diagram = (type: 'class' | 'nosql') => ({ id: 'dg_aaaaaaaaaaaa', type, title: 'Prueba', revision: 1, createdAt: '', updatedAt: '', elements: [], relations: [] });
+  const figura = (clave: string) => document.querySelector(`[data-figure="${clave}"]`)!;
+
+  it('muestra solo las figuras del tipo de diagrama abierto', () => {
+    renderShell({ diagram: diagram('class'), onAddFigure: vi.fn() });
+    const barra = screen.getByRole('complementary', { name: 'Figuras' });
+    expect(barra).toHaveTextContent('Clase');
+    expect(barra).toHaveTextContent('Círculo');
+    expect(barra).not.toHaveTextContent('Colección');
+  });
+
+  it('no aparece en solo lectura, en la configuración ni sin diagrama', () => {
+    const { unmount } = renderShell({ diagram: diagram('class'), onAddFigure: vi.fn(), readOnly: true });
+    expect(screen.queryByRole('complementary', { name: 'Figuras' })).toBeNull();
+    unmount();
+    const configuracion = renderShell({ diagram: diagram('class'), onAddFigure: vi.fn(), configOpen: true });
+    expect(screen.queryByRole('complementary', { name: 'Figuras' })).toBeNull();
+    configuracion.unmount();
+    renderShell({ onAddFigure: vi.fn() });
+    expect(screen.queryByRole('complementary', { name: 'Figuras' })).toBeNull();
+  });
+
+  it('soltar una figura sobre el lienzo la crea en la posición del puntero', () => {
+    const onAddFigure = vi.fn();
+    renderShell({ diagram: diagram('class'), onAddFigure });
+    const data = new Map<string, string>();
+    const dataTransfer = { types: [] as string[], setData: (type: string, value: string) => { data.set(type, value); dataTransfer.types = [...data.keys()]; }, getData: (type: string) => data.get(type) ?? '', files: [], effectAllowed: '', dropEffect: '' };
+    fireEvent.dragStart(figura('class'), { dataTransfer });
+    const lienzo = document.querySelector('.app-shell__canvas')!;
+    fireEvent.dragOver(lienzo, { dataTransfer });
+    // jsdom no implementa DragEvent: las coordenadas se agregan al evento.
+    const drop = createEvent.drop(lienzo, { dataTransfer });
+    Object.defineProperties(drop, { clientX: { value: 240 }, clientY: { value: 130 } });
+    fireEvent(lienzo, drop);
+    expect(onAddFigure).toHaveBeenCalledWith('class', { x: 240, y: 130 });
   });
 });
