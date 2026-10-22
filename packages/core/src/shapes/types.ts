@@ -12,6 +12,8 @@ export interface Paint {
   strokeWidth?: number;
   /** Patrón de trazo discontinuo, p. ej. [6, 4]. */
   dash?: number[];
+  /** Opacidad del trazo entre 0 y 1; sin ella es opaco. */
+  strokeOpacity?: number;
   lineCap?: 'butt' | 'round' | 'square';
   lineJoin?: 'miter' | 'round' | 'bevel';
 }

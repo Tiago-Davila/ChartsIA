@@ -1,4 +1,5 @@
 import { type ElementOfKind } from '../../model/diagram.js';
+import { HIGHLIGHTER_OPACITY } from '../../model/drawing-elements.js';
 import { COLORS, type PathPrimitive, type ShapeDefinition } from '../types.js';
 
 type DrawingElement = ElementOfKind<'drawing'>;
@@ -20,6 +21,7 @@ export const drawingShape: ShapeDefinition<DrawingElement> = {
       fill: 'none',
       stroke: el.strokeColor || COLORS.stroke,
       strokeWidth: el.strokeWidth,
+      ...(el.highlighter ? { strokeOpacity: HIGHLIGHTER_OPACITY } : {}),
       lineCap: 'round',
       lineJoin: 'round',
     },

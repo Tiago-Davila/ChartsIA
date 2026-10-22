@@ -42,7 +42,7 @@ export interface AppShellProps {
   onNodeDragStop?: DiagramCanvasProps['onNodeDragStop'];
   onDelete?: DiagramCanvasProps['onDelete'];
   onConnect?: DiagramCanvasProps['onConnect'];
-  onDraw?: (points: Point[], screenPoints: Point[], color: string) => void;
+  onDraw?: (points: Point[], screenPoints: Point[], color: string, highlighter: boolean) => void;
   onAlign?(mode: AlignMode): void;
   changedIds?: string[];
   onOpenLatest?(): Promise<boolean>;

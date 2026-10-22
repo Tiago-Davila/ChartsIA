@@ -6,6 +6,7 @@ type Drawing = {
   points: { x: number; y: number }[];
   strokeColor: string;
   strokeWidth: number;
+  highlighter?: boolean;
   layout: { x: number; y: number };
 };
 
@@ -74,4 +75,41 @@ test('el lápiz persiste un trazo, permite moverlo y borrarlo', async ({ page, a
   await page.locator(`[data-element-id="${saved.id}"]`).click({ position: { x: 21, y: 15 } });
   await page.keyboard.press('Delete');
   await expect.poll(async () => (await drawing(agent, id))?.id).toBeUndefined();
+});
+
+test('el marcador persiste un trazo ancho semitransparente detrás de las figuras', async ({ page, agent }) => {
+  const id = await agent.create({
+    type: 'class',
+    title: 'Marcador',
+    elements: [{ id: 'Clase', kind: 'class', name: 'Clase', attributes: [], operations: [] }],
+    relations: [],
+  });
+  await page.goto(`/d/${id}`);
+  await page.getByRole('button', { name: 'Marcador', exact: true }).click();
+  await expect(page.getByLabel('Color del marcador')).toHaveValue('#facc15');
+
+  const classBox = (await page.locator('[data-element-id="Clase"]').boundingBox())!;
+  await page.mouse.move(classBox.x + 10, classBox.y + 12);
+  await page.mouse.down();
+  await page.mouse.move(classBox.x + Math.min(classBox.width - 10, 70), classBox.y + 12, { steps: 8 });
+  await page.mouse.up();
+
+  await expect.poll(async () => (await drawing(agent, id))?.points.length ?? 0).toBeGreaterThanOrEqual(2);
+  const saved = (await drawing(agent, id))!;
+  expect(saved).toMatchObject({ kind: 'drawing', highlighter: true, strokeColor: '#facc15', strokeWidth: 14 });
+
+  await page.reload();
+  const node = page.locator(`[data-element-id="${saved.id}"]`);
+  await expect(node).toBeAttached();
+  await expect(node.locator('svg path')).toHaveAttribute('stroke-opacity', '0.4');
+  // El marcador queda detrás de la clase: su nodo se pinta antes en el DOM y con zIndex menor.
+  const behind = await page.evaluate(
+    ([marker, shape]) => {
+      const nodes = [...document.querySelectorAll<HTMLElement>('.react-flow__node')];
+      const find = (elementId: string) => nodes.find((n) => n.querySelector(`[data-element-id="${elementId}"]`) || n.dataset.id === elementId)!;
+      return Number(getComputedStyle(find(marker!)).zIndex) < Number(getComputedStyle(find(shape!)).zIndex);
+    },
+    [saved.id, 'Clase'],
+  );
+  expect(behind).toBe(true);
 });
