@@ -41,6 +41,8 @@ export interface AppShellProps {
   onExport(format: ExportFormat): void;
   onImportImages?(files: File[], screenPosition?: { x: number; y: number }): void;
   onAddFigure?(key: string, screenPosition: { x: number; y: number }): void;
+  /** Doble clic en la barra: agrega la figura centrada en el centro de la vista. */
+  onAddFigureAtCenter?(key: string, screenCenter: { x: number; y: number }): void;
   onRename?(title: string): void;
   onNodeDragStop?: DiagramCanvasProps['onNodeDragStop'];
   onDelete?: DiagramCanvasProps['onDelete'];
@@ -144,7 +146,7 @@ export function AppShell(props: AppShellProps) {
         )}
         {props.overlay}
       </main>
-      {showFigures ? <FigureSidebar type={diagram.type} /> : null}
+      {showFigures ? <FigureSidebar type={diagram.type} onAdd={(key) => props.onAddFigureAtCenter?.(key, center())} /> : null}
     </div>
   );
 }

@@ -53,6 +53,36 @@ test.describe('barra de figuras', () => {
     await expect(page.locator('[data-element-id="FlechaDoble"]')).toBeVisible();
   });
 
+  test('doble clic en una figura la agrega centrada en la vista, sin tapar otra, y Ctrl+Z la deshace', async ({ page, agent }) => {
+    const id = await agent.create({ type: 'class', title: 'Doble clic', elements: [], relations: [] });
+    await page.goto(`/d/${id}`);
+
+    await page.locator('[data-figure="class"]').dblclick();
+    await expect.poll(() => elemento(agent, id, 'Clase')).toMatchObject({ kind: 'class', name: 'Clase', layout: { pinned: true } });
+    // El encuadre inicial ya se aplicó con la primera figura: el centro se mide después de crearla.
+    // El transform del viewport es relativo al lienzo, así que el centro va en coordenadas del lienzo.
+    const lienzo = (await page.locator('.app-shell__canvas').boundingBox())!;
+    const viewport = await page.locator('.react-flow__viewport').evaluate((el) => new DOMMatrix(getComputedStyle(el).transform));
+    const centro = { x: (lienzo.width / 2 - viewport.e) / viewport.a, y: (lienzo.height / 2 - viewport.f) / viewport.d };
+    const primera = (await elemento(agent, id, 'Clase'))!;
+    expect(Math.abs(primera.layout.x + primera.layout.width / 2 - centro.x)).toBeLessThanOrEqual(2);
+    expect(Math.abs(primera.layout.y + primera.layout.height / 2 - centro.y)).toBeLessThanOrEqual(2);
+
+    // La segunda figura cae sobre el centro ocupado: se corre y no tapa a la primera.
+    await page.locator('[data-figure="class"]').dblclick();
+    await expect.poll(() => elemento(agent, id, 'Clase2')).toMatchObject({ kind: 'class', name: 'Clase2', layout: { pinned: true } });
+    const segunda = (await elemento(agent, id, 'Clase2'))!;
+    const separadas = segunda.layout.x >= primera.layout.x + primera.layout.width || segunda.layout.x + segunda.layout.width <= primera.layout.x
+      || segunda.layout.y >= primera.layout.y + primera.layout.height || segunda.layout.y + segunda.layout.height <= primera.layout.y;
+    expect(separadas).toBe(true);
+
+    // Cada doble clic es una sola operación: Ctrl+Z quita solo la última figura.
+    await page.keyboard.press('Control+z');
+    await expect.poll(() => elemento(agent, id, 'Clase2')).toBeUndefined();
+    expect(await elemento(agent, id, 'Clase')).toBeDefined();
+    await expect(page.locator('[data-element-id="Clase"]')).toBeVisible();
+  });
+
   test('los botones de la barra entran en su ancho sin desplazamiento horizontal', async ({ page, agent }) => {
     const er = await agent.create({ type: 'er', title: 'ER', elements: [], relations: [] });
     await page.goto(`/d/${er}`);

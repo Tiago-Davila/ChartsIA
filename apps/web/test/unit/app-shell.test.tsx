@@ -253,4 +253,12 @@ describe('AppShell: barra de figuras', () => {
     fireEvent(lienzo, drop);
     expect(onAddFigure).toHaveBeenCalledWith('class', { x: 240, y: 130 });
   });
+
+  it('doble clic en una figura la agrega en el centro de la vista', () => {
+    const onAddFigureAtCenter = vi.fn();
+    renderShell({ diagram: diagram('class'), onAddFigure: vi.fn(), onAddFigureAtCenter });
+    fireEvent.doubleClick(figura('figure-circle'));
+    // jsdom no calcula el diseño: el lienzo mide 0 y su centro es el origen.
+    expect(onAddFigureAtCenter).toHaveBeenCalledWith('figure-circle', { x: 0, y: 0 });
+  });
 });
