@@ -55,6 +55,14 @@ describe('commonWidth y widthUpdates', () => {
       { id: 'T', relation: false, strokeWidth: 5 },
     ]);
   });
+
+  it('un marcador usa sus propias opciones de grosor', () => {
+    expect(commonWidth([], [{ id: 'M', strokeWidth: 14, highlighter: true }])).toBe('medium');
+    expect(widthUpdates([], [{ id: 'M', strokeWidth: 14, highlighter: true }, { id: 'T', strokeWidth: 2.5 }], 'thin')).toEqual([
+      { id: 'M', relation: false, strokeWidth: 8 },
+      { id: 'T', relation: false, strokeWidth: 1.5 },
+    ]);
+  });
 });
 
 describe('parseFontSize', () => {

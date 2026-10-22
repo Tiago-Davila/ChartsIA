@@ -70,4 +70,19 @@ test.describe('grosor de trazo', () => {
     const svg = (await agent.call('export_diagram', { diagramId: id, format: 'svg' })).structuredContent!.content as string;
     expect(svg).toContain('stroke-width="1.5"');
   });
+
+  test('el marcador tiene sus propios grosores', async ({ page, agent }) => {
+    const id = await agent.create({ type: 'class', title: 'Marcador', elements: [], relations: [] });
+    await page.goto(`/d/${id}`);
+    await page.getByRole('button', { name: 'Marcador', exact: true }).click();
+    await page.getByRole('button', { name: 'Grosor del marcador: Grueso' }).click();
+
+    const canvas = (await page.locator('.diagram-canvas').boundingBox())!;
+    await page.mouse.move(canvas.x + 300, canvas.y + 250);
+    await page.mouse.down();
+    await page.mouse.move(canvas.x + 400, canvas.y + 330, { steps: 8 });
+    await page.mouse.up();
+
+    await expect.poll(async () => (await elementos(agent, id)).find((e) => e.kind === 'drawing')?.strokeWidth).toBe(16);
+  });
 });

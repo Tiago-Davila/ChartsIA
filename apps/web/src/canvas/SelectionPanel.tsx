@@ -53,7 +53,7 @@ function styleTargets(nodes: Node[], edges: Edge[]): StyleTarget[] {
 function drawingTargets(nodes: Node[]): DrawingTarget[] {
   return nodes.flatMap((n) => {
     const { element } = n.data as ElementNodeData;
-    return element.kind === 'drawing' ? [{ id: element.id, strokeWidth: element.strokeWidth }] : [];
+    return element.kind === 'drawing' ? [{ id: element.id, strokeWidth: element.strokeWidth, highlighter: element.highlighter }] : [];
   });
 }
 

@@ -1,4 +1,4 @@
-import { DRAWING_WIDTH_PX, FONT_SIZE_MAX, FONT_SIZE_MIN, LINE_WIDTHS, type Style, type StyleLineWidth } from '@chartsia/core/model';
+import { DRAWING_WIDTH_PX, FONT_SIZE_MAX, FONT_SIZE_MIN, HIGHLIGHTER_WIDTH_PX, LINE_WIDTHS, type Style, type StyleLineWidth } from '@chartsia/core/model';
 
 /** Algo con estilo que el panel puede cambiar: un elemento o una flecha. */
 export interface StyleTarget {
@@ -7,10 +7,16 @@ export interface StyleTarget {
   style?: Style;
 }
 
-/** Trazo del lápiz seleccionado: solo el panel de grosor lo cambia. */
+/** Trazo del lápiz o del marcador seleccionado: solo el panel de grosor lo cambia. */
 export interface DrawingTarget {
   id: string;
   strokeWidth: number;
+  highlighter?: boolean;
+}
+
+/** Tabla de grosores en px según el trazo sea de lápiz o de marcador. */
+function widthTable(d: DrawingTarget): Record<StyleLineWidth, number> {
+  return d.highlighter ? HIGHLIGHTER_WIDTH_PX : DRAWING_WIDTH_PX;
 }
 
 /** Cambio ya calculado para un objetivo: su estilo (`null` lo borra) o el grosor de un trazo. */
@@ -67,7 +73,7 @@ export const WIDTH_LABELS: Record<StyleLineWidth, string> = { thin: 'Fino', medi
 export function commonWidth(targets: StyleTarget[], drawings: DrawingTarget[]): StyleLineWidth | undefined {
   const widths = [
     ...targets.map((t) => t.style?.lineWidth ?? 'medium'),
-    ...drawings.map((d) => LINE_WIDTHS.find((name) => DRAWING_WIDTH_PX[name] === d.strokeWidth)),
+    ...drawings.map((d) => LINE_WIDTHS.find((name) => widthTable(d)[name] === d.strokeWidth)),
   ];
   return widths.every((w) => w === widths[0]) ? widths[0] : undefined;
 }
@@ -76,6 +82,6 @@ export function commonWidth(targets: StyleTarget[], drawings: DrawingTarget[]): 
 export function widthUpdates(targets: StyleTarget[], drawings: DrawingTarget[], width: StyleLineWidth): StyleUpdate[] {
   return [
     ...fieldUpdates(targets, 'lineWidth', width),
-    ...drawings.map((d): StyleUpdate => ({ id: d.id, relation: false, strokeWidth: DRAWING_WIDTH_PX[width] })),
+    ...drawings.map((d): StyleUpdate => ({ id: d.id, relation: false, strokeWidth: widthTable(d)[width] })),
   ];
 }
