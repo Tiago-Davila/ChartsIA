@@ -1,4 +1,4 @@
-import { DRAWING_DEFAULT_WIDTH, DRAWING_MAX_COORDINATE, DRAWING_MAX_POINTS, type Diagram, type Element, isGroupKind, type Operation, type Point, type RelationChanges } from '@chartsia/core/model';
+import { DRAWING_DEFAULT_WIDTH, DRAWING_MAX_COORDINATE, DRAWING_MAX_POINTS, HIGHLIGHTER_DEFAULT_WIDTH, type Diagram, type Element, isGroupKind, type Operation, type Point, type RelationChanges } from '@chartsia/core/model';
 import { type Connection, type Edge, type Node, type OnNodeDrag, useReactFlow } from '@xyflow/react';
 import { useCallback, useMemo } from 'react';
 import { type DiagramEditActions } from '../nodes/edit-context';
@@ -183,19 +183,20 @@ export function useDiagramEdits(api: ApiClient) {
 
   const updateRelation = useCallback((id: string, changes: RelationChanges) => void send([{ op: 'update_relation', id, changes }]), [send]);
 
-  /** Crea un trazo libre desde puntos absolutos del lienzo. */
-  const addDrawing = useCallback((points: Point[], screenPoints: Point[], strokeColor: string) => {
+  /** Crea un trazo de lápiz o de marcador desde puntos absolutos del lienzo. */
+  const addDrawing = useCallback((points: Point[], screenPoints: Point[], strokeColor: string, highlighter = false) => {
     const diagram = diagramStore.getState().diagram;
     if (!diagram) return;
     const simplified = simplifyStroke(points, screenPoints);
     if (simplified.length < 2 || !simplified.some((p) => p.x !== simplified[0]!.x || p.y !== simplified[0]!.y)) return;
 
-    const padding = DRAWING_DEFAULT_WIDTH / 2;
+    const strokeWidth = highlighter ? HIGHLIGHTER_DEFAULT_WIDTH : DRAWING_DEFAULT_WIDTH;
+    const padding = strokeWidth / 2;
     const minX = Math.min(...simplified.map((p) => p.x));
     const minY = Math.min(...simplified.map((p) => p.y));
     const maxX = Math.max(...simplified.map((p) => p.x));
     const maxY = Math.max(...simplified.map((p) => p.y));
-    if (maxX - minX + DRAWING_DEFAULT_WIDTH > DRAWING_MAX_COORDINATE || maxY - minY + DRAWING_DEFAULT_WIDTH > DRAWING_MAX_COORDINATE) {
+    if (maxX - minX + strokeWidth > DRAWING_MAX_COORDINATE || maxY - minY + strokeWidth > DRAWING_MAX_COORDINATE) {
       diagramStore.getState().showErrors([
         { code: 'LIMIT_EXCEEDED', path: '/points', message: 'El trazo supera el límite de 5000 unidades.', hint: 'Acércate al lienzo y dibuja un trazo más corto.' },
       ]);
@@ -212,13 +213,15 @@ export function useDiagramEdits(api: ApiClient) {
       return;
     }
     const draft = { elements: diagram.elements, relations: diagram.relations };
+    const name = highlighter ? 'Marcador' : 'Trazo';
     const element: Element = {
-      id: freeId(draft, 'Trazo'),
+      id: freeId(draft, name),
       kind: 'drawing',
-      name: 'Trazo',
+      name,
       points: local,
       strokeColor,
-      strokeWidth: DRAWING_DEFAULT_WIDTH,
+      strokeWidth,
+      ...(highlighter ? { highlighter: true as const } : {}),
       layout: { x, y },
     };
     void send([{ op: 'add_element', element }]);

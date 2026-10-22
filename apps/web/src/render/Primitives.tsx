@@ -38,7 +38,7 @@ export const Primitives = memo(function Primitives({ primitives, onTextDoubleCli
           case 'path':
             return (
               <path key={i} d={p.d} fill={p.fill ?? 'none'} stroke={p.stroke ?? 'none'} strokeWidth={p.strokeWidth}
-                strokeDasharray={dash(p.dash)} strokeLinecap={p.lineCap} strokeLinejoin={p.lineJoin} />
+                strokeDasharray={dash(p.dash)} strokeOpacity={p.strokeOpacity} strokeLinecap={p.lineCap} strokeLinejoin={p.lineJoin} />
             );
           case 'text':
             return (
