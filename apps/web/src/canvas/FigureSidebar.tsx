@@ -1,13 +1,12 @@
-import { type DiagramType } from '@chartsia/core/model';
-import { FIGURE_DRAG_TYPE, paletteFor } from './figure-palette';
+import { FIGURE_DRAG_TYPE, PALETTE_ITEMS } from './figure-palette';
 
-/** Barra derecha con las figuras del tipo de diagrama, para arrastrarlas al lienzo. */
-export function FigureSidebar({ type }: { type: DiagramType }) {
+/** Barra derecha con todas las figuras, para arrastrarlas al lienzo de cualquier tipo de diagrama. */
+export function FigureSidebar() {
   return (
     <aside className="figure-sidebar" aria-label="Figuras">
       <h2 className="figure-sidebar__title">Figuras</h2>
       <div className="figure-sidebar__list">
-        {paletteFor(type).map((item) => (
+        {PALETTE_ITEMS.map((item) => (
           <div
             key={item.key}
             className="figure-sidebar__item"

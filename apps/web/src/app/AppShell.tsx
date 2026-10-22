@@ -144,7 +144,7 @@ export function AppShell(props: AppShellProps) {
         )}
         {props.overlay}
       </main>
-      {showFigures ? <FigureSidebar type={diagram.type} /> : null}
+      {showFigures ? <FigureSidebar /> : null}
     </div>
   );
 }

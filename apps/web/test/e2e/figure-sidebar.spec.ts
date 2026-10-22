@@ -53,12 +53,14 @@ test.describe('barra de figuras', () => {
     await expect(page.locator('[data-element-id="FlechaDoble"]')).toBeVisible();
   });
 
-  test('cada tipo de diagrama ofrece sus figuras y el hub acepta las que se sueltan', async ({ page, agent }) => {
+  test('cualquier tipo de diagrama ofrece todas las figuras y el hub acepta las que se sueltan', async ({ page, agent }) => {
     const er = await agent.create({ type: 'er', title: 'ER', elements: [], relations: [] });
     await page.goto(`/d/${er}`);
-    await expect(page.locator('[data-figure="class"]')).toHaveCount(0);
+    await expect(page.locator('[data-figure="class"]')).toHaveCount(1);
     await arrastrar(page, 'table', { x: 300, y: 250 });
     await expect.poll(() => elemento(agent, er, 'Tabla')).toMatchObject({ kind: 'table' });
+    await arrastrar(page, 'class', { x: 500, y: 250 });
+    await expect.poll(() => elemento(agent, er, 'Clase')).toMatchObject({ kind: 'class' });
 
     const nosql = await agent.create({ type: 'nosql', title: 'Docs', elements: [], relations: [] });
     await page.goto(`/d/${nosql}`);

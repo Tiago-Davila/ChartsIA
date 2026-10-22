@@ -2,7 +2,7 @@ import { type Diagram, RELATION_KINDS, type Relation, type RelationKind } from '
 import { applyOperations } from '@chartsia/core/operations';
 import { describe, expect, it } from 'vitest';
 import { alignBoxes } from '../../../src/canvas/align';
-import { connectionRelation, freeId, insertWaypoint, kindChanges, relationId, reverseChanges, segmentMidpoints } from '../../../src/canvas/edge-edits';
+import { connectionRelation, freeId, insertWaypoint, kindChanges, relationId, relationKinds, reverseChanges, segmentMidpoints } from '../../../src/canvas/edge-edits';
 
 const diagram = {
   elements: [{ id: 'Libro', kind: 'class' as const, name: 'Libro', attributes: [], operations: [] }],
@@ -90,7 +90,7 @@ describe('conectar arrastrando', () => {
   });
 
   it('en clases y C4 mantiene el tipo por defecto', () => {
-    expect(connectionRelation({ ...diagram, type: 'class' }, 'Libro', 'Libro').kind).toBe('association');
+    expect(connectionRelation(diagram, 'Libro', 'Libro').kind).toBe('association');
     const c4 = {
       type: 'c4-context' as const,
       elements: [
@@ -108,6 +108,18 @@ describe('conectar arrastrando', () => {
     expect(connectionRelation(withTable, 'T', 'a')).toMatchObject({ kind: 'connector' });
     expect(connectionRelation(withTable, 'L', 'E')).toMatchObject({ kind: 'connector' });
     expect(connectionRelation(withTable, 'E', 'T')).toMatchObject({ kind: 'er-rel' });
+  });
+
+  it('en un diagrama mixto une cada par con su familia y deja el conector para cruzar familias', () => {
+    const mixed = { elements: [...er.elements, { id: 'Socio', kind: 'class' as const, name: 'Socio', attributes: [], operations: [] }, { id: 'P', kind: 'person' as const, name: 'P' }], relations: [] };
+    expect(connectionRelation(mixed, 'Socio', 'Socio')).toMatchObject({ kind: 'association' });
+    expect(connectionRelation(mixed, 'P', 'P')).toMatchObject({ kind: 'c4-rel' });
+    expect(connectionRelation(mixed, 'E', 'Socio')).toMatchObject({ kind: 'connector' });
+  });
+
+  it('relationKinds ofrece solo los tipos que admiten los dos extremos', () => {
+    expect(relationKinds(er.elements, { id: 'r', kind: 'connector', source: 'E', target: 'F' })).toEqual(['er-rel', 'connector']);
+    expect(relationKinds(er.elements, { id: 'r', kind: 'connector', source: 'E', target: 'a' })).toEqual(['er-attr', 'connector']);
   });
 
   it('pasar a er-rel desde er-attr agrega las cardinalidades obligatorias', () => {

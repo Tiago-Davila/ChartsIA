@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { type Diagram, ElementSchema } from '@chartsia/core/model';
-import { newPaletteEdit, paletteFor } from '../../../src/canvas/figure-palette';
+import { newPaletteEdit, PALETTE_ITEMS } from '../../../src/canvas/figure-palette';
 import { kindChanges, reverseChanges } from '../../../src/canvas/edge-edits';
 
 const vacio: Pick<Diagram, 'type' | 'elements' | 'relations'> = { type: 'er', elements: [], relations: [] };
-const item = (key: string) => paletteFor('er').find((candidate) => candidate.key === key)!;
+const item = (key: string) => PALETTE_ITEMS.find((candidate) => candidate.key === key)!;
 
 describe('barra de figuras ER', () => {
   it('ofrece cada figura nueva con su nombre', () => {
-    const labels = paletteFor('er').map((candidate) => candidate.label);
+    const labels = PALETTE_ITEMS.map((candidate) => candidate.label);
     expect(labels).toEqual(expect.arrayContaining([
       'Entidad débil',
       'Entidad asociativa',

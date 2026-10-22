@@ -6,7 +6,7 @@ import { ApiError, type ApiClient } from '../state/api-client';
 import { diagramStore } from '../state/diagram-store';
 import { type AlignMode, alignBoxes } from './align';
 import { connectionRelation, freeId } from './edge-edits';
-import { newPaletteEdit, paletteFor } from './figure-palette';
+import { newPaletteEdit, PALETTE_ITEMS } from './figure-palette';
 import { readImageFile } from './image-import';
 import { changesForAddMember, changesForRemoveMember, changesForSlot, type MemberKind } from './slot-edits';
 import { type StyleUpdate } from './style-edits';
@@ -97,7 +97,7 @@ export function useDiagramEdits(api: ApiClient) {
   const addFigure = useCallback(
     (key: string, screenPosition: { x: number; y: number }) => {
       const diagram = diagramStore.getState().diagram;
-      const item = diagram && paletteFor(diagram.type).find((candidate) => candidate.key === key);
+      const item = diagram && PALETTE_ITEMS.find((candidate) => candidate.key === key);
       if (!diagram || !item) return;
       const { elements, relations } = newPaletteEdit(diagram, item, screenToFlowPosition(screenPosition));
       void send([

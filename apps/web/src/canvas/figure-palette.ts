@@ -1,4 +1,4 @@
-import { ALLOWED_KINDS_BY_DIAGRAM, type Diagram, type DiagramType, type Element, type ElementKind, type FigureShape, type Relation } from '@chartsia/core/model';
+import { type Diagram, type Element, type ElementKind, type FigureShape, type Relation } from '@chartsia/core/model';
 import { freeId, relationId } from './edge-edits';
 
 /** Tipo MIME con el que la barra de figuras identifica la figura arrastrada. */
@@ -19,7 +19,7 @@ function figure(shape: FigureShape, label: string, idBase: string): PaletteItem 
   return { key: `figure-${shape}`, label, kind: 'figure', idBase, build: (id, name) => ({ id, name, kind: 'figure', shape }) };
 }
 
-/** Todas las figuras que la barra sabe crear; las imágenes y los trazos tienen sus propios botones. */
+/** Todas las figuras que la barra sabe crear, en cualquier tipo de diagrama; las imágenes y los trazos tienen sus propios botones. */
 export const PALETTE_ITEMS: readonly PaletteItem[] = [
   { key: 'class', label: 'Clase', kind: 'class', idBase: 'Clase', build: (id, name) => ({ id, name, kind: 'class', attributes: [], operations: [] }) },
   { key: 'interface', label: 'Interfaz', kind: 'interface', idBase: 'Interfaz', build: (id, name) => ({ id, name, kind: 'interface', operations: [] }) },
@@ -73,12 +73,6 @@ export const PALETTE_ITEMS: readonly PaletteItem[] = [
 /** Sub-atributo que trae consigo un atributo compuesto. */
 const SUB_ATTRIBUTE: PaletteItem = { key: 'sub-attribute', label: 'Subatributo', kind: 'attribute', idBase: 'Subatributo', build: (id, name) => ({ id, name, kind: 'attribute' }) };
 
-/** Figuras que admite el tipo de diagrama, según las reglas del núcleo. */
-export function paletteFor(type: DiagramType): PaletteItem[] {
-  const allowed = ALLOWED_KINDS_BY_DIAGRAM[type];
-  return PALETTE_ITEMS.filter((item) => allowed.includes(item.kind));
-}
-
 // Elemento con id y nombre libres (`Clase`, `Clase2`…), fijado en la posición dada.
 function placed(diagram: Pick<Diagram, 'elements' | 'relations'>, item: PaletteItem, point: { x: number; y: number }): Element {
   const id = freeId(diagram, item.idBase);
@@ -90,7 +84,7 @@ function placed(diagram: Pick<Diagram, 'elements' | 'relations'>, item: PaletteI
  * Elementos y relaciones que crea soltar una figura. Un atributo compuesto trae dos sub-atributos
  * unidos a él con er-attr; el resto de figuras solo crea elementos.
  */
-export function newPaletteEdit(diagram: Pick<Diagram, 'type' | 'elements' | 'relations'>, item: PaletteItem, point: { x: number; y: number }): { elements: Element[]; relations: Relation[] } {
+export function newPaletteEdit(diagram: Pick<Diagram, 'elements' | 'relations'>, item: PaletteItem, point: { x: number; y: number }): { elements: Element[]; relations: Relation[] } {
   if (item.key !== 'attribute-composite') return { elements: newPaletteElements(diagram, item, point), relations: [] };
   const owner = placed(diagram, item, point);
   const first = placed({ ...diagram, elements: [...diagram.elements, owner] }, SUB_ATTRIBUTE, { x: point.x - 60, y: point.y + 120 });
@@ -104,12 +98,12 @@ export function newPaletteEdit(diagram: Pick<Diagram, 'type' | 'elements' | 'rel
 }
 
 /**
- * Elementos que crea soltar una figura en la posición dada. En C4 componentes, un componente
- * exige estar dentro de un límite de contenedor: usa el primero que exista o crea uno con él.
+ * Elementos que crea soltar una figura en la posición dada. Un componente de C4 exige estar dentro
+ * de un límite de contenedor: usa el primero que exista o crea uno con él.
  */
-export function newPaletteElements(diagram: Pick<Diagram, 'type' | 'elements' | 'relations'>, item: PaletteItem, point: { x: number; y: number }): Element[] {
+export function newPaletteElements(diagram: Pick<Diagram, 'elements' | 'relations'>, item: PaletteItem, point: { x: number; y: number }): Element[] {
   const element = placed(diagram, item, point);
-  if (item.kind !== 'component' || diagram.type !== 'c4-component') return [element];
+  if (item.kind !== 'component') return [element];
   const boundary = diagram.elements.find((e) => e.kind === 'boundary' && e.boundaryType === 'container');
   if (boundary) return [{ ...element, parentId: boundary.id }];
   const created = placed(diagram, PALETTE_ITEMS.find((candidate) => candidate.key === 'boundary')!, point);
