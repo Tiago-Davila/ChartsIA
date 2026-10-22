@@ -30,7 +30,7 @@ export const frameShape: ShapeDefinition<FrameElement> = {
     const font = textFont(el.style, FONT.name);
     const padding = framePadding(el.style);
     return [
-      { type: 'rect', x: 0, y: 0, width, height, rx: 8, fill: c.fill, stroke: c.stroke, strokeWidth: 1.5, dash: [6, 4] },
+      { type: 'rect', x: 0, y: 0, width, height, rx: 8, fill: c.fill, stroke: c.stroke, strokeWidth: c.strokeWidth, dash: [6, 4] },
       { type: 'text', x: padding.left, y: 12 + lineHeight(font.size) * 0.75, text: el.name, ...font, bold: true, color: c.text, anchor: 'start', slot: 'name' },
     ];
   },

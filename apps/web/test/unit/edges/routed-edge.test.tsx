@@ -33,6 +33,16 @@ describe('RoutedEdge', () => {
     expect(closed[0]!.getAttribute('fill')).toBe(fill);
   });
 
+  it('el grosor del estilo engrosa la línea y su marcador, y sin estilo es 1.5', () => {
+    const grueso: Relation = { id: 'r', kind: 'composition', source: 'A', target: 'B', route, style: { lineWidth: 'thick' } };
+    const { container } = renderFlow([box('A', 0), box('B', 300)], [grueso]);
+    const widths = [...edgeGroup(container, 'r').querySelectorAll('path')].map((p) => p.getAttribute('stroke-width')).filter((w) => w !== '14');
+    expect(widths.length).toBeGreaterThan(1);
+    expect(new Set(widths)).toEqual(new Set(['3']));
+    const normal = renderFlow([box('A', 0), box('B', 300)], [{ id: 'r', kind: 'association', source: 'A', target: 'B', route }]);
+    expect(edgeGroup(normal.container, 'r').querySelector('path')!.getAttribute('stroke-width')).toBe('1.5');
+  });
+
   it('dependencia y realización van discontinuas', () => {
     const { container } = renderFlow([box('A', 0), box('B', 300)], [{ id: 'r', kind: 'dependency', source: 'A', target: 'B', route }]);
     expect(edgeGroup(container, 'r').querySelector('path')!.getAttribute('stroke-dasharray')).toBeTruthy();

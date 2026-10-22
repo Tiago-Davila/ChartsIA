@@ -1,4 +1,4 @@
-import { type Style, type StyleFontFamily } from '../model/style.js';
+import { LINE_WIDTH_PX, type Style, type StyleFontFamily } from '../model/style.js';
 import { FONT } from './types.js';
 
 /** Tamaño al que equivale `style.fontSize` en el texto principal; el resto del texto escala igual. */
@@ -12,12 +12,18 @@ export const CSS_FONT_FAMILIES: Record<StyleFontFamily, string> = {
   handwritten: "Excalifont, 'Segoe Print', 'Comic Sans MS', cursive",
 };
 
-/** Colores de una forma: los del estilo o, si faltan, los predeterminados. */
+/** Grosor de borde o línea en px: el del estilo o, si falta, el normal. */
+export function strokeWidthOf(style: Style | undefined): number {
+  return LINE_WIDTH_PX[style?.lineWidth ?? 'medium'];
+}
+
+/** Colores y grosor de una forma: los del estilo o, si faltan, los predeterminados. */
 export function paintOf(style: Style | undefined, defaults: { fill: string; stroke: string; text: string }) {
   return {
     fill: style?.fillColor ?? defaults.fill,
     stroke: style?.borderColor ?? defaults.stroke,
     text: style?.fontColor ?? defaults.text,
+    strokeWidth: strokeWidthOf(style),
   };
 }
 

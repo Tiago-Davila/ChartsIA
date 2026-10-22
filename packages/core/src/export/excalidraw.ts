@@ -5,7 +5,7 @@ import { type Cardinality, isGroupKind } from '../model/enums.js';
 import { type Relation } from '../model/relation.js';
 import { hashSeed } from '../render/hash.js';
 import { edgeLabelLines } from '../render/edges.js';
-import { type Style, type StyleFontFamily } from '../model/style.js';
+import { LINE_WIDTH_PX, type Style, type StyleFontFamily } from '../model/style.js';
 import { imageDataUrlDimensions } from '../model/image-data.js';
 import { c4Colors, C4_PALETTE } from '../shapes/c4/palette.js';
 import { figureOutline, figureTextArea } from '../shapes/general/figure.js';
@@ -41,9 +41,14 @@ const FONT_FAMILY = 5;
 const STYLE_FONT_FAMILIES: Record<StyleFontFamily, number> = { 'sans-serif': 2, serif: 2, monospace: 3, handwritten: 5 };
 const r = (n: number) => Math.round(n * 100) / 100;
 
-/** Color del borde o de la línea cuando el estilo lo fija. */
+/** Grosor del borde o de la línea cuando el estilo lo fija. */
+function widthOf(style: Style | undefined): Json {
+  return style?.lineWidth ? { strokeWidth: LINE_WIDTH_PX[style.lineWidth] } : {};
+}
+
+/** Color y grosor del borde o de la línea cuando el estilo los fija. */
 function strokeOf(style: Style | undefined): Json {
-  return style?.borderColor ? { strokeColor: style.borderColor } : {};
+  return { ...(style?.borderColor ? { strokeColor: style.borderColor } : {}), ...widthOf(style) };
 }
 
 /** Borde y relleno de una forma: los del estilo o, si falta el relleno, `fill`. */
@@ -162,7 +167,7 @@ function addUml(b: Builder, el: Element, box: Box): void {
 function addC4(b: Builder, el: Element, box: Box): void {
   if (el.kind === 'boundary') {
     const c = paintOf(el.style, { ...C4_PALETTE.boundary, fill: 'transparent' });
-    b.shape(el.id, 'rectangle', box, { strokeStyle: 'dashed', strokeColor: c.stroke, backgroundColor: c.fill, roundness: { type: 3 } });
+    b.shape(el.id, 'rectangle', box, { strokeStyle: 'dashed', strokeColor: c.stroke, ...widthOf(el.style), backgroundColor: c.fill, roundness: { type: 3 } });
     const type = { enterprise: '[Enterprise]', system: '[Software System]', container: '[Container]' }[el.boundaryType];
     b.text(`${el.id}-title`, `${el.name}\n${type}`, { x: box.x + 12, y: box.y + 10, width: box.width - 24, height: 40 }, { ...fontOf(el.style, FONT.name), strokeColor: c.text });
     return;
@@ -170,7 +175,7 @@ function addC4(b: Builder, el: Element, box: Box): void {
   if (el.kind !== 'person' && el.kind !== 'software-system' && el.kind !== 'container' && el.kind !== 'component') return;
   const external = 'external' in el ? el.external : undefined;
   const c = paintOf(el.style, c4Colors(el.kind, external));
-  const paint = { backgroundColor: c.fill, strokeColor: c.stroke, roundness: { type: 3 } };
+  const paint = { backgroundColor: c.fill, strokeColor: c.stroke, ...widthOf(el.style), roundness: { type: 3 } };
   const font = { ...fontOf(el.style, FONT.name), strokeColor: c.text };
   const type =
     el.kind === 'person' ? (external ? 'Person - External' : 'Person')
@@ -236,6 +241,7 @@ function addFrame(b: Builder, el: Element, box: Box): void {
   const groupIds = [`${el.id}-frame`];
   b.shape(el.id, 'rectangle', box, {
     strokeColor: c.stroke,
+    ...widthOf(el.style),
     backgroundColor: c.fill,
     strokeStyle: 'dashed',
     roundness: { type: 3 },
@@ -304,12 +310,12 @@ function addCollection(b: Builder, el: Element, box: Box): void {
 }
 
 /** Marca pata de gallo como líneas y un círculo, porque Excalidraw no tiene cero-o-uno nativo. */
-function addCardinality(b: Builder, rel: Relation, kind: Cardinality, tag: string, tip: Point, from: Point, color: string, fill = '#ffffff'): void {
+function addCardinality(b: Builder, rel: Relation, kind: Cardinality, tag: string, tip: Point, from: Point, color: string, fill = '#ffffff', width = 1.5): void {
   const { lines, circle } = crowFoot(kind, markerFrame(tip, from));
-  lines.forEach((l, i) => b.line(`${rel.id}-${tag}-${i}`, l[0], l[1], { strokeColor: color, strokeWidth: 1.5 }));
+  lines.forEach((l, i) => b.line(`${rel.id}-${tag}-${i}`, l[0], l[1], { strokeColor: color, strokeWidth: width }));
   if (circle) {
     const box = { x: circle.x - CIRCLE_RADIUS, y: circle.y - CIRCLE_RADIUS, width: CIRCLE_RADIUS * 2, height: CIRCLE_RADIUS * 2 };
-    b.shape(`${rel.id}-${tag}-o`, 'ellipse', box, { strokeColor: color, backgroundColor: fill, strokeWidth: 1.5 });
+    b.shape(`${rel.id}-${tag}-o`, 'ellipse', box, { strokeColor: color, backgroundColor: fill, strokeWidth: width });
   }
 }
 
@@ -324,6 +330,7 @@ function addArrow(b: Builder, rel: Relation, byId: Map<string, Json>): void {
   const arrow = b.shape(rel.id, 'rectangle', { x: origin.x, y: origin.y, width: Math.max(...xs) - Math.min(...xs), height: Math.max(...ys) - Math.min(...ys) }, {
     type: 'arrow',
     strokeColor: style.color,
+    ...widthOf(rel.style),
     strokeStyle: style.dash ? 'dashed' : 'solid',
     points: route.map((p) => [r(p.x - origin.x), r(p.y - origin.y)]),
     lastCommittedPoint: null,
@@ -337,8 +344,8 @@ function addArrow(b: Builder, rel: Relation, byId: Map<string, Json>): void {
     const target = byId.get(id);
     if (target) target.boundElements = [...((target.boundElements as Json[] | null) ?? []), { type: 'arrow', id: rel.id }];
   }
-  if (style.start && isCardinality(style.start)) addCardinality(b, rel, style.start, 'src', route[0]!, route[1]!, style.color, style.fill);
-  if (style.end && isCardinality(style.end)) addCardinality(b, rel, style.end, 'dst', route[route.length - 1]!, route[route.length - 2]!, style.color, style.fill);
+  if (style.start && isCardinality(style.start)) addCardinality(b, rel, style.start, 'src', route[0]!, route[1]!, style.color, style.fill, style.width);
+  if (style.end && isCardinality(style.end)) addCardinality(b, rel, style.end, 'dst', route[route.length - 1]!, route[route.length - 2]!, style.color, style.fill, style.width);
   const lines = edgeLabelLines(rel);
   if (lines.length > 0) b.boundText(arrow, lines.join('\n'), fontOf(rel.style, 12));
 }

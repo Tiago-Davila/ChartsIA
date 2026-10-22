@@ -22,9 +22,9 @@ export const entityShape: ShapeDefinition<EntityElement> = {
     const c = paintOf(el.style, { fill: COLORS.umlFill, stroke: COLORS.stroke, text: COLORS.text });
     const font = textFont(el.style, FONT.name);
     return [
-      { type: 'rect', x: 0, y: 0, width, height, fill: c.fill, stroke: c.stroke, strokeWidth: 1.5 },
+      { type: 'rect', x: 0, y: 0, width, height, fill: c.fill, stroke: c.stroke, strokeWidth: c.strokeWidth },
       ...(el.weak
-        ? [{ type: 'rect' as const, x: WEAK_GAP, y: WEAK_GAP, width: width - WEAK_GAP * 2, height: height - WEAK_GAP * 2, fill: 'none', stroke: c.stroke, strokeWidth: 1.5 }]
+        ? [{ type: 'rect' as const, x: WEAK_GAP, y: WEAK_GAP, width: width - WEAK_GAP * 2, height: height - WEAK_GAP * 2, fill: 'none', stroke: c.stroke, strokeWidth: c.strokeWidth }]
         : []),
       { type: 'text', x: width / 2, y: height / 2 + lineHeight(font.size) / 4, text: el.name, ...font, bold: true, color: c.text, anchor: 'middle', slot: 'name' },
     ];

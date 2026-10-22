@@ -1,4 +1,4 @@
-import { DRAWING_DEFAULT_WIDTH, DRAWING_MAX_COORDINATE, DRAWING_MAX_POINTS, HIGHLIGHTER_DEFAULT_WIDTH, type Diagram, type Element, isGroupKind, type Operation, type Point, type RelationChanges } from '@chartsia/core/model';
+import { DRAWING_MAX_COORDINATE, DRAWING_MAX_POINTS, type Diagram, type Element, isGroupKind, type Operation, type Point, type RelationChanges } from '@chartsia/core/model';
 import { type Connection, type Edge, type Node, type OnNodeDrag, useReactFlow } from '@xyflow/react';
 import { useCallback, useMemo } from 'react';
 import { type DiagramEditActions } from '../nodes/edit-context';
@@ -184,13 +184,12 @@ export function useDiagramEdits(api: ApiClient) {
   const updateRelation = useCallback((id: string, changes: RelationChanges) => void send([{ op: 'update_relation', id, changes }]), [send]);
 
   /** Crea un trazo de lápiz o de marcador desde puntos absolutos del lienzo. */
-  const addDrawing = useCallback((points: Point[], screenPoints: Point[], strokeColor: string, highlighter = false) => {
+  const addDrawing = useCallback((points: Point[], screenPoints: Point[], strokeColor: string, strokeWidth: number, highlighter = false) => {
     const diagram = diagramStore.getState().diagram;
     if (!diagram) return;
     const simplified = simplifyStroke(points, screenPoints);
     if (simplified.length < 2 || !simplified.some((p) => p.x !== simplified[0]!.x || p.y !== simplified[0]!.y)) return;
 
-    const strokeWidth = highlighter ? HIGHLIGHTER_DEFAULT_WIDTH : DRAWING_DEFAULT_WIDTH;
     const padding = strokeWidth / 2;
     const minX = Math.min(...simplified.map((p) => p.x));
     const minY = Math.min(...simplified.map((p) => p.y));
@@ -230,7 +229,12 @@ export function useDiagramEdits(api: ApiClient) {
   /** Panel de estilo: un `update_element` o `update_relation` por objetivo, todos en un lote. */
   const updateStyles = useCallback(
     (updates: StyleUpdate[]) =>
-      void send(updates.map((u): Operation => (u.relation ? { op: 'update_relation', id: u.id, changes: { style: u.style } } : { op: 'update_element', id: u.id, changes: { style: u.style } }))),
+      void send(
+        updates.map((u): Operation => {
+          if ('strokeWidth' in u) return { op: 'update_element', id: u.id, changes: { strokeWidth: u.strokeWidth } };
+          return u.relation ? { op: 'update_relation', id: u.id, changes: { style: u.style } } : { op: 'update_element', id: u.id, changes: { style: u.style } };
+        }),
+      ),
     [send],
   );
 

@@ -106,8 +106,8 @@ function cloudPath({ width: w, height: h }: Size): string {
   ].join(' ');
 }
 
-function outlinePrimitive(shape: FigureShape, size: Size, paint: { fill: string; stroke: string }): Primitive {
-  const look = { ...paint, strokeWidth: 1.5 };
+function outlinePrimitive(shape: FigureShape, size: Size, paint: { fill: string; stroke: string; strokeWidth: number }): Primitive {
+  const look = paint;
   const { width, height } = size;
   const points = figureOutline(shape, size);
   if (points) return { type: 'path', d: `${points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${r(p.x)} ${r(p.y)}`).join(' ')} Z`, ...look };

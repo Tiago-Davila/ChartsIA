@@ -9,6 +9,7 @@
       "style": {
         "borderColor": "#4a148c",
         "fillColor": "#7a2e8e",
+        "lineWidth": "thick",
         "fontSize": 16
       },
       "kind": "person",
@@ -64,6 +65,7 @@
       "style": {
         "borderColor": "#164c63",
         "fillColor": "#0e7090",
+        "lineWidth": "thin",
         "fontFamily": "handwritten"
       },
       "kind": "container",
@@ -100,6 +102,7 @@
       "style": {
         "borderColor": "#0369a1",
         "fillColor": "#e0f2fe",
+        "lineWidth": "thick",
         "fontColor": "#0c4a6e",
         "fontFamily": "monospace"
       },
@@ -140,6 +143,7 @@
       "label": "Usa",
       "style": {
         "borderColor": "#b54708",
+        "lineWidth": "thick",
         "fontColor": "#b54708",
         "fontSize": 14
       },

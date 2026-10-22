@@ -47,6 +47,56 @@ describe('render con estilo', () => {
   });
 });
 
+describe('grosor de trazo', () => {
+  it('la forma dibuja su borde con el grosor del estilo y sin estilo usa el normal', async () => {
+    for (const [lineWidth, px] of [['thin', 1], ['medium', 1.5], ['thick', 3]] as const) {
+      const node = buildScene(await diagram({ lineWidth })).nodes.find((n) => n.id === 'A')!;
+      expect(node.primitives[0], lineWidth).toMatchObject({ type: 'rect', strokeWidth: px });
+    }
+    const sin = buildScene(await diagram()).nodes.find((n) => n.id === 'A')!;
+    expect(sin.primitives[0]).toMatchObject({ strokeWidth: 1.5 });
+  });
+
+  it('la relación engrosa la línea y sus marcadores juntos', async () => {
+    const edge = buildScene(await diagram(undefined, { lineWidth: 'thick' })).edges[0]!;
+    expect(edge.primitives[0]).toMatchObject({ type: 'path', strokeWidth: 3 });
+    expect(edge.primitives[1]).toMatchObject({ type: 'path', strokeWidth: 3 });
+  });
+
+  it('svg: el grosor aparece en la forma y en la línea', async () => {
+    const svg = exportDiagram(await diagram({ lineWidth: 'thick' }, { lineWidth: 'thin' }), 'svg').content;
+    expect(svg).toContain('stroke="#1f2933" stroke-width="3"');
+    expect(svg).toContain('stroke-width="1"');
+  });
+
+  it('drawio: strokeWidth en la forma y en la relación, sin repetir claves', async () => {
+    const xml = exportDiagram(await diagram({ lineWidth: 'thick' }, { lineWidth: 'thin' }), 'drawio').content;
+    const cell = xml.match(/<mxCell id="A"[^>]*style="([^"]*)"/)![1]!;
+    expect(cell).toContain('strokeWidth=3;');
+    expect(cell.match(/strokeWidth=/g)).toHaveLength(1);
+    const edge = xml.match(/<mxCell id="r"[^>]*style="([^"]*)"/)![1]!;
+    expect(edge).toContain('strokeWidth=1;');
+  });
+
+  it('drawio: sin grosor no agrega strokeWidth', async () => {
+    const xml = exportDiagram(await diagram(STYLE), 'drawio').content;
+    expect(xml.match(/<mxCell id="A"[^>]*style="([^"]*)"/)![1]).not.toContain('strokeWidth=');
+  });
+
+  it('excalidraw: strokeWidth en la forma, los separadores y la flecha', async () => {
+    const json = JSON.parse(exportDiagram(await diagram({ lineWidth: 'thick' }, { lineWidth: 'thick' }), 'excalidraw').content);
+    const byId = (id: string) => json.elements.find((e: { id: string }) => e.id === id);
+    expect(byId('A')).toMatchObject({ strokeWidth: 3 });
+    expect(byId('A-sep-0')).toMatchObject({ strokeWidth: 3 });
+    expect(byId('r')).toMatchObject({ strokeWidth: 3 });
+  });
+
+  it('excalidraw: sin grosor conserva el de siempre', async () => {
+    const json = JSON.parse(exportDiagram(await diagram(STYLE), 'excalidraw').content);
+    expect(json.elements.find((e: { id: string }) => e.id === 'A')).toMatchObject({ strokeWidth: 1 });
+  });
+});
+
 describe('exportación con estilo', () => {
   it('svg: colores y familia en los elementos y en la relación', async () => {
     const svg = exportDiagram(await diagram(STYLE, REL_STYLE), 'svg').content;

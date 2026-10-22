@@ -14,8 +14,8 @@ export function EdgeMarkers({ relation, points }: { relation: Pick<Relation, 'ki
   return (
     <Primitives
       primitives={[
-        ...(style.start ? markerPrimitives(style.start, points[0]!, points[1]!, style.color, style.fill) : []),
-        ...(style.end ? markerPrimitives(style.end, points[n - 1]!, points[n - 2]!, style.color, style.fill) : []),
+        ...(style.start ? markerPrimitives(style.start, points[0]!, points[1]!, style.color, style.fill, style.width) : []),
+        ...(style.end ? markerPrimitives(style.end, points[n - 1]!, points[n - 2]!, style.color, style.fill, style.width) : []),
       ]}
     />
   );

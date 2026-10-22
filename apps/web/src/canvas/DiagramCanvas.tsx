@@ -18,12 +18,13 @@ import {
   useViewport,
 } from '@xyflow/react';
 import { type PointerEvent as ReactPointerEvent, useCallback, useEffect, useRef, useState } from 'react';
-import { DRAWING_DEFAULT_COLOR, DRAWING_DEFAULT_WIDTH, HIGHLIGHTER_DEFAULT_COLOR, HIGHLIGHTER_DEFAULT_WIDTH, HIGHLIGHTER_OPACITY, type Point } from '@chartsia/core/model';
+import { DRAWING_DEFAULT_COLOR, DRAWING_WIDTH_PX, HIGHLIGHTER_DEFAULT_COLOR, HIGHLIGHTER_OPACITY, HIGHLIGHTER_WIDTH_PX, type Point, type StyleLineWidth } from '@chartsia/core/model';
 import { edgeTypes } from '../edges';
 import { nodeTypes } from '../nodes';
 import { useDiagramEditActions } from '../nodes/edit-context';
 import { type ElementNodeData } from '../nodes/types';
 import { SelectionPanel } from './SelectionPanel';
+import { WidthPicker } from './WidthPicker';
 import { sampleStroke } from './drawing';
 import { fieldUpdates, PALETTE } from './style-edits';
 
@@ -35,7 +36,7 @@ export interface DiagramCanvasProps {
   onNodeDragStop?: OnNodeDrag;
   onDelete?: (params: { nodes: Node[]; edges: Edge[] }) => void;
   onConnect?: OnConnect;
-  onDraw?: (points: Point[], screenPoints: Point[], color: string, highlighter: boolean) => void;
+  onDraw?: (points: Point[], screenPoints: Point[], color: string, width: number, highlighter: boolean) => void;
 }
 
 export const FIT_VIEW_OPTIONS = { padding: 0.15, maxZoom: 1.25 };
@@ -79,10 +80,12 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   const screenPoints = useRef<Point[]>([]);
   const [tool, setTool] = useState<CanvasTool>();
   const [colors, setColors] = useState<Record<CanvasTool, string>>({ pen: DRAWING_DEFAULT_COLOR, highlighter: HIGHLIGHTER_DEFAULT_COLOR, bucket: BUCKET_DEFAULT_COLOR });
+  const [widths, setWidths] = useState<Record<'pen' | 'highlighter', StyleLineWidth>>({ pen: 'medium', highlighter: 'medium' });
   const highlighter = tool === 'highlighter';
   const drawingMode = tool === 'pen' || highlighter;
   const bucketMode = tool === 'bucket';
   const drawingColor = highlighter ? colors.highlighter : colors.pen;
+  const drawingWidth = highlighter ? HIGHLIGHTER_WIDTH_PX[widths.highlighter] : DRAWING_WIDTH_PX[widths.pen];
   const bucketColor = colors.bucket;
   const { updateStyles } = useDiagramEditActions();
   const [preview, setPreview] = useState<Point[]>([]);
@@ -168,8 +171,8 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     screenPoints.current = [];
     setPreview([]);
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
-    onDraw?.(points, screen, drawingColor, highlighter);
-  }, [addSample, drawingColor, highlighter, onDraw]);
+    onDraw?.(points, screen, drawingColor, drawingWidth, highlighter);
+  }, [addSample, drawingColor, drawingWidth, highlighter, onDraw]);
 
   const cancelDrawing = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     if (activePointer.current !== event.pointerId) return;
@@ -240,6 +243,9 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
             {drawingMode ? (
               <input type="color" aria-label={highlighter ? 'Color del marcador' : 'Color del lápiz'} value={drawingColor} onChange={(event) => setColors((current) => ({ ...current, [tool]: event.target.value }))} />
             ) : null}
+            {drawingMode ? (
+              <WidthPicker label={highlighter ? 'Grosor del marcador' : 'Grosor del lápiz'} value={widths[tool]} onPick={(width) => setWidths((current) => ({ ...current, [tool]: width }))} />
+            ) : null}
             <button type="button" className={`button${bucketMode ? ' button--primary' : ''}`} aria-pressed={bucketMode} onClick={() => setTool((active) => (active === 'bucket' ? undefined : 'bucket'))}>
               Balde
             </button>
@@ -249,7 +255,8 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
       </ReactFlow>
       {preview.length > 1 ? (
         <svg className="diagram-canvas__preview" aria-hidden="true">
-          <polyline points={preview.map((p) => `${p.x},${p.y}`).join(' ')} fill="none" stroke={drawingColor} strokeOpacity={highlighter ? HIGHLIGHTER_OPACITY : undefined} strokeWidth={(highlighter ? HIGHLIGHTER_DEFAULT_WIDTH : DRAWING_DEFAULT_WIDTH) * zoom} strokeLinecap="round" strokeLinejoin="round" />
+          <polyline points={preview.map((p) => `${p.x},${p.y}`).join(' ')} fill="none" stroke={drawingColor} strokeOpacity={highlighter ? HIGHLIGHTER_OPACITY : undefined} strokeWidth={drawingWidth * zoom} strokeLinecap="round" strokeLinejoin="round" />
+
         </svg>
       ) : null}
     </div>

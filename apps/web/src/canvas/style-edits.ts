@@ -1,4 +1,4 @@
-import { FONT_SIZE_MAX, FONT_SIZE_MIN, type Style } from '@chartsia/core/model';
+import { DRAWING_WIDTH_PX, FONT_SIZE_MAX, FONT_SIZE_MIN, HIGHLIGHTER_WIDTH_PX, LINE_WIDTHS, type Style, type StyleLineWidth } from '@chartsia/core/model';
 
 /** Algo con estilo que el panel puede cambiar: un elemento o una flecha. */
 export interface StyleTarget {
@@ -7,12 +7,20 @@ export interface StyleTarget {
   style?: Style;
 }
 
-/** Cambio de estilo ya calculado para un objetivo; `null` borra su estilo. */
-export interface StyleUpdate {
+/** Trazo del lápiz o del marcador seleccionado: solo el panel de grosor lo cambia. */
+export interface DrawingTarget {
   id: string;
-  relation: boolean;
-  style: Style | null;
+  strokeWidth: number;
+  highlighter?: boolean;
 }
+
+/** Tabla de grosores en px según el trazo sea de lápiz o de marcador. */
+function widthTable(d: DrawingTarget): Record<StyleLineWidth, number> {
+  return d.highlighter ? HIGHLIGHTER_WIDTH_PX : DRAWING_WIDTH_PX;
+}
+
+/** Cambio ya calculado para un objetivo: su estilo (`null` lo borra) o el grosor de un trazo. */
+export type StyleUpdate = { id: string; relation: boolean; style: Style | null } | { id: string; relation: false; strokeWidth: number };
 
 /** Colores fijos de la paleta del panel. */
 export const PALETTE = [
@@ -56,4 +64,24 @@ export function parseFontSize(text: string): number | undefined {
   const n = Math.round(Number(text));
   if (text.trim() === '' || !Number.isFinite(n)) return undefined;
   return Math.min(FONT_SIZE_MAX, Math.max(FONT_SIZE_MIN, n));
+}
+
+/** Nombre en español de cada grosor. */
+export const WIDTH_LABELS: Record<StyleLineWidth, string> = { thin: 'Fino', medium: 'Medio', thick: 'Grueso' };
+
+/** Grosor que muestra el panel si todos los objetivos y trazos coinciden; sin estilo cuenta como medio. */
+export function commonWidth(targets: StyleTarget[], drawings: DrawingTarget[]): StyleLineWidth | undefined {
+  const widths = [
+    ...targets.map((t) => t.style?.lineWidth ?? 'medium'),
+    ...drawings.map((d) => LINE_WIDTHS.find((name) => widthTable(d)[name] === d.strokeWidth)),
+  ];
+  return widths.every((w) => w === widths[0]) ? widths[0] : undefined;
+}
+
+/** Cambios que ponen un grosor: `lineWidth` en el estilo de los objetivos y `strokeWidth` en los trazos. */
+export function widthUpdates(targets: StyleTarget[], drawings: DrawingTarget[], width: StyleLineWidth): StyleUpdate[] {
+  return [
+    ...fieldUpdates(targets, 'lineWidth', width),
+    ...drawings.map((d): StyleUpdate => ({ id: d.id, relation: false, strokeWidth: widthTable(d)[width] })),
+  ];
 }
