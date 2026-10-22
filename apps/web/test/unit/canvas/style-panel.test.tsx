@@ -2,18 +2,18 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { ReactFlow, ReactFlowProvider } from '@xyflow/react';
 import { describe, expect, it, vi } from 'vitest';
 import { StylePanel } from '../../../src/canvas/StylePanel';
-import { type StyleTarget, type StyleUpdate } from '../../../src/canvas/style-edits';
+import { type DrawingTarget, type StyleTarget, type StyleUpdate } from '../../../src/canvas/style-edits';
 import { SelectionPanel } from '../../../src/canvas/SelectionPanel';
 import { DiagramEditContext } from '../../../src/nodes/edit-context';
 
-function renderPanel(targets: StyleTarget[]) {
+function renderPanel(targets: StyleTarget[], drawings: DrawingTarget[] = []) {
   const updateStyles = vi.fn<(updates: StyleUpdate[]) => void>();
   const actions = { editText: vi.fn(), resize: vi.fn(), updateRelation: vi.fn(), updateStyles, leaveGroup: vi.fn(), ungroup: vi.fn(), groupInFrame: vi.fn(), readOnly: false };
   render(
     <DiagramEditContext.Provider value={actions}>
       <ReactFlowProvider>
         <ReactFlow nodes={[]} edges={[]}>
-          <StylePanel targets={targets} />
+          <StylePanel targets={targets} drawings={drawings} />
         </ReactFlow>
       </ReactFlowProvider>
     </DiagramEditContext.Provider>,
@@ -82,6 +82,45 @@ describe('StylePanel', () => {
   it('para flechas el primer color se llama "Color de línea"', () => {
     renderPanel([{ id: 'r1', relation: true }]);
     expect(screen.getByRole('group', { name: 'Color de línea' })).toBeInTheDocument();
+  });
+
+  it('el grosor se aplica a todos los objetivos en un solo lote y conserva el resto del estilo', () => {
+    const updateStyles = renderPanel([clase('A', { fontSize: 12 }), clase('B'), { id: 'r1', relation: true }]);
+    fireEvent.click(screen.getByRole('button', { name: 'Grosor: Grueso' }));
+    expect(updateStyles).toHaveBeenCalledTimes(1);
+    expect(updateStyles.mock.calls[0]![0]).toEqual([
+      { id: 'A', relation: false, style: { fontSize: 12, lineWidth: 'thick' } },
+      { id: 'B', relation: false, style: { lineWidth: 'thick' } },
+      { id: 'r1', relation: true, style: { lineWidth: 'thick' } },
+    ]);
+  });
+
+  it('marca el grosor actual y el medio cuando no hay estilo', () => {
+    renderPanel([clase('A', { lineWidth: 'thin' })]);
+    expect(screen.getByRole('button', { name: 'Grosor: Fino' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Grosor: Medio' })).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('sin estilo propio el grosor medio aparece marcado', () => {
+    renderPanel([clase('A')]);
+    expect(screen.getByRole('button', { name: 'Grosor: Medio' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('con trazos del lápiz seleccionados solo ofrece el grosor y cambia su strokeWidth', () => {
+    const updateStyles = renderPanel([], [{ id: 'T', strokeWidth: 2.5 }]);
+    expect(screen.queryByRole('group', { name: 'Color de borde' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Grosor: Medio' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Grosor: Grueso' }));
+    expect(updateStyles).toHaveBeenCalledWith([{ id: 'T', relation: false, strokeWidth: 5 }]);
+  });
+
+  it('con elementos y trazos a la vez cambia ambos en el mismo lote', () => {
+    const updateStyles = renderPanel([clase('A')], [{ id: 'T', strokeWidth: 1.5 }]);
+    fireEvent.click(screen.getByRole('button', { name: 'Grosor: Fino' }));
+    expect(updateStyles.mock.calls[0]![0]).toEqual([
+      { id: 'A', relation: false, style: { lineWidth: 'thin' } },
+      { id: 'T', relation: false, strokeWidth: 1.5 },
+    ]);
   });
 });
 

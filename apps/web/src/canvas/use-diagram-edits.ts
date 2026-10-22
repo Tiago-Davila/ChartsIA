@@ -1,4 +1,4 @@
-import { DRAWING_DEFAULT_WIDTH, DRAWING_MAX_COORDINATE, DRAWING_MAX_POINTS, type Diagram, type Element, isGroupKind, type Operation, type Point, type RelationChanges } from '@chartsia/core/model';
+import { DRAWING_MAX_COORDINATE, DRAWING_MAX_POINTS, type Diagram, type Element, isGroupKind, type Operation, type Point, type RelationChanges } from '@chartsia/core/model';
 import { type Connection, type Edge, type Node, type OnNodeDrag, useReactFlow } from '@xyflow/react';
 import { useCallback, useMemo } from 'react';
 import { type DiagramEditActions } from '../nodes/edit-context';
@@ -184,18 +184,18 @@ export function useDiagramEdits(api: ApiClient) {
   const updateRelation = useCallback((id: string, changes: RelationChanges) => void send([{ op: 'update_relation', id, changes }]), [send]);
 
   /** Crea un trazo libre desde puntos absolutos del lienzo. */
-  const addDrawing = useCallback((points: Point[], screenPoints: Point[], strokeColor: string) => {
+  const addDrawing = useCallback((points: Point[], screenPoints: Point[], strokeColor: string, strokeWidth: number) => {
     const diagram = diagramStore.getState().diagram;
     if (!diagram) return;
     const simplified = simplifyStroke(points, screenPoints);
     if (simplified.length < 2 || !simplified.some((p) => p.x !== simplified[0]!.x || p.y !== simplified[0]!.y)) return;
 
-    const padding = DRAWING_DEFAULT_WIDTH / 2;
+    const padding = strokeWidth / 2;
     const minX = Math.min(...simplified.map((p) => p.x));
     const minY = Math.min(...simplified.map((p) => p.y));
     const maxX = Math.max(...simplified.map((p) => p.x));
     const maxY = Math.max(...simplified.map((p) => p.y));
-    if (maxX - minX + DRAWING_DEFAULT_WIDTH > DRAWING_MAX_COORDINATE || maxY - minY + DRAWING_DEFAULT_WIDTH > DRAWING_MAX_COORDINATE) {
+    if (maxX - minX + strokeWidth > DRAWING_MAX_COORDINATE || maxY - minY + strokeWidth > DRAWING_MAX_COORDINATE) {
       diagramStore.getState().showErrors([
         { code: 'LIMIT_EXCEEDED', path: '/points', message: 'El trazo supera el límite de 5000 unidades.', hint: 'Acércate al lienzo y dibuja un trazo más corto.' },
       ]);
@@ -218,7 +218,7 @@ export function useDiagramEdits(api: ApiClient) {
       name: 'Trazo',
       points: local,
       strokeColor,
-      strokeWidth: DRAWING_DEFAULT_WIDTH,
+      strokeWidth,
       layout: { x, y },
     };
     void send([{ op: 'add_element', element }]);
@@ -227,7 +227,12 @@ export function useDiagramEdits(api: ApiClient) {
   /** Panel de estilo: un `update_element` o `update_relation` por objetivo, todos en un lote. */
   const updateStyles = useCallback(
     (updates: StyleUpdate[]) =>
-      void send(updates.map((u): Operation => (u.relation ? { op: 'update_relation', id: u.id, changes: { style: u.style } } : { op: 'update_element', id: u.id, changes: { style: u.style } }))),
+      void send(
+        updates.map((u): Operation => {
+          if ('strokeWidth' in u) return { op: 'update_element', id: u.id, changes: { strokeWidth: u.strokeWidth } };
+          return u.relation ? { op: 'update_relation', id: u.id, changes: { style: u.style } } : { op: 'update_element', id: u.id, changes: { style: u.style } };
+        }),
+      ),
     [send],
   );
 

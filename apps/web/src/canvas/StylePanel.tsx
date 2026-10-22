@@ -2,7 +2,8 @@ import { FONT_FAMILIES, FONT_SIZE_MAX, FONT_SIZE_MIN, type Style } from '@charts
 import { Panel } from '@xyflow/react';
 import { useEffect, useRef, useState } from 'react';
 import { useDiagramEditActions } from '../nodes/edit-context';
-import { commonValue, fieldUpdates, PALETTE, parseFontSize, resetUpdates, type StyleTarget } from './style-edits';
+import { commonValue, commonWidth, type DrawingTarget, fieldUpdates, PALETTE, parseFontSize, resetUpdates, type StyleTarget, widthUpdates } from './style-edits';
+import { WidthPicker } from './WidthPicker';
 
 const FONT_LABELS: Record<(typeof FONT_FAMILIES)[number], string> = {
   'sans-serif': 'Sans serif',
@@ -86,14 +87,24 @@ function FontSizeField({ value, onPick }: { value?: number; onPick(size: number 
 }
 
 /** Panel de estilo del elemento o la flecha seleccionada; con varios, aplica el cambio a todos en un lote. */
-export function StylePanel({ targets }: { targets: StyleTarget[] }) {
+export function StylePanel({ targets, drawings = [] }: { targets: StyleTarget[]; drawings?: DrawingTarget[] }) {
   const { updateStyles } = useDiagramEditActions();
-  if (targets.length === 0) return null;
+  if (targets.length === 0 && drawings.length === 0) return null;
   const set = <K extends keyof Style>(field: K, value: Style[K] | undefined) => updateStyles(fieldUpdates(targets, field, value));
   const onlyRelations = targets.every((t) => t.relation);
+  const width = <WidthPicker label="Grosor" value={commonWidth(targets, drawings)} onPick={(w) => updateStyles(widthUpdates(targets, drawings, w))} />;
+  // Solo trazos del lápiz: sus colores y fuentes no usan el estilo, así que solo se ofrece el grosor.
+  if (targets.length === 0) {
+    return (
+      <Panel position="top-right" className="style-panel nodrag nopan" role="region" aria-label="Estilo">
+        {width}
+      </Panel>
+    );
+  }
   return (
     <Panel position="top-right" className="style-panel nodrag nopan" role="region" aria-label="Estilo">
       <ColorField label={onlyRelations ? 'Color de línea' : 'Color de borde'} value={commonValue(targets, 'borderColor')} onPick={(c) => set('borderColor', c)} />
+      {width}
       <ColorField label="Relleno" value={commonValue(targets, 'fillColor')} onPick={(c) => set('fillColor', c)} />
       <ColorField label="Color de fuente" value={commonValue(targets, 'fontColor')} onPick={(c) => set('fontColor', c)} />
       <label className="style-panel__row">

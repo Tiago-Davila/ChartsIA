@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { commonValue, fieldUpdates, parseFontSize, resetUpdates, type StyleTarget, withField } from '../../../src/canvas/style-edits';
+import { commonValue, commonWidth, fieldUpdates, parseFontSize, resetUpdates, type StyleTarget, widthUpdates, withField } from '../../../src/canvas/style-edits';
 
 const clase = (id: string, style?: StyleTarget['style']): StyleTarget => ({ id, relation: false, style });
 
@@ -33,6 +33,27 @@ describe('fieldUpdates y resetUpdates', () => {
 
   it('restablecer borra solo el estilo de quienes lo tienen', () => {
     expect(resetUpdates([clase('A', { fontSize: 20 }), clase('B')])).toEqual([{ id: 'A', relation: false, style: null }]);
+  });
+});
+
+describe('commonWidth y widthUpdates', () => {
+  it('sin estilo el grosor es medio y un trazo se compara con las opciones del lápiz', () => {
+    expect(commonWidth([clase('A')], [])).toBe('medium');
+    expect(commonWidth([], [{ id: 'T', strokeWidth: 5 }])).toBe('thick');
+    expect(commonWidth([clase('A')], [{ id: 'T', strokeWidth: 2.5 }])).toBe('medium');
+  });
+
+  it('devuelve undefined si difieren o si el trazo tiene un grosor fuera de las opciones', () => {
+    expect(commonWidth([clase('A', { lineWidth: 'thin' }), clase('B')], [])).toBeUndefined();
+    expect(commonWidth([], [{ id: 'T', strokeWidth: 3 }])).toBeUndefined();
+  });
+
+  it('pone lineWidth en los objetivos y strokeWidth en los trazos', () => {
+    expect(widthUpdates([clase('A', { fontSize: 20 }), { id: 'r1', relation: true }], [{ id: 'T', strokeWidth: 2.5 }], 'thick')).toEqual([
+      { id: 'A', relation: false, style: { fontSize: 20, lineWidth: 'thick' } },
+      { id: 'r1', relation: true, style: { lineWidth: 'thick' } },
+      { id: 'T', relation: false, strokeWidth: 5 },
+    ]);
   });
 });
 

@@ -4,7 +4,7 @@ import { EdgePanel } from '../edges/EdgeToolbar';
 import { type RoutedEdgeData } from '../edges/RoutedEdge';
 import { useDiagramEditActions } from '../nodes/edit-context';
 import { type ElementNodeData } from '../nodes/types';
-import { type StyleTarget } from './style-edits';
+import { type DrawingTarget, type StyleTarget } from './style-edits';
 import { StylePanel } from './StylePanel';
 
 export interface SelectionPanelProps {
@@ -49,6 +49,14 @@ function styleTargets(nodes: Node[], edges: Edge[]): StyleTarget[] {
   ];
 }
 
+/** Trazos del lápiz seleccionados: el panel de estilo solo les cambia el grosor. */
+function drawingTargets(nodes: Node[]): DrawingTarget[] {
+  return nodes.flatMap((n) => {
+    const { element } = n.data as ElementNodeData;
+    return element.kind === 'drawing' ? [{ id: element.id, strokeWidth: element.strokeWidth }] : [];
+  });
+}
+
 /** Barra contextual arriba del lienzo con las acciones de lo seleccionado, y el panel de estilo. */
 export function SelectionPanel({ nodes, edges, editingEdge, onEditEdge }: SelectionPanelProps) {
   const selectedEdges = edges.filter((e) => e.selected);
@@ -75,7 +83,7 @@ export function SelectionPanel({ nodes, edges, editingEdge, onEditEdge }: Select
           <EdgePanel relation={(onlyEdge.data as RoutedEdgeData).relation} editingText={editingEdge === onlyEdge.id} onEditText={(open) => onEditEdge(open ? onlyEdge.id : undefined)} />
         </Panel>
       ) : null}
-      <StylePanel targets={styleTargets(selectedNodes, selectedEdges)} />
+      <StylePanel targets={styleTargets(selectedNodes, selectedEdges)} drawings={drawingTargets(selectedNodes)} />
     </>
   );
 }

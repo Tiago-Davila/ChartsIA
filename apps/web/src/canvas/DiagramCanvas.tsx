@@ -18,10 +18,11 @@ import {
   useViewport,
 } from '@xyflow/react';
 import { type PointerEvent as ReactPointerEvent, useCallback, useEffect, useRef, useState } from 'react';
-import { DRAWING_DEFAULT_COLOR, DRAWING_DEFAULT_WIDTH, type Point } from '@chartsia/core/model';
+import { DRAWING_DEFAULT_COLOR, DRAWING_WIDTH_PX, type Point, type StyleLineWidth } from '@chartsia/core/model';
 import { edgeTypes } from '../edges';
 import { nodeTypes } from '../nodes';
 import { SelectionPanel } from './SelectionPanel';
+import { WidthPicker } from './WidthPicker';
 import { sampleStroke } from './drawing';
 
 export interface DiagramCanvasProps {
@@ -32,7 +33,7 @@ export interface DiagramCanvasProps {
   onNodeDragStop?: OnNodeDrag;
   onDelete?: (params: { nodes: Node[]; edges: Edge[] }) => void;
   onConnect?: OnConnect;
-  onDraw?: (points: Point[], screenPoints: Point[], color: string) => void;
+  onDraw?: (points: Point[], screenPoints: Point[], color: string, width: number) => void;
 }
 
 export const FIT_VIEW_OPTIONS = { padding: 0.15, maxZoom: 1.25 };
@@ -72,6 +73,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   const screenPoints = useRef<Point[]>([]);
   const [drawingMode, setDrawingMode] = useState(false);
   const [drawingColor, setDrawingColor] = useState(DRAWING_DEFAULT_COLOR);
+  const [drawingWidth, setDrawingWidth] = useState<StyleLineWidth>('medium');
   const [preview, setPreview] = useState<Point[]>([]);
   const fittedFor = useRef<string | null>(null);
   const [editingEdge, setEditingEdge] = useState<string>();
@@ -148,8 +150,8 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     screenPoints.current = [];
     setPreview([]);
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
-    onDraw?.(points, screen, drawingColor);
-  }, [addSample, drawingColor, onDraw]);
+    onDraw?.(points, screen, drawingColor, DRAWING_WIDTH_PX[drawingWidth]);
+  }, [addSample, drawingColor, drawingWidth, onDraw]);
 
   const cancelDrawing = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     if (activePointer.current !== event.pointerId) return;
@@ -214,12 +216,13 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
               Lápiz
             </button>
             {drawingMode ? <input type="color" aria-label="Color del lápiz" value={drawingColor} onChange={(event) => setDrawingColor(event.target.value)} /> : null}
+            {drawingMode ? <WidthPicker label="Grosor del lápiz" value={drawingWidth} onPick={setDrawingWidth} /> : null}
           </Panel>
         )}
       </ReactFlow>
       {preview.length > 1 ? (
         <svg className="diagram-canvas__preview" aria-hidden="true">
-          <polyline points={preview.map((p) => `${p.x},${p.y}`).join(' ')} fill="none" stroke={drawingColor} strokeWidth={DRAWING_DEFAULT_WIDTH * zoom} strokeLinecap="round" strokeLinejoin="round" />
+          <polyline points={preview.map((p) => `${p.x},${p.y}`).join(' ')} fill="none" stroke={drawingColor} strokeWidth={DRAWING_WIDTH_PX[drawingWidth] * zoom} strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       ) : null}
     </div>

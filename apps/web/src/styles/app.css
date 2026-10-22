@@ -441,6 +441,22 @@ button:disabled,
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
+.width-picker {
+  display: flex;
+  gap: 4px;
+}
+.width-picker__option {
+  padding: 4px 6px;
+  line-height: 0;
+}
+.width-picker__option[aria-pressed='true'] {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+/* En la botonera del lápiz el grosor va sin rótulo; el grupo conserva su nombre accesible. */
+.drawing-tool .style-panel__label {
+  display: none;
+}
 .style-panel select,
 .style-panel input[type='number'] {
   height: 28px;
