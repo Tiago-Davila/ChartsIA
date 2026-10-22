@@ -228,8 +228,8 @@ describe('applyOperations', () => {
   });
 
   it('valida las reglas de dominio sobre el resultado', () => {
-    const res = apply([{ op: 'add_element', element: { id: 'P', kind: 'person', name: 'P' } }]);
-    expect(!res.ok && codes(res.errors)).toEqual(['KIND_NOT_ALLOWED']);
+    const res = apply([{ op: 'add_element', element: { id: 'C', kind: 'component', name: 'C' } }]);
+    expect(!res.ok && codes(res.errors)).toEqual(['INVALID_PARENT']);
   });
 
   it('respeta el máximo de elementos', () => {

@@ -51,8 +51,8 @@ describe('tabla ER', () => {
     expect(firstError(tables([id, fk('cliente', 'email')]))).toMatchObject({ code: 'INVALID_MEMBER', path: '/elements/1/columns/1/fk/column' });
   });
 
-  it('las tablas solo valen en diagramas er', () => {
+  it('una tabla vale también en diagramas de clases', () => {
     const res = validateDiagram({ ...tables([id]), type: 'class' } as DiagramInput);
-    expect(res.ok ? [] : res.errors.map((e) => e.code)).toContain('KIND_NOT_ALLOWED');
+    expect(res.ok).toBe(true);
   });
 });
