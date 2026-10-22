@@ -396,6 +396,43 @@ button:disabled,
 .chartsia-node text[data-slot] {
   cursor: text;
 }
+/* Botones para agregar y quitar miembros: viven fuera del SVG de la forma. */
+.member-add {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 0;
+  z-index: 5;
+  display: flex;
+  gap: 4px;
+  white-space: nowrap;
+}
+.member-add__button,
+.member-remove {
+  font: inherit;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--accent);
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+}
+.member-add__button {
+  padding: 4px 8px;
+}
+.member-remove {
+  position: absolute;
+  left: calc(100% + 6px);
+  z-index: 5;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+}
+.member-add__button:hover,
+.member-remove:hover {
+  color: #fff;
+  background: var(--accent);
+}
 .chartsia-node.is-selected svg {
   filter: drop-shadow(0 0 0.5px var(--accent)) drop-shadow(0 0 3px rgb(17 104 189 / 45%));
 }

@@ -8,7 +8,7 @@ import { DiagramEditContext } from '../../../src/nodes/edit-context';
 
 function renderPanel(targets: StyleTarget[], drawings: DrawingTarget[] = []) {
   const updateStyles = vi.fn<(updates: StyleUpdate[]) => void>();
-  const actions = { editText: vi.fn(), resize: vi.fn(), updateRelation: vi.fn(), updateStyles, leaveGroup: vi.fn(), ungroup: vi.fn(), groupInFrame: vi.fn(), readOnly: false };
+  const actions = { editText: vi.fn(), addMember: vi.fn(), removeMember: vi.fn(), resize: vi.fn(), updateRelation: vi.fn(), updateStyles, leaveGroup: vi.fn(), ungroup: vi.fn(), groupInFrame: vi.fn(), readOnly: false };
   render(
     <DiagramEditContext.Provider value={actions}>
       <ReactFlowProvider>
@@ -127,7 +127,7 @@ describe('StylePanel', () => {
 describe('SelectionPanel', () => {
   it('permite agrupar nodos conectados aunque también haya una relación seleccionada', () => {
     const groupInFrame = vi.fn();
-    const actions = { editText: vi.fn(), resize: vi.fn(), updateRelation: vi.fn(), updateStyles: vi.fn(), leaveGroup: vi.fn(), ungroup: vi.fn(), groupInFrame, readOnly: false };
+    const actions = { editText: vi.fn(), addMember: vi.fn(), removeMember: vi.fn(), resize: vi.fn(), updateRelation: vi.fn(), updateStyles: vi.fn(), leaveGroup: vi.fn(), ungroup: vi.fn(), groupInFrame, readOnly: false };
     const nodes = [
       { id: 'A', position: { x: 0, y: 0 }, selected: true, data: { element: { id: 'A', kind: 'class', name: 'A', attributes: [], operations: [] } } },
       { id: 'B', position: { x: 100, y: 0 }, selected: true, data: { element: { id: 'B', kind: 'class', name: 'B', attributes: [], operations: [] } } },

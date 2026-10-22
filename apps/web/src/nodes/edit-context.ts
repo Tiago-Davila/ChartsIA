@@ -1,10 +1,15 @@
 import { type RelationChanges } from '@chartsia/core/model';
 import { createContext, useContext } from 'react';
+import { type MemberKind } from '../canvas/slot-edits';
 import { type StyleUpdate } from '../canvas/style-edits';
 
 export interface DiagramEditActions {
   /** Edición en línea de un texto con `slot` (p. ej. `name`, `attribute:0`). */
   editText(elementId: string, slot: string, value: string): void;
+  /** Agrega un miembro con texto por defecto; devuelve su `slot`, o `undefined` si no se pudo. */
+  addMember(elementId: string, kind: MemberKind): Promise<string | undefined>;
+  /** Quita el miembro del `slot` en una sola operación. */
+  removeMember(elementId: string, slot: string): void;
   /** Tamaño elegido a mano (posición relativa al padre, como la da React Flow). */
   resize(elementId: string, box: { x: number; y: number; width: number; height: number }): void;
   updateRelation(relationId: string, changes: RelationChanges): void;
@@ -18,7 +23,7 @@ export interface DiagramEditActions {
   readOnly: boolean;
 }
 
-const noop: DiagramEditActions = { editText: () => {}, resize: () => {}, updateRelation: () => {}, updateStyles: () => {}, leaveGroup: () => {}, ungroup: () => {}, groupInFrame: () => {}, readOnly: true };
+const noop: DiagramEditActions = { editText: () => {}, addMember: async () => undefined, removeMember: () => {}, resize: () => {}, updateRelation: () => {}, updateStyles: () => {}, leaveGroup: () => {}, ungroup: () => {}, groupInFrame: () => {}, readOnly: true };
 
 export const DiagramEditContext = createContext<DiagramEditActions>(noop);
 
