@@ -64,5 +64,7 @@ describe('contract: C4', () => {
     expect(text).toContain('component');
     expect(text).toContain('c4-rel');
     expect(text).toContain('boundaryType');
+    expect(text).toContain('collection');
+    expect(text).toContain('figure');
   });
 });

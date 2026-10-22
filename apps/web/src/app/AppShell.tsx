@@ -146,7 +146,7 @@ export function AppShell(props: AppShellProps) {
         )}
         {props.overlay}
       </main>
-      {showFigures ? <FigureSidebar type={diagram.type} onAdd={(key) => props.onAddFigureAtCenter?.(key, center())} /> : null}
+      {showFigures ? <FigureSidebar onAdd={(key) => props.onAddFigureAtCenter?.(key, center())} /> : null}
     </div>
   );
 }

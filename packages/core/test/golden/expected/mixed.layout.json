@@ -1,0 +1,385 @@
+{
+  "type": "class",
+  "title": "Diagrama mixto: clases, C4, ER, NoSQL y figura",
+  "elements": [
+    {
+      "id": "Pedido",
+      "name": "Pedido",
+      "kind": "class",
+      "attributes": [
+        {
+          "name": "total",
+          "type": "Decimal",
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        {
+          "name": "pagar",
+          "parameters": [],
+          "visibility": "+"
+        }
+      ],
+      "layout": {
+        "x": 791.17,
+        "y": 556,
+        "width": 140,
+        "height": 94,
+        "pinned": false
+      }
+    },
+    {
+      "id": "Pagable",
+      "name": "Pagable",
+      "kind": "interface",
+      "operations": [
+        {
+          "name": "cobrar",
+          "parameters": [],
+          "visibility": "+"
+        }
+      ],
+      "layout": {
+        "x": 791.17,
+        "y": 730,
+        "width": 140,
+        "height": 79,
+        "pinned": false
+      }
+    },
+    {
+      "id": "Cliente",
+      "name": "Cliente",
+      "description": "Compra en la tienda",
+      "kind": "person",
+      "layout": {
+        "x": 30,
+        "y": 128,
+        "width": 220,
+        "height": 142,
+        "pinned": false
+      }
+    },
+    {
+      "id": "Tienda",
+      "name": "Tienda en línea",
+      "kind": "software-system",
+      "layout": {
+        "x": 30,
+        "y": 350,
+        "width": 220,
+        "height": 110,
+        "pinned": false
+      }
+    },
+    {
+      "id": "Tienda-web",
+      "name": "Sitio web",
+      "kind": "boundary",
+      "boundaryType": "container",
+      "layout": {
+        "x": 310,
+        "y": 30,
+        "width": 268,
+        "height": 200,
+        "pinned": false
+      }
+    },
+    {
+      "id": "Api",
+      "name": "API de pedidos",
+      "parentId": "Tienda-web",
+      "kind": "component",
+      "technology": "Node.js",
+      "layout": {
+        "x": 334,
+        "y": 96,
+        "width": 220,
+        "height": 110,
+        "pinned": false
+      }
+    },
+    {
+      "id": "ent-cliente",
+      "name": "Cliente DB",
+      "kind": "entity",
+      "layout": {
+        "x": 638,
+        "y": 222,
+        "width": 120,
+        "height": 48,
+        "pinned": false
+      }
+    },
+    {
+      "id": "ent-pedido",
+      "name": "Pedido DB",
+      "kind": "entity",
+      "layout": {
+        "x": 491.5,
+        "y": 389,
+        "width": 120,
+        "height": 48,
+        "pinned": false
+      }
+    },
+    {
+      "id": "nombre",
+      "name": "nombre",
+      "kind": "attribute",
+      "key": true,
+      "layout": {
+        "x": 671.5,
+        "y": 350,
+        "width": 93,
+        "height": 44,
+        "pinned": false
+      }
+    },
+    {
+      "id": "productos",
+      "name": "productos",
+      "kind": "collection",
+      "fields": [
+        {
+          "path": [
+            "_id"
+          ],
+          "type": "objectId"
+        },
+        {
+          "path": [
+            "nombre"
+          ],
+          "type": "string"
+        }
+      ],
+      "layout": {
+        "x": 1004.5,
+        "y": 350,
+        "width": 180,
+        "height": 126,
+        "pinned": false
+      }
+    },
+    {
+      "id": "resenas",
+      "name": "reseñas",
+      "kind": "collection",
+      "fields": [
+        {
+          "path": [
+            "producto"
+          ],
+          "type": "reference"
+        },
+        {
+          "path": [
+            "puntos"
+          ],
+          "type": "number"
+        }
+      ],
+      "layout": {
+        "x": 1001,
+        "y": 144,
+        "width": 187,
+        "height": 126,
+        "pinned": false
+      }
+    },
+    {
+      "id": "nota",
+      "name": "Nota: revisar integraciones",
+      "kind": "figure",
+      "shape": "rectangle",
+      "layout": {
+        "x": 824.5,
+        "y": 412,
+        "width": 120,
+        "height": 64,
+        "pinned": false
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "r1",
+      "kind": "realization",
+      "source": "Pedido",
+      "target": "Pagable",
+      "route": [
+        {
+          "x": 837.84,
+          "y": 650
+        },
+        {
+          "x": 837.84,
+          "y": 666
+        },
+        {
+          "x": 837.84,
+          "y": 714
+        },
+        {
+          "x": 837.84,
+          "y": 730
+        }
+      ]
+    },
+    {
+      "id": "r2",
+      "kind": "association",
+      "source": "Pedido",
+      "target": "Pagable",
+      "label": "se cobra con",
+      "route": [
+        {
+          "x": 884.5,
+          "y": 650
+        },
+        {
+          "x": 884.5,
+          "y": 666
+        },
+        {
+          "x": 884.5,
+          "y": 714
+        },
+        {
+          "x": 884.5,
+          "y": 730
+        }
+      ]
+    },
+    {
+      "id": "r3",
+      "kind": "c4-rel",
+      "source": "Cliente",
+      "target": "Tienda",
+      "label": "compra en",
+      "technology": "HTTPS",
+      "route": [
+        {
+          "x": 140,
+          "y": 270
+        },
+        {
+          "x": 140,
+          "y": 350
+        }
+      ]
+    },
+    {
+      "id": "r4",
+      "kind": "er-rel",
+      "source": "ent-cliente",
+      "target": "ent-pedido",
+      "label": "hace",
+      "sourceCardinality": "one",
+      "targetCardinality": "zero-many",
+      "route": [
+        {
+          "x": 678,
+          "y": 270
+        },
+        {
+          "x": 678,
+          "y": 286
+        },
+        {
+          "x": 551.5,
+          "y": 286
+        },
+        {
+          "x": 551.5,
+          "y": 389
+        }
+      ]
+    },
+    {
+      "id": "r5",
+      "kind": "er-attr",
+      "source": "ent-cliente",
+      "target": "nombre",
+      "route": [
+        {
+          "x": 718,
+          "y": 270
+        },
+        {
+          "x": 718,
+          "y": 350
+        }
+      ]
+    },
+    {
+      "id": "r6",
+      "kind": "nosql-rel",
+      "source": "resenas",
+      "target": "productos",
+      "label": "producto",
+      "route": [
+        {
+          "x": 1094.5,
+          "y": 270
+        },
+        {
+          "x": 1094.5,
+          "y": 350
+        }
+      ]
+    },
+    {
+      "id": "r7",
+      "kind": "connector",
+      "source": "nota",
+      "target": "Pedido",
+      "arrowheads": "end",
+      "dashed": true,
+      "route": [
+        {
+          "x": 884.5,
+          "y": 476
+        },
+        {
+          "x": 884.5,
+          "y": 540
+        },
+        {
+          "x": 884.5,
+          "y": 556
+        }
+      ]
+    },
+    {
+      "id": "r8",
+      "kind": "connector",
+      "source": "ent-pedido",
+      "target": "Pedido",
+      "label": "refleja",
+      "route": [
+        {
+          "x": 551.5,
+          "y": 437
+        },
+        {
+          "x": 551.5,
+          "y": 540
+        },
+        {
+          "x": 837.84,
+          "y": 540
+        },
+        {
+          "x": 837.84,
+          "y": 556
+        }
+      ]
+    }
+  ],
+  "id": "dg_goldengolden",
+  "revision": 1,
+  "createdAt": "2026-10-20T10:00:00.000Z",
+  "updatedAt": "2026-10-20T10:00:00.000Z"
+}

@@ -43,7 +43,7 @@ export const UML_RELATION_KINDS = [
   'realization',
   'dependency',
 ] as const;
-/** Conector libre: flecha o línea sin semántica UML/C4, válida en todos los tipos de diagrama. */
+/** Conector libre: flecha o línea sin semántica UML/C4, válida en cualquier diagrama y entre familias. */
 export const CONNECTOR_KIND = 'connector';
 export const NOSQL_RELATION_KIND = 'nosql-rel';
 export const RELATION_KINDS = [...UML_RELATION_KINDS, 'c4-rel', 'er-rel', 'er-attr', NOSQL_RELATION_KIND, CONNECTOR_KIND] as const;
@@ -79,7 +79,6 @@ export type Navigability = (typeof NAVIGABILITIES)[number];
 export const ERROR_CODES = [
   'DUPLICATE_ID',
   'UNKNOWN_REFERENCE',
-  'KIND_NOT_ALLOWED',
   'RELATION_NOT_ALLOWED',
   'INHERITANCE_CYCLE',
   'INVALID_PARENT',
@@ -97,24 +96,21 @@ export const ERROR_CODES = [
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
 
-/** Las figuras generales se permiten en todos los tipos de diagrama (decisión del issue #194). */
-export const ALLOWED_KINDS_BY_DIAGRAM: Readonly<Record<DiagramType, readonly ElementKind[]>> = {
-  class: [...CLASS_ELEMENT_KINDS, ...FIGURE_ELEMENT_KINDS, ...DRAWING_ELEMENT_KINDS, ...IMAGE_ELEMENT_KINDS, ...FRAME_ELEMENT_KINDS],
-  'c4-context': ['person', 'software-system', 'boundary', ...FIGURE_ELEMENT_KINDS, ...DRAWING_ELEMENT_KINDS, ...IMAGE_ELEMENT_KINDS, ...FRAME_ELEMENT_KINDS],
-  'c4-container': ['person', 'software-system', 'container', 'boundary', ...FIGURE_ELEMENT_KINDS, ...DRAWING_ELEMENT_KINDS, ...IMAGE_ELEMENT_KINDS, ...FRAME_ELEMENT_KINDS],
-  'c4-component': ['person', 'software-system', 'container', 'component', 'boundary', ...FIGURE_ELEMENT_KINDS, ...DRAWING_ELEMENT_KINDS, ...IMAGE_ELEMENT_KINDS, ...FRAME_ELEMENT_KINDS],
-  er: [...ER_ELEMENT_KINDS, ...FIGURE_ELEMENT_KINDS, ...DRAWING_ELEMENT_KINDS, ...IMAGE_ELEMENT_KINDS, ...FRAME_ELEMENT_KINDS],
-  nosql: [...NOSQL_ELEMENT_KINDS, ...FIGURE_ELEMENT_KINDS, ...DRAWING_ELEMENT_KINDS, ...IMAGE_ELEMENT_KINDS, ...FRAME_ELEMENT_KINDS],
-};
-
-/** El conector se permite en todos los tipos de diagrama (decisión del issue #195). */
-export const ALLOWED_RELATIONS_BY_DIAGRAM: Readonly<Record<DiagramType, readonly RelationKind[]>> = {
-  class: [...UML_RELATION_KINDS, CONNECTOR_KIND],
-  'c4-context': ['c4-rel', CONNECTOR_KIND],
-  'c4-container': ['c4-rel', CONNECTOR_KIND],
-  'c4-component': ['c4-rel', CONNECTOR_KIND],
-  er: ['er-rel', 'er-attr', CONNECTOR_KIND],
-  nosql: [NOSQL_RELATION_KIND, CONNECTOR_KIND],
+/**
+ * Familia de elementos que une cada relación en sus dos extremos. Las relaciones de clases y C4
+ * también unen figuras; el conector no aparece aquí: une cualquier par que no sea grupo.
+ */
+export const RELATION_ENDPOINT_KINDS: Partial<Record<RelationKind, readonly ElementKind[]>> = {
+  association: [...CLASS_ELEMENT_KINDS, ...FIGURE_ELEMENT_KINDS],
+  aggregation: [...CLASS_ELEMENT_KINDS, ...FIGURE_ELEMENT_KINDS],
+  composition: [...CLASS_ELEMENT_KINDS, ...FIGURE_ELEMENT_KINDS],
+  inheritance: CLASS_ELEMENT_KINDS,
+  realization: CLASS_ELEMENT_KINDS,
+  dependency: [...CLASS_ELEMENT_KINDS, ...FIGURE_ELEMENT_KINDS],
+  'c4-rel': [...C4_ELEMENT_KINDS, ...FIGURE_ELEMENT_KINDS],
+  'er-rel': ER_ELEMENT_KINDS,
+  'er-attr': ER_ELEMENT_KINDS,
+  [NOSQL_RELATION_KIND]: NOSQL_ELEMENT_KINDS,
 };
 
 export const DEFAULT_MAX_ELEMENTS = 500;
@@ -122,8 +118,4 @@ export const MAX_OPERATIONS_PER_BATCH = 200;
 
 export function isGroupKind(kind: string): kind is (typeof GROUP_KINDS)[number] {
   return (GROUP_KINDS as readonly string[]).includes(kind);
-}
-
-export function isC4Diagram(type: DiagramType): boolean {
-  return type.startsWith('c4-');
 }

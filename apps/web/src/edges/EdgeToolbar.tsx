@@ -146,15 +146,15 @@ export function EdgeHandles({ relation }: { relation: Relation }) {
 /** Barra de la flecha seleccionada: tipo, invertir, lados, textos y quitar quiebres. */
 export function EdgePanel({ relation, editingText, onEditText }: { relation: Relation; editingText: boolean; onEditText(open: boolean): void }) {
   const { updateRelation } = useDiagramEditActions();
-  const type = useDiagramStore((s) => s.diagram?.type);
-  if (!type) return null;
+  const elements = useDiagramStore((s) => s.diagram?.elements);
+  if (!elements) return null;
   const update = (changes: Parameters<typeof updateRelation>[1]) => updateRelation(relation.id, changes);
 
   if (editingText) return <EdgeTextForm relation={relation} onDone={() => onEditText(false)} />;
   return (
     <>
       <select aria-label="Tipo de flecha" value={relation.kind} onChange={(e) => update(kindChanges(relation, e.target.value as RelationKind))}>
-        {relationKinds(type).map((k) => (
+        {relationKinds(elements, relation).map((k) => (
           <option key={k} value={k}>
             {KIND_LABELS[k]}
           </option>
@@ -172,7 +172,7 @@ export function EdgePanel({ relation, editingText, onEditText }: { relation: Rel
           </label>
         </>
       ) : null}
-      {relation.kind === 'er-rel' || (relation.kind === 'connector' && type === 'er') ? (
+      {relation.kind === 'er-rel' || relation.kind === 'connector' ? (
         <>
           <label>
             <input type="checkbox" checked={relation.sourceTotal ?? false} onChange={(e) => update({ sourceTotal: e.target.checked })} /> Participación total origen

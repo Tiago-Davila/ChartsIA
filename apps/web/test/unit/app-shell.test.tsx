@@ -220,12 +220,14 @@ describe('AppShell: barra de figuras', () => {
   const diagram = (type: 'class' | 'nosql') => ({ id: 'dg_aaaaaaaaaaaa', type, title: 'Prueba', revision: 1, createdAt: '', updatedAt: '', elements: [], relations: [] });
   const figura = (clave: string) => document.querySelector(`[data-figure="${clave}"]`)!;
 
-  it('muestra solo las figuras del tipo de diagrama abierto', () => {
+  it('muestra todas las figuras, sin importar el tipo de diagrama abierto', () => {
     renderShell({ diagram: diagram('class'), onAddFigure: vi.fn() });
     const barra = screen.getByRole('complementary', { name: 'Figuras' });
     expect(barra).toHaveTextContent('Clase');
     expect(barra).toHaveTextContent('Círculo');
-    expect(barra).not.toHaveTextContent('Colección');
+    expect(barra).toHaveTextContent('Persona');
+    expect(barra).toHaveTextContent('Entidad');
+    expect(barra).toHaveTextContent('Colección');
   });
 
   it('no aparece en solo lectura, en la configuración ni sin diagrama', () => {

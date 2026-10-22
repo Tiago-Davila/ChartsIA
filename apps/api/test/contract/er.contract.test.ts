@@ -39,9 +39,9 @@ describe('contract: ER', () => {
     expect(res.structuredContent!.errors![0]!.hint).toBeTruthy();
   });
 
-  it('kind de clases en er ⇒ KIND_NOT_ALLOWED', async () => {
+  it('kind de clases en er es válido: los kinds valen en cualquier tipo de diagrama', async () => {
     const res = await h.call('create_diagram', { ...shop, elements: [{ id: 'A', kind: 'class', name: 'A', attributes: [], operations: [] }], relations: [] });
-    expect(h.errorCodes(res)).toEqual(['KIND_NOT_ALLOWED']);
+    expect(res.isError).not.toBe(true);
   });
 
   it('apply_changes cambia la cardinalidad y marca una entidad como débil', async () => {

@@ -1,0 +1,37 @@
+{
+  "type": "class",
+  "title": "Diagrama mixto: clases, C4, ER, NoSQL y figura",
+  "elements": [
+    { "id": "Pedido", "kind": "class", "name": "Pedido",
+      "attributes": [{ "name": "total", "type": "Decimal", "visibility": "-" }],
+      "operations": [{ "name": "pagar", "parameters": [], "visibility": "+" }] },
+    { "id": "Pagable", "kind": "interface", "name": "Pagable",
+      "operations": [{ "name": "cobrar", "parameters": [], "visibility": "+" }] },
+    { "id": "Cliente", "kind": "person", "name": "Cliente", "description": "Compra en la tienda" },
+    { "id": "Tienda", "kind": "software-system", "name": "Tienda en línea" },
+    { "id": "Tienda-web", "kind": "boundary", "name": "Sitio web", "boundaryType": "container" },
+    { "id": "Api", "kind": "component", "name": "API de pedidos", "technology": "Node.js", "parentId": "Tienda-web" },
+    { "id": "ent-cliente", "kind": "entity", "name": "Cliente DB" },
+    { "id": "ent-pedido", "kind": "entity", "name": "Pedido DB" },
+    { "id": "nombre", "kind": "attribute", "name": "nombre", "key": true },
+    { "id": "productos", "kind": "collection", "name": "productos", "fields": [
+      { "path": ["_id"], "type": "objectId" },
+      { "path": ["nombre"], "type": "string" }
+    ] },
+    { "id": "resenas", "kind": "collection", "name": "reseñas", "fields": [
+      { "path": ["producto"], "type": "reference" },
+      { "path": ["puntos"], "type": "number" }
+    ] },
+    { "id": "nota", "kind": "figure", "name": "Nota: revisar integraciones", "shape": "rectangle" }
+  ],
+  "relations": [
+    { "id": "r1", "kind": "realization", "source": "Pedido", "target": "Pagable" },
+    { "id": "r2", "kind": "association", "source": "Pedido", "target": "Pagable", "label": "se cobra con" },
+    { "id": "r3", "kind": "c4-rel", "source": "Cliente", "target": "Tienda", "label": "compra en", "technology": "HTTPS" },
+    { "id": "r4", "kind": "er-rel", "source": "ent-cliente", "target": "ent-pedido", "label": "hace", "sourceCardinality": "one", "targetCardinality": "zero-many" },
+    { "id": "r5", "kind": "er-attr", "source": "ent-cliente", "target": "nombre" },
+    { "id": "r6", "kind": "nosql-rel", "source": "resenas", "target": "productos", "label": "producto" },
+    { "id": "r7", "kind": "connector", "source": "nota", "target": "Pedido", "arrowheads": "end", "dashed": true },
+    { "id": "r8", "kind": "connector", "source": "ent-pedido", "target": "Pedido", "label": "refleja" }
+  ]
+}

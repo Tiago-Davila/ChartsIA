@@ -46,14 +46,32 @@ describe('RELATION_NOT_ALLOWED', () => {
     expect(errorAt(c4, 'RELATION_NOT_ALLOWED')).toBeDefined();
   });
 
-  it('prohíbe relaciones UML en C4', () => {
+  it('prohíbe relaciones UML entre elementos C4', () => {
     const res = withRelation(c4ContainerDiagram(), { kind: 'association', source: 'web', target: 'db' });
     expect(errorAt(res, 'RELATION_NOT_ALLOWED')).toBeDefined();
   });
 
-  it('prohíbe c4-rel en diagramas de clases', () => {
+  it('prohíbe c4-rel entre elementos de clases', () => {
     const res = withRelation(classes(), { kind: 'c4-rel', source: 'Socio', target: 'Autor' });
     expect(errorAt(res, 'RELATION_NOT_ALLOWED')).toBeDefined();
+  });
+
+  it('en un diagrama mixto, cada relación une solo su familia y connector une familias distintas', () => {
+    const mixed = () => {
+      const d = classes();
+      d.elements.push(
+        { id: 'web', kind: 'container', name: 'Web' },
+        { id: 'db', kind: 'container', name: 'Base' },
+        { id: 'cliente', kind: 'entity', name: 'Cliente' },
+        { id: 'figura', kind: 'figure', name: 'Figura', shape: 'circle' },
+      );
+      return d;
+    };
+    expect(errorAt(withRelation(mixed(), { kind: 'c4-rel', source: 'web', target: 'db' }), 'RELATION_NOT_ALLOWED')).toBeUndefined();
+    expect(errorAt(withRelation(mixed(), { kind: 'c4-rel', source: 'web', target: 'Socio' }), 'RELATION_NOT_ALLOWED')).toBeDefined();
+    expect(errorAt(withRelation(mixed(), { kind: 'association', source: 'Socio', target: 'cliente' }), 'RELATION_NOT_ALLOWED')).toBeDefined();
+    expect(errorAt(withRelation(mixed(), { kind: 'connector', source: 'Socio', target: 'cliente' }), 'RELATION_NOT_ALLOWED')).toBeUndefined();
+    expect(errorAt(withRelation(mixed(), { kind: 'connector', source: 'figura', target: 'web' }), 'RELATION_NOT_ALLOWED')).toBeUndefined();
   });
 });
 
