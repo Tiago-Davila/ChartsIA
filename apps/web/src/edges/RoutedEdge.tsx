@@ -36,7 +36,7 @@ function RoutedEdgeImpl({ id, data, sourceX, sourceY, targetX, targetY, selected
           <Primitives primitives={primitives} />
         ) : (
           <>
-            <path d={d} fill="none" stroke={look.color} strokeWidth={1.5} strokeDasharray={look.dash?.join(' ')} />
+            <path d={d} fill="none" stroke={look.color} strokeWidth={look.width} strokeDasharray={look.dash?.join(' ')} />
             <EdgeMarkers relation={relation} points={points} />
           </>
         )}

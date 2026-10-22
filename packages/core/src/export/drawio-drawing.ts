@@ -1,4 +1,5 @@
 import { type Element } from '../model/diagram.js';
+import { HIGHLIGHTER_OPACITY } from '../model/drawing-elements.js';
 import { xmlElement } from './xml-escape.js';
 
 const r = (n: number) => Math.round(n * 100) / 100;
@@ -30,7 +31,7 @@ export function drawingXml(
     {
       id: el.id,
       value: el.name,
-      style: `edgeStyle=none;html=0;rounded=0;startArrow=none;endArrow=none;strokeColor=${el.strokeColor};strokeWidth=${el.strokeWidth};`,
+      style: `edgeStyle=none;html=0;rounded=0;startArrow=none;endArrow=none;strokeColor=${el.strokeColor};strokeWidth=${el.strokeWidth};${el.highlighter ? `opacity=${HIGHLIGHTER_OPACITY * 100};` : ''}`,
       edge: '1',
       parent,
     },

@@ -31,7 +31,7 @@ export const attributeShape: ShapeDefinition<AttributeElement> = {
       ry: height / 2 - inset,
       fill: inset === 0 ? c.fill : 'none',
       stroke: c.stroke,
-      strokeWidth: 1.5,
+      strokeWidth: c.strokeWidth,
       ...(el.derived ? { dash: DASH } : {}),
     });
     return [

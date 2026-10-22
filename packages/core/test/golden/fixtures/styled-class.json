@@ -5,21 +5,21 @@
     { "id": "Pedido", "kind": "class", "name": "Pedido",
       "attributes": [{ "name": "total", "type": "double", "visibility": "-" }],
       "operations": [{ "name": "pagar", "parameters": [], "visibility": "+" }],
-      "style": { "borderColor": "#b42318", "fillColor": "#fee4e2", "fontColor": "#7a271a", "fontFamily": "serif", "fontSize": 18 } },
+      "style": { "borderColor": "#b42318", "lineWidth": "thick", "fillColor": "#fee4e2", "fontColor": "#7a271a", "fontFamily": "serif", "fontSize": 18 } },
     { "id": "Linea", "kind": "class", "name": "Línea",
       "attributes": [{ "name": "cantidad", "type": "int", "visibility": "-" }], "operations": [],
       "style": { "fontFamily": "monospace" } },
     { "id": "Pagable", "kind": "interface", "name": "Pagable", "operations": [],
-      "style": { "borderColor": "#175cd3", "fontColor": "#175cd3", "fontFamily": "handwritten", "fontSize": 12 } },
+      "style": { "borderColor": "#175cd3", "lineWidth": "thin", "fontColor": "#175cd3", "fontFamily": "handwritten", "fontSize": 12 } },
     { "id": "Modelo", "kind": "package", "name": "Modelo",
-      "style": { "borderColor": "#067647", "fillColor": "#ecfdf3" } },
+      "style": { "borderColor": "#067647", "lineWidth": "thick", "fillColor": "#ecfdf3" } },
     { "id": "Estado", "kind": "enum", "name": "Estado", "literals": ["ABIERTO", "CERRADO"], "parentId": "Modelo" }
   ],
   "relations": [
     { "id": "r1", "kind": "composition", "source": "Pedido", "target": "Linea", "label": "contiene",
-      "style": { "borderColor": "#b42318", "fillColor": "#fda29b", "fontColor": "#b42318", "fontFamily": "serif", "fontSize": 16 } },
+      "style": { "borderColor": "#b42318", "lineWidth": "thick", "fillColor": "#fda29b", "fontColor": "#b42318", "fontFamily": "serif", "fontSize": 16 } },
     { "id": "r2", "kind": "realization", "source": "Pedido", "target": "Pagable",
-      "style": { "borderColor": "#175cd3", "fillColor": "#d1e9ff" } },
+      "style": { "borderColor": "#175cd3", "lineWidth": "thin", "fillColor": "#d1e9ff" } },
     { "id": "r3", "kind": "association", "source": "Pedido", "target": "Estado", "targetMultiplicity": "1" }
   ]
 }

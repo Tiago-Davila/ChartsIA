@@ -103,7 +103,7 @@ export const collectionShape: ShapeDefinition<CollectionElement> = {
     const row = rowHeight(element.style);
     const fields = tree(element.fields);
     const out: Primitive[] = [
-      { type: 'rect', x: 0, y: 0, width, height, rx: 6, fill: colors.fill, stroke: colors.stroke, strokeWidth: 1.5 },
+      { type: 'rect', x: 0, y: 0, width, height, rx: 6, fill: colors.fill, stroke: colors.stroke, strokeWidth: colors.strokeWidth },
       { type: 'rect', x: 0, y: 0, width, height: header, rx: 6, fill: element.style?.fillColor ?? '#dbeafe', stroke: 'none' },
       { type: 'text', x: PAD, y: header / 2 + headerFont.size / 3, text: element.name, ...headerFont, bold: true, color: colors.text, anchor: 'start', slot: 'name' },
     ];

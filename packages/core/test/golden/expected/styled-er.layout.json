@@ -8,6 +8,7 @@
       "style": {
         "borderColor": "#175cd3",
         "fillColor": "#eff8ff",
+        "lineWidth": "thick",
         "fontFamily": "serif",
         "fontSize": 20
       },
@@ -24,7 +25,8 @@
       "id": "pedido",
       "name": "Pedido",
       "style": {
-        "borderColor": "#b42318"
+        "borderColor": "#b42318",
+        "lineWidth": "thick"
       },
       "kind": "entity",
       "weak": true,
@@ -77,6 +79,7 @@
       "style": {
         "borderColor": "#6941c6",
         "fillColor": "#f4ebff",
+        "lineWidth": "thin",
         "fontFamily": "handwritten"
       },
       "kind": "table",
@@ -112,6 +115,7 @@
       "style": {
         "borderColor": "#175cd3",
         "fillColor": "#d1e9ff",
+        "lineWidth": "thick",
         "fontColor": "#175cd3",
         "fontSize": 16
       },

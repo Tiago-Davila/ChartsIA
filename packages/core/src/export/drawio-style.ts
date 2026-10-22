@@ -1,4 +1,4 @@
-import { type Style, type StyleFontFamily } from '../model/style.js';
+import { LINE_WIDTH_PX, type Style, type StyleFontFamily } from '../model/style.js';
 import { textFont } from '../shapes/style.js';
 
 /** Fuente de draw.io para cada familia; la manuscrita usa Comic Sans MS porque no necesita descargarse. */
@@ -20,18 +20,24 @@ function setKeys(base: string, keys: Record<string, string | undefined>): string
   return style;
 }
 
-/** Aplica al estilo draw.io el color de borde y el de relleno del estilo del usuario. */
+/** Grosor de trazo en px del estilo del usuario, o `undefined` si no lo fijó. */
+function lineWidthKey(style: Style | undefined): string | undefined {
+  return style?.lineWidth ? String(LINE_WIDTH_PX[style.lineWidth]) : undefined;
+}
+
+/** Aplica al estilo draw.io el color de borde, el grosor y el color de relleno del estilo del usuario. */
 export function drawioBox(base: string, style: Style | undefined): string {
   return setKeys(base, {
     strokeColor: style?.borderColor,
+    strokeWidth: lineWidthKey(style),
     fillColor: style?.fillColor,
     swimlaneFillColor: base.includes('swimlaneFillColor=') ? style?.fillColor : undefined,
   });
 }
 
-/** Aplica el color de la línea de una relación. */
+/** Aplica el color y el grosor de la línea de una relación. */
 export function drawioStroke(base: string, style: Style | undefined): string {
-  return setKeys(base, { strokeColor: style?.borderColor });
+  return setKeys(base, { strokeColor: style?.borderColor, strokeWidth: lineWidthKey(style) });
 }
 
 /** Aplica color, familia y tamaño de fuente; `size` es el tamaño del texto sin estilo. */

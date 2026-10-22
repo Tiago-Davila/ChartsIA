@@ -8,6 +8,13 @@ export const DRAWING_MIN_STROKE_WIDTH = 0.5;
 export const DRAWING_MAX_STROKE_WIDTH = 16;
 export const DRAWING_DEFAULT_COLOR = '#1f2933';
 export const DRAWING_DEFAULT_WIDTH = 2.5;
+/** Grosor en px de cada opción del lápiz; "medium" es el grosor por defecto. */
+export const DRAWING_WIDTH_PX = { thin: 1.5, medium: DRAWING_DEFAULT_WIDTH, thick: 5 } as const;
+export const HIGHLIGHTER_DEFAULT_COLOR = '#facc15';
+export const HIGHLIGHTER_DEFAULT_WIDTH = 14;
+export const HIGHLIGHTER_OPACITY = 0.4;
+/** Grosor en px de cada opción del marcador; "medium" es el grosor por defecto. */
+export const HIGHLIGHTER_WIDTH_PX = { thin: 8, medium: HIGHLIGHTER_DEFAULT_WIDTH, thick: DRAWING_MAX_STROKE_WIDTH } as const;
 
 export const DrawingPointSchema = z.strictObject({
   x: z.number().finite().min(0).max(DRAWING_MAX_COORDINATE),
@@ -24,4 +31,10 @@ export const DrawingElementSchema = z.strictObject({
   points: DrawingPointsSchema,
   strokeColor: z.string().regex(HEX_COLOR_PATTERN),
   strokeWidth: z.number().finite().min(DRAWING_MIN_STROKE_WIDTH).max(DRAWING_MAX_STROKE_WIDTH),
+  highlighter: z.literal(true).optional().describe('Marcador: trazo semitransparente dibujado detrás de las figuras'),
 });
+
+/** Indica si el elemento es un trazo de marcador. */
+export function isHighlighter(el: { kind: string; highlighter?: boolean }): boolean {
+  return el.kind === 'drawing' && el.highlighter === true;
+}

@@ -18,11 +18,15 @@ import {
   useViewport,
 } from '@xyflow/react';
 import { type PointerEvent as ReactPointerEvent, useCallback, useEffect, useRef, useState } from 'react';
-import { DRAWING_DEFAULT_COLOR, DRAWING_DEFAULT_WIDTH, type Point } from '@chartsia/core/model';
+import { DRAWING_DEFAULT_COLOR, DRAWING_WIDTH_PX, HIGHLIGHTER_DEFAULT_COLOR, HIGHLIGHTER_OPACITY, HIGHLIGHTER_WIDTH_PX, type Point, type StyleLineWidth } from '@chartsia/core/model';
 import { edgeTypes } from '../edges';
 import { nodeTypes } from '../nodes';
+import { useDiagramEditActions } from '../nodes/edit-context';
+import { type ElementNodeData } from '../nodes/types';
 import { SelectionPanel } from './SelectionPanel';
+import { WidthPicker } from './WidthPicker';
 import { sampleStroke } from './drawing';
+import { fieldUpdates, PALETTE } from './style-edits';
 
 export interface DiagramCanvasProps {
   diagramId: string;
@@ -32,13 +36,17 @@ export interface DiagramCanvasProps {
   onNodeDragStop?: OnNodeDrag;
   onDelete?: (params: { nodes: Node[]; edges: Edge[] }) => void;
   onConnect?: OnConnect;
-  onDraw?: (points: Point[], screenPoints: Point[], color: string) => void;
+  onDraw?: (points: Point[], screenPoints: Point[], color: string, width: number, highlighter: boolean) => void;
 }
 
 export const FIT_VIEW_OPTIONS = { padding: 0.15, maxZoom: 1.25 };
 const PRO_OPTIONS = { hideAttribution: true };
 const MINIMAP_STYLE = { width: 180, height: 120 };
 const MAX_CAPTURE_POINTS = 2048;
+/** Relleno inicial del balde: el rojo de la paleta del panel de estilo. */
+const BUCKET_DEFAULT_COLOR = PALETTE[3].value;
+
+type CanvasTool = 'pen' | 'highlighter' | 'bucket';
 
 function nodeColor(node: Node): string {
   const kind = node.type ?? '';
@@ -70,8 +78,16 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   const activePointer = useRef<number | undefined>(undefined);
   const strokePoints = useRef<Point[]>([]);
   const screenPoints = useRef<Point[]>([]);
-  const [drawingMode, setDrawingMode] = useState(false);
-  const [drawingColor, setDrawingColor] = useState(DRAWING_DEFAULT_COLOR);
+  const [tool, setTool] = useState<CanvasTool>();
+  const [colors, setColors] = useState<Record<CanvasTool, string>>({ pen: DRAWING_DEFAULT_COLOR, highlighter: HIGHLIGHTER_DEFAULT_COLOR, bucket: BUCKET_DEFAULT_COLOR });
+  const [widths, setWidths] = useState<Record<'pen' | 'highlighter', StyleLineWidth>>({ pen: 'medium', highlighter: 'medium' });
+  const highlighter = tool === 'highlighter';
+  const drawingMode = tool === 'pen' || highlighter;
+  const bucketMode = tool === 'bucket';
+  const drawingColor = highlighter ? colors.highlighter : colors.pen;
+  const drawingWidth = highlighter ? HIGHLIGHTER_WIDTH_PX[widths.highlighter] : DRAWING_WIDTH_PX[widths.pen];
+  const bucketColor = colors.bucket;
+  const { updateStyles } = useDiagramEditActions();
   const [preview, setPreview] = useState<Point[]>([]);
   const fittedFor = useRef<string | null>(null);
   const [editingEdge, setEditingEdge] = useState<string>();
@@ -90,7 +106,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     strokePoints.current = [];
     screenPoints.current = [];
     setPreview([]);
-    setDrawingMode(false);
+    setTool(undefined);
   }, [diagramId]);
   // Al abrir otro diagrama se encuadra completo, cuando React Flow ya midió sus nodos.
   useEffect(() => {
@@ -117,6 +133,13 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     }
     setPreview([...screenPoints.current]);
   }, [screenToFlowPosition]);
+
+  // Con el balde activo, un clic sobre una figura le aplica el color de relleno elegido.
+  const paintNode = useCallback((_: unknown, node: Node) => {
+    const { element } = node.data as ElementNodeData;
+    if (!bucketMode || readOnly || element.kind === 'drawing') return;
+    updateStyles(fieldUpdates([{ id: element.id, relation: false, style: element.style }], 'fillColor', bucketColor));
+  }, [bucketColor, bucketMode, readOnly, updateStyles]);
 
   const startDrawing = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     if (!drawingMode || readOnly || event.button !== 0 || !(event.target instanceof Element) || event.target.closest('.react-flow__panel')) return;
@@ -148,8 +171,8 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     screenPoints.current = [];
     setPreview([]);
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
-    onDraw?.(points, screen, drawingColor);
-  }, [addSample, drawingColor, onDraw]);
+    onDraw?.(points, screen, drawingColor, drawingWidth, highlighter);
+  }, [addSample, drawingColor, drawingWidth, highlighter, onDraw]);
 
   const cancelDrawing = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     if (activePointer.current !== event.pointerId) return;
@@ -171,7 +194,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   return (
     <div
       ref={canvas}
-      className={`diagram-canvas${drawingMode ? ' is-drawing' : ''}`}
+      className={`diagram-canvas${drawingMode ? ' is-drawing' : ''}${bucketMode ? ' is-painting' : ''}`}
       onPointerDownCapture={startDrawing}
       onPointerMoveCapture={moveDrawing}
       onPointerUpCapture={finishDrawing}
@@ -187,14 +210,15 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
         onEdgesChange={onEdgesChange}
         onNodeDragStop={onNodeDragStop}
         onDelete={onDelete}
-        nodesDraggable={!readOnly && !drawingMode}
+        nodesDraggable={!readOnly && !drawingMode && !bucketMode}
+        onNodeClick={paintNode}
         onConnect={onConnect}
         onEdgeDoubleClick={(_, edge) => !readOnly && setEditingEdge(edge.id)}
         onSelectionChange={onSelectionChange}
-        nodesConnectable={!readOnly && !drawingMode}
+        nodesConnectable={!readOnly && !drawingMode && !bucketMode}
         connectionMode={ConnectionMode.Loose}
-        elementsSelectable
-        selectionOnDrag={!drawingMode}
+        elementsSelectable={!bucketMode}
+        selectionOnDrag={!drawingMode && !bucketMode}
         selectionMode={SelectionMode.Partial}
         panOnScroll
         panOnDrag={false}
@@ -210,16 +234,29 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
         {readOnly ? null : <SelectionPanel nodes={nodes} edges={edges} editingEdge={editingEdge} onEditEdge={setEditingEdge} />}
         {readOnly ? null : (
           <Panel position="top-left" className="drawing-tool nodrag nopan">
-            <button type="button" className={`button${drawingMode ? ' button--primary' : ''}`} aria-pressed={drawingMode} onClick={() => setDrawingMode((active) => !active)}>
+            <button type="button" className={`button${tool === 'pen' ? ' button--primary' : ''}`} aria-pressed={tool === 'pen'} onClick={() => setTool((active) => (active === 'pen' ? undefined : 'pen'))}>
               Lápiz
             </button>
-            {drawingMode ? <input type="color" aria-label="Color del lápiz" value={drawingColor} onChange={(event) => setDrawingColor(event.target.value)} /> : null}
+            <button type="button" className={`button${highlighter ? ' button--primary' : ''}`} aria-pressed={highlighter} onClick={() => setTool((active) => (active === 'highlighter' ? undefined : 'highlighter'))}>
+              Marcador
+            </button>
+            {drawingMode ? (
+              <input type="color" aria-label={highlighter ? 'Color del marcador' : 'Color del lápiz'} value={drawingColor} onChange={(event) => setColors((current) => ({ ...current, [tool]: event.target.value }))} />
+            ) : null}
+            {drawingMode ? (
+              <WidthPicker label={highlighter ? 'Grosor del marcador' : 'Grosor del lápiz'} value={widths[tool]} onPick={(width) => setWidths((current) => ({ ...current, [tool]: width }))} />
+            ) : null}
+            <button type="button" className={`button${bucketMode ? ' button--primary' : ''}`} aria-pressed={bucketMode} onClick={() => setTool((active) => (active === 'bucket' ? undefined : 'bucket'))}>
+              Balde
+            </button>
+            {bucketMode ? <input type="color" aria-label="Color del balde" value={bucketColor} onChange={(event) => setColors((current) => ({ ...current, bucket: event.target.value }))} /> : null}
           </Panel>
         )}
       </ReactFlow>
       {preview.length > 1 ? (
         <svg className="diagram-canvas__preview" aria-hidden="true">
-          <polyline points={preview.map((p) => `${p.x},${p.y}`).join(' ')} fill="none" stroke={drawingColor} strokeWidth={DRAWING_DEFAULT_WIDTH * zoom} strokeLinecap="round" strokeLinejoin="round" />
+          <polyline points={preview.map((p) => `${p.x},${p.y}`).join(' ')} fill="none" stroke={drawingColor} strokeOpacity={highlighter ? HIGHLIGHTER_OPACITY : undefined} strokeWidth={drawingWidth * zoom} strokeLinecap="round" strokeLinejoin="round" />
+
         </svg>
       ) : null}
     </div>
