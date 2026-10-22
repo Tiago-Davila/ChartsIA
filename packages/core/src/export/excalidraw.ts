@@ -18,6 +18,9 @@ import { WEAK_GAP } from '../shapes/er/entity.js';
 import { MULTIVALUED_GAP } from '../shapes/er/attribute.js';
 import { tableBox } from '../shapes/er/table.js';
 import { valueListBox } from '../shapes/er/value-list.js';
+import { collectionShape } from '../shapes/nosql/collection.js';
+import { lineHeight } from '../shapes/text-metrics.js';
+import { type Primitive } from '../shapes/types.js';
 import { CIRCLE_RADIUS, crowFoot, isCardinality, markerFrame, relationStyle, type MarkerKind } from '../shapes/uml/markers.js';
 import { orderKeys } from './fractional-index.js';
 
@@ -231,6 +234,55 @@ function addDrawing(b: Builder, el: Element, box: Box): void {
   b.polyline(el.id, el.points, box, { strokeColor: el.strokeColor, strokeWidth: el.strokeWidth });
 }
 
+/** Colección documental exportada con las mismas cajas anidadas que la app. */
+function addCollection(b: Builder, el: Element, box: Box): void {
+  if (el.kind !== 'collection') return;
+  const primitives = collectionShape.primitives(el, { width: box.width, height: box.height });
+  const outer = primitives[0];
+  if (!outer || outer.type !== 'rect') return;
+  const paintColor = (color: string | undefined, fallback: string) => !color || color === 'none' ? fallback : color;
+  const groupIds = [`${el.id}-group`];
+  b.shape(el.id, 'rectangle', box, {
+    backgroundColor: paintColor(outer.fill, '#f8fafc'),
+    strokeColor: paintColor(outer.stroke, '#1f2933'),
+    strokeWidth: outer.strokeWidth ?? 1,
+    roundness: { type: 3 },
+    groupIds,
+    customData: { kind: 'collection', fields: el.fields },
+  });
+  primitives.slice(1).forEach((primitive: Primitive, i) => {
+    const index = i + 1;
+    if (primitive.type === 'rect') {
+      b.shape(`${el.id}-nosql-${index}`, 'rectangle', {
+        x: box.x + primitive.x,
+        y: box.y + primitive.y,
+        width: primitive.width,
+        height: primitive.height,
+      }, {
+        backgroundColor: paintColor(primitive.fill, 'transparent'),
+        strokeColor: paintColor(primitive.stroke, 'transparent'),
+        strokeWidth: primitive.strokeWidth ?? 1,
+        roundness: { type: 3 },
+        groupIds,
+      });
+    } else if (primitive.type === 'text') {
+      b.text(`${el.id}-nosql-${index}`, primitive.text, {
+        x: box.x + primitive.x,
+        y: box.y + primitive.y - primitive.size * 0.875,
+        width: Math.max(0, box.width - primitive.x),
+        height: lineHeight(primitive.size),
+      }, {
+        fontSize: primitive.size,
+        fontFamily: primitive.fontFamily ? STYLE_FONT_FAMILIES[primitive.fontFamily] : FONT_FAMILY,
+        strokeColor: primitive.color,
+        textAlign: primitive.anchor === 'middle' ? 'center' : primitive.anchor === 'end' ? 'right' : 'left',
+        verticalAlign: 'middle',
+        groupIds,
+      });
+    }
+  });
+}
+
 /** Marca pata de gallo como líneas y un círculo, porque Excalidraw no tiene cero-o-uno nativo. */
 function addCardinality(b: Builder, rel: Relation, kind: Cardinality, tag: string, tip: Point, from: Point, color: string, fill = '#ffffff'): void {
   const { lines, circle } = crowFoot(kind, markerFrame(tip, from));
@@ -285,6 +337,7 @@ export function exportExcalidraw(diagram: Diagram): string {
     const box = { x: l.x, y: l.y, width: l.width, height: l.height };
     if (el.kind === 'drawing') addDrawing(b, el, box);
     else if (el.kind === 'image') b.image(el.id, box, el.src);
+    else if (el.kind === 'collection') addCollection(b, el, box);
     else if (el.kind === 'figure') addFigure(b, el, box);
     else if (diagram.type === 'class') {
       if (el.kind === 'package') {

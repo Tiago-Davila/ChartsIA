@@ -1,0 +1,124 @@
+{
+  "type": "nosql",
+  "title": "Pedidos",
+  "elements": [
+    {
+      "id": "Pedidos",
+      "name": "pedidos",
+      "kind": "collection",
+      "fields": [
+        {
+          "path": [
+            "_id"
+          ],
+          "type": "objectId"
+        },
+        {
+          "path": [
+            "clienteId"
+          ],
+          "type": "objectId"
+        },
+        {
+          "path": [
+            "total"
+          ],
+          "type": "number"
+        },
+        {
+          "path": [
+            "cliente"
+          ],
+          "type": "object"
+        },
+        {
+          "path": [
+            "cliente",
+            "nombre"
+          ],
+          "type": "string"
+        },
+        {
+          "path": [
+            "cliente",
+            "direcciones"
+          ],
+          "type": "array",
+          "itemsType": "object"
+        },
+        {
+          "path": [
+            "cliente",
+            "direcciones",
+            "calle"
+          ],
+          "type": "string"
+        },
+        {
+          "path": [
+            "cliente",
+            "direcciones",
+            "ciudad"
+          ],
+          "type": "string"
+        }
+      ],
+      "layout": {
+        "x": 30,
+        "y": 30,
+        "width": 271,
+        "height": 364,
+        "pinned": false
+      }
+    },
+    {
+      "id": "Clientes",
+      "name": "clientes",
+      "kind": "collection",
+      "fields": [
+        {
+          "path": [
+            "_id"
+          ],
+          "type": "objectId"
+        },
+        {
+          "path": [
+            "nombre"
+          ],
+          "type": "string"
+        }
+      ],
+      "layout": {
+        "x": 75.5,
+        "y": 474,
+        "width": 180,
+        "height": 126,
+        "pinned": false
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "cliente-referencia",
+      "kind": "nosql-rel",
+      "source": "Pedidos",
+      "target": "Clientes",
+      "label": "clienteId",
+      "route": [
+        {
+          "x": 165.5,
+          "y": 394
+        },
+        {
+          "x": 165.5,
+          "y": 474
+        }
+      ]
+    }
+  ],
+  "id": "dg_goldengolden",
+  "revision": 1,
+  "createdAt": "2026-10-20T10:00:00.000Z",
+  "updatedAt": "2026-10-20T10:00:00.000Z"
+}

@@ -8,6 +8,7 @@ import { checkInheritanceCycles, checkParentCycles, checkParents } from './rules
 import { checkKinds } from './rules/kinds.js';
 import { checkMembers } from './rules/members.js';
 import { checkLimits } from './rules/limits.js';
+import { checkNoSqlFields } from './rules/nosql-fields.js';
 import { checkDuplicateIds, checkReferences } from './rules/references.js';
 import { checkRelations } from './rules/relations.js';
 
@@ -16,6 +17,7 @@ export type { RuleOptions } from './context.js';
 
 const RULES: Rule[] = [
   checkLimits,
+  checkNoSqlFields,
   checkDuplicateIds,
   checkReferences,
   checkKinds,
