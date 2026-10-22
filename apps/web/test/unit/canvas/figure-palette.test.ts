@@ -147,5 +147,15 @@ describe('barra de figuras', () => {
         expect(s.items.some((i) => i.kind === 'figure' || i.kind === 'frame')).toBe(false);
       }
     });
+
+    const primeraDe: Record<DiagramType, string> = { class: 'Clases', 'c4-context': 'C4', 'c4-container': 'C4', 'c4-component': 'C4', er: 'ER', nosql: 'NoSQL' };
+    const titulos = secciones.map((s) => s.title);
+
+    it.each(DIAGRAM_TYPES)('en un diagrama %s la sección de su tipo va primera y las demás siguen en su orden', (tipo) => {
+      const enOrden = paletteSections(tipo).map((s) => s.title);
+      expect(enOrden[0]).toBe(primeraDe[tipo]);
+      expect(enOrden.slice(1)).toEqual(titulos.filter((t) => t !== primeraDe[tipo]));
+      expect([...enOrden].sort()).toEqual([...titulos].sort());
+    });
   });
 });
