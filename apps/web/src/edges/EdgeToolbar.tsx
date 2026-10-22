@@ -172,6 +172,16 @@ export function EdgePanel({ relation, editingText, onEditText }: { relation: Rel
           </label>
         </>
       ) : null}
+      {relation.kind === 'er-rel' || (relation.kind === 'connector' && type === 'er') ? (
+        <>
+          <label>
+            <input type="checkbox" checked={relation.sourceTotal ?? false} onChange={(e) => update({ sourceTotal: e.target.checked })} /> Participación total origen
+          </label>
+          <label>
+            <input type="checkbox" checked={relation.targetTotal ?? false} onChange={(e) => update({ targetTotal: e.target.checked })} /> Participación total destino
+          </label>
+        </>
+      ) : null}
       {relation.kind === 'connector' ? (
         <>
           <select aria-label="Puntas" title="Puntas" value={relation.arrowheads ?? 'end'} onChange={(e) => update({ arrowheads: e.target.value as Arrowheads })}>
