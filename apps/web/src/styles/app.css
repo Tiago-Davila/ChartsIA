@@ -78,7 +78,7 @@
 }
 .figure-sidebar__list {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   padding: 12px;
   overflow-y: auto;
@@ -87,6 +87,7 @@
   padding: 10px 6px;
   font-size: 12px;
   text-align: center;
+  overflow-wrap: anywhere;
   cursor: grab;
   user-select: none;
   background: var(--surface-muted);

@@ -53,6 +53,25 @@ test.describe('barra de figuras', () => {
     await expect(page.locator('[data-element-id="FlechaDoble"]')).toBeVisible();
   });
 
+  test('los botones de la barra entran en su ancho sin desplazamiento horizontal', async ({ page, agent }) => {
+    const er = await agent.create({ type: 'er', title: 'ER', elements: [], relations: [] });
+    await page.goto(`/d/${er}`);
+    const barra = page.locator('.figure-sidebar__list');
+    const botones = page.locator('.figure-sidebar__item');
+    await expect(botones.last()).toBeVisible();
+
+    const ancho = await barra.evaluate((el) => ({ scroll: el.scrollWidth, cliente: el.clientWidth }));
+    expect(ancho.scroll).toBeLessThanOrEqual(ancho.cliente);
+    const caja = (await barra.boundingBox())!;
+    for (const boton of await botones.all()) {
+      const { x, width } = (await boton.boundingBox())!;
+      expect(x).toBeGreaterThanOrEqual(caja.x);
+      expect(x + width).toBeLessThanOrEqual(caja.x + caja.width);
+      // El texto de cada botón también cabe: no se corta dentro del botón.
+      expect(await boton.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+    }
+  });
+
   test('cada tipo de diagrama ofrece sus figuras y el hub acepta las que se sueltan', async ({ page, agent }) => {
     const er = await agent.create({ type: 'er', title: 'ER', elements: [], relations: [] });
     await page.goto(`/d/${er}`);
