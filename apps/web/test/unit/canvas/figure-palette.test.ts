@@ -3,7 +3,7 @@ import { applyOperations } from '@chartsia/core/operations';
 import { measureElement } from '@chartsia/core/shapes';
 import { validateDiagram } from '@chartsia/core/validation';
 import { describe, expect, it } from 'vitest';
-import { centeredFreePoint, newPaletteEdit, newPaletteElements, PALETTE_ITEMS } from '../../../src/canvas/figure-palette';
+import { centeredFreePoint, newPaletteEdit, newPaletteElements, PALETTE_ITEMS, paletteSections } from '../../../src/canvas/figure-palette';
 
 const vacio = (type: DiagramType) => ({ type, title: 'Prueba', elements: [], relations: [] });
 const claves = () => PALETTE_ITEMS.map((item) => item.key);
@@ -116,6 +116,36 @@ describe('barra de figuras', () => {
       const result = applyOperations(diagram, [...elements.map((element) => ({ op: 'add_element' as const, element })), ...relations.map((relation) => ({ op: 'add_relation' as const, relation }))]);
       expect(result.ok).toBe(true);
       if (result.ok) expect(result.diagram.elements.map((e) => e.id)).toEqual(['Existente', 'Circulo']);
+    });
+  });
+
+  describe('secciones de la barra', () => {
+    const secciones = paletteSections();
+    const seccion = (title: string) => secciones.find((s) => s.title === title)!;
+    const claveDe = (title: string) => seccion(title).items.map((i) => i.key);
+
+    it('las secciones van en el orden Clases, C4, ER, NoSQL y Figuras generales', () => {
+      expect(secciones.map((s) => s.title)).toEqual(['Clases', 'C4', 'ER', 'NoSQL', 'Figuras generales']);
+    });
+
+    it('cada figura de la barra está en exactamente una sección', () => {
+      const enSecciones = secciones.flatMap((s) => s.items.map((i) => i.key));
+      expect(new Set(enSecciones).size).toBe(enSecciones.length);
+      expect([...enSecciones].sort()).toEqual([...claves()].sort());
+    });
+
+    it('agrupa cada tipo de diagrama en su sección', () => {
+      expect(claveDe('Clases')).toEqual(['class', 'interface', 'enum', 'package']);
+      expect(claveDe('C4')).toEqual(['person', 'software-system', 'container', 'component', 'boundary']);
+      expect(claveDe('NoSQL')).toEqual(['collection']);
+      expect(claveDe('ER')).toEqual(expect.arrayContaining(['entity', 'entity-weak', 'table', 'attribute-composite', 'value-list', 'relationship', 'specialization']));
+    });
+
+    it('las figuras generales y los marcos van en su propia sección, separados de los tipos de diagrama', () => {
+      expect(claveDe('Figuras generales')).toEqual(expect.arrayContaining(['figure-circle', 'figure-equilateral-triangle', 'figure-arrow', 'frame']));
+      for (const s of secciones.filter((s) => s.title !== 'Figuras generales')) {
+        expect(s.items.some((i) => i.kind === 'figure' || i.kind === 'frame')).toBe(false);
+      }
     });
   });
 });

@@ -1,4 +1,17 @@
-import { type Diagram, type Element, type ElementKind, type FigureShape, type Point, type Relation } from '@chartsia/core/model';
+import {
+  C4_ELEMENT_KINDS,
+  CLASS_ELEMENT_KINDS,
+  type Diagram,
+  type Element,
+  type ElementKind,
+  ER_ELEMENT_KINDS,
+  FIGURE_ELEMENT_KINDS,
+  FRAME_ELEMENT_KINDS,
+  type FigureShape,
+  NOSQL_ELEMENT_KINDS,
+  type Point,
+  type Relation,
+} from '@chartsia/core/model';
 import { measureElement } from '@chartsia/core/shapes';
 import { freeId, relationId } from './edge-edits';
 
@@ -70,6 +83,27 @@ export const PALETTE_ITEMS: readonly PaletteItem[] = [
   figure('arrow-down', 'Flecha abajo', 'FlechaAbajo'),
   { key: 'frame', label: 'Marco', kind: 'frame', idBase: 'Marco', build: (id, name) => ({ id, name, kind: 'frame', layout: { x: 0, y: 0, width: 320, height: 200 } }) },
 ];
+
+/** Sección de la barra: título y las figuras que agrupa. */
+interface PaletteSection {
+  id: string;
+  title: string;
+  items: PaletteItem[];
+}
+
+/** Secciones de la barra en su orden; cada una agrupa los kinds de una familia del núcleo y las figuras y marcos van aparte porque sirven en cualquier diagrama. */
+const SECCIONES: readonly { id: string; title: string; kinds: readonly ElementKind[] }[] = [
+  { id: 'clases', title: 'Clases', kinds: CLASS_ELEMENT_KINDS },
+  { id: 'c4', title: 'C4', kinds: C4_ELEMENT_KINDS },
+  { id: 'er', title: 'ER', kinds: ER_ELEMENT_KINDS },
+  { id: 'nosql', title: 'NoSQL', kinds: NOSQL_ELEMENT_KINDS },
+  { id: 'figuras-generales', title: 'Figuras generales', kinds: [...FIGURE_ELEMENT_KINDS, ...FRAME_ELEMENT_KINDS] },
+];
+
+/** Reparte PALETTE_ITEMS en las secciones de la barra, cada figura en una sola. */
+export function paletteSections(): PaletteSection[] {
+  return SECCIONES.map(({ id, title, kinds }) => ({ id, title, items: PALETTE_ITEMS.filter((item) => kinds.includes(item.kind)) }));
+}
 
 /** Sub-atributo que trae consigo un atributo compuesto. */
 const SUB_ATTRIBUTE: PaletteItem = { key: 'sub-attribute', label: 'Subatributo', kind: 'attribute', idBase: 'Subatributo', build: (id, name) => ({ id, name, kind: 'attribute' }) };

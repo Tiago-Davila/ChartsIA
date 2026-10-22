@@ -121,4 +121,22 @@ test.describe('barra de figuras', () => {
     await arrastrar(page, 'component', { x: 300, y: 250 });
     await expect.poll(() => elemento(agent, c4, 'Componente')).toMatchObject({ kind: 'component', parentId: 'Limite' });
   });
+
+  test('las secciones de la barra empiezan desplegadas y se pliegan y despliegan con su título', async ({ page, agent }) => {
+    const id = await agent.create(base);
+    await page.goto(`/d/${id}`);
+    const seccionC4 = page.locator('details.figure-sidebar__section', { has: page.getByText('C4', { exact: true }) });
+    await expect(page.locator('[data-figure="person"]')).toBeVisible();
+
+    await seccionC4.locator('summary').click();
+    await expect(seccionC4).toHaveJSProperty('open', false);
+    await expect(page.locator('[data-figure="person"]')).toBeHidden();
+    // Plegar una sección no oculta las demás.
+    await expect(page.locator('[data-figure="class"]')).toBeVisible();
+    await expect(page.locator('[data-figure="figure-circle"]')).toBeVisible();
+
+    await seccionC4.locator('summary').click();
+    await expect(seccionC4).toHaveJSProperty('open', true);
+    await expect(page.locator('[data-figure="person"]')).toBeVisible();
+  });
 });
