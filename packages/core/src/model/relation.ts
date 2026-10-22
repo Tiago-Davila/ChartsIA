@@ -20,6 +20,8 @@ export const RelationSchema = z.strictObject({
   sourceCardinality: z.enum(CARDINALITIES).optional().describe('Solo er-rel: cardinalidad en el extremo source'),
   targetCardinality: z.enum(CARDINALITIES).optional().describe('Solo er-rel: cardinalidad en el extremo target'),
   identifying: z.boolean().optional().describe('Solo er-rel: true = identificante (línea continua); si no, discontinua'),
+  sourceTotal: z.boolean().optional().describe('Solo er-rel y connector: participación total del origen (línea doble en su mitad)'),
+  targetTotal: z.boolean().optional().describe('Solo er-rel y connector: participación total del destino (línea doble en su mitad)'),
   arrowheads: z.enum(ARROWHEADS).optional().describe('Solo connector: none (sin punta), end (punta en el destino, por defecto) o both (punta en ambos extremos)'),
   dashed: z.boolean().optional().describe('Solo connector: true = línea discontinua'),
   sourceSide: z.enum(SIDES).optional().describe('Lado del origen por el que sale; sin él se elige solo'),
