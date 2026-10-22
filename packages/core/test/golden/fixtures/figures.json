@@ -19,6 +19,12 @@
     { "id": "pentagono", "kind": "figure", "name": "Pentágono", "shape": "pentagon" },
     { "id": "heptagono", "kind": "figure", "name": "Heptágono", "shape": "heptagon" },
     { "id": "octogono", "kind": "figure", "name": "Octógono con un nombre largo", "shape": "octagon" },
+    { "id": "flecha", "kind": "figure", "name": "Flecha simple", "shape": "arrow" },
+    { "id": "flecha-doble", "kind": "figure", "name": "Flecha doble", "shape": "double-arrow" },
+    { "id": "flecha-derecha", "kind": "figure", "name": "Flecha de bloque", "shape": "arrow-right" },
+    { "id": "flecha-izquierda", "kind": "figure", "name": "Izquierda", "shape": "arrow-left" },
+    { "id": "flecha-arriba", "kind": "figure", "name": "Arriba", "shape": "arrow-up" },
+    { "id": "flecha-abajo", "kind": "figure", "name": "Abajo con un nombre largo", "shape": "arrow-down" },
     { "id": "trazo", "kind": "drawing", "name": "Trazo", "points": [{ "x": 2, "y": 3 }, { "x": 30, "y": 18 }, { "x": 48, "y": 40 }], "strokeColor": "#b42318", "strokeWidth": 3.5 },
     { "id": "marcador", "kind": "drawing", "name": "Marcador", "points": [{ "x": 7, "y": 7 }, { "x": 90, "y": 12 }, { "x": 170, "y": 7 }], "strokeColor": "#facc15", "strokeWidth": 14, "highlighter": true }
   ],

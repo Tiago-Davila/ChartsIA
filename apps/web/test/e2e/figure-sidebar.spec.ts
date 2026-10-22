@@ -41,6 +41,18 @@ test.describe('barra de figuras', () => {
     await expect(page.locator('[data-element-id="Clase2"]')).toBeVisible();
   });
 
+  test('soltar una flecha en el lienzo la crea en el hub con su forma y en la posición soltada', async ({ page, agent }) => {
+    const id = await agent.create(base);
+    await page.goto(`/d/${id}`);
+
+    const doble = await arrastrar(page, 'figure-double-arrow', { x: 400, y: 300 });
+    await expect.poll(() => elemento(agent, id, 'FlechaDoble')).toMatchObject({ kind: 'figure', shape: 'double-arrow', layout: { pinned: true } });
+    const creada = (await elemento(agent, id, 'FlechaDoble'))!;
+    expect(Math.abs(creada.layout.x - doble.x)).toBeLessThanOrEqual(2);
+    expect(Math.abs(creada.layout.y - doble.y)).toBeLessThanOrEqual(2);
+    await expect(page.locator('[data-element-id="FlechaDoble"]')).toBeVisible();
+  });
+
   test('cada tipo de diagrama ofrece sus figuras y el hub acepta las que se sueltan', async ({ page, agent }) => {
     const er = await agent.create({ type: 'er', title: 'ER', elements: [], relations: [] });
     await page.goto(`/d/${er}`);

@@ -61,6 +61,12 @@ export const PALETTE_ITEMS: readonly PaletteItem[] = [
   figure('oval', 'Óvalo', 'Ovalo'),
   figure('diamond', 'Rombo', 'Rombo'),
   figure('parallelogram', 'Paralelogramo', 'Paralelogramo'),
+  figure('arrow', 'Flecha', 'Flecha'),
+  figure('double-arrow', 'Flecha doble', 'FlechaDoble'),
+  figure('arrow-right', 'Flecha derecha', 'FlechaDerecha'),
+  figure('arrow-left', 'Flecha izquierda', 'FlechaIzquierda'),
+  figure('arrow-up', 'Flecha arriba', 'FlechaArriba'),
+  figure('arrow-down', 'Flecha abajo', 'FlechaAbajo'),
   { key: 'frame', label: 'Marco', kind: 'frame', idBase: 'Marco', build: (id, name) => ({ id, name, kind: 'frame', layout: { x: 0, y: 0, width: 320, height: 200 } }) },
 ];
 
