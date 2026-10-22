@@ -56,6 +56,15 @@ describe('barra de figuras', () => {
     }]);
   });
 
+  it('ofrece la flecha simple, la doble y las de bloque, y cada una se crea con su forma', () => {
+    const flechas = [['figure-arrow', 'arrow'], ['figure-double-arrow', 'double-arrow'], ['figure-arrow-right', 'arrow-right'], ['figure-arrow-left', 'arrow-left'], ['figure-arrow-up', 'arrow-up'], ['figure-arrow-down', 'arrow-down']] as const;
+    const items = paletteFor('class');
+    for (const [key, shape] of flechas) {
+      const item = items.find((candidate) => candidate.key === key)!;
+      expect(newPaletteElements(vacio('class'), item, { x: 0, y: 0 })[0]).toMatchObject({ kind: 'figure', shape });
+    }
+  });
+
   it('ofrece el óvalo, el rombo y el paralelogramo como figuras generales', () => {
     const claves = paletteFor('class').map((item) => item.key);
     expect(claves).toEqual(expect.arrayContaining(['figure-oval', 'figure-diamond', 'figure-parallelogram']));
