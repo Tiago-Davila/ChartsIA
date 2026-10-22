@@ -21,8 +21,11 @@ import { type PointerEvent as ReactPointerEvent, useCallback, useEffect, useRef,
 import { DRAWING_DEFAULT_COLOR, DRAWING_DEFAULT_WIDTH, type Point } from '@chartsia/core/model';
 import { edgeTypes } from '../edges';
 import { nodeTypes } from '../nodes';
+import { useDiagramEditActions } from '../nodes/edit-context';
+import { type ElementNodeData } from '../nodes/types';
 import { SelectionPanel } from './SelectionPanel';
 import { sampleStroke } from './drawing';
+import { fieldUpdates, PALETTE } from './style-edits';
 
 export interface DiagramCanvasProps {
   diagramId: string;
@@ -39,6 +42,8 @@ export const FIT_VIEW_OPTIONS = { padding: 0.15, maxZoom: 1.25 };
 const PRO_OPTIONS = { hideAttribution: true };
 const MINIMAP_STYLE = { width: 180, height: 120 };
 const MAX_CAPTURE_POINTS = 2048;
+/** Relleno inicial del balde: el rojo de la paleta del panel de estilo. */
+const BUCKET_DEFAULT_COLOR = PALETTE[3].value;
 
 function nodeColor(node: Node): string {
   const kind = node.type ?? '';
@@ -72,6 +77,9 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   const screenPoints = useRef<Point[]>([]);
   const [drawingMode, setDrawingMode] = useState(false);
   const [drawingColor, setDrawingColor] = useState(DRAWING_DEFAULT_COLOR);
+  const [bucketMode, setBucketMode] = useState(false);
+  const [bucketColor, setBucketColor] = useState<string>(BUCKET_DEFAULT_COLOR);
+  const { updateStyles } = useDiagramEditActions();
   const [preview, setPreview] = useState<Point[]>([]);
   const fittedFor = useRef<string | null>(null);
   const [editingEdge, setEditingEdge] = useState<string>();
@@ -91,6 +99,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     screenPoints.current = [];
     setPreview([]);
     setDrawingMode(false);
+    setBucketMode(false);
   }, [diagramId]);
   // Al abrir otro diagrama se encuadra completo, cuando React Flow ya midió sus nodos.
   useEffect(() => {
@@ -117,6 +126,13 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     }
     setPreview([...screenPoints.current]);
   }, [screenToFlowPosition]);
+
+  // Con el balde activo, un clic sobre una figura le aplica el color de relleno elegido.
+  const paintNode = useCallback((_: unknown, node: Node) => {
+    const { element } = node.data as ElementNodeData;
+    if (!bucketMode || readOnly || element.kind === 'drawing') return;
+    updateStyles(fieldUpdates([{ id: element.id, relation: false, style: element.style }], 'fillColor', bucketColor));
+  }, [bucketColor, bucketMode, readOnly, updateStyles]);
 
   const startDrawing = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     if (!drawingMode || readOnly || event.button !== 0 || !(event.target instanceof Element) || event.target.closest('.react-flow__panel')) return;
@@ -171,7 +187,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   return (
     <div
       ref={canvas}
-      className={`diagram-canvas${drawingMode ? ' is-drawing' : ''}`}
+      className={`diagram-canvas${drawingMode ? ' is-drawing' : ''}${bucketMode ? ' is-painting' : ''}`}
       onPointerDownCapture={startDrawing}
       onPointerMoveCapture={moveDrawing}
       onPointerUpCapture={finishDrawing}
@@ -187,14 +203,15 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
         onEdgesChange={onEdgesChange}
         onNodeDragStop={onNodeDragStop}
         onDelete={onDelete}
-        nodesDraggable={!readOnly && !drawingMode}
+        nodesDraggable={!readOnly && !drawingMode && !bucketMode}
+        onNodeClick={paintNode}
         onConnect={onConnect}
         onEdgeDoubleClick={(_, edge) => !readOnly && setEditingEdge(edge.id)}
         onSelectionChange={onSelectionChange}
-        nodesConnectable={!readOnly && !drawingMode}
+        nodesConnectable={!readOnly && !drawingMode && !bucketMode}
         connectionMode={ConnectionMode.Loose}
-        elementsSelectable
-        selectionOnDrag={!drawingMode}
+        elementsSelectable={!bucketMode}
+        selectionOnDrag={!drawingMode && !bucketMode}
         selectionMode={SelectionMode.Partial}
         panOnScroll
         panOnDrag={false}
@@ -210,10 +227,14 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
         {readOnly ? null : <SelectionPanel nodes={nodes} edges={edges} editingEdge={editingEdge} onEditEdge={setEditingEdge} />}
         {readOnly ? null : (
           <Panel position="top-left" className="drawing-tool nodrag nopan">
-            <button type="button" className={`button${drawingMode ? ' button--primary' : ''}`} aria-pressed={drawingMode} onClick={() => setDrawingMode((active) => !active)}>
+            <button type="button" className={`button${drawingMode ? ' button--primary' : ''}`} aria-pressed={drawingMode} onClick={() => { setBucketMode(false); setDrawingMode((active) => !active); }}>
               Lápiz
             </button>
             {drawingMode ? <input type="color" aria-label="Color del lápiz" value={drawingColor} onChange={(event) => setDrawingColor(event.target.value)} /> : null}
+            <button type="button" className={`button${bucketMode ? ' button--primary' : ''}`} aria-pressed={bucketMode} onClick={() => { setDrawingMode(false); setBucketMode((active) => !active); }}>
+              Balde
+            </button>
+            {bucketMode ? <input type="color" aria-label="Color del balde" value={bucketColor} onChange={(event) => setBucketColor(event.target.value)} /> : null}
           </Panel>
         )}
       </ReactFlow>
