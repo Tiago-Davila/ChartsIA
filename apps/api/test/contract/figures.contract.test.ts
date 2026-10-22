@@ -140,6 +140,25 @@ describe('contract: figuras generales', () => {
     for (const [, name] of variantes) expect(svg).toContain(name);
   });
 
+  it('acepta las flechas simple, doble y de bloque, las dibuja y cambia una con apply_changes', async () => {
+    const flechas = [['arrow', 'Simple'], ['double-arrow', 'Doble'], ['arrow-right', 'Derecha'], ['arrow-left', 'Izquierda'], ['arrow-up', 'Arriba'], ['arrow-down', 'Abajo']];
+    const res = await h.call('create_diagram', {
+      type: 'class',
+      title: 'Flechas',
+      elements: flechas.map(([shape, name]) => ({ id: shape, kind: 'figure', name, shape })),
+      relations: [],
+    });
+    expect(res.isError).toBeFalsy();
+    expect(res.structuredContent!.counts).toEqual({ elements: 6, relations: 0 });
+    const changed = await h.call('apply_changes', { operations: [{ op: 'update_element', id: 'arrow', changes: { shape: 'arrow-up' } }] });
+    expect(changed.isError).toBeFalsy();
+    const svg = (await h.call('export_diagram', { format: 'svg' })).structuredContent!.content as string;
+    for (const [, name] of flechas) expect(svg).toContain(name);
+    const drawio = (await h.call('export_diagram', { format: 'drawio' })).structuredContent!.content as string;
+    expect(drawio).toContain('shape=singleArrow;direction=north;');
+    expect(drawio).toContain('shape=doubleArrow;');
+  });
+
   it('una forma inexistente (dodecágono) se rechaza con SCHEMA_VIOLATION', async () => {
     const bad = figures('class');
     bad.elements[0]!.shape = 'dodecagon';
@@ -154,6 +173,7 @@ describe('contract: figuras generales', () => {
       expect(text).toContain('`figure`');
       expect(text).toContain('hexagon');
       expect(text).toContain('right-triangle');
+      expect(text).toContain('double-arrow');
       expect(text).toContain('`drawing`');
       expect(text).toContain('1024');
       expect(text).toContain('highlighter');

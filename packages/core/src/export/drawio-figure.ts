@@ -1,6 +1,6 @@
 import { type Element } from '../model/diagram.js';
 import { type FigureShape } from '../model/enums.js';
-import { SLOPE } from '../shapes/general/figure.js';
+import { ARROWS, SLOPE } from '../shapes/general/figure.js';
 import { FONT } from '../shapes/types.js';
 import { type DrawioCell } from './drawio.js';
 import { drawioBox, drawioFont } from './drawio-style.js';
@@ -47,6 +47,19 @@ function figureStyle(shape: FigureShape, geo: { width: number; height: number })
     // El corte de cada esquina es 0,29 del lado, lo que deja un octágono regular.
     case 'octagon':
       return `shape=mxgraph.basic.octagon2;dx=${Math.round(0.29 * Math.min(geo.width, geo.height))};`;
+    // Las flechas de bloque de draw.io llevan el grosor del tramo como fracción de la caja.
+    case 'arrow':
+      return `shape=singleArrow;direction=east;arrowWidth=${ARROWS.arrow!.shaft};`;
+    case 'double-arrow':
+      return `shape=doubleArrow;arrowWidth=${ARROWS['double-arrow']!.shaft};`;
+    case 'arrow-right':
+      return `shape=singleArrow;direction=east;arrowWidth=${ARROWS['arrow-right']!.shaft};`;
+    case 'arrow-left':
+      return `shape=singleArrow;direction=west;arrowWidth=${ARROWS['arrow-left']!.shaft};`;
+    case 'arrow-up':
+      return `shape=singleArrow;direction=north;arrowWidth=${ARROWS['arrow-up']!.shaft};`;
+    case 'arrow-down':
+      return `shape=singleArrow;direction=south;arrowWidth=${ARROWS['arrow-down']!.shaft};`;
   }
 }
 

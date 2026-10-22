@@ -27,6 +27,15 @@ const APEX: Partial<Record<FigureShape, number>> = {
 };
 /** Lados de los polígonos regulares; el triángulo y el hexágono tienen su propio contorno. */
 const POLYGON_SIDES: Partial<Record<FigureShape, number>> = { pentagon: 5, heptagon: 7, octagon: 8 };
+/** Flechas: grosor del tramo como fracción de la caja, si tienen punta doble y si apuntan arriba o abajo. Las simples son finas y las de bloque, gruesas. */
+export const ARROWS: Partial<Record<FigureShape, { shaft: number; double?: boolean; vertical?: boolean }>> = {
+  arrow: { shaft: 0.3 },
+  'double-arrow': { shaft: 0.3, double: true },
+  'arrow-right': { shaft: 0.5 },
+  'arrow-left': { shaft: 0.5 },
+  'arrow-up': { shaft: 0.5, vertical: true },
+  'arrow-down': { shaft: 0.5, vertical: true },
+};
 const r = (n: number) => Math.round(n * 100) / 100;
 
 /** Zona del texto de un triángulo: su mitad inferior, desde `left` y con `span` del ancho. */
@@ -67,6 +76,68 @@ const ISOSCELES: FigureGeometry = {
   size: (t) => ({ width: t.width * 2, height: t.height * 2 }),
   area: lowerHalf(0.25, 0.5),
 };
+
+/** Contorno de una flecha que apunta a la derecha (largo en x, grosor en y) y su zona de texto; la punta mide medio grosor y la doble tiene una a cada lado. */
+function rightArrow(double: boolean, len: number, thick: number, shaft: number): { points: Point[]; text: Area } {
+  const head = Math.min(thick / 2, len / 2);
+  const y0 = (thick * (1 - shaft)) / 2;
+  const y1 = thick - y0;
+  const x1 = len - head;
+  if (double) {
+    return {
+      points: [
+        { x: 0, y: thick / 2 }, { x: head, y: 0 }, { x: head, y: y0 }, { x: x1, y: y0 }, { x: x1, y: 0 },
+        { x: len, y: thick / 2 }, { x: x1, y: thick }, { x: x1, y: y1 }, { x: head, y: y1 }, { x: head, y: thick },
+      ],
+      text: { x: head, y: y0, width: x1 - head, height: y1 - y0 },
+    };
+  }
+  return {
+    points: [{ x: 0, y: y0 }, { x: x1, y: y0 }, { x: x1, y: 0 }, { x: len, y: thick / 2 }, { x: x1, y: thick }, { x: x1, y: y1 }, { x: 0, y: y1 }],
+    text: { x: 0, y: y0, width: x1, height: y1 - y0 },
+  };
+}
+
+/** Lleva un punto de una flecha que apunta a la derecha a la dirección que tiene la figura. */
+function turn(shape: FigureShape, p: Point, len: number): Point {
+  if (shape === 'arrow-left') return { x: len - p.x, y: p.y };
+  if (shape === 'arrow-up') return { x: p.y, y: len - p.x };
+  if (shape === 'arrow-down') return { x: p.y, y: p.x };
+  return p;
+}
+
+/** Contorno y zona de texto de una flecha, con su largo y dirección. */
+function arrowParts(shape: FigureShape, { width, height }: Size): { outline: Point[]; text: Area } {
+  const { shaft, double = false, vertical = false } = ARROWS[shape]!;
+  const len = vertical ? height : width;
+  const local = rightArrow(double, len, vertical ? width : height, shaft);
+  const corner = (p: Point) => turn(shape, p, len);
+  const a = corner({ x: local.text.x, y: local.text.y });
+  const b = corner({ x: local.text.x + local.text.width, y: local.text.y + local.text.height });
+  return {
+    outline: local.points.map(corner),
+    text: { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), width: Math.abs(a.x - b.x), height: Math.abs(a.y - b.y) },
+  };
+}
+
+/** Tamaño de una flecha: el texto cabe en su tramo, y cada punta ocupa medio grosor de la caja. */
+function arrowGeometry(shape: FigureShape): FigureGeometry {
+  const { shaft, double = false, vertical = false } = ARROWS[shape]!;
+  const heads = double ? 2 : 1;
+  return {
+    wrap: 120,
+    min: vertical ? { width: 64, height: 120 } : { width: 120, height: 64 },
+    size: (t) => {
+      if (vertical) {
+        const width = Math.max(64, Math.ceil(t.width / shaft));
+        return { width, height: Math.max(120, Math.ceil(t.height + (heads * width) / 2)) };
+      }
+      const height = Math.max(64, Math.ceil((t.height - MARGIN) / shaft));
+      return { width: Math.max(120, Math.ceil(t.width + (heads * height) / 2)), height };
+    },
+    area: (size) => arrowParts(shape, size).text,
+  };
+}
 
 const GEOMETRY: Record<FigureShape, FigureGeometry> = {
   rectangle: {
@@ -157,6 +228,12 @@ const GEOMETRY: Record<FigureShape, FigureGeometry> = {
     size: (t) => ({ width: Math.ceil(t.width / 0.6), height: Math.ceil(t.height / 0.6) }),
     area: ({ width, height }) => ({ x: width * 0.2, y: height * 0.2, width: width * 0.6, height: height * 0.6 }),
   },
+  arrow: arrowGeometry('arrow'),
+  'double-arrow': arrowGeometry('double-arrow'),
+  'arrow-right': arrowGeometry('arrow-right'),
+  'arrow-left': arrowGeometry('arrow-left'),
+  'arrow-up': arrowGeometry('arrow-up'),
+  'arrow-down': arrowGeometry('arrow-down'),
 };
 
 /** Vértices de un polígono regular inscrito en la caja: un vértice arriba si tiene lados impares, un lado arriba si es par. */
@@ -168,12 +245,13 @@ function regularPolygon(sides: number, { width, height }: Size): Point[] {
   });
 }
 
-/** Vértices de las figuras poligonales; el círculo, el óvalo, el cuadrado, el rectángulo y la nube no tienen. */
+/** Vértices de las figuras poligonales y de las flechas; el círculo, el óvalo, el cuadrado, el rectángulo y la nube no tienen. */
 export function figureOutline(shape: FigureShape, size: Size): Point[] | undefined {
   const { width, height } = size;
   const apex = APEX[shape];
   if (apex !== undefined) return [{ x: width * apex, y: 0 }, { x: width, y: height }, { x: 0, y: height }];
   if (shape === 'diamond') return [{ x: width / 2, y: 0 }, { x: width, y: height / 2 }, { x: width / 2, y: height }, { x: 0, y: height / 2 }];
+  if (ARROWS[shape]) return arrowParts(shape, size).outline;
   const inset = SLOPE * height;
   if (shape === 'parallelogram') return [{ x: inset, y: 0 }, { x: width, y: 0 }, { x: width - inset, y: height }, { x: 0, y: height }];
   if (shape === 'hexagon') {
@@ -225,7 +303,7 @@ function textLines(name: string, width: number, style?: Style): string[] {
 }
 
 /**
- * Figura general: círculo, óvalo, cuadrado, rectángulo, triángulo (cuatro variantes), rombo, paralelogramo, hexágono o nube con el nombre
+ * Figura general: círculo, óvalo, cuadrado, rectángulo, triángulo (cuatro variantes), rombo, paralelogramo, hexágono, polígono regular, nube o flecha con el nombre
  * centrado dentro. El tamaño natural encierra el texto partido en líneas.
  */
 export const figureShape: ShapeDefinition<FigureElement> = {
