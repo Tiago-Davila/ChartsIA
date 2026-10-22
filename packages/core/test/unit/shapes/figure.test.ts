@@ -90,6 +90,7 @@ describe('forma figure', () => {
     expect(outline('pentagon')).toBe('path');
     expect(outline('heptagon')).toBe('path');
     expect(outline('octagon')).toBe('path');
+    for (const shape of ['arrow', 'double-arrow', 'arrow-right', 'arrow-left', 'arrow-up', 'arrow-down'] as const) expect(outline(shape)).toBe('path');
   });
 
   it('el triángulo tiene 3 vértices, el rombo y el paralelogramo 4 y el hexágono 6, dentro de la caja', () => {
@@ -150,6 +151,47 @@ describe('forma figure', () => {
         { x: area.x + area.width, y: area.y + area.height },
       ];
       for (const corner of corners) expect(insidePolygon(corner, vertices)).toBe(true);
+    }
+  });
+
+  it('las flechas simples y dobles tienen 7 y 10 vértices, y las de bloque 7', () => {
+    const size = { width: 160, height: 80 };
+    expect(figureOutline('arrow', size)).toHaveLength(7);
+    expect(figureOutline('double-arrow', size)).toHaveLength(10);
+    for (const shape of ['arrow-right', 'arrow-left', 'arrow-up', 'arrow-down'] as const) expect(figureOutline(shape, size)).toHaveLength(7);
+  });
+
+  it('cada flecha apunta hacia su lado: la punta está en el centro de ese borde', () => {
+    const horizontal = { width: 160, height: 80 };
+    const vertical = { width: 80, height: 160 };
+    expect(figureOutline('arrow', horizontal)).toContainEqual({ x: 160, y: 40 });
+    expect(figureOutline('arrow-right', horizontal)).toContainEqual({ x: 160, y: 40 });
+    expect(figureOutline('arrow-left', horizontal)).toContainEqual({ x: 0, y: 40 });
+    expect(figureOutline('arrow-up', vertical)).toContainEqual({ x: 40, y: 0 });
+    expect(figureOutline('arrow-down', vertical)).toContainEqual({ x: 40, y: 160 });
+  });
+
+  it.each(['arrow', 'double-arrow', 'arrow-right', 'arrow-left', 'arrow-up', 'arrow-down'] as const)('%s: la zona del texto cabe dentro del contorno', (shape) => {
+    const e = 1;
+    const vertical = shape === 'arrow-up' || shape === 'arrow-down';
+    const sizes = vertical ? [{ width: 64, height: 120 }, { width: 90, height: 260 }] : [{ width: 120, height: 64 }, { width: 300, height: 90 }];
+    for (const size of sizes) {
+      const vertices = figureOutline(shape, size)!;
+      const area = figureTextArea(shape, size);
+      const corners = [
+        { x: area.x + e, y: area.y + e },
+        { x: area.x + area.width - e, y: area.y + e },
+        { x: area.x + e, y: area.y + area.height - e },
+        { x: area.x + area.width - e, y: area.y + area.height - e },
+      ];
+      for (const corner of corners) expect(insidePolygon(corner, vertices)).toBe(true);
+    }
+  });
+
+  it('las flechas simples, dobles y de bloque horizontales con un nombre corto son más anchas que altas', () => {
+    for (const shape of ['arrow', 'double-arrow', 'arrow-right', 'arrow-left'] as const) {
+      const { width, height } = measureElement(figure(shape, 'Cliente'));
+      expect(width).toBeGreaterThan(height);
     }
   });
 
