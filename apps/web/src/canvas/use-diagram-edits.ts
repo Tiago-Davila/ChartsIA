@@ -10,6 +10,7 @@ import { readImageFile } from './image-import';
 import { changesForSlot } from './slot-edits';
 import { type StyleUpdate } from './style-edits';
 import { simplifyStroke } from './drawing';
+import { framePadding } from '@chartsia/core/shapes';
 
 function depth(id: string, byId: Map<string, Element>): number {
   let d = 0;
@@ -279,9 +280,74 @@ export function useDiagramEdits(api: ApiClient) {
   const leaveGroup = useCallback((id: string) => void send([{ op: 'update_element', id, changes: { parentId: null } }]), [send]);
   const ungroup = useCallback((id: string) => void send([{ op: 'remove_element', id, cascade: 'reparent' }]), [send]);
 
+  /** Agrupa los nodos seleccionados en un marco sin cambiar sus coordenadas absolutas. */
+  const groupInFrame = useCallback((elementIds: string[]) => {
+    const diagram = diagramStore.getState().diagram;
+    if (!diagram) return;
+    const byId = new Map(diagram.elements.map((element) => [element.id, element]));
+    const selected = new Set(elementIds.filter((id) => byId.has(id)));
+    const hasSelectedAncestor = (id: string) => {
+      const visited = new Set<string>();
+      let parentId = byId.get(id)?.parentId;
+      while (parentId && !visited.has(parentId)) {
+        if (selected.has(parentId)) return true;
+        visited.add(parentId);
+        parentId = byId.get(parentId)?.parentId;
+      }
+      return false;
+    };
+    // Si se selecciona un grupo junto con descendientes, solo el grupo se reparenta.
+    const roots = [...selected].filter((id) => !hasSelectedAncestor(id));
+    if (selected.size < 2 || roots.length === 0) return;
+
+    const ancestors = (id: string) => {
+      const result: string[] = [];
+      const visited = new Set<string>();
+      let parentId = byId.get(id)?.parentId;
+      while (parentId && !visited.has(parentId)) {
+        visited.add(parentId);
+        result.push(parentId);
+        parentId = byId.get(parentId)?.parentId;
+      }
+      return result;
+    };
+    const parentId = ancestors(roots[0]!).find((id) => roots.slice(1).every((root) => ancestors(root).includes(id)));
+
+    const boxes = roots.map((id) => {
+      const element = byId.get(id)!;
+      const node = getInternalNode(id);
+      const position = node?.internals.positionAbsolute ?? { x: element.layout?.x ?? 0, y: element.layout?.y ?? 0 };
+      const width = node?.measured?.width ?? node?.width ?? element.layout?.width ?? 120;
+      const height = node?.measured?.height ?? node?.height ?? element.layout?.height ?? 60;
+      return { x: position.x, y: position.y, width, height };
+    });
+    const left = Math.min(...boxes.map((box) => box.x));
+    const top = Math.min(...boxes.map((box) => box.y));
+    const right = Math.max(...boxes.map((box) => box.x + box.width));
+    const bottom = Math.max(...boxes.map((box) => box.y + box.height));
+    const id = freeId(diagram, 'Marco');
+    const padding = framePadding();
+    const frame: Element = {
+      id,
+      kind: 'frame',
+      name: 'Marco',
+      ...(parentId ? { parentId } : {}),
+      layout: {
+        x: Math.round(left - padding.left),
+        y: Math.round(top - padding.top),
+        width: Math.round(right - left + padding.left + padding.right),
+        height: Math.round(bottom - top + padding.top + padding.bottom),
+      },
+    };
+    void send([
+      { op: 'add_element', element: frame },
+      ...roots.map((root): Operation => ({ op: 'update_element', id: root, changes: { parentId: id } })),
+    ]);
+  }, [getInternalNode, send]);
+
   const editActions = useMemo<DiagramEditActions>(
-    () => ({ editText, resize, updateRelation, updateStyles, leaveGroup, ungroup, readOnly: false }),
-    [editText, resize, updateRelation, updateStyles, leaveGroup, ungroup],
+    () => ({ editText, resize, updateRelation, updateStyles, leaveGroup, ungroup, groupInFrame, readOnly: false }),
+    [editText, resize, updateRelation, updateStyles, leaveGroup, ungroup, groupInFrame],
   );
 
   return { onNodeDragStop, onDelete, onConnect, onDraw: addDrawing, editText, editActions, history, duplicate, align, rename, insertImages };

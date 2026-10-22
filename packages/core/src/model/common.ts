@@ -41,7 +41,7 @@ export const elementBaseShape = {
   id: ElementIdSchema,
   name: NameSchema,
   description: DescriptionSchema.optional(),
-  parentId: ElementIdSchema.optional().describe('Id de un grupo (package/boundary) que lo contiene'),
+  parentId: ElementIdSchema.optional().describe('Id de un grupo (package, boundary o frame) que lo contiene'),
   layout: LayoutSchema.optional().describe('Opcional: {x, y} fija el elemento en esa posición'),
   style: StyleSchema.optional(),
 };

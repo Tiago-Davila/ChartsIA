@@ -3,11 +3,12 @@ import { ReactFlow, ReactFlowProvider } from '@xyflow/react';
 import { describe, expect, it, vi } from 'vitest';
 import { StylePanel } from '../../../src/canvas/StylePanel';
 import { type StyleTarget, type StyleUpdate } from '../../../src/canvas/style-edits';
+import { SelectionPanel } from '../../../src/canvas/SelectionPanel';
 import { DiagramEditContext } from '../../../src/nodes/edit-context';
 
 function renderPanel(targets: StyleTarget[]) {
   const updateStyles = vi.fn<(updates: StyleUpdate[]) => void>();
-  const actions = { editText: vi.fn(), resize: vi.fn(), updateRelation: vi.fn(), updateStyles, leaveGroup: vi.fn(), ungroup: vi.fn(), readOnly: false };
+  const actions = { editText: vi.fn(), resize: vi.fn(), updateRelation: vi.fn(), updateStyles, leaveGroup: vi.fn(), ungroup: vi.fn(), groupInFrame: vi.fn(), readOnly: false };
   render(
     <DiagramEditContext.Provider value={actions}>
       <ReactFlowProvider>
@@ -81,5 +82,28 @@ describe('StylePanel', () => {
   it('para flechas el primer color se llama "Color de línea"', () => {
     renderPanel([{ id: 'r1', relation: true }]);
     expect(screen.getByRole('group', { name: 'Color de línea' })).toBeInTheDocument();
+  });
+});
+
+describe('SelectionPanel', () => {
+  it('permite agrupar nodos conectados aunque también haya una relación seleccionada', () => {
+    const groupInFrame = vi.fn();
+    const actions = { editText: vi.fn(), resize: vi.fn(), updateRelation: vi.fn(), updateStyles: vi.fn(), leaveGroup: vi.fn(), ungroup: vi.fn(), groupInFrame, readOnly: false };
+    const nodes = [
+      { id: 'A', position: { x: 0, y: 0 }, selected: true, data: { element: { id: 'A', kind: 'class', name: 'A', attributes: [], operations: [] } } },
+      { id: 'B', position: { x: 100, y: 0 }, selected: true, data: { element: { id: 'B', kind: 'class', name: 'B', attributes: [], operations: [] } } },
+    ];
+    const edges = [{ id: 'r1', source: 'A', target: 'B', selected: true, data: { relation: { id: 'r1', kind: 'association', source: 'A', target: 'B' } } }];
+    render(
+      <DiagramEditContext.Provider value={actions}>
+        <ReactFlowProvider>
+          <ReactFlow nodes={nodes} edges={edges}>
+            <SelectionPanel nodes={nodes} edges={edges} onEditEdge={vi.fn()} />
+          </ReactFlow>
+        </ReactFlowProvider>
+      </DiagramEditContext.Provider>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Agrupar en marco' }));
+    expect(groupInFrame).toHaveBeenCalledWith(['A', 'B']);
   });
 });

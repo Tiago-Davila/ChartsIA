@@ -7,6 +7,7 @@ import { erCells, erEdgeStyle } from './drawio-er.js';
 import { figureCells } from './drawio-figure.js';
 import { drawingXml } from './drawio-drawing.js';
 import { imageCells } from './drawio-image.js';
+import { frameCells } from './drawio-frame.js';
 import { drawioFont, drawioStroke } from './drawio-style.js';
 import { xmlElement } from './xml-escape.js';
 import { FONT } from '../shapes/types.js';
@@ -114,7 +115,7 @@ export function exportDrawio(diagram: Diagram): string {
       cells.push(drawing);
       continue;
     }
-    const vertices = classCells(el, parent, geo) ?? c4Cells(el, parent, geo) ?? erCells(el, parent, geo) ?? figureCells(el, parent, geo) ?? imageCells(el, parent, geo) ?? [];
+    const vertices = frameCells(el, parent, geo) ?? classCells(el, parent, geo) ?? c4Cells(el, parent, geo) ?? erCells(el, parent, geo) ?? figureCells(el, parent, geo) ?? imageCells(el, parent, geo) ?? [];
     cells.push(...vertices.map(vertexXml));
   }
   for (const rel of [...diagram.relations].sort((a, b) => (a.id < b.id ? -1 : 1))) cells.push(edgeXml(rel, byId));

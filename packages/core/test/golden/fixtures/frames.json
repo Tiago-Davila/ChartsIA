@@ -1,0 +1,13 @@
+{
+  "type": "class",
+  "title": "Marcos anidados",
+  "elements": [
+    { "id": "externo", "kind": "frame", "name": "Marco exterior", "layout": { "x": 100, "y": 80 } },
+    { "id": "interno", "kind": "frame", "name": "Marco interior", "parentId": "externo", "layout": { "x": 130, "y": 140 } },
+    { "id": "Pedido", "kind": "class", "name": "Pedido", "attributes": [], "operations": [], "parentId": "interno", "layout": { "x": 160, "y": 200 } },
+    { "id": "Nota", "kind": "figure", "name": "Nota", "shape": "rectangle", "parentId": "externo", "layout": { "x": 120, "y": 150 } },
+    { "id": "Trazo", "kind": "drawing", "name": "Trazo", "points": [{ "x": 0, "y": 0 }, { "x": 24, "y": 14 }], "strokeColor": "#b42318", "strokeWidth": 2, "parentId": "interno", "layout": { "x": 300, "y": 200 } },
+    { "id": "Logo", "kind": "image", "name": "Logo", "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAYAAAD0In+KAAAAEUlEQVR4nGM4H2zxX6NsxX8AE2IEn6hGtYAAAAAASUVORK5CYII=", "parentId": "interno", "layout": { "x": 350, "y": 200 } }
+  ],
+  "relations": []
+}

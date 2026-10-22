@@ -6,6 +6,7 @@ import { containerShape } from './c4/container.js';
 import { attributeShape } from './er/attribute.js';
 import { entityShape } from './er/entity.js';
 import { figureShape } from './general/figure.js';
+import { frameShape } from './general/frame.js';
 import { drawingShape } from './general/drawing.js';
 import { imageShape } from './general/image.js';
 import { tableShape } from './er/table.js';
@@ -31,6 +32,7 @@ const SHAPES: { [K in ElementKind]: ShapeDefinition<Extract<Element, { kind: K }
   entity: entityShape,
   table: tableShape,
   figure: figureShape,
+  frame: frameShape,
   drawing: drawingShape,
   image: imageShape,
   attribute: attributeShape,

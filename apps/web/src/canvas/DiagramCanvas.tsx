@@ -46,7 +46,7 @@ function nodeColor(node: Node): string {
   if (kind === 'software-system') return '#1168bd';
   if (kind === 'container') return '#438dd5';
   if (kind === 'component') return '#85bbf0';
-  if (kind === 'package' || kind === 'boundary') return 'transparent';
+  if (kind === 'package' || kind === 'boundary' || kind === 'frame') return 'transparent';
   return '#f6e7a6';
 }
 

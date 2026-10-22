@@ -30,6 +30,7 @@ export const nodeTypes = {
   figure: ElementNode,
   drawing: ElementNode,
   image: ElementNode,
+  frame: GroupNode,
   attribute: ErAttributeNode,
   'value-list': ErValueListNode,
 } satisfies Record<ElementKind, NodeTypes[string]> as NodeTypes;

@@ -476,7 +476,8 @@ button:disabled,
   padding: 0;
 }
 .react-flow__node-package,
-.react-flow__node-boundary {
+.react-flow__node-boundary,
+.react-flow__node-frame {
   z-index: -1;
 }
 .chartsia-edge.is-selected path:first-child {

@@ -39,7 +39,7 @@ const INSTRUCTIONS = [
   'Cada pedido de un diagrama nuevo o distinto (otro tema, sistema o tipo) va con create_diagram, que no toca los diagramas anteriores; apply_changes solo refina el diagrama existente del que se habla (por defecto el activo).',
   'Usa get_diagram para conocer los ids actuales antes de editar y list_diagrams / open_diagram para cambiar de diagrama.',
   'No agrupes diagramas en proyectos (create_project, move_diagram, projectId de create_diagram) salvo que la persona lo pida.',
-  'No agrupes elementos en package o boundary salvo que la persona lo pida (o que un component lo exija).',
+  'No agrupes elementos en package, boundary o frame salvo que la persona lo pida (o que un component lo exija).',
   'Si una herramienta devuelve isError, lee code, path y hint de cada error, corrige la entrada y vuelve a llamarla.',
 ].join(' ');
 
