@@ -1,7 +1,7 @@
 import { type Point } from '../model/common.js';
 import { type Diagram, type Element } from '../model/diagram.js';
 import { isHighlighter, HIGHLIGHTER_OPACITY } from '../model/drawing-elements.js';
-import { type Cardinality, isGroupKind } from '../model/enums.js';
+import { C4_ELEMENT_KINDS, type Cardinality, ER_ELEMENT_KINDS, isGroupKind } from '../model/enums.js';
 import { type Relation } from '../model/relation.js';
 import { hashSeed } from '../render/hash.js';
 import { edgeLabelLines, totalLine } from '../render/edges.js';
@@ -443,13 +443,12 @@ export function exportExcalidraw(diagram: Diagram): string {
     else if (el.kind === 'collection') addCollection(b, el, box);
     else if (el.kind === 'figure') addFigure(b, el, box);
     else if (el.kind === 'frame') addFrame(b, el, box);
-    else if (diagram.type === 'class') {
-      if (el.kind === 'package') {
-        b.shape(el.id, 'rectangle', box, { ...strokeOf(el.style), ...(el.style?.fillColor ? { backgroundColor: el.style.fillColor } : {}) });
-        b.text(`${el.id}-title`, el.name, { x: box.x + 10, y: box.y + 6, width: box.width - 20, height: 20 }, fontOf(el.style, FONT.name));
-      } else addUml(b, el, box);
-    } else if (diagram.type === 'er') addEr(b, el, box);
-    else addC4(b, el, box);
+    else if (el.kind === 'package') {
+      b.shape(el.id, 'rectangle', box, { ...strokeOf(el.style), ...(el.style?.fillColor ? { backgroundColor: el.style.fillColor } : {}) });
+      b.text(`${el.id}-title`, el.name, { x: box.x + 10, y: box.y + 6, width: box.width - 20, height: 20 }, fontOf(el.style, FONT.name));
+    } else if ((ER_ELEMENT_KINDS as readonly string[]).includes(el.kind)) addEr(b, el, box);
+    else if ((C4_ELEMENT_KINDS as readonly string[]).includes(el.kind)) addC4(b, el, box);
+    else addUml(b, el, box);
     const groupIds = frameGroupIds(el);
     if (groupIds.length > 0) {
       for (const generated of b.elements.slice(start)) {
