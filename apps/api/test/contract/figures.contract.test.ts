@@ -90,6 +90,23 @@ describe('contract: figuras generales', () => {
     expect(h.errorCodes(res)).toContain('SCHEMA_VIOLATION');
   });
 
+  it('acepta el óvalo, el rombo y el paralelogramo al crear y al cambiar de forma', async () => {
+    const res = await h.call('create_diagram', {
+      type: 'er', title: 'Nuevas formas',
+      elements: [
+        { id: 'o', kind: 'figure', name: 'Óvalo', shape: 'oval' },
+        { id: 'r', kind: 'figure', name: 'Rombo', shape: 'diamond' },
+      ],
+      relations: [],
+    });
+    expect(res.isError).toBeFalsy();
+    const changed = await h.call('apply_changes', { operations: [{ op: 'update_element', id: 'r', changes: { shape: 'parallelogram' } }] });
+    expect(changed.isError).toBeFalsy();
+    const svg = (await h.call('export_diagram', { format: 'svg' })).structuredContent!.content as string;
+    expect(svg).toContain('Óvalo');
+    expect(svg).toContain('Rombo');
+  });
+
   it('una forma inexistente (heptágono) se rechaza con SCHEMA_VIOLATION', async () => {
     const bad = figures('class');
     bad.elements[0]!.shape = 'heptagon';
