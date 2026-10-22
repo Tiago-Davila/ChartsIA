@@ -44,6 +44,11 @@
       "@chartsia/source": "./src/export/index.ts",
       "types": "./dist/export/index.d.ts",
       "default": "./dist/export/index.js"
+    },
+    "./import": {
+      "@chartsia/source": "./src/import/index.ts",
+      "types": "./dist/import/index.d.ts",
+      "default": "./dist/import/index.js"
     }
   },
   "files": [
