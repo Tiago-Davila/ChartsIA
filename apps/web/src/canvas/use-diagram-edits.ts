@@ -6,7 +6,7 @@ import { ApiError, type ApiClient } from '../state/api-client';
 import { diagramStore } from '../state/diagram-store';
 import { type AlignMode, alignBoxes } from './align';
 import { connectionRelation, freeId } from './edge-edits';
-import { newPaletteEdit, paletteFor } from './figure-palette';
+import { centeredFreePoint, newPaletteEdit, type PaletteItem, paletteFor } from './figure-palette';
 import { readImageFile } from './image-import';
 import { changesForAddMember, changesForRemoveMember, changesForSlot, type MemberKind } from './slot-edits';
 import { type StyleUpdate } from './style-edits';
@@ -93,19 +93,38 @@ export function useDiagramEdits(api: ApiClient) {
     [screenToFlowPosition, send],
   );
 
+  /** Crea una figura de la barra en la esquina indicada del lienzo, con todas sus operaciones en un lote. */
+  const placeFigure = useCallback(
+    (diagram: Diagram, item: PaletteItem, point: Point) => {
+      const { elements, relations } = newPaletteEdit(diagram, item, point);
+      void send([
+        ...elements.map((element): Operation => ({ op: 'add_element', element })),
+        ...relations.map((relation): Operation => ({ op: 'add_relation', relation })),
+      ]);
+    },
+    [send],
+  );
+
   /** Crea la figura de la barra lateral soltada en la posición de pantalla indicada. */
   const addFigure = useCallback(
     (key: string, screenPosition: { x: number; y: number }) => {
       const diagram = diagramStore.getState().diagram;
       const item = diagram && paletteFor(diagram.type).find((candidate) => candidate.key === key);
       if (!diagram || !item) return;
-      const { elements, relations } = newPaletteEdit(diagram, item, screenToFlowPosition(screenPosition));
-      void send([
-        ...elements.map((element): Operation => ({ op: 'add_element', element })),
-        ...relations.map((relation): Operation => ({ op: 'add_relation', relation })),
-      ]);
+      placeFigure(diagram, item, screenToFlowPosition(screenPosition));
     },
-    [screenToFlowPosition, send],
+    [placeFigure, screenToFlowPosition],
+  );
+
+  /** Doble clic en la barra: crea la figura centrada en el centro de pantalla indicado, sin tapar otra. */
+  const addFigureAtCenter = useCallback(
+    (key: string, screenCenter: { x: number; y: number }) => {
+      const diagram = diagramStore.getState().diagram;
+      const item = diagram && paletteFor(diagram.type).find((candidate) => candidate.key === key);
+      if (!diagram || !item) return;
+      placeFigure(diagram, item, centeredFreePoint(diagram, item, screenToFlowPosition(screenCenter)));
+    },
+    [placeFigure, screenToFlowPosition],
   );
 
   /** Ctrl+Z / Ctrl+Y: deshace o rehace el último cambio del diagrama en el hub. */
@@ -394,5 +413,5 @@ export function useDiagramEdits(api: ApiClient) {
     [editText, addMember, removeMember, resize, updateRelation, updateStyles, leaveGroup, ungroup, groupInFrame],
   );
 
-  return { onNodeDragStop, onDelete, onConnect, onDraw: addDrawing, editText, editActions, history, duplicate, align, rename, insertImages, addFigure };
+  return { onNodeDragStop, onDelete, onConnect, onDraw: addDrawing, editText, editActions, history, duplicate, align, rename, insertImages, addFigure, addFigureAtCenter };
 }

@@ -163,6 +163,7 @@ function ConnectedApp() {
           onExport={onExport}
           onImportImages={edits.insertImages}
           onAddFigure={edits.addFigure}
+          onAddFigureAtCenter={edits.addFigureAtCenter}
           onRename={edits.rename}
           onNodeDragStop={edits.onNodeDragStop}
           onDelete={edits.onDelete}
