@@ -1,5 +1,6 @@
 import { type Point } from '../model/common.js';
 import { type Diagram, type Element } from '../model/diagram.js';
+import { isHighlighter, HIGHLIGHTER_OPACITY } from '../model/drawing-elements.js';
 import { type Cardinality, isGroupKind } from '../model/enums.js';
 import { type Relation } from '../model/relation.js';
 import { hashSeed } from '../render/hash.js';
@@ -250,7 +251,7 @@ function addFrame(b: Builder, el: Element, box: Box): void {
 /** Trazo libre con color y grosor editables en Excalidraw. */
 function addDrawing(b: Builder, el: Element, box: Box): void {
   if (el.kind !== 'drawing') return;
-  b.polyline(el.id, el.points, box, { strokeColor: el.strokeColor, strokeWidth: el.strokeWidth });
+  b.polyline(el.id, el.points, box, { strokeColor: el.strokeColor, strokeWidth: el.strokeWidth, ...(el.highlighter ? { opacity: HIGHLIGHTER_OPACITY * 100 } : {}) });
 }
 
 /** Colección documental exportada con las mismas cajas anidadas que la app. */
@@ -372,7 +373,9 @@ export function exportExcalidraw(diagram: Diagram): string {
     }
     return frames;
   };
-  const groupsFirst = [...diagram.elements].sort((a, c) => Number(!isGroupKind(a.kind)) - Number(!isGroupKind(c.kind)) || (a.id < c.id ? -1 : 1));
+  // Grupos al fondo, luego los marcadores y encima el resto de elementos.
+  const layer = (element: Element) => (isGroupKind(element.kind) ? 0 : isHighlighter(element) ? 1 : 2);
+  const groupsFirst = [...diagram.elements].sort((a, c) => layer(a) - layer(c) || (a.id < c.id ? -1 : 1));
   if (diagram.elements.some((element) => element.kind === 'frame')) {
     const orderedGroups = groupsFirst.filter((element) => isGroupKind(element.kind)).sort((a, c) => depth(a) - depth(c) || (a.id < c.id ? -1 : 1));
     let nextGroup = 0;

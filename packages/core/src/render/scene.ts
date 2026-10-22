@@ -1,4 +1,5 @@
 import { type Diagram } from '../model/diagram.js';
+import { isHighlighter } from '../model/drawing-elements.js';
 import { isGroupKind } from '../model/enums.js';
 import { legendEntries, legendPrimitives } from '../shapes/c4/legend.js';
 import { elementPrimitives } from '../shapes/registry.js';
@@ -17,7 +18,7 @@ export interface SceneNode {
 
 export interface Scene {
   bounds: { x: number; y: number; width: number; height: number };
-  /** Grupos primero (de fuera hacia dentro) y luego elementos, para el orden de pintado. */
+  /** Grupos, marcadores y luego elementos (de fuera hacia dentro), para el orden de pintado. */
   nodes: SceneNode[];
   /** Absolutas. */
   edges: { id: string; primitives: Primitive[] }[];
@@ -39,11 +40,16 @@ function depth(diagram: Diagram, id: string): number {
   return d;
 }
 
+/** Capa de pintado: los grupos van al fondo, luego los marcadores y encima el resto. */
+function layerOf(el: Diagram['elements'][number]): number {
+  return isGroupKind(el.kind) ? 0 : isHighlighter(el) ? 1 : 2;
+}
+
 /** Escena de render compartida por el SVG exportado y la app. */
 export function buildScene(diagram: Diagram): Scene {
   const ordered = [...diagram.elements].sort(
     (a, b) =>
-      Number(!isGroupKind(a.kind)) - Number(!isGroupKind(b.kind)) ||
+      layerOf(a) - layerOf(b) ||
       depth(diagram, a.id) - depth(diagram, b.id) ||
       (a.id < b.id ? -1 : 1),
   );
