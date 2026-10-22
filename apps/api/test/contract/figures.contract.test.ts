@@ -109,9 +109,9 @@ describe('contract: figuras generales', () => {
     expect(h.errorCodes(res)).toContain('SCHEMA_VIOLATION');
   });
 
-  it('una forma inexistente (heptágono) se rechaza con SCHEMA_VIOLATION', async () => {
+  it('una forma inexistente (dodecágono) se rechaza con SCHEMA_VIOLATION', async () => {
     const bad = figures('class');
-    bad.elements[0]!.shape = 'heptagon';
+    bad.elements[0]!.shape = 'dodecagon';
     const res = await h.call('create_diagram', bad);
     expect(h.errorCodes(res)).toContain('SCHEMA_VIOLATION');
   });
