@@ -1,12 +1,14 @@
 import { CSS_FONT_FAMILIES, measureElement, type Primitive } from '@chartsia/core/shapes';
 import { Handle, NodeResizer, type NodeProps, Position } from '@xyflow/react';
-import { type CSSProperties, memo, useCallback, useMemo, useState } from 'react';
-import { slotValue } from '../canvas/slot-edits';
+import { type CSSProperties, memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memberKinds, slotValue } from '../canvas/slot-edits';
 import { suggestTypes, typeContext } from '../canvas/type-suggestions';
 import { CleanShape } from '../render/CleanShape';
+import { shapePrimitives } from '../render/shape-cache';
 import { useDiagramEditActions } from './edit-context';
 import { diagramStore } from '../state/diagram-store';
 import { InlineEditableText, type Suggestions } from './InlineEditableText';
+import { MemberControls } from './MemberControls';
 import { type ElementFlowNode } from './types';
 
 type TextPrimitive = Extract<Primitive, { type: 'text' }>;
@@ -38,8 +40,19 @@ function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<Elemen
   const { element } = data;
   const minimum = useMemo(() => measureElement(element), [element]);
   const size = { width: width ?? minimum.width, height: height ?? minimum.height };
-  const { editText, resize, readOnly } = useDiagramEditActions();
+  const { editText, addMember, removeMember, resize, readOnly } = useDiagramEditActions();
   const [editing, setEditing] = useState<TextPrimitive>();
+  // Slot del miembro recién agregado: cuando llega al diagrama se abre en edición.
+  const [newSlot, setNewSlot] = useState<string>();
+  const showMemberControls = selected && !readOnly && memberKinds(element).length > 0;
+
+  useEffect(() => {
+    if (!newSlot) return;
+    const line = shapePrimitives(element, size).find((p): p is TextPrimitive => p.type === 'text' && p.slot === newSlot);
+    if (!line) return;
+    setNewSlot(undefined);
+    setEditing(line);
+  }, [element, newSlot, size.width, size.height]);
 
   const onTextDoubleClick = useCallback(
     (p: TextPrimitive) => {
@@ -54,7 +67,15 @@ function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<Elemen
       {selected && !readOnly && element.kind !== 'drawing' ? (
         <NodeResizer minWidth={minimum.width} minHeight={minimum.height} color="var(--accent)" onResizeEnd={(_, box) => resize(id, box)} />
       ) : null}
-      <Handle type="target" position={Position.Top} isConnectable={!readOnly} className="chartsia-handle" />
+      {showMemberControls ? (
+        <MemberControls
+          element={element}
+          texts={shapePrimitives(element, size).filter((p): p is TextPrimitive => p.type === 'text')}
+          onAdd={(kind) => void addMember(id, kind).then(setNewSlot)}
+          onRemove={(slot) => removeMember(id, slot)}
+        />
+      ) : null}
+      <Handle type="target"position={Position.Top} isConnectable={!readOnly} className="chartsia-handle" />
       <Handle type="source" position={Position.Bottom} isConnectable={!readOnly} className="chartsia-handle" />
       {editing ? (
         <InlineEditableText
