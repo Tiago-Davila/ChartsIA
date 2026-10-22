@@ -9,6 +9,9 @@
     { "id": "triangulo", "kind": "figure", "name": "Triángulo", "shape": "triangle" },
     { "id": "hexagono", "kind": "figure", "name": "Hexágono", "shape": "hexagon" },
     { "id": "nube", "kind": "figure", "name": "Nube", "shape": "cloud" },
+    { "id": "pentagono", "kind": "figure", "name": "Pentágono", "shape": "pentagon" },
+    { "id": "heptagono", "kind": "figure", "name": "Heptágono", "shape": "heptagon" },
+    { "id": "octogono", "kind": "figure", "name": "Octógono con un nombre largo", "shape": "octagon" },
     { "id": "trazo", "kind": "drawing", "name": "Trazo", "points": [{ "x": 2, "y": 3 }, { "x": 30, "y": 18 }, { "x": 48, "y": 40 }], "strokeColor": "#b42318", "strokeWidth": 3.5 },
     { "id": "marcador", "kind": "drawing", "name": "Marcador", "points": [{ "x": 7, "y": 7 }, { "x": 90, "y": 12 }, { "x": 170, "y": 7 }], "strokeColor": "#facc15", "strokeWidth": 14, "highlighter": true }
   ],

@@ -5,6 +5,17 @@ import { elementPrimitives, figureOutline, figureTextArea, measureElement, measu
 const figure = (shape: FigureShape, name: string): Element => ({ id: 'F', kind: 'figure', name, shape });
 const NAMES = ['A', 'Internet', 'Servicio de autenticación', 'Un nombre bastante más largo que ocupa varias líneas dentro de la figura'];
 
+/** Indica si el punto cae dentro del polígono (regla de cruce de rayos). */
+function insidePolygon(p: { x: number; y: number }, polygon: { x: number; y: number }[]): boolean {
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const a = polygon[i]!;
+    const b = polygon[j]!;
+    if (a.y > p.y !== b.y > p.y && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) inside = !inside;
+  }
+  return inside;
+}
+
 describe('forma figure', () => {
   it.each(FIGURE_SHAPES)('%s: mide por encima de su mínimo y es determinista', (shape) => {
     const size = measureElement(figure(shape, 'A'));
@@ -65,6 +76,9 @@ describe('forma figure', () => {
     expect(outline('triangle')).toBe('path');
     expect(outline('hexagon')).toBe('path');
     expect(outline('cloud')).toBe('path');
+    expect(outline('pentagon')).toBe('path');
+    expect(outline('heptagon')).toBe('path');
+    expect(outline('octagon')).toBe('path');
   });
 
   it('el triángulo tiene 3 vértices y el hexágono 6, dentro de la caja', () => {
@@ -82,9 +96,31 @@ describe('forma figure', () => {
     }
   });
 
-  it('no existe el heptágono', () => {
-    expect(FIGURE_SHAPES as readonly string[]).not.toContain('heptagon');
-    expect(ElementSchema.safeParse({ id: 'F', kind: 'figure', name: 'F', shape: 'heptagon' }).success).toBe(false);
+  it('acepta el pentágono, el heptágono y el octágono', () => {
+    for (const shape of ['pentagon', 'heptagon', 'octagon']) {
+      expect(ElementSchema.safeParse({ id: 'F', kind: 'figure', name: 'F', shape }).success).toBe(true);
+    }
+  });
+
+  it('el pentágono, el heptágono y el octágono tienen 5, 7 y 8 vértices', () => {
+    const size = { width: 120, height: 110 };
+    expect(figureOutline('pentagon', size)).toHaveLength(5);
+    expect(figureOutline('heptagon', size)).toHaveLength(7);
+    expect(figureOutline('octagon', size)).toHaveLength(8);
+  });
+
+  it.each(['pentagon', 'heptagon', 'octagon'] as const)('%s: la zona del texto cabe dentro del contorno', (shape) => {
+    for (const size of [{ width: 100, height: 100 }, { width: 260, height: 90 }, { width: 90, height: 240 }]) {
+      const vertices = figureOutline(shape, size)!;
+      const area = figureTextArea(shape, size);
+      const corners = [
+        { x: area.x, y: area.y },
+        { x: area.x + area.width, y: area.y },
+        { x: area.x, y: area.y + area.height },
+        { x: area.x + area.width, y: area.y + area.height },
+      ];
+      for (const corner of corners) expect(insidePolygon(corner, vertices)).toBe(true);
+    }
   });
 
   it('el nombre es editable en línea (slot name en la primera línea)', () => {

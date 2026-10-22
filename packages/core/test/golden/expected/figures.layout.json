@@ -7,7 +7,7 @@
       "name": "Usuario",
       "kind": "person",
       "layout": {
-        "x": 909.75,
+        "x": 1604.75,
         "y": 30,
         "width": 220,
         "height": 142,
@@ -46,7 +46,7 @@
       "kind": "figure",
       "shape": "rectangle",
       "layout": {
-        "x": 587,
+        "x": 1282,
         "y": 59,
         "width": 153,
         "height": 84,
@@ -59,7 +59,7 @@
       "kind": "figure",
       "shape": "triangle",
       "layout": {
-        "x": 931.75,
+        "x": 1626.75,
         "y": 566,
         "width": 176,
         "height": 104,
@@ -72,7 +72,7 @@
       "kind": "figure",
       "shape": "hexagon",
       "layout": {
-        "x": 955.75,
+        "x": 1650.75,
         "y": 422,
         "width": 128,
         "height": 64,
@@ -85,10 +85,49 @@
       "kind": "figure",
       "shape": "cloud",
       "layout": {
-        "x": 949.75,
+        "x": 1644.75,
         "y": 252,
         "width": 140,
         "height": 90,
+        "pinned": false
+      }
+    },
+    {
+      "id": "pentagono",
+      "name": "Pentágono",
+      "kind": "figure",
+      "shape": "pentagon",
+      "layout": {
+        "x": 1062,
+        "y": 51,
+        "width": 160,
+        "height": 100,
+        "pinned": false
+      }
+    },
+    {
+      "id": "heptagono",
+      "name": "Heptágono",
+      "kind": "figure",
+      "shape": "heptagon",
+      "layout": {
+        "x": 350,
+        "y": 51,
+        "width": 162,
+        "height": 100,
+        "pinned": false
+      }
+    },
+    {
+      "id": "octogono",
+      "name": "Octógono con un nombre largo",
+      "kind": "figure",
+      "shape": "octagon",
+      "layout": {
+        "x": 809,
+        "y": 37.5,
+        "width": 193,
+        "height": 127,
         "pinned": false
       }
     },
@@ -113,7 +152,7 @@
       "strokeColor": "#b42318",
       "strokeWidth": 3.5,
       "layout": {
-        "x": 800,
+        "x": 1495,
         "y": 80.13,
         "width": 49.75,
         "height": 41.75,
@@ -142,7 +181,7 @@
       "strokeWidth": 14,
       "highlighter": true,
       "layout": {
-        "x": 350,
+        "x": 572,
         "y": 91.5,
         "width": 177,
         "height": 19,
@@ -159,11 +198,11 @@
       "label": "usa",
       "route": [
         {
-          "x": 1019.75,
+          "x": 1714.75,
           "y": 172
         },
         {
-          "x": 1019.75,
+          "x": 1714.75,
           "y": 252
         }
       ]
@@ -175,11 +214,11 @@
       "target": "hexagono",
       "route": [
         {
-          "x": 1019.75,
+          "x": 1714.75,
           "y": 342
         },
         {
-          "x": 1019.75,
+          "x": 1714.75,
           "y": 422
         }
       ]
@@ -191,11 +230,11 @@
       "target": "triangulo",
       "route": [
         {
-          "x": 1019.75,
+          "x": 1714.75,
           "y": 486
         },
         {
-          "x": 1019.75,
+          "x": 1714.75,
           "y": 566
         }
       ]

@@ -218,7 +218,7 @@ function addEr(b: Builder, el: Element, box: Box): void {
   }
 }
 
-/** Figura general: Excalidraw no tiene nube, así que se aproxima con una elipse; triángulo y hexágono son polígonos. */
+/** Figura general: Excalidraw no tiene nube, así que se aproxima con una elipse; el resto de formas poligonales son polígonos. */
 function addFigure(b: Builder, el: Element, box: Box): void {
   if (el.kind !== 'figure') return;
   const paint = boxOf(el.style, '#fffef5');
