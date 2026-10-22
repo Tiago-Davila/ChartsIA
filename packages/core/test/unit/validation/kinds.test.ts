@@ -8,24 +8,29 @@ const samples: Record<string, Record<string, unknown>> = {
   interface: { kind: 'interface', operations: [] },
   enum: { kind: 'enum', literals: ['A'] },
   package: { kind: 'package' },
+  frame: { kind: 'frame' },
   person: { kind: 'person' },
   'software-system': { kind: 'software-system' },
   container: { kind: 'container' },
   component: { kind: 'component' },
   boundary: { kind: 'boundary', boundaryType: 'container' },
   entity: { kind: 'entity' },
+  collection: { kind: 'collection', fields: [] },
   figure: { kind: 'figure', shape: 'hexagon' },
+  drawing: { kind: 'drawing', points: [{ x: 0, y: 0 }, { x: 12, y: 8 }], strokeColor: '#1f2933', strokeWidth: 2 },
+  image: { kind: 'image', src: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+nZl8AAAAASUVORK5CYII=' },
   attribute: { kind: 'attribute' },
   'value-list': { kind: 'value-list', values: ['A'] },
 };
 
-// Las figuras generales se permiten en todos los tipos de diagrama.
+// Figuras, trazos, imágenes y marcos se permiten en todos los tipos de diagrama.
 const allowed: Record<DiagramType, string[]> = {
-  class: ['class', 'interface', 'enum', 'package', 'figure'],
-  'c4-context': ['person', 'software-system', 'boundary', 'figure'],
-  'c4-container': ['person', 'software-system', 'container', 'boundary', 'figure'],
-  'c4-component': ['person', 'software-system', 'container', 'component', 'boundary', 'figure'],
-  er: ['entity', 'attribute', 'value-list', 'figure'],
+  class: ['class', 'interface', 'enum', 'package', 'figure', 'drawing', 'image', 'frame'],
+  'c4-context': ['person', 'software-system', 'boundary', 'figure', 'drawing', 'image', 'frame'],
+  'c4-container': ['person', 'software-system', 'container', 'boundary', 'figure', 'drawing', 'image', 'frame'],
+  'c4-component': ['person', 'software-system', 'container', 'component', 'boundary', 'figure', 'drawing', 'image', 'frame'],
+  er: ['entity', 'attribute', 'value-list', 'figure', 'drawing', 'image', 'frame'],
+  nosql: ['collection', 'figure', 'drawing', 'image', 'frame'],
 };
 
 function single(type: DiagramType, kind: string) {

@@ -56,6 +56,8 @@ function defaultRelationStyle(rel: Pick<Relation, 'kind' | 'navigable' | 'source
       return { color: COLORS.edge };
     case 'c4-rel':
       return { color: '#707070', dash: DASH, end: 'arrow-filled' };
+    case 'nosql-rel':
+      return { color: COLORS.edge, end: 'arrow-filled' };
     case 'er-attr':
       return { color: COLORS.edge };
     case 'connector': {

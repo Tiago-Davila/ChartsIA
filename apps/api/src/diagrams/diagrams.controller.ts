@@ -1,10 +1,12 @@
 import { Body, Controller, Get, HttpCode, Inject, Param, Post } from '@nestjs/common';
 import { z } from 'zod';
 import { type Diagram } from '@chartsia/core/model';
+import { MAX_MERMAID_SOURCE_LENGTH } from '@chartsia/core/import';
 import { DomainValidationError, fromZodError } from '@chartsia/core/validation';
 import { PublicUrls } from '../common/public-urls.js';
 import { APP_CONFIG, type AppConfig } from '../config/config.js';
 import { DiagramCommandService } from './diagram-command.service.js';
+import { parseMermaidImport } from './mermaid-import.js';
 import { type DiagramList, DiagramQueryService } from './diagram-query.service.js';
 
 const OperationsBodySchema = z.strictObject({
@@ -15,6 +17,12 @@ const OperationsBodySchema = z.strictObject({
 const CreateBodySchema = z.strictObject({
   type: z.unknown(),
   title: z.unknown(),
+  projectId: z.string().max(64).optional(),
+});
+
+const ImportMermaidBodySchema = z.strictObject({
+  source: z.string().min(1).max(MAX_MERMAID_SOURCE_LENGTH),
+  title: z.string().min(1).max(120).optional(),
   projectId: z.string().max(64).optional(),
 });
 
@@ -44,6 +52,22 @@ export class DiagramsController {
     const { type, title, projectId } = parsed.data;
     const { diagram } = await this.commands.create({ type, title, elements: [], relations: [] }, projectId);
     return { diagramId: diagram.id, revision: diagram.revision, viewUrl: this.urls.view(diagram.id) };
+  }
+
+  @Post('import-mermaid')
+  async importMermaid(@Body() body: unknown) {
+    const parsed = ImportMermaidBodySchema.safeParse(body ?? {});
+    if (!parsed.success) throw new DomainValidationError(fromZodError(parsed.error));
+    const { source, title, projectId } = parsed.data;
+    const imported = parseMermaidImport(source, title);
+    const { diagram, warnings } = await this.commands.create(imported.diagram, projectId);
+    return {
+      diagramId: diagram.id,
+      revision: diagram.revision,
+      viewUrl: this.urls.view(diagram.id),
+      counts: { elements: diagram.elements.length, relations: diagram.relations.length },
+      warnings: [...imported.warnings, ...warnings],
+    };
   }
 
   @Get(':id')

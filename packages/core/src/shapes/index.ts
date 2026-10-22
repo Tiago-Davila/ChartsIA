@@ -1,6 +1,7 @@
 export * from './c4/legend.js';
 export * from './c4/palette.js';
 export { figureOutline, figureTextArea } from './general/figure.js';
+export { FRAME_PADDING, framePadding } from './general/frame.js';
 export * from './registry.js';
 export * from './style.js';
 export * from './text-metrics.js';

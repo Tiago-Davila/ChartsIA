@@ -32,6 +32,7 @@ export interface AppShellProps {
   readOnly?: boolean;
   onOpen(diagramId: string): void;
   onCreateDiagram(type: DiagramType, title: string, projectId?: string): void;
+  onImportMermaid(source: string, title?: string, projectId?: string): Promise<string[] | null>;
   onMoveDiagram(diagramId: string, projectId: string | null): void;
   onNewProject(diagramId: string, name: string): void;
   onRenameDiagram(diagramId: string, title: string): void;
@@ -84,7 +85,7 @@ export function AppShell(props: AppShellProps) {
         <div className="brand">
           <span className="brand__mark" aria-hidden>◆</span> ChartsIA
         </div>
-        <NewDiagram projects={props.projects} onCreate={props.onCreateDiagram} />
+        <NewDiagram projects={props.projects} onCreate={props.onCreateDiagram} onImportMermaid={props.onImportMermaid} />
         <DiagramList diagrams={props.diagrams} projects={props.projects} activeDiagramId={props.activeDiagramId} openDiagramId={diagram?.id ?? null} onOpen={props.onOpen} onMove={props.onMoveDiagram} onNewProject={props.onNewProject} onRename={props.onRenameDiagram} />
         <button type="button" className="button sidebar-config" aria-label="Configuración" aria-pressed={props.configOpen} onClick={props.onConfig}>
           <span aria-hidden>⚙</span>

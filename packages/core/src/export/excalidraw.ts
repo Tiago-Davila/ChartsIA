@@ -18,6 +18,9 @@ import { WEAK_GAP } from '../shapes/er/entity.js';
 import { MULTIVALUED_GAP } from '../shapes/er/attribute.js';
 import { tableBox } from '../shapes/er/table.js';
 import { valueListBox } from '../shapes/er/value-list.js';
+import { collectionShape } from '../shapes/nosql/collection.js';
+import { lineHeight } from '../shapes/text-metrics.js';
+import { type Primitive } from '../shapes/types.js';
 import { CIRCLE_RADIUS, crowFoot, isCardinality, markerFrame, relationStyle, type MarkerKind } from '../shapes/uml/markers.js';
 import { orderKeys } from './fractional-index.js';
 
@@ -225,10 +228,78 @@ function addFigure(b: Builder, el: Element, box: Box): void {
   b.text(`${el.id}-label`, el.name, { x: box.x + area.x, y: box.y + area.y, width: area.width, height: area.height }, { textAlign: 'center', verticalAlign: 'middle', ...font });
 }
 
+/** Marco exportado como una forma con título; `groupIds` hacen que mueva a sus miembros. */
+function addFrame(b: Builder, el: Element, box: Box): void {
+  if (el.kind !== 'frame') return;
+  const c = paintOf(el.style, { fill: 'transparent', stroke: '#8492a6', text: '#475569' });
+  const groupIds = [`${el.id}-frame`];
+  b.shape(el.id, 'rectangle', box, {
+    strokeColor: c.stroke,
+    backgroundColor: c.fill,
+    strokeStyle: 'dashed',
+    roundness: { type: 3 },
+    groupIds,
+  });
+  b.text(`${el.id}-title`, el.name, { x: box.x + 12, y: box.y + 8, width: box.width - 24, height: 24 }, {
+    ...fontOf(el.style, FONT.name),
+    strokeColor: c.text,
+    groupIds,
+  });
+}
+
 /** Trazo libre con color y grosor editables en Excalidraw. */
 function addDrawing(b: Builder, el: Element, box: Box): void {
   if (el.kind !== 'drawing') return;
   b.polyline(el.id, el.points, box, { strokeColor: el.strokeColor, strokeWidth: el.strokeWidth });
+}
+
+/** Colección documental exportada con las mismas cajas anidadas que la app. */
+function addCollection(b: Builder, el: Element, box: Box): void {
+  if (el.kind !== 'collection') return;
+  const primitives = collectionShape.primitives(el, { width: box.width, height: box.height });
+  const outer = primitives[0];
+  if (!outer || outer.type !== 'rect') return;
+  const paintColor = (color: string | undefined, fallback: string) => !color || color === 'none' ? fallback : color;
+  const groupIds = [`${el.id}-group`];
+  b.shape(el.id, 'rectangle', box, {
+    backgroundColor: paintColor(outer.fill, '#f8fafc'),
+    strokeColor: paintColor(outer.stroke, '#1f2933'),
+    strokeWidth: outer.strokeWidth ?? 1,
+    roundness: { type: 3 },
+    groupIds,
+    customData: { kind: 'collection', fields: el.fields },
+  });
+  primitives.slice(1).forEach((primitive: Primitive, i) => {
+    const index = i + 1;
+    if (primitive.type === 'rect') {
+      b.shape(`${el.id}-nosql-${index}`, 'rectangle', {
+        x: box.x + primitive.x,
+        y: box.y + primitive.y,
+        width: primitive.width,
+        height: primitive.height,
+      }, {
+        backgroundColor: paintColor(primitive.fill, 'transparent'),
+        strokeColor: paintColor(primitive.stroke, 'transparent'),
+        strokeWidth: primitive.strokeWidth ?? 1,
+        roundness: { type: 3 },
+        groupIds,
+      });
+    } else if (primitive.type === 'text') {
+      b.text(`${el.id}-nosql-${index}`, primitive.text, {
+        x: box.x + primitive.x,
+        y: box.y + primitive.y - primitive.size * 0.875,
+        width: Math.max(0, box.width - primitive.x),
+        height: lineHeight(primitive.size),
+      }, {
+        fontSize: primitive.size,
+        fontFamily: primitive.fontFamily ? STYLE_FONT_FAMILIES[primitive.fontFamily] : FONT_FAMILY,
+        strokeColor: primitive.color,
+        textAlign: primitive.anchor === 'middle' ? 'center' : primitive.anchor === 'end' ? 'right' : 'left',
+        verticalAlign: 'middle',
+        groupIds,
+      });
+    }
+  });
 }
 
 /** Marca pata de gallo como líneas y un círculo, porque Excalidraw no tiene cero-o-uno nativo. */
@@ -278,14 +349,45 @@ function addArrow(b: Builder, rel: Relation, byId: Map<string, Json>): void {
  */
 export function exportExcalidraw(diagram: Diagram): string {
   const b = new Builder(diagram);
+  const byId = new Map(diagram.elements.map((el) => [el.id, el]));
+  const depth = (element: Element) => {
+    let result = 0;
+    let parent = element.parentId ? byId.get(element.parentId) : undefined;
+    const visited = new Set<string>();
+    while (parent && !visited.has(parent.id)) {
+      visited.add(parent.id);
+      result++;
+      parent = parent.parentId ? byId.get(parent.parentId) : undefined;
+    }
+    return result;
+  };
+  const frameGroupIds = (element: Element) => {
+    const frames: string[] = [];
+    let current: Element | undefined = element;
+    const visited = new Set<string>();
+    while (current && !visited.has(current.id)) {
+      visited.add(current.id);
+      if (current.kind === 'frame') frames.push(`${current.id}-frame`);
+      current = current.parentId ? byId.get(current.parentId) : undefined;
+    }
+    return frames;
+  };
   const groupsFirst = [...diagram.elements].sort((a, c) => Number(!isGroupKind(a.kind)) - Number(!isGroupKind(c.kind)) || (a.id < c.id ? -1 : 1));
+  if (diagram.elements.some((element) => element.kind === 'frame')) {
+    const orderedGroups = groupsFirst.filter((element) => isGroupKind(element.kind)).sort((a, c) => depth(a) - depth(c) || (a.id < c.id ? -1 : 1));
+    let nextGroup = 0;
+    for (let i = 0; i < groupsFirst.length; i++) if (isGroupKind(groupsFirst[i]!.kind)) groupsFirst[i] = orderedGroups[nextGroup++]!;
+  }
   for (const el of groupsFirst) {
     const l = el.layout;
     if (!l || l.width === undefined || l.height === undefined) continue;
     const box = { x: l.x, y: l.y, width: l.width, height: l.height };
+    const start = b.elements.length;
     if (el.kind === 'drawing') addDrawing(b, el, box);
     else if (el.kind === 'image') b.image(el.id, box, el.src);
+    else if (el.kind === 'collection') addCollection(b, el, box);
     else if (el.kind === 'figure') addFigure(b, el, box);
+    else if (el.kind === 'frame') addFrame(b, el, box);
     else if (diagram.type === 'class') {
       if (el.kind === 'package') {
         b.shape(el.id, 'rectangle', box, { ...strokeOf(el.style), ...(el.style?.fillColor ? { backgroundColor: el.style.fillColor } : {}) });
@@ -293,9 +395,16 @@ export function exportExcalidraw(diagram: Diagram): string {
       } else addUml(b, el, box);
     } else if (diagram.type === 'er') addEr(b, el, box);
     else addC4(b, el, box);
+    const groupIds = frameGroupIds(el);
+    if (groupIds.length > 0) {
+      for (const generated of b.elements.slice(start)) {
+        const own = Array.isArray(generated.groupIds) ? generated.groupIds as string[] : [];
+        generated.groupIds = [...new Set([...own, ...groupIds])];
+      }
+    }
   }
-  const byId = new Map(b.elements.filter((e) => diagram.elements.some((d) => d.id === e.id)).map((e) => [e.id as string, e]));
-  for (const rel of [...diagram.relations].sort((a, c) => (a.id < c.id ? -1 : 1))) addArrow(b, rel, byId);
+  const exportedById = new Map(b.elements.filter((e) => diagram.elements.some((d) => d.id === e.id)).map((e) => [e.id as string, e]));
+  for (const rel of [...diagram.relations].sort((a, c) => (a.id < c.id ? -1 : 1))) addArrow(b, rel, exportedById);
 
   const keys = orderKeys(b.elements.length);
   const elements = b.elements.map((e, i) => ({ ...e, index: keys[i] }));

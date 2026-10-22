@@ -15,6 +15,7 @@ const KIND_LABELS: Record<RelationKind, string> = {
   'c4-rel': 'Relación',
   'er-rel': 'Relación ER',
   'er-attr': 'Atributo ER',
+  'nosql-rel': 'Referencia NoSQL',
   connector: 'Conector libre',
 };
 

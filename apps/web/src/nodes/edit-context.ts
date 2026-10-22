@@ -13,10 +13,12 @@ export interface DiagramEditActions {
   /** Saca un elemento de su grupo, o deshace un grupo dejando a sus hijos en su lugar. */
   leaveGroup(elementId: string): void;
   ungroup(groupId: string): void;
+  /** Envuelve los elementos seleccionados en un marco sin alterar sus posiciones absolutas. */
+  groupInFrame(elementIds: string[]): void;
   readOnly: boolean;
 }
 
-const noop: DiagramEditActions = { editText: () => {}, resize: () => {}, updateRelation: () => {}, updateStyles: () => {}, leaveGroup: () => {}, ungroup: () => {}, readOnly: true };
+const noop: DiagramEditActions = { editText: () => {}, resize: () => {}, updateRelation: () => {}, updateStyles: () => {}, leaveGroup: () => {}, ungroup: () => {}, groupInFrame: () => {}, readOnly: true };
 
 export const DiagramEditContext = createContext<DiagramEditActions>(noop);
 

@@ -22,6 +22,7 @@ export function relationId(diagram: Pick<Diagram, 'elements' | 'relations'>): st
 /** Relaciones que se prueban al conectar, de la más específica a la menos; en er-attr se prueba también con los extremos invertidos. */
 function connectionCandidates(type: Diagram['type'], id: string, source: string, target: string): Relation[] {
   if (type === 'class') return [{ id, kind: 'association', source, target }];
+  if (type === 'nosql') return [{ id, kind: 'nosql-rel', source, target }];
   if (type === 'er') {
     return [
       { id, kind: 'er-rel', source, target, sourceCardinality: 'one', targetCardinality: 'zero-many' },

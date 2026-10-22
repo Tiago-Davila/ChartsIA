@@ -19,7 +19,7 @@ describe('contract: figuras generales', () => {
   });
   afterEach(() => h.close());
 
-  it.each(['class', 'c4-context', 'c4-container', 'c4-component', 'er'])('se permiten en un diagrama %s', async (type) => {
+  it.each(['class', 'c4-context', 'c4-container', 'c4-component', 'er', 'nosql'])('se permiten en un diagrama %s', async (type) => {
     const res = await h.call('create_diagram', figures(type));
     expect(res.isError).toBeFalsy();
     expect(res.structuredContent!.counts).toEqual({ elements: 3, relations: 0 });
