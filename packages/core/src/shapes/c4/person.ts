@@ -24,8 +24,8 @@ export const personShape: ShapeDefinition<PersonElement> = {
     const colors = paintOf(el.style, c4Colors('person', el.external));
     const bodyTop = HEAD - OVERLAP;
     return [
-      { type: 'rect', x: 0, y: bodyTop, width, height: height - bodyTop, rx: 28, fill: colors.fill, stroke: colors.stroke, strokeWidth: 1.5 },
-      { type: 'ellipse', cx: width / 2, cy: HEAD / 2, rx: HEAD / 2, ry: HEAD / 2, fill: colors.fill, stroke: colors.stroke, strokeWidth: 1.5 },
+      { type: 'rect', x: 0, y: bodyTop, width, height: height - bodyTop, rx: 28, fill: colors.fill, stroke: colors.stroke, strokeWidth: colors.strokeWidth },
+      { type: 'ellipse', cx: width / 2, cy: HEAD / 2, rx: HEAD / 2, ry: HEAD / 2, fill: colors.fill, stroke: colors.stroke, strokeWidth: colors.strokeWidth },
       ...c4TextPrimitives(text(el), { x: 0, y: bodyTop + OVERLAP, width, height: height - bodyTop - OVERLAP }, colors.text),
     ];
   },

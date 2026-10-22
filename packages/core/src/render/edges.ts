@@ -76,10 +76,10 @@ export function edgePrimitives(rel: Relation): Primitive[] {
   if (style.start) line = trim(line, 'start', MARKER_LENGTH[style.start]);
   if (style.end) line = trim(line, 'end', MARKER_LENGTH[style.end]);
   const out: Primitive[] = [
-    { type: 'path', d: pathOf(line), fill: 'none', stroke: style.color, strokeWidth: 1.5, ...(style.dash ? { dash: style.dash } : {}) },
+    { type: 'path', d: pathOf(line), fill: 'none', stroke: style.color, strokeWidth: style.width, ...(style.dash ? { dash: style.dash } : {}) },
   ];
-  if (style.start) out.push(...markerPrimitives(style.start, route[0]!, route[1]!, style.color, style.fill));
-  if (style.end) out.push(...markerPrimitives(style.end, route[route.length - 1]!, route[route.length - 2]!, style.color, style.fill));
+  if (style.start) out.push(...markerPrimitives(style.start, route[0]!, route[1]!, style.color, style.fill, style.width));
+  if (style.end) out.push(...markerPrimitives(style.end, route[route.length - 1]!, route[route.length - 2]!, style.color, style.fill, style.width));
   const text = rel.style?.fontColor ?? '#333333';
   out.push(...labelPrimitives(edgeLabelLines(rel), labelAnchor(route), text, 'label', rel.style));
   out.push(...multiplicity(rel.sourceMultiplicity, route[0]!, route[1]!, text, 'sourceMultiplicity', rel.style));

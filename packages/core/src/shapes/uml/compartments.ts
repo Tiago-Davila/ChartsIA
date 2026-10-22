@@ -103,8 +103,8 @@ export function boxPrimitives(box: CompartmentBox, size: Size): Primitive[] {
   const header = style?.fillColor ?? COLORS.umlHeader;
   const headerHeight = sectionHeight(box.header, style);
   const out: Primitive[] = [
-    { type: 'rect', x: 0, y: 0, width, height, fill: body.fill, stroke: body.stroke, strokeWidth: 1.5 },
-    { type: 'rect', x: 0, y: 0, width, height: headerHeight, fill: header, stroke: body.stroke, strokeWidth: 1.5 },
+    { type: 'rect', x: 0, y: 0, width, height, fill: body.fill, stroke: body.stroke, strokeWidth: body.strokeWidth },
+    { type: 'rect', x: 0, y: 0, width, height: headerHeight, fill: header, stroke: body.stroke, strokeWidth: body.strokeWidth },
     ...linePrimitives(box.header, 0, width, style),
   ];
   let top = headerHeight;

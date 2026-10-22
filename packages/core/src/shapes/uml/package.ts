@@ -25,8 +25,8 @@ export const packageShape: ShapeDefinition<PackageElement> = {
     const tabH = tabHeight(el);
     const tab = Math.min(tabWidth(el), width);
     return [
-      { type: 'rect', x: 0, y: 0, width: tab, height: tabH, fill: c.fill, stroke: c.stroke, strokeWidth: 1.5 },
-      { type: 'rect', x: 0, y: tabH, width, height: height - tabH, fill: el.style?.fillColor ?? 'none', stroke: c.stroke, strokeWidth: 1.5 },
+      { type: 'rect', x: 0, y: 0, width: tab, height: tabH, fill: c.fill, stroke: c.stroke, strokeWidth: c.strokeWidth },
+      { type: 'rect', x: 0, y: tabH, width, height: height - tabH, fill: el.style?.fillColor ?? 'none', stroke: c.stroke, strokeWidth: c.strokeWidth },
       { type: 'text', x: TAB_PAD, y: tabH - 8, text: el.name, ...textFont(el.style, FONT.name), bold: true, color: c.text, anchor: 'start', slot: 'name' },
     ];
   },
