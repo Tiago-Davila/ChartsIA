@@ -33,6 +33,13 @@ describe('barra de figuras', () => {
     expect(paletteFor('nosql').map((item) => item.key)).not.toContain('class');
   });
 
+  it('la barra ofrece el pentágono, el heptágono y el octágono en cualquier tipo de diagrama', () => {
+    for (const type of DIAGRAM_TYPES) {
+      const keys = paletteFor(type).map((item) => item.key);
+      expect(keys).toEqual(expect.arrayContaining(['figure-pentagon', 'figure-heptagon', 'figure-octagon']));
+    }
+  });
+
   it('crea la figura general con su forma, nombre e id por defecto y posición redondeada', () => {
     const circulo = paletteFor('class').find((item) => item.key === 'figure-circle')!;
     expect(newPaletteElements(vacio('class'), circulo, { x: 10.6, y: 20.2 })).toEqual([{
