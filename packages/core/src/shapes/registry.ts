@@ -12,6 +12,8 @@ import { imageShape } from './general/image.js';
 import { collectionShape } from './nosql/collection.js';
 import { tableShape } from './er/table.js';
 import { valueListShape } from './er/value-list.js';
+import { relationshipShape } from './er/relationship.js';
+import { specializationShape } from './er/specialization.js';
 import { personShape } from './c4/person.js';
 import { softwareSystemShape } from './c4/software-system.js';
 import { type Primitive, type ShapeDefinition, type Size } from './types.js';
@@ -39,6 +41,8 @@ const SHAPES: { [K in ElementKind]: ShapeDefinition<Extract<Element, { kind: K }
   collection: collectionShape,
   attribute: attributeShape,
   'value-list': valueListShape,
+  relationship: relationshipShape,
+  specialization: specializationShape,
 };
 
 export function shapeFor<E extends Element>(element: E): ShapeDefinition<E> {

@@ -1,7 +1,7 @@
 import { type ElementOfKind } from '../../model/diagram.js';
 import { paintOf, textFont } from '../style.js';
 import { lineHeight, measureText } from '../text-metrics.js';
-import { COLORS, FONT, type EllipsePrimitive, type ShapeDefinition } from '../types.js';
+import { COLORS, FONT, type EllipsePrimitive, type LinePrimitive, type ShapeDefinition } from '../types.js';
 
 type AttributeElement = ElementOfKind<'attribute'>;
 
@@ -10,6 +10,13 @@ export const MULTIVALUED_GAP = 5;
 const DASH = [6, 4];
 const MIN_WIDTH = 90;
 const HEIGHT = 44;
+
+/** Subrayado discontinuo bajo el nombre de una clave parcial. */
+function partialKeyLine(name: string, font: ReturnType<typeof textFont>, width: number, height: number, stroke: string, strokeWidth: number): LinePrimitive {
+  const y = height / 2 + lineHeight(font.size) / 4 + 3;
+  const half = measureText(name, font) / 2;
+  return { type: 'line', x1: width / 2 - half, y1: y, x2: width / 2 + half, y2: y, stroke, strokeWidth, dash: DASH };
+}
 
 /** Atributo Chen: óvalo con el nombre centrado (subrayado si es clave, doble si es multivaluado, discontinuo si es derivado). */
 export const attributeShape: ShapeDefinition<AttributeElement> = {
@@ -48,6 +55,7 @@ export const attributeShape: ShapeDefinition<AttributeElement> = {
         slot: 'name',
         ...(el.key ? { underline: true } : {}),
       },
+      ...(el.partialKey ? [partialKeyLine(el.name, font, width, height, c.stroke, c.strokeWidth)] : []),
     ];
   },
 };

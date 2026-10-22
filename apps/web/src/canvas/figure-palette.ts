@@ -1,5 +1,5 @@
-import { ALLOWED_KINDS_BY_DIAGRAM, type Diagram, type DiagramType, type Element, type ElementKind, type FigureShape } from '@chartsia/core/model';
-import { freeId } from './edge-edits';
+import { ALLOWED_KINDS_BY_DIAGRAM, type Diagram, type DiagramType, type Element, type ElementKind, type FigureShape, type Relation } from '@chartsia/core/model';
+import { freeId, relationId } from './edge-edits';
 
 /** Tipo MIME con el que la barra de figuras identifica la figura arrastrada. */
 export const FIGURE_DRAG_TYPE = 'application/x-chartsia-figure';
@@ -34,6 +34,17 @@ export const PALETTE_ITEMS: readonly PaletteItem[] = [
   { key: 'table', label: 'Tabla', kind: 'table', idBase: 'Tabla', build: (id, name) => ({ id, name, kind: 'table', columns: [{ name: 'id', type: 'int', pk: true }] }) },
   { key: 'attribute', label: 'Atributo', kind: 'attribute', idBase: 'Atributo', build: (id, name) => ({ id, name, kind: 'attribute' }) },
   { key: 'value-list', label: 'Lista de valores', kind: 'value-list', idBase: 'Lista', build: (id, name) => ({ id, name, kind: 'value-list', values: ['valor'] }) },
+  { key: 'entity-weak', label: 'Entidad débil', kind: 'entity', idBase: 'EntidadDebil', build: (id, name) => ({ id, name, kind: 'entity', weak: true }) },
+  { key: 'entity-associative', label: 'Entidad asociativa', kind: 'entity', idBase: 'EntidadAsociativa', build: (id, name) => ({ id, name, kind: 'entity', associative: true }) },
+  { key: 'relationship', label: 'Relación', kind: 'relationship', idBase: 'Relacion', build: (id, name) => ({ id, name, kind: 'relationship' }) },
+  { key: 'relationship-identifying', label: 'Relación identificante', kind: 'relationship', idBase: 'RelacionIdentificante', build: (id, name) => ({ id, name, kind: 'relationship', identifying: true }) },
+  { key: 'attribute-key', label: 'Atributo clave', kind: 'attribute', idBase: 'AtributoClave', build: (id, name) => ({ id, name, kind: 'attribute', key: true }) },
+  { key: 'attribute-partial-key', label: 'Clave parcial', kind: 'attribute', idBase: 'ClaveParcial', build: (id, name) => ({ id, name, kind: 'attribute', partialKey: true }) },
+  { key: 'attribute-multivalued', label: 'Atributo multivaluado', kind: 'attribute', idBase: 'AtributoMultivaluado', build: (id, name) => ({ id, name, kind: 'attribute', multivalued: true }) },
+  { key: 'attribute-derived', label: 'Atributo derivado', kind: 'attribute', idBase: 'AtributoDerivado', build: (id, name) => ({ id, name, kind: 'attribute', derived: true }) },
+  { key: 'attribute-composite', label: 'Atributo compuesto', kind: 'attribute', idBase: 'AtributoCompuesto', build: (id, name) => ({ id, name, kind: 'attribute' }) },
+  { key: 'specialization', label: 'Especialización disjunta', kind: 'specialization', idBase: 'EspecializacionDisjunta', build: (id, name) => ({ id, name, kind: 'specialization' }) },
+  { key: 'specialization-overlapping', label: 'Especialización solapada', kind: 'specialization', idBase: 'EspecializacionSolapada', build: (id, name) => ({ id, name, kind: 'specialization', overlapping: true }) },
   { key: 'collection', label: 'Colección', kind: 'collection', idBase: 'Coleccion', build: (id, name) => ({ id, name, kind: 'collection', fields: [] }) },
   figure('square', 'Cuadrado', 'Cuadrado'),
   figure('rectangle', 'Rectángulo', 'Rectangulo'),
@@ -59,6 +70,9 @@ export const PALETTE_ITEMS: readonly PaletteItem[] = [
   { key: 'frame', label: 'Marco', kind: 'frame', idBase: 'Marco', build: (id, name) => ({ id, name, kind: 'frame', layout: { x: 0, y: 0, width: 320, height: 200 } }) },
 ];
 
+/** Sub-atributo que trae consigo un atributo compuesto. */
+const SUB_ATTRIBUTE: PaletteItem = { key: 'sub-attribute', label: 'Subatributo', kind: 'attribute', idBase: 'Subatributo', build: (id, name) => ({ id, name, kind: 'attribute' }) };
+
 /** Figuras que admite el tipo de diagrama, según las reglas del núcleo. */
 export function paletteFor(type: DiagramType): PaletteItem[] {
   const allowed = ALLOWED_KINDS_BY_DIAGRAM[type];
@@ -70,6 +84,23 @@ function placed(diagram: Pick<Diagram, 'elements' | 'relations'>, item: PaletteI
   const id = freeId(diagram, item.idBase);
   const element = item.build(id, item.label + id.slice(item.idBase.length));
   return { ...element, layout: { ...element.layout, x: Math.round(point.x), y: Math.round(point.y) } };
+}
+
+/**
+ * Elementos y relaciones que crea soltar una figura. Un atributo compuesto trae dos sub-atributos
+ * unidos a él con er-attr; el resto de figuras solo crea elementos.
+ */
+export function newPaletteEdit(diagram: Pick<Diagram, 'type' | 'elements' | 'relations'>, item: PaletteItem, point: { x: number; y: number }): { elements: Element[]; relations: Relation[] } {
+  if (item.key !== 'attribute-composite') return { elements: newPaletteElements(diagram, item, point), relations: [] };
+  const owner = placed(diagram, item, point);
+  const first = placed({ ...diagram, elements: [...diagram.elements, owner] }, SUB_ATTRIBUTE, { x: point.x - 60, y: point.y + 120 });
+  const second = placed({ ...diagram, elements: [...diagram.elements, owner, first] }, SUB_ATTRIBUTE, { x: point.x + 180, y: point.y + 120 });
+  const relations: Relation[] = [];
+  for (const part of [first, second]) {
+    const id = relationId({ elements: [...diagram.elements, owner, first, second], relations: [...diagram.relations, ...relations] });
+    relations.push({ id, kind: 'er-attr', source: owner.id, target: part.id });
+  }
+  return { elements: [owner, first, second], relations };
 }
 
 /**

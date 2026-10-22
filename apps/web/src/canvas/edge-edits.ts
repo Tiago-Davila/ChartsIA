@@ -60,6 +60,8 @@ const KINDS_BY_FIELD = {
   sourceCardinality: ['er-rel'],
   targetCardinality: ['er-rel'],
   identifying: ['er-rel'],
+  sourceTotal: ['er-rel', 'connector'],
+  targetTotal: ['er-rel', 'connector'],
   arrowheads: ['connector'],
   dashed: ['connector'],
 } as const satisfies Partial<Record<keyof Relation, readonly RelationKind[]>>;
@@ -85,6 +87,7 @@ export function reverseChanges(rel: Relation): RelationChanges {
     sourceMultiplicity: rel.targetMultiplicity ?? null,
     targetMultiplicity: rel.sourceMultiplicity ?? null,
     ...(rel.kind === 'er-rel' ? { sourceCardinality: rel.targetCardinality ?? null, targetCardinality: rel.sourceCardinality ?? null } : {}),
+    ...(rel.sourceTotal !== undefined || rel.targetTotal !== undefined ? { sourceTotal: rel.targetTotal ?? null, targetTotal: rel.sourceTotal ?? null } : {}),
     sourceSide: rel.targetSide ?? null,
     targetSide: rel.sourceSide ?? null,
     ...(rel.waypoints ? { waypoints: [...rel.waypoints].reverse() } : {}),

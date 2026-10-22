@@ -13,6 +13,13 @@ export function checkChen({ diagram, elementsById }: RuleContext): ValidationErr
         }
       }
     }
+    if (el.kind === 'attribute' && el.partialKey) {
+      for (const field of ['key', 'multivalued', 'derived'] as const) {
+        if (el[field]) {
+          errors.push(validationError('FIELD_NOT_ALLOWED', `/elements/${i}/${field}`, `La clave parcial "${el.id}" no puede tener "${field}".`, `Quita "${field}" o quita "partialKey": la clave parcial es solo una parte de la clave de una entidad débil.`));
+        }
+      }
+    }
     if (el.kind === 'value-list') {
       const seen = new Set<string>();
       el.values.forEach((value, j) => {

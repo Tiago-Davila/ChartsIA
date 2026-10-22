@@ -97,6 +97,11 @@ export function checkRelations({ diagram, elementsById }: RuleContext): Validati
       field('arrowheads', why);
       field('dashed', why);
     }
+    if (rel.kind !== 'er-rel' && rel.kind !== 'connector') {
+      const why = 'la participación total solo aplica a er-rel y connector';
+      field('sourceTotal', why);
+      field('targetTotal', why);
+    }
     if (rel.kind !== 'association') field('navigable', 'navigable solo aplica a association');
     if (rel.kind !== 'c4-rel') field('technology', 'technology solo aplica a relaciones c4-rel');
     if (rel.kind === 'er-rel') {
