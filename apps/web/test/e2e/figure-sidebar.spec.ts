@@ -60,9 +60,10 @@ test.describe('barra de figuras', () => {
     await page.locator('[data-figure="class"]').dblclick();
     await expect.poll(() => elemento(agent, id, 'Clase')).toMatchObject({ kind: 'class', name: 'Clase', layout: { pinned: true } });
     // El encuadre inicial ya se aplicó con la primera figura: el centro se mide después de crearla.
+    // El transform del viewport es relativo al lienzo, así que el centro va en coordenadas del lienzo.
     const lienzo = (await page.locator('.app-shell__canvas').boundingBox())!;
     const viewport = await page.locator('.react-flow__viewport').evaluate((el) => new DOMMatrix(getComputedStyle(el).transform));
-    const centro = { x: (lienzo.x + lienzo.width / 2 - viewport.e) / viewport.a, y: (lienzo.y + lienzo.height / 2 - viewport.f) / viewport.d };
+    const centro = { x: (lienzo.width / 2 - viewport.e) / viewport.a, y: (lienzo.height / 2 - viewport.f) / viewport.d };
     const primera = (await elemento(agent, id, 'Clase'))!;
     expect(Math.abs(primera.layout.x + primera.layout.width / 2 - centro.x)).toBeLessThanOrEqual(2);
     expect(Math.abs(primera.layout.y + primera.layout.height / 2 - centro.y)).toBeLessThanOrEqual(2);
