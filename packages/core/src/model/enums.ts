@@ -27,7 +27,7 @@ export type FrameElementKind = (typeof FRAME_ELEMENT_KINDS)[number];
 export const DRAWING_ELEMENT_KINDS = ['drawing'] as const;
 export type DrawingElementKind = (typeof DRAWING_ELEMENT_KINDS)[number];
 
-export const FIGURE_SHAPES = ['circle', 'square', 'rectangle', 'triangle', 'hexagon', 'cloud', 'pentagon', 'heptagon', 'octagon'] as const;
+export const FIGURE_SHAPES = ['circle', 'square', 'rectangle', 'triangle', 'isosceles-triangle', 'equilateral-triangle', 'scalene-triangle', 'right-triangle', 'hexagon', 'cloud', 'diamond', 'parallelogram', 'oval', 'pentagon', 'heptagon', 'octagon'] as const;
 export type FigureShape = (typeof FIGURE_SHAPES)[number];
 
 export type ElementKind = ClassElementKind | C4ElementKind | ErElementKind | NoSqlElementKind | FigureElementKind | DrawingElementKind | ImageElementKind | FrameElementKind;

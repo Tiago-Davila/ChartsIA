@@ -4,6 +4,14 @@ import { elementPrimitives, figureOutline, figureTextArea, measureElement, measu
 
 const figure = (shape: FigureShape, name: string): Element => ({ id: 'F', kind: 'figure', name, shape });
 const NAMES = ['A', 'Internet', 'Servicio de autenticación', 'Un nombre bastante más largo que ocupa varias líneas dentro de la figura'];
+const TRIANGLES = ['triangle', 'isosceles-triangle', 'equilateral-triangle', 'scalene-triangle', 'right-triangle'] as const;
+
+/** Longitudes de los tres lados de un triángulo con ese nombre, de menor a mayor. */
+function lados(shape: FigureShape, name = 'A'): number[] {
+  const el = figure(shape, name);
+  const v = figureOutline(shape, measureElement(el))!;
+  return v.map((p, i) => Math.hypot(v[(i + 1) % 3]!.x - p.x, v[(i + 1) % 3]!.y - p.y)).sort((a, b) => a - b);
+}
 
 /** Indica si el punto cae dentro del polígono (regla de cruce de rayos). */
 function insidePolygon(p: { x: number; y: number }, polygon: { x: number; y: number }[]): boolean {
@@ -33,8 +41,8 @@ describe('forma figure', () => {
     }
   });
 
-  it('el rectángulo, el hexágono y la nube son más anchos que altos con un nombre corto', () => {
-    for (const shape of ['rectangle', 'hexagon', 'cloud'] as const) {
+  it('el rectángulo, el óvalo, el rombo, el paralelogramo, el hexágono y la nube son más anchos que altos con un nombre corto', () => {
+    for (const shape of ['rectangle', 'oval', 'diamond', 'parallelogram', 'hexagon', 'cloud'] as const) {
       const { width, height } = measureElement(figure(shape, 'Cliente'));
       expect(width).toBeGreaterThan(height);
     }
@@ -73,20 +81,26 @@ describe('forma figure', () => {
     expect(outline('circle')).toBe('ellipse');
     expect(outline('square')).toBe('rect');
     expect(outline('rectangle')).toBe('rect');
-    expect(outline('triangle')).toBe('path');
+    for (const shape of TRIANGLES) expect(outline(shape)).toBe('path');
     expect(outline('hexagon')).toBe('path');
+    expect(outline('diamond')).toBe('path');
+    expect(outline('parallelogram')).toBe('path');
+    expect(outline('oval')).toBe('ellipse');
     expect(outline('cloud')).toBe('path');
     expect(outline('pentagon')).toBe('path');
     expect(outline('heptagon')).toBe('path');
     expect(outline('octagon')).toBe('path');
   });
 
-  it('el triángulo tiene 3 vértices y el hexágono 6, dentro de la caja', () => {
+  it('el triángulo tiene 3 vértices, el rombo y el paralelogramo 4 y el hexágono 6, dentro de la caja', () => {
     const size = { width: 120, height: 104 };
     expect(figureOutline('triangle', size)).toHaveLength(3);
+    expect(figureOutline('diamond', size)).toHaveLength(4);
+    expect(figureOutline('parallelogram', size)).toHaveLength(4);
     expect(figureOutline('hexagon', size)).toHaveLength(6);
     expect(figureOutline('circle', size)).toBeUndefined();
-    for (const shape of ['triangle', 'hexagon'] as const) {
+    expect(figureOutline('oval', size)).toBeUndefined();
+    for (const shape of [...TRIANGLES, 'diamond', 'parallelogram', 'hexagon'] as const) {
       for (const p of figureOutline(shape, size)!) {
         expect(p.x).toBeGreaterThanOrEqual(0);
         expect(p.x).toBeLessThanOrEqual(size.width);
@@ -94,6 +108,22 @@ describe('forma figure', () => {
         expect(p.y).toBeLessThanOrEqual(size.height);
       }
     }
+  });
+
+  it('cada triángulo tiene la forma de su nombre', () => {
+    const [equilatero1, , equilatero3] = lados('equilateral-triangle');
+    expect(equilatero3! - equilatero1!).toBeLessThan(equilatero3! * 0.02);
+
+    const [a, b, c] = lados('isosceles-triangle', 'Internet');
+    expect(Math.min(Math.abs(a! - b!), Math.abs(b! - c!))).toBeLessThan(c! * 0.02);
+    expect(c! - a!).toBeGreaterThan(c! * 0.05);
+
+    const [escaleno1, escaleno2, escaleno3] = lados('scalene-triangle');
+    expect(escaleno2! - escaleno1!).toBeGreaterThan(escaleno3! * 0.03);
+    expect(escaleno3! - escaleno2!).toBeGreaterThan(escaleno3! * 0.03);
+
+    const [catetoA, catetoB, hipotenusa] = lados('right-triangle');
+    expect(Math.abs(catetoA! ** 2 + catetoB! ** 2 - hipotenusa! ** 2)).toBeLessThan(hipotenusa! ** 2 * 0.01);
   });
 
   it('acepta el pentágono, el heptágono y el octágono', () => {

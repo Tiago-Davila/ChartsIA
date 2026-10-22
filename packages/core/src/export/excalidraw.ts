@@ -225,7 +225,7 @@ function addFigure(b: Builder, el: Element, box: Box): void {
   const font = fontOf(el.style, FONT.name);
   const outline = figureOutline(el.shape, box);
   if (!outline) {
-    const container = b.shape(el.id, el.shape === 'circle' || el.shape === 'cloud' ? 'ellipse' : 'rectangle', box, paint);
+    const container = b.shape(el.id, el.shape === 'circle' || el.shape === 'oval' || el.shape === 'cloud' ? 'ellipse' : 'rectangle', box, paint);
     b.boundText(container, el.name, font);
     return;
   }
