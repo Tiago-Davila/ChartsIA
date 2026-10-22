@@ -18,6 +18,7 @@ import { FigureElementSchema } from './figure-elements.js';
 import { DrawingElementSchema } from './drawing-elements.js';
 import { ImageElementSchema } from './image-elements.js';
 import { CollectionElementSchema } from './nosql-elements.js';
+import { FrameElementSchema } from './frame-elements.js';
 import { DIAGRAM_TYPES } from './enums.js';
 import { RelationSchema } from './relation.js';
 import { MAX_DIAGRAM_IMAGE_BYTES, MAX_DIAGRAM_IMAGE_PIXELS, totalImageDataUrlBytes, totalImageRasterPixels } from './image-data.js';
@@ -39,6 +40,7 @@ export const ElementSchema = z.discriminatedUnion('kind', [
   DrawingElementSchema,
   ImageElementSchema,
   CollectionElementSchema,
+  FrameElementSchema,
   ErAttributeElementSchema,
   ValueListElementSchema,
 ]);

@@ -24,6 +24,7 @@ const KIND_FIELDS: Record<string, string> = {
   interface: 'operations[] (igual que en class; default?: true marca un método default de Java, se dibuja con la palabra default y sin cursiva; solo en interfaces, no con abstract ni static), attributes[]?',
   enum: 'literals[] (≥1, únicos), attributes[]? y operations[]? (como en class)',
   package: 'grupo: otros elementos lo referencian con parentId. Úsalo solo si la persona pide agrupar en paquetes',
+  frame: 'marco con título: grupo genérico en cualquier tipo de diagrama; asigna su id a parentId en los elementos que contiene. Admite marcos anidados',
   person: 'external?, description?',
   'software-system': 'external?, description?',
   container: 'technology?, variant?: default | database | queue | web, description?',
@@ -59,7 +60,7 @@ export function schemaGuide(type: DiagramType): string {
   return [
     `# Diagrama \`${type}\``,
     '',
-    'Todos los elementos: `id` (letra inicial; letras, dígitos, "_" o "-"; máx. 64), `kind`, `name` (1–200), `description?` (≤1000), `parentId?` (grupo contenedor), `layout?` ({x, y} solo para fijar), `style?` (ver "Estilo").',
+    'Todos los elementos: `id` (letra inicial; letras, dígitos, "_" o "-"; máx. 64), `kind`, `name` (1–200), `description?` (≤1000), `parentId?` (grupo contenedor: package, boundary o frame), `layout?` ({x, y} solo para fijar), `style?` (ver "Estilo").',
     '',
     '## Kinds permitidos',
     kinds,

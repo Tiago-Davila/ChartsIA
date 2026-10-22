@@ -128,6 +128,33 @@ describe('applyOperations', () => {
     expect(res.ok && res.diagram.elements.find((e) => e.id === 'Libro')?.layout).toMatchObject({ x: 170, y: 120 });
   });
 
+  it('mover un frame desplaza una sola vez sus hijos anidados y desagrupar conserva coordenadas', () => {
+    const d: Diagram = {
+      ...base(),
+      elements: [
+        { id: 'outer', kind: 'frame', name: 'Exterior', layout: { x: 100, y: 100, width: 400, height: 300, pinned: false } },
+        { id: 'inner', kind: 'frame', name: 'Interior', parentId: 'outer', layout: { x: 140, y: 150, width: 200, height: 150, pinned: false } },
+        { id: 'A', kind: 'class', name: 'A', attributes: [], operations: [], parentId: 'inner', layout: { x: 160, y: 180, width: 80, height: 40, pinned: false } },
+        { id: 'logo', kind: 'figure', name: 'Logo', shape: 'circle', parentId: 'outer', layout: { x: 120, y: 130, width: 30, height: 30, pinned: false } },
+      ],
+      relations: [],
+    };
+    const moved = apply([{ op: 'move_element', id: 'outer', x: 120, y: 130 }], d);
+    expect(moved.ok).toBe(true);
+    if (!moved.ok) return;
+    expect(moved.diagram.elements.map(({ id, layout }) => [id, layout?.x, layout?.y])).toEqual([
+      ['outer', 120, 130], ['inner', 160, 180], ['A', 180, 210], ['logo', 140, 160],
+    ]);
+    const ungrouped = apply([{ op: 'remove_element', id: 'outer', cascade: 'reparent' }], moved.diagram);
+    expect(ungrouped.ok).toBe(true);
+    if (!ungrouped.ok) return;
+    const inner = ungrouped.diagram.elements.find((e) => e.id === 'inner')!;
+    expect(inner).not.toHaveProperty('parentId');
+    expect(inner).toMatchObject({ layout: { x: 160, y: 180 } });
+    expect(ungrouped.diagram.elements.find((e) => e.id === 'A')).toMatchObject({ parentId: 'inner', layout: { x: 180, y: 210 } });
+    expect(ungrouped.diagram.elements.find((e) => e.id === 'logo')).toMatchObject({ layout: { x: 140, y: 160 } });
+  });
+
   it('update_element cambia campos, null elimina opcionales y no admite id/kind', () => {
     const res = apply([
       { op: 'update_element', id: 'Libro', changes: { name: 'Ejemplar', parentId: null, description: 'Copia física' } },
