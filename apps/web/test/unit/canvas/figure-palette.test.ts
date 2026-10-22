@@ -1,8 +1,9 @@
 import { DIAGRAM_TYPES, type DiagramType } from '@chartsia/core/model';
 import { applyOperations } from '@chartsia/core/operations';
+import { measureElement } from '@chartsia/core/shapes';
 import { validateDiagram } from '@chartsia/core/validation';
 import { describe, expect, it } from 'vitest';
-import { newPaletteElements, PALETTE_ITEMS } from '../../../src/canvas/figure-palette';
+import { centeredFreePoint, newPaletteEdit, newPaletteElements, PALETTE_ITEMS } from '../../../src/canvas/figure-palette';
 
 const vacio = (type: DiagramType) => ({ type, title: 'Prueba', elements: [], relations: [] });
 const claves = () => PALETTE_ITEMS.map((item) => item.key);
@@ -78,5 +79,43 @@ describe('barra de figuras', () => {
     expect(hijo).toMatchObject({ id: 'Componente', parentId: 'Limite' });
     const [otro] = newPaletteElements({ ...vacio('class'), elements: [limite!, hijo!] }, componente, { x: 300, y: 100 });
     expect(otro).toMatchObject({ id: 'Componente2', parentId: 'Limite' });
+  });
+
+  describe('doble clic: figura centrada sin tapar otra', () => {
+    const circulo = PALETTE_ITEMS.find((item) => item.key === 'figure-circle')!;
+    const { width: w, height: h } = measureElement(circulo.build('medida', 'Círculo'));
+    // Caja de una figura ya puesta en el lienzo con su tamaño natural.
+    const figuraEn = (id: string, x: number, y: number) => ({ id, name: id, kind: 'figure' as const, shape: 'circle' as const, layout: { x, y, width: w, height: h } });
+    const tapan = (a: { x: number; y: number }, b: { x: number; y: number }) => a.x < b.x + w && b.x < a.x + w && a.y < b.y + h && b.y < a.y + h;
+
+    it('sin nada alrededor, la esquina deja la figura centrada en el punto indicado', () => {
+      const point = centeredFreePoint(vacio('class'), circulo, { x: 500, y: 300 });
+      expect(point).toEqual({ x: Math.round(500 - w / 2), y: Math.round(300 - h / 2) });
+    });
+
+    it('si el centro ya está ocupado, se corre en diagonal y no tapa el elemento existente', () => {
+      const existente = figuraEn('Existente', 500 - w / 2, 300 - h / 2);
+      const point = centeredFreePoint({ ...vacio('class'), elements: [existente] }, circulo, { x: 500, y: 300 });
+      expect(point.x).toBeGreaterThan(500 - w / 2);
+      expect(Math.abs(point.x - (500 - w / 2) - (point.y - (300 - h / 2)))).toBeLessThanOrEqual(1);
+      expect(tapan(point, existente.layout)).toBe(false);
+    });
+
+    it('sigue corriendo mientras haya elementos encadenados en la diagonal', () => {
+      const x0 = 500 - w / 2;
+      const y0 = 300 - h / 2;
+      const elements = [0, 1, 2, 3].map((i) => figuraEn(`F${i}`, x0 + i * 40, y0 + i * 40));
+      const point = centeredFreePoint({ ...vacio('class'), elements }, circulo, { x: 500, y: 300 });
+      for (const element of elements) expect(tapan(point, element.layout)).toBe(false);
+    });
+
+    it('la figura centrada y corrida se aplica como un solo lote válido para el núcleo', () => {
+      const diagram = { id: 'dg_aaaaaaaaaaaa', ...vacio('class'), elements: [figuraEn('Existente', 500 - w / 2, 300 - h / 2)], revision: 1, createdAt: '', updatedAt: '' };
+      const point = centeredFreePoint(diagram, circulo, { x: 500, y: 300 });
+      const { elements, relations } = newPaletteEdit(diagram, circulo, point);
+      const result = applyOperations(diagram, [...elements.map((element) => ({ op: 'add_element' as const, element })), ...relations.map((relation) => ({ op: 'add_relation' as const, relation }))]);
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.diagram.elements.map((e) => e.id)).toEqual(['Existente', 'Circulo']);
+    });
   });
 });

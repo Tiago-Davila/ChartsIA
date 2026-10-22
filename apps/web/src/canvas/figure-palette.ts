@@ -1,4 +1,5 @@
-import { type Diagram, type Element, type ElementKind, type FigureShape, type Relation } from '@chartsia/core/model';
+import { type Diagram, type Element, type ElementKind, type FigureShape, type Point, type Relation } from '@chartsia/core/model';
+import { measureElement } from '@chartsia/core/shapes';
 import { freeId, relationId } from './edge-edits';
 
 /** Tipo MIME con el que la barra de figuras identifica la figura arrastrada. */
@@ -78,6 +79,28 @@ function placed(diagram: Pick<Diagram, 'elements' | 'relations'>, item: PaletteI
   const id = freeId(diagram, item.idBase);
   const element = item.build(id, item.label + id.slice(item.idBase.length));
   return { ...element, layout: { ...element.layout, x: Math.round(point.x), y: Math.round(point.y) } };
+}
+
+/** Distancia en píxeles con la que una figura centrada se corre en diagonal hasta no tapar otra. */
+const SHIFT_STEP = 40;
+
+/** Caja de un elemento ya existente: su posición absoluta y su tamaño. */
+function boxOf(element: Element): { x: number; y: number; width: number; height: number } {
+  const size = element.layout?.width && element.layout.height ? { width: element.layout.width, height: element.layout.height } : measureElement(element);
+  return { x: element.layout?.x ?? 0, y: element.layout?.y ?? 0, ...size };
+}
+
+/** Esquina superior izquierda de una figura centrada en `center`, corrida en diagonal hasta no tapar ningún elemento. */
+export function centeredFreePoint(diagram: Pick<Diagram, 'elements'>, item: PaletteItem, center: Point): Point {
+  const size = measureElement(item.build('medida', item.label));
+  const boxes = diagram.elements.map(boxOf);
+  const origin = { x: center.x - size.width / 2, y: center.y - size.height / 2 };
+  for (let step = 0; ; step++) {
+    const x = origin.x + step * SHIFT_STEP;
+    const y = origin.y + step * SHIFT_STEP;
+    const free = boxes.every((box) => x + size.width <= box.x || box.x + box.width <= x || y + size.height <= box.y || box.y + box.height <= y);
+    if (free) return { x: Math.round(x), y: Math.round(y) };
+  }
 }
 
 /**
