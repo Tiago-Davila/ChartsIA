@@ -22,7 +22,13 @@ function figureStyle(shape: FigureShape, geo: { width: number; height: number })
     case 'rectangle':
       return 'rounded=0;';
     case 'triangle':
+    case 'isosceles-triangle':
+    case 'equilateral-triangle':
       return 'triangle;direction=north;verticalAlign=bottom;';
+    case 'scalene-triangle':
+      return 'shape=mxgraph.basic.acute_triangle;dx=30;verticalAlign=bottom;';
+    case 'right-triangle':
+      return 'shape=mxgraph.basic.right_triangle;verticalAlign=bottom;';
     case 'hexagon':
       return `shape=hexagon;perimeter=hexagonPerimeter2;size=${slant(geo)};`;
     case 'parallelogram':

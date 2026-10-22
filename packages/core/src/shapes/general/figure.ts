@@ -13,7 +13,26 @@ const MARGIN = 16;
 const MAX_LINES = 4;
 /** Inclinación de los lados del hexágono y del paralelogramo, relativa a su alto. */
 export const SLOPE = 0.3;
+/** Alto del triángulo equilátero relativo a su ancho. */
+const EQUILATERAL_RATIO = Math.sqrt(3) / 2;
+/** Alto de los triángulos escaleno y rectángulo relativo a su ancho. */
+const SKEWED_RATIO = 0.8;
+/** Vértice superior de cada triángulo, como fracción de su ancho; el triángulo rectángulo lo tiene en la esquina. */
+const APEX: Partial<Record<FigureShape, number>> = {
+  triangle: 0.5,
+  'isosceles-triangle': 0.5,
+  'equilateral-triangle': 0.5,
+  'scalene-triangle': 0.3,
+  'right-triangle': 0,
+};
 const r = (n: number) => Math.round(n * 100) / 100;
+
+/** Zona del texto de un triángulo: su mitad inferior, desde `left` y con `span` del ancho. */
+const lowerHalf = (left: number, span: number) => ({ width, height }: Size): Area =>
+  ({ x: width * left, y: height / 2, width: width * span, height: height / 2 });
+
+/** Tamaño de ancho dado con el alto que fija la proporción `ratio`. */
+const proportional = (width: number, ratio: number): Size => ({ width, height: Math.ceil(width * ratio) });
 
 /** Cada forma indica a qué ancho se parte el texto, su tamaño mínimo, cuánto mide para un texto y dónde queda el texto. */
 interface FigureGeometry {
@@ -37,6 +56,14 @@ const SLANTED: FigureGeometry = {
     return { width: Math.ceil(t.width + SLOPE * 2 * height), height };
   },
   area: ({ width, height }) => ({ x: SLOPE * height, y: MARGIN / 2, width: width - SLOPE * 2 * height, height: height - MARGIN }),
+};
+
+// El texto va en la mitad inferior, donde el triángulo mide al menos la mitad de su base.
+const ISOSCELES: FigureGeometry = {
+  wrap: 110,
+  min: { width: 120, height: 104 },
+  size: (t) => ({ width: t.width * 2, height: t.height * 2 }),
+  area: lowerHalf(0.25, 0.5),
 };
 
 const GEOMETRY: Record<FigureShape, FigureGeometry> = {
@@ -73,12 +100,29 @@ const GEOMETRY: Record<FigureShape, FigureGeometry> = {
     size: (t) => ({ width: t.width * 2, height: t.height * 2 }),
     area: ({ width, height }) => ({ x: width / 4, y: height / 4, width: width / 2, height: height / 2 }),
   },
-  // El texto va en la mitad inferior, donde el triángulo mide al menos la mitad de su base.
-  triangle: {
+  // `triangle` es el isósceles de antes; se mantiene para los diagramas que ya lo usan.
+  triangle: ISOSCELES,
+  'isosceles-triangle': ISOSCELES,
+  // Alto fijo de 0,87 del ancho; el texto cabe en su mitad inferior.
+  'equilateral-triangle': {
     wrap: 110,
     min: { width: 120, height: 104 },
-    size: (t) => ({ width: t.width * 2, height: t.height * 2 }),
-    area: ({ width, height }) => ({ x: width / 4, y: height / 2, width: width / 2, height: height / 2 }),
+    size: (t) => proportional(Math.ceil(Math.max(t.width * 2, (t.height * 2) / EQUILATERAL_RATIO)), EQUILATERAL_RATIO),
+    area: lowerHalf(0.25, 0.5),
+  },
+  // El vértice está desplazado a 0,3 del ancho; el texto cabe entre sus dos lados en la mitad inferior.
+  'scalene-triangle': {
+    wrap: 110,
+    min: { width: 120, height: 96 },
+    size: (t) => proportional(Math.ceil(Math.max(t.width * 2, t.height * 2.5)), SKEWED_RATIO),
+    area: lowerHalf(0.15, 0.5),
+  },
+  // El ángulo recto va abajo a la izquierda; el texto cabe bajo la hipotenusa.
+  'right-triangle': {
+    wrap: 110,
+    min: { width: 120, height: 96 },
+    size: (t) => proportional(Math.ceil(2.5 * Math.max(t.width, t.height)), SKEWED_RATIO),
+    area: lowerHalf(0.05, 0.4),
   },
   // El texto ocupa el ancho de la cara superior e inferior, que siempre queda dentro del hexágono.
   hexagon: SLANTED,
@@ -93,9 +137,10 @@ const GEOMETRY: Record<FigureShape, FigureGeometry> = {
   },
 };
 
-/** Vértices de las figuras poligonales (triángulo, rombo, paralelogramo y hexágono); el resto no tiene. */
+/** Vértices de las figuras poligonales (triángulos, rombo, paralelogramo y hexágono); el resto no tiene. */
 export function figureOutline(shape: FigureShape, { width, height }: Size): Point[] | undefined {
-  if (shape === 'triangle') return [{ x: width / 2, y: 0 }, { x: width, y: height }, { x: 0, y: height }];
+  const apex = APEX[shape];
+  if (apex !== undefined) return [{ x: width * apex, y: 0 }, { x: width, y: height }, { x: 0, y: height }];
   if (shape === 'diamond') return [{ x: width / 2, y: 0 }, { x: width, y: height / 2 }, { x: width / 2, y: height }, { x: 0, y: height / 2 }];
   const inset = SLOPE * height;
   if (shape === 'parallelogram') return [{ x: inset, y: 0 }, { x: width, y: 0 }, { x: width - inset, y: height }, { x: 0, y: height }];
@@ -145,7 +190,7 @@ function textLines(name: string, width: number, style?: Style): string[] {
 }
 
 /**
- * Figura general: círculo, óvalo, cuadrado, rectángulo, triángulo, rombo, paralelogramo, hexágono o nube con el nombre
+ * Figura general: círculo, óvalo, cuadrado, rectángulo, triángulo (cuatro variantes), rombo, paralelogramo, hexágono o nube con el nombre
  * centrado dentro. El tamaño natural encierra el texto partido en líneas.
  */
 export const figureShape: ShapeDefinition<FigureElement> = {

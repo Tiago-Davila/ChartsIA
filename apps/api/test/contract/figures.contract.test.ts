@@ -107,6 +107,20 @@ describe('contract: figuras generales', () => {
     expect(svg).toContain('Rombo');
   });
 
+  it('acepta las cuatro variantes de triángulo y las dibuja en el SVG', async () => {
+    const variantes = [['equilateral-triangle', 'Equilátero'], ['isosceles-triangle', 'Isósceles'], ['scalene-triangle', 'Escaleno'], ['right-triangle', 'Rectángulo']];
+    const res = await h.call('create_diagram', {
+      type: 'class',
+      title: 'Triángulos',
+      elements: variantes.map(([shape, name]) => ({ id: shape, kind: 'figure', name, shape })),
+      relations: [],
+    });
+    expect(res.isError).toBeFalsy();
+    expect(res.structuredContent!.counts).toEqual({ elements: 4, relations: 0 });
+    const svg = (await h.call('export_diagram', { format: 'svg' })).structuredContent!.content as string;
+    for (const [, name] of variantes) expect(svg).toContain(name);
+  });
+
   it('una forma inexistente (heptágono) se rechaza con SCHEMA_VIOLATION', async () => {
     const bad = figures('class');
     bad.elements[0]!.shape = 'heptagon';
@@ -120,6 +134,7 @@ describe('contract: figuras generales', () => {
       const text = (res.contents[0] as { text: string }).text;
       expect(text).toContain('`figure`');
       expect(text).toContain('hexagon');
+      expect(text).toContain('right-triangle');
       expect(text).toContain('`drawing`');
       expect(text).toContain('1024');
       expect(text).toContain('highlighter');
