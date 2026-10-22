@@ -162,6 +162,7 @@ function ConnectedApp() {
           onRenameDiagram={onRenameDiagram}
           onExport={onExport}
           onImportImages={edits.insertImages}
+          onAddFigure={edits.addFigure}
           onRename={edits.rename}
           onNodeDragStop={edits.onNodeDragStop}
           onDelete={edits.onDelete}

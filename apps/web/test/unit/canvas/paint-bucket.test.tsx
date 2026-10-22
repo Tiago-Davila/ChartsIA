@@ -11,7 +11,7 @@ const clase = (id: string, style?: Figura['style']): Figura => ({ id, kind: 'cla
 
 function renderCanvas(elements: Figura[], readOnly = false) {
   const updateStyles = vi.fn<(updates: StyleUpdate[]) => void>();
-  const actions = { editText: vi.fn(), resize: vi.fn(), updateRelation: vi.fn(), updateStyles, leaveGroup: vi.fn(), ungroup: vi.fn(), groupInFrame: vi.fn(), readOnly: false };
+  const actions = { editText: vi.fn(), addMember: vi.fn(), removeMember: vi.fn(), resize: vi.fn(), updateRelation: vi.fn(), updateStyles, leaveGroup: vi.fn(), ungroup: vi.fn(), groupInFrame: vi.fn(), readOnly: false };
   const nodes = elements.map((element, i) => ({ id: element.id, type: element.kind, position: { x: i * 200, y: 0 }, width: 120, height: 60, data: { element } }));
   render(
     <DiagramEditContext.Provider value={actions}>

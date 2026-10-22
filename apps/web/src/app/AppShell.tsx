@@ -5,6 +5,8 @@ import { type ClipboardEvent, type DragEvent, type ReactNode, useRef } from 'rea
 import { type ConnectedAgent, type Project } from '../state/api-client';
 import { type AlignMode } from '../canvas/align';
 import { DiagramCanvas, type DiagramCanvasProps } from '../canvas/DiagramCanvas';
+import { FigureSidebar } from '../canvas/FigureSidebar';
+import { FIGURE_DRAG_TYPE } from '../canvas/figure-palette';
 import { C4Legend } from '../legend/C4Legend';
 import { ConfigScreen } from './ConfigScreen';
 import { ConnectionStatus, type ConnectionState } from './ConnectionStatus';
@@ -38,6 +40,7 @@ export interface AppShellProps {
   onRenameDiagram(diagramId: string, title: string): void;
   onExport(format: ExportFormat): void;
   onImportImages?(files: File[], screenPosition?: { x: number; y: number }): void;
+  onAddFigure?(key: string, screenPosition: { x: number; y: number }): void;
   onRename?(title: string): void;
   onNodeDragStop?: DiagramCanvasProps['onNodeDragStop'];
   onDelete?: DiagramCanvasProps['onDelete'];
@@ -70,17 +73,28 @@ export function AppShell(props: AppShellProps) {
     props.onImportImages(files, center());
   };
   const onDragOver = (event: DragEvent<HTMLDivElement>) => {
-    if (props.readOnly || !props.onImportImages || !Array.from(event.dataTransfer.types).includes('Files')) return;
+    const types = Array.from(event.dataTransfer.types);
+    const isFigure = !!props.onAddFigure && types.includes(FIGURE_DRAG_TYPE);
+    const isFile = !!props.onImportImages && types.includes('Files');
+    if (props.readOnly || (!isFigure && !isFile)) return;
     event.preventDefault();
     event.dataTransfer.dropEffect = 'copy';
   };
   const onDrop = (event: DragEvent<HTMLDivElement>) => {
-    if (props.readOnly || !props.onImportImages || event.dataTransfer.files.length === 0) return;
+    if (props.readOnly) return;
+    const figure = event.dataTransfer.getData(FIGURE_DRAG_TYPE);
+    if (figure && props.onAddFigure) {
+      event.preventDefault();
+      props.onAddFigure(figure, { x: event.clientX, y: event.clientY });
+      return;
+    }
+    if (!props.onImportImages || event.dataTransfer.files.length === 0) return;
     event.preventDefault();
     props.onImportImages(Array.from(event.dataTransfer.files), { x: event.clientX, y: event.clientY });
   };
+  const showFigures = !!diagram && !props.configOpen && !props.readOnly && !!props.onAddFigure;
   return (
-    <div className="app-shell">
+    <div className={`app-shell${showFigures ? ' app-shell--figures' : ''}`}>
       <aside className="app-shell__sidebar">
         <div className="brand">
           <span className="brand__mark" aria-hidden>◆</span> ChartsIA
@@ -130,6 +144,7 @@ export function AppShell(props: AppShellProps) {
         )}
         {props.overlay}
       </main>
+      {showFigures ? <FigureSidebar type={diagram.type} /> : null}
     </div>
   );
 }

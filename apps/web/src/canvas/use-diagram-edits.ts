@@ -6,8 +6,9 @@ import { ApiError, type ApiClient } from '../state/api-client';
 import { diagramStore } from '../state/diagram-store';
 import { type AlignMode, alignBoxes } from './align';
 import { connectionRelation, freeId } from './edge-edits';
+import { newPaletteElements, paletteFor } from './figure-palette';
 import { readImageFile } from './image-import';
-import { changesForSlot } from './slot-edits';
+import { changesForAddMember, changesForRemoveMember, changesForSlot, type MemberKind } from './slot-edits';
 import { type StyleUpdate } from './style-edits';
 import { simplifyStroke } from './drawing';
 import { framePadding } from '@chartsia/core/shapes';
@@ -92,6 +93,18 @@ export function useDiagramEdits(api: ApiClient) {
     [screenToFlowPosition, send],
   );
 
+  /** Crea la figura de la barra lateral soltada en la posición de pantalla indicada. */
+  const addFigure = useCallback(
+    (key: string, screenPosition: { x: number; y: number }) => {
+      const diagram = diagramStore.getState().diagram;
+      const item = diagram && paletteFor(diagram.type).find((candidate) => candidate.key === key);
+      if (!diagram || !item) return;
+      const elements = newPaletteElements(diagram, item, screenToFlowPosition(screenPosition));
+      void send(elements.map((element): Operation => ({ op: 'add_element', element })));
+    },
+    [screenToFlowPosition, send],
+  );
+
   /** Ctrl+Z / Ctrl+Y: deshace o rehace el último cambio del diagrama en el hub. */
   const history = useCallback((direction: 'undo' | 'redo') => void write((diagram) => api.history(diagram.id, direction)), [api, write]);
 
@@ -161,6 +174,27 @@ export function useDiagramEdits(api: ApiClient) {
         return;
       }
       void send([{ op: 'update_element', id: elementId, changes }]);
+    },
+    [send],
+  );
+
+  /** Botón "+": agrega un miembro con texto por defecto y devuelve su slot para editarlo. */
+  const addMember = useCallback(
+    async (elementId: string, kind: MemberKind) => {
+      const element = diagramStore.getState().diagram?.elements.find((e) => e.id === elementId);
+      const added = element && changesForAddMember(element, kind);
+      if (!added) return undefined;
+      return (await send([{ op: 'update_element', id: elementId, changes: added.changes }])) ? added.slot : undefined;
+    },
+    [send],
+  );
+
+  /** Botón "×": quita un miembro con un solo `update_element`, un paso de Ctrl+Z. */
+  const removeMember = useCallback(
+    (elementId: string, slot: string) => {
+      const element = diagramStore.getState().diagram?.elements.find((e) => e.id === elementId);
+      const changes = element && changesForRemoveMember(element, slot);
+      if (changes) void send([{ op: 'update_element', id: elementId, changes }]);
     },
     [send],
   );
@@ -353,9 +387,9 @@ export function useDiagramEdits(api: ApiClient) {
   }, [getInternalNode, send]);
 
   const editActions = useMemo<DiagramEditActions>(
-    () => ({ editText, resize, updateRelation, updateStyles, leaveGroup, ungroup, groupInFrame, readOnly: false }),
-    [editText, resize, updateRelation, updateStyles, leaveGroup, ungroup, groupInFrame],
+    () => ({ editText, addMember, removeMember, resize, updateRelation, updateStyles, leaveGroup, ungroup, groupInFrame, readOnly: false }),
+    [editText, addMember, removeMember, resize, updateRelation, updateStyles, leaveGroup, ungroup, groupInFrame],
   );
 
-  return { onNodeDragStop, onDelete, onConnect, onDraw: addDrawing, editText, editActions, history, duplicate, align, rename, insertImages };
+  return { onNodeDragStop, onDelete, onConnect, onDraw: addDrawing, editText, editActions, history, duplicate, align, rename, insertImages, addFigure };
 }

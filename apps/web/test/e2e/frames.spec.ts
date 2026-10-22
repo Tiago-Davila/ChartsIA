@@ -29,7 +29,7 @@ test.describe('marcos', () => {
     expect(grouped.get('Primera')).toMatchObject({ ...beforeGroup.get('Primera'), parentId: 'Marco' });
     expect(grouped.get('Segunda')).toMatchObject({ ...beforeGroup.get('Segunda'), parentId: 'Marco' });
 
-    await page.getByText('Marco', { exact: true }).dblclick();
+    await page.locator('.react-flow').getByText('Marco', { exact: true }).dblclick();
     const titleEditor = page.getByRole('textbox', { name: 'Editar texto' });
     await titleEditor.fill('Servicios');
     await titleEditor.press('Enter');
