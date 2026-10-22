@@ -25,6 +25,25 @@ describe('contract: figuras generales', () => {
     expect(res.structuredContent!.counts).toEqual({ elements: 3, relations: 0 });
   });
 
+  it('el pentágono, el heptágono y el octágono se crean, se exportan y se pueden asignar con apply_changes', async () => {
+    const polygons = {
+      type: 'c4-context', title: 'Polígonos',
+      elements: [
+        { id: 'p', kind: 'figure', name: 'Pentágono', shape: 'pentagon' },
+        { id: 'hp', kind: 'figure', name: 'Heptágono', shape: 'heptagon' },
+        { id: 'o', kind: 'figure', name: 'Octágono', shape: 'octagon' },
+      ],
+      relations: [],
+    };
+    const created = await h.call('create_diagram', polygons);
+    expect(created.isError).toBeFalsy();
+    const updated = await h.call('apply_changes', { operations: [{ op: 'update_element', id: 'p', changes: { shape: 'octagon' } }] });
+    expect(updated.isError).toBeFalsy();
+    const svg = (await h.call('export_diagram', { format: 'svg' })).structuredContent!.content as string;
+    expect(svg).toContain('Heptágono');
+    expect(svg).toContain('Octágono');
+  });
+
   it('se dibujan en el SVG y se pueden cambiar de forma con apply_changes', async () => {
     await h.call('create_diagram', figures('class'));
     const res = await h.call('apply_changes', { operations: [{ op: 'update_element', id: 'c', changes: { shape: 'triangle' } }] });
