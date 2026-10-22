@@ -68,6 +68,17 @@ function ConnectedApp() {
     }
   }, []);
 
+  const onImportMermaid = useCallback(async (source: string, title?: string, projectId?: string) => {
+    try {
+      const { diagramId, warnings } = await api.importMermaid({ source, ...(title ? { title } : {}), ...(projectId ? { projectId } : {}) });
+      openDiagram(diagramId);
+      return warnings;
+    } catch (error) {
+      reportError(error);
+      return null;
+    }
+  }, []);
+
   // Mueve un diagrama de proyecto; la lista se actualiza con el evento `projects.changed`.
   const onMoveDiagram = useCallback(async (diagramId: string, projectId: string | null) => {
     try {
@@ -145,6 +156,7 @@ function ConnectedApp() {
           onCloseConfig={() => navigate(diagram ? diagramPath(diagram.id) : '/')}
           onOpen={openDiagram}
           onCreateDiagram={onCreateDiagram}
+          onImportMermaid={onImportMermaid}
           onMoveDiagram={onMoveDiagram}
           onNewProject={onNewProject}
           onRenameDiagram={onRenameDiagram}

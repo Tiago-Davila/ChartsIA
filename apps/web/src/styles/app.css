@@ -76,10 +76,16 @@
 
 /* Nuevo diagrama */
 .new-diagram__open { margin: 12px 16px 0; }
+.new-diagram__entry { display: flex; flex-direction: column; align-items: stretch; }
 .new-diagram { display: flex; flex-direction: column; gap: 8px; margin: 12px 16px 0; font-size: 12px; color: var(--text-muted); }
 .new-diagram label { display: flex; flex-direction: column; gap: 2px; }
 .new-diagram input,
+.new-diagram textarea,
 .new-diagram select { padding: 6px 8px; color: inherit; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
+.new-diagram textarea { resize: vertical; font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.new-diagram__hint { margin: 0; font-size: 11px; }
+.new-diagram__import-warnings { padding: 8px; color: var(--text); background: var(--surface-muted); border: 1px solid var(--border); border-radius: 6px; }
+.new-diagram__import-warnings ul { margin: 6px 0 0; padding-left: 18px; }
 .new-diagram__actions { display: flex; gap: 8px; }
 
 /* Lista de diagramas */
