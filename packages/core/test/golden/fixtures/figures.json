@@ -13,6 +13,9 @@
     { "id": "rectangulo-triangulo", "kind": "figure", "name": "Rectángulo", "shape": "right-triangle" },
     { "id": "hexagono", "kind": "figure", "name": "Hexágono", "shape": "hexagon" },
     { "id": "nube", "kind": "figure", "name": "Nube", "shape": "cloud" },
+    { "id": "ovalo", "kind": "figure", "name": "Óvalo", "shape": "oval" },
+    { "id": "rombo", "kind": "figure", "name": "Rombo con texto largo", "shape": "diamond" },
+    { "id": "paralelogramo", "kind": "figure", "name": "Paralelogramo", "shape": "parallelogram" },
     { "id": "trazo", "kind": "drawing", "name": "Trazo", "points": [{ "x": 2, "y": 3 }, { "x": 30, "y": 18 }, { "x": 48, "y": 40 }], "strokeColor": "#b42318", "strokeWidth": 3.5 },
     { "id": "marcador", "kind": "drawing", "name": "Marcador", "points": [{ "x": 7, "y": 7 }, { "x": 90, "y": 12 }, { "x": 170, "y": 7 }], "strokeColor": "#facc15", "strokeWidth": 14, "highlighter": true }
   ],

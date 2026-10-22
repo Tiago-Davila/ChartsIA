@@ -1,12 +1,18 @@
 import { type Element } from '../model/diagram.js';
 import { type FigureShape } from '../model/enums.js';
+import { SLOPE } from '../shapes/general/figure.js';
 import { FONT } from '../shapes/types.js';
 import { type DrawioCell } from './drawio.js';
 import { drawioBox, drawioFont } from './drawio-style.js';
 
 const COMMON = 'whiteSpace=wrap;html=0;align=center;fontSize=14;fillColor=#fffef5;strokeColor=#1f2933;';
 
-/** Forma nativa de draw.io para cada figura; el hexágono lleva su inclinación como fracción del ancho. */
+/** Inclinación de los lados (hexágono y paralelogramo) como fracción del ancho, igual que el contorno del núcleo. */
+function slant(geo: { width: number; height: number }): number {
+  return Math.round((SLOPE * geo.height / geo.width) * 100) / 100;
+}
+
+/** Forma nativa de draw.io para cada figura; las formas inclinadas llevan su inclinación como fracción del ancho. */
 function figureStyle(shape: FigureShape, geo: { width: number; height: number }): string {
   switch (shape) {
     case 'circle':
@@ -24,7 +30,13 @@ function figureStyle(shape: FigureShape, geo: { width: number; height: number })
     case 'right-triangle':
       return 'shape=mxgraph.basic.right_triangle;verticalAlign=bottom;';
     case 'hexagon':
-      return `shape=hexagon;perimeter=hexagonPerimeter2;size=${Math.round((0.3 * geo.height / geo.width) * 100) / 100};`;
+      return `shape=hexagon;perimeter=hexagonPerimeter2;size=${slant(geo)};`;
+    case 'parallelogram':
+      return `shape=parallelogram;perimeter=parallelogramPerimeter;size=${slant(geo)};`;
+    case 'diamond':
+      return 'rhombus;';
+    case 'oval':
+      return 'ellipse;';
     case 'cloud':
       return 'ellipse;shape=cloud;';
   }

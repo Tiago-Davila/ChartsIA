@@ -7,7 +7,7 @@
       "name": "Usuario",
       "kind": "person",
       "layout": {
-        "x": 1922.75,
+        "x": 2584.75,
         "y": 88,
         "width": 220,
         "height": 142,
@@ -46,7 +46,7 @@
       "kind": "figure",
       "shape": "rectangle",
       "layout": {
-        "x": 1291,
+        "x": 1695,
         "y": 88,
         "width": 153,
         "height": 84,
@@ -59,7 +59,7 @@
       "kind": "figure",
       "shape": "triangle",
       "layout": {
-        "x": 1944.75,
+        "x": 2606.75,
         "y": 624,
         "width": 176,
         "height": 104,
@@ -111,7 +111,7 @@
       "kind": "figure",
       "shape": "right-triangle",
       "layout": {
-        "x": 1504,
+        "x": 1908,
         "y": 30,
         "width": 249,
         "height": 200,
@@ -124,7 +124,7 @@
       "kind": "figure",
       "shape": "hexagon",
       "layout": {
-        "x": 1968.75,
+        "x": 2630.75,
         "y": 480,
         "width": 128,
         "height": 64,
@@ -137,10 +137,49 @@
       "kind": "figure",
       "shape": "cloud",
       "layout": {
-        "x": 1962.75,
+        "x": 2624.75,
         "y": 310,
         "width": 140,
         "height": 90,
+        "pinned": false
+      }
+    },
+    {
+      "id": "ovalo",
+      "name": "Óvalo",
+      "kind": "figure",
+      "shape": "oval",
+      "layout": {
+        "x": 1291,
+        "y": 98,
+        "width": 120,
+        "height": 64,
+        "pinned": false
+      }
+    },
+    {
+      "id": "rombo",
+      "name": "Rombo con texto largo",
+      "kind": "figure",
+      "shape": "diamond",
+      "layout": {
+        "x": 2217,
+        "y": 74,
+        "width": 198,
+        "height": 112,
+        "pinned": false
+      }
+    },
+    {
+      "id": "paralelogramo",
+      "name": "Paralelogramo",
+      "kind": "figure",
+      "shape": "parallelogram",
+      "layout": {
+        "x": 1471,
+        "y": 98,
+        "width": 164,
+        "height": 64,
         "pinned": false
       }
     },
@@ -165,7 +204,7 @@
       "strokeColor": "#b42318",
       "strokeWidth": 3.5,
       "layout": {
-        "x": 1813,
+        "x": 2475,
         "y": 109.13,
         "width": 49.75,
         "height": 41.75,
@@ -211,11 +250,11 @@
       "label": "usa",
       "route": [
         {
-          "x": 2032.75,
+          "x": 2694.75,
           "y": 230
         },
         {
-          "x": 2032.75,
+          "x": 2694.75,
           "y": 310
         }
       ]
@@ -227,11 +266,11 @@
       "target": "hexagono",
       "route": [
         {
-          "x": 2032.75,
+          "x": 2694.75,
           "y": 400
         },
         {
-          "x": 2032.75,
+          "x": 2694.75,
           "y": 480
         }
       ]
@@ -243,11 +282,11 @@
       "target": "triangulo",
       "route": [
         {
-          "x": 2032.75,
+          "x": 2694.75,
           "y": 544
         },
         {
-          "x": 2032.75,
+          "x": 2694.75,
           "y": 624
         }
       ]

@@ -44,6 +44,9 @@ export const PALETTE_ITEMS: readonly PaletteItem[] = [
   figure('right-triangle', 'Triángulo rectángulo', 'TrianguloRectangulo'),
   figure('hexagon', 'Hexágono', 'Hexagono'),
   figure('cloud', 'Nube', 'Nube'),
+  figure('oval', 'Óvalo', 'Ovalo'),
+  figure('diamond', 'Rombo', 'Rombo'),
+  figure('parallelogram', 'Paralelogramo', 'Paralelogramo'),
   { key: 'frame', label: 'Marco', kind: 'frame', idBase: 'Marco', build: (id, name) => ({ id, name, kind: 'frame', layout: { x: 0, y: 0, width: 320, height: 200 } }) },
 ];
 

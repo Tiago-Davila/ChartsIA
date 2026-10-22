@@ -30,8 +30,8 @@ describe('forma figure', () => {
     }
   });
 
-  it('el rectángulo, el hexágono y la nube son más anchos que altos con un nombre corto', () => {
-    for (const shape of ['rectangle', 'hexagon', 'cloud'] as const) {
+  it('el rectángulo, el óvalo, el rombo, el paralelogramo, el hexágono y la nube son más anchos que altos con un nombre corto', () => {
+    for (const shape of ['rectangle', 'oval', 'diamond', 'parallelogram', 'hexagon', 'cloud'] as const) {
       const { width, height } = measureElement(figure(shape, 'Cliente'));
       expect(width).toBeGreaterThan(height);
     }
@@ -72,15 +72,21 @@ describe('forma figure', () => {
     expect(outline('rectangle')).toBe('rect');
     for (const shape of TRIANGLES) expect(outline(shape)).toBe('path');
     expect(outline('hexagon')).toBe('path');
+    expect(outline('diamond')).toBe('path');
+    expect(outline('parallelogram')).toBe('path');
+    expect(outline('oval')).toBe('ellipse');
     expect(outline('cloud')).toBe('path');
   });
 
-  it('el triángulo tiene 3 vértices y el hexágono 6, dentro de la caja', () => {
+  it('el triángulo tiene 3 vértices, el rombo y el paralelogramo 4 y el hexágono 6, dentro de la caja', () => {
     const size = { width: 120, height: 104 };
     expect(figureOutline('triangle', size)).toHaveLength(3);
+    expect(figureOutline('diamond', size)).toHaveLength(4);
+    expect(figureOutline('parallelogram', size)).toHaveLength(4);
     expect(figureOutline('hexagon', size)).toHaveLength(6);
     expect(figureOutline('circle', size)).toBeUndefined();
-    for (const shape of [...TRIANGLES, 'hexagon'] as const) {
+    expect(figureOutline('oval', size)).toBeUndefined();
+    for (const shape of [...TRIANGLES, 'diamond', 'parallelogram', 'hexagon'] as const) {
       for (const p of figureOutline(shape, size)!) {
         expect(p.x).toBeGreaterThanOrEqual(0);
         expect(p.x).toBeLessThanOrEqual(size.width);

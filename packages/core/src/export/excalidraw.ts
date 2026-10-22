@@ -218,14 +218,14 @@ function addEr(b: Builder, el: Element, box: Box): void {
   }
 }
 
-/** Figura general: Excalidraw no tiene nube, así que se aproxima con una elipse; triángulo y hexágono son polígonos. */
+/** Figura general: Excalidraw no tiene nube, así que se aproxima con una elipse; triángulo, rombo, paralelogramo y hexágono son polígonos. */
 function addFigure(b: Builder, el: Element, box: Box): void {
   if (el.kind !== 'figure') return;
   const paint = boxOf(el.style, '#fffef5');
   const font = fontOf(el.style, FONT.name);
   const outline = figureOutline(el.shape, box);
   if (!outline) {
-    const container = b.shape(el.id, el.shape === 'circle' || el.shape === 'cloud' ? 'ellipse' : 'rectangle', box, paint);
+    const container = b.shape(el.id, el.shape === 'circle' || el.shape === 'oval' || el.shape === 'cloud' ? 'ellipse' : 'rectangle', box, paint);
     b.boundText(container, el.name, font);
     return;
   }

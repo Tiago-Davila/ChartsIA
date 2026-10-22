@@ -90,6 +90,23 @@ describe('contract: figuras generales', () => {
     expect(h.errorCodes(res)).toContain('SCHEMA_VIOLATION');
   });
 
+  it('acepta el óvalo, el rombo y el paralelogramo al crear y al cambiar de forma', async () => {
+    const res = await h.call('create_diagram', {
+      type: 'er', title: 'Nuevas formas',
+      elements: [
+        { id: 'o', kind: 'figure', name: 'Óvalo', shape: 'oval' },
+        { id: 'r', kind: 'figure', name: 'Rombo', shape: 'diamond' },
+      ],
+      relations: [],
+    });
+    expect(res.isError).toBeFalsy();
+    const changed = await h.call('apply_changes', { operations: [{ op: 'update_element', id: 'r', changes: { shape: 'parallelogram' } }] });
+    expect(changed.isError).toBeFalsy();
+    const svg = (await h.call('export_diagram', { format: 'svg' })).structuredContent!.content as string;
+    expect(svg).toContain('Óvalo');
+    expect(svg).toContain('Rombo');
+  });
+
   it('acepta las cuatro variantes de triángulo y las dibuja en el SVG', async () => {
     const variantes = [['equilateral-triangle', 'Equilátero'], ['isosceles-triangle', 'Isósceles'], ['scalene-triangle', 'Escaleno'], ['right-triangle', 'Rectángulo']];
     const res = await h.call('create_diagram', {
