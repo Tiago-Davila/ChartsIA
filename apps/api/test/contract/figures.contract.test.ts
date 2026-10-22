@@ -56,6 +56,40 @@ describe('contract: figuras generales', () => {
     expect(excalidraw.elements.find((e: { id: string }) => e.id === 'trazo')).toMatchObject({ type: 'line', strokeColor: '#175cd3', strokeWidth: 4 });
   });
 
+  it('crea, convierte y exporta un marcador semitransparente mediante MCP', async () => {
+    const created = await h.call('create_diagram', {
+      type: 'class', title: 'Marcador',
+      elements: [
+        { id: 'zona', kind: 'drawing', name: 'Zona', points: [{ x: 7, y: 7 }, { x: 90, y: 12 }], strokeColor: '#facc15', strokeWidth: 14, highlighter: true },
+        { id: 'figura', kind: 'figure', name: 'Figura', shape: 'circle' },
+      ],
+      relations: [],
+    });
+    expect(created.isError).toBeFalsy();
+
+    const svg = (await h.call('export_diagram', { format: 'svg' })).structuredContent!.content as string;
+    expect(svg).toContain('stroke="#facc15" stroke-width="14" stroke-opacity="0.4"');
+    expect(svg.indexOf('data-id="zona"')).toBeLessThan(svg.indexOf('data-id="figura"'));
+    const drawio = (await h.call('export_diagram', { format: 'drawio' })).structuredContent!.content as string;
+    expect(drawio).toContain('strokeWidth=14;opacity=40;');
+    const excalidraw = JSON.parse((await h.call('export_diagram', { format: 'excalidraw' })).structuredContent!.content as string);
+    expect(excalidraw.elements.find((e: { id: string }) => e.id === 'zona')).toMatchObject({ type: 'line', opacity: 40 });
+
+    const pen = await h.call('apply_changes', { operations: [{ op: 'update_element', id: 'zona', changes: { highlighter: null } }] });
+    expect(pen.isError).toBeFalsy();
+    const opaque = (await h.call('export_diagram', { format: 'svg' })).structuredContent!.content as string;
+    expect(opaque).not.toContain('stroke-opacity');
+  });
+
+  it('rechaza highlighter distinto de true', async () => {
+    const res = await h.call('create_diagram', {
+      type: 'class', title: 'Marcador',
+      elements: [{ id: 'zona', kind: 'drawing', name: 'Zona', points: [{ x: 7, y: 7 }, { x: 90, y: 12 }], strokeColor: '#facc15', strokeWidth: 14, highlighter: false }],
+      relations: [],
+    });
+    expect(h.errorCodes(res)).toContain('SCHEMA_VIOLATION');
+  });
+
   it('una forma inexistente (heptágono) se rechaza con SCHEMA_VIOLATION', async () => {
     const bad = figures('class');
     bad.elements[0]!.shape = 'heptagon';
@@ -71,6 +105,7 @@ describe('contract: figuras generales', () => {
       expect(text).toContain('hexagon');
       expect(text).toContain('`drawing`');
       expect(text).toContain('1024');
+      expect(text).toContain('highlighter');
     }
   });
 });
