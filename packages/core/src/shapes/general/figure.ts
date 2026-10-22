@@ -25,6 +25,8 @@ const APEX: Partial<Record<FigureShape, number>> = {
   'scalene-triangle': 0.3,
   'right-triangle': 0,
 };
+/** Lados de los polígonos regulares; el triángulo y el hexágono tienen su propio contorno. */
+const POLYGON_SIDES: Partial<Record<FigureShape, number>> = { pentagon: 5, heptagon: 7, octagon: 8 };
 const r = (n: number) => Math.round(n * 100) / 100;
 
 /** Zona del texto de un triángulo: su mitad inferior, desde `left` y con `span` del ancho. */
@@ -135,24 +137,57 @@ const GEOMETRY: Record<FigureShape, FigureGeometry> = {
     size: (t) => ({ width: Math.ceil(t.width / 0.6), height: Math.ceil(t.height / 0.45) }),
     area: ({ width, height }) => ({ x: width * 0.2, y: height * 0.25, width: width * 0.6, height: height * 0.45 }),
   },
+  // El pentágono es estrecho arriba, así que el texto va en su mitad inferior.
+  pentagon: {
+    wrap: 100,
+    min: { width: 100, height: 100 },
+    size: (t) => ({ width: Math.ceil(t.width / 0.6), height: Math.ceil(t.height / 0.5) }),
+    area: ({ width, height }) => ({ x: width * 0.2, y: height * 0.35, width: width * 0.6, height: height * 0.5 }),
+  },
+  // El texto ocupa el centro, dentro del heptágono y el octágono.
+  heptagon: {
+    wrap: 100,
+    min: { width: 100, height: 100 },
+    size: (t) => ({ width: Math.ceil(t.width / 0.6), height: Math.ceil(t.height / 0.6) }),
+    area: ({ width, height }) => ({ x: width * 0.2, y: height * 0.2, width: width * 0.6, height: height * 0.6 }),
+  },
+  octagon: {
+    wrap: 100,
+    min: { width: 100, height: 100 },
+    size: (t) => ({ width: Math.ceil(t.width / 0.6), height: Math.ceil(t.height / 0.6) }),
+    area: ({ width, height }) => ({ x: width * 0.2, y: height * 0.2, width: width * 0.6, height: height * 0.6 }),
+  },
 };
 
-/** Vértices de las figuras poligonales (triángulos, rombo, paralelogramo y hexágono); el resto no tiene. */
-export function figureOutline(shape: FigureShape, { width, height }: Size): Point[] | undefined {
+/** Vértices de un polígono regular inscrito en la caja: un vértice arriba si tiene lados impares, un lado arriba si es par. */
+function regularPolygon(sides: number, { width, height }: Size): Point[] {
+  const start = -Math.PI / 2 + (sides % 2 === 0 ? Math.PI / sides : 0);
+  return Array.from({ length: sides }, (_, k) => {
+    const angle = start + (2 * Math.PI * k) / sides;
+    return { x: width / 2 + (width / 2) * Math.cos(angle), y: height / 2 + (height / 2) * Math.sin(angle) };
+  });
+}
+
+/** Vértices de las figuras poligonales; el círculo, el óvalo, el cuadrado, el rectángulo y la nube no tienen. */
+export function figureOutline(shape: FigureShape, size: Size): Point[] | undefined {
+  const { width, height } = size;
   const apex = APEX[shape];
   if (apex !== undefined) return [{ x: width * apex, y: 0 }, { x: width, y: height }, { x: 0, y: height }];
   if (shape === 'diamond') return [{ x: width / 2, y: 0 }, { x: width, y: height / 2 }, { x: width / 2, y: height }, { x: 0, y: height / 2 }];
   const inset = SLOPE * height;
   if (shape === 'parallelogram') return [{ x: inset, y: 0 }, { x: width, y: 0 }, { x: width - inset, y: height }, { x: 0, y: height }];
-  if (shape !== 'hexagon') return undefined;
-  return [
-    { x: inset, y: 0 },
-    { x: width - inset, y: 0 },
-    { x: width, y: height / 2 },
-    { x: width - inset, y: height },
-    { x: inset, y: height },
-    { x: 0, y: height / 2 },
-  ];
+  if (shape === 'hexagon') {
+    return [
+      { x: inset, y: 0 },
+      { x: width - inset, y: 0 },
+      { x: width, y: height / 2 },
+      { x: width - inset, y: height },
+      { x: inset, y: height },
+      { x: 0, y: height / 2 },
+    ];
+  }
+  const sides = POLYGON_SIDES[shape];
+  return sides === undefined ? undefined : regularPolygon(sides, size);
 }
 
 /** Zona donde se centra el texto de la figura, relativa a su esquina superior izquierda. */

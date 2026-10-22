@@ -39,6 +39,14 @@ function figureStyle(shape: FigureShape, geo: { width: number; height: number })
       return 'ellipse;';
     case 'cloud':
       return 'ellipse;shape=cloud;';
+    case 'pentagon':
+      return 'shape=mxgraph.basic.pentagon;';
+    // draw.io no trae heptágono, así que se aproxima con una elipse.
+    case 'heptagon':
+      return 'ellipse;aspect=fixed;';
+    // El corte de cada esquina es 0,29 del lado, lo que deja un octágono regular.
+    case 'octagon':
+      return `shape=mxgraph.basic.octagon2;dx=${Math.round(0.29 * Math.min(geo.width, geo.height))};`;
   }
 }
 

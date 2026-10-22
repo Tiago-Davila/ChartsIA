@@ -33,6 +33,13 @@ describe('barra de figuras', () => {
     expect(paletteFor('nosql').map((item) => item.key)).not.toContain('class');
   });
 
+  it('la barra ofrece el pentágono, el heptágono y el octágono en cualquier tipo de diagrama', () => {
+    for (const type of DIAGRAM_TYPES) {
+      const keys = paletteFor(type).map((item) => item.key);
+      expect(keys).toEqual(expect.arrayContaining(['figure-pentagon', 'figure-heptagon', 'figure-octagon']));
+    }
+  });
+
   it('la barra ofrece las cuatro variantes de triángulo', () => {
     const claves = paletteFor('class').map((item) => item.key);
     expect(claves).toEqual(expect.arrayContaining(['figure-equilateral-triangle', 'figure-isosceles-triangle', 'figure-scalene-triangle', 'figure-right-triangle']));
