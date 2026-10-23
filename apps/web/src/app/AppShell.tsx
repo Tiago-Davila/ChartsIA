@@ -38,6 +38,7 @@ export interface AppShellProps {
   onMoveDiagram(diagramId: string, projectId: string | null): void;
   onNewProject(diagramId: string, name: string): void;
   onRenameDiagram(diagramId: string, title: string): void;
+  onDeleteDiagram(diagramId: string): void;
   onExport(format: ExportFormat): void;
   onImportImages?(files: File[], screenPosition?: { x: number; y: number }): void;
   onAddFigure?(key: string, screenPosition: { x: number; y: number }): void;
@@ -104,7 +105,7 @@ export function AppShell(props: AppShellProps) {
           <span className="brand__mark" aria-hidden>◆</span> ChartsIA
         </div>
         <NewDiagram projects={props.projects} onCreate={props.onCreateDiagram} onImportMermaid={props.onImportMermaid} />
-        <DiagramList diagrams={props.diagrams} projects={props.projects} activeDiagramId={props.activeDiagramId} openDiagramId={diagram?.id ?? null} onOpen={props.onOpen} onMove={props.onMoveDiagram} onNewProject={props.onNewProject} onRename={props.onRenameDiagram} />
+        <DiagramList diagrams={props.diagrams} projects={props.projects} activeDiagramId={props.activeDiagramId} openDiagramId={diagram?.id ?? null} onOpen={props.onOpen} onMove={props.onMoveDiagram} onNewProject={props.onNewProject} onRename={props.onRenameDiagram} onDelete={props.onDeleteDiagram} />
         <button type="button" className="button sidebar-config" aria-label="Configuración" aria-pressed={props.configOpen} onClick={props.onConfig}>
           <span aria-hidden>⚙</span>
         </button>

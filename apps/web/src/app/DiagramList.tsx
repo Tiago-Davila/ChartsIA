@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { type DiagramType } from '@chartsia/core/model';
 import { type Project } from '../state/api-client';
+import { ConfirmDialog } from './ConfirmDialog';
 import { DIAGRAM_TYPE_LABELS, formatDate } from './labels';
 import { NameDialog } from './NameDialog';
 
@@ -25,6 +26,8 @@ export interface DiagramListProps {
   onNewProject(diagramId: string, name: string): void;
   /** Cambia el título del diagrama sin abrirlo. */
   onRename(diagramId: string, title: string): void;
+  /** Borra el diagrama; la ventana de confirmación se pide antes. */
+  onDelete(diagramId: string): void;
 }
 
 /** Quita mayúsculas y acentos para comparar títulos. */
@@ -57,11 +60,11 @@ export function agruparPorProyecto(diagramas: DiagramListItem[], proyectos: Proj
   return busqueda.trim() ? secciones.filter((s) => s.diagramas.length > 0) : secciones;
 }
 
-/** Ventana abierta desde el menú ⋯: nombre de un proyecto nuevo o título de un diagrama. */
-type Dialogo = { tipo: 'proyecto'; diagramId: string } | { tipo: 'titulo'; diagrama: DiagramListItem };
+/** Ventana abierta desde el menú ⋯: nombre de un proyecto nuevo, título de un diagrama o confirmar su borrado. */
+type Dialogo = { tipo: 'proyecto'; diagramId: string } | { tipo: 'titulo'; diagrama: DiagramListItem } | { tipo: 'borrar'; diagrama: DiagramListItem };
 
 /** Barra lateral con los diagramas agrupados por proyecto (FR-025); el activo de los agentes va marcado. */
-export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId, onOpen, onMove, onNewProject, onRename }: DiagramListProps) {
+export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId, onOpen, onMove, onNewProject, onRename, onDelete }: DiagramListProps) {
   const [busqueda, setBusqueda] = useState('');
   const [plegadas, setPlegadas] = useState<ReadonlySet<string>>(new Set());
   const [menuAbierto, setMenuAbierto] = useState<string | null>(null);
@@ -151,6 +154,11 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
                 </button>
               </li>
             ) : null}
+            <li role="none">
+              <button type="button" role="menuitem" onClick={() => elegir(() => setDialogo({ tipo: 'borrar', diagrama: d }))}>
+                Eliminar…
+              </button>
+            </li>
           </ul>
         ) : null}
       </div>
@@ -213,6 +221,18 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
           onConfirmar={(titulo) => {
             // Un título igual al actual no llama al hub.
             if (titulo !== dialogo.diagrama.title) onRename(dialogo.diagrama.diagramId, titulo);
+            cerrarDialogo();
+          }}
+        />
+      ) : null}
+      {dialogo?.tipo === 'borrar' ? (
+        <ConfirmDialog
+          titulo="Eliminar diagrama"
+          mensaje={`¿Eliminar «${dialogo.diagrama.title}»? Se borra para siempre, con su historial de deshacer.`}
+          textoConfirmar="Eliminar"
+          onCerrar={cerrarDialogo}
+          onConfirmar={() => {
+            onDelete(dialogo.diagrama.diagramId);
             cerrarDialogo();
           }}
         />

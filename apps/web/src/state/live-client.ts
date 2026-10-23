@@ -13,6 +13,7 @@ export interface DiagramUpdatedEvent {
 export interface LiveHandlers {
   onUpdated(event: DiagramUpdatedEvent): void;
   onCreated(event: { diagramId: string; title: string; type: DiagramType }): void;
+  onDeleted(event: { diagramId: string }): void;
   onProjectsChanged(): void;
   onActiveChanged(event: { diagramId: string }): void;
   onAgentsChanged(event: { agents: ConnectedAgent[] }): void;
@@ -53,6 +54,7 @@ export function createLiveClient(getToken: () => string | undefined, handlers: L
   });
   socket.on('diagram.updated', handlers.onUpdated);
   socket.on('diagram.created', handlers.onCreated);
+  socket.on('diagram.deleted', handlers.onDeleted);
   socket.on('projects.changed', handlers.onProjectsChanged);
   socket.on('active.changed', handlers.onActiveChanged);
   socket.on('agents.changed', handlers.onAgentsChanged);

@@ -11,6 +11,13 @@ function report(error: unknown) {
   else if (error instanceof ApiError && error.errors.length > 0) store.showErrors(error.errors);
 }
 
+/** Quita un diagrama borrado de la lista; si se estaba viendo, la app vuelve a la lista. */
+export function forgetDiagram(diagramId: string): void {
+  const viendolo = window.location.pathname === diagramPath(diagramId);
+  diagramStore.getState().diagramDeleted(diagramId);
+  if (viendolo) navigate('/', { replace: true });
+}
+
 /**
  * Sincroniza la app con el hub (FR-021): lista inicial, diagrama abierto según la ruta,
  * eventos en vivo y reconciliación tras reconectar. La app sigue al diagrama activo cuando un
@@ -35,7 +42,16 @@ export function useHubSync(api: ApiClient, route: Route): { live: React.RefObjec
     reloadList();
     api.listAgents().then((agents) => diagramStore.getState().setAgents(agents)).catch(report);
     const open = diagramStore.getState().openDiagramId;
-    if (open) api.getDiagram(open).then((d) => diagramStore.getState().reconcile(d)).catch(report);
+    if (open) {
+      // Si se borró mientras la app estaba desconectada, el 404 la devuelve a la lista.
+      api
+        .getDiagram(open)
+        .then((d) => diagramStore.getState().reconcile(d))
+        .catch((error) => {
+          if (error instanceof ApiError && error.status === 404) forgetDiagram(open);
+          else report(error);
+        });
+    }
   };
   const reloadRef = useRef(reload);
   reloadRef.current = reload;
@@ -51,6 +67,7 @@ export function useHubSync(api: ApiClient, route: Route): { live: React.RefObjec
         store().diagramCreated(e);
         reloadListRef.current(); // el evento no trae el proyecto
       },
+      onDeleted: ({ diagramId }) => forgetDiagram(diagramId),
       onProjectsChanged: () => reloadListRef.current(),
       onActiveChanged: ({ diagramId }) => {
         store().setActive(diagramId);

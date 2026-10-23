@@ -95,6 +95,9 @@ export function createApiClient({ baseUrl = '', getToken, fetch: fetchImpl = (..
       await request(`/api/diagrams/${id(diagramId)}/activate`, { method: 'POST' });
     },
     createProject: (name: string) => json<Project>('/api/projects', { method: 'POST', body: JSON.stringify({ name }) }),
+    deleteDiagram: async (diagramId: string) => {
+      await request(`/api/diagrams/${id(diagramId)}`, { method: 'DELETE' });
+    },
     setDiagramProject: async (diagramId: string, projectId: string | null) => {
       await request(`/api/diagrams/${id(diagramId)}/project`, { method: 'PUT', body: JSON.stringify({ projectId }) });
     },
