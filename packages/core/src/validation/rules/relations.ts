@@ -1,7 +1,10 @@
 import {
-  ALLOWED_RELATIONS_BY_DIAGRAM,
+  CONNECTOR_KIND,
+  type ElementKind,
   isGroupKind,
   MULTIPLICITY_RELATION_KINDS,
+  RELATION_ENDPOINT_KINDS,
+  type RelationKind,
 } from '../../model/enums.js';
 import { type Relation } from '../../model/relation.js';
 import { type RuleContext } from '../context.js';
@@ -39,39 +42,45 @@ const ENDPOINT_RULES: Partial<Record<Relation['kind'], { pairs: [string, string]
   },
 };
 
+/** Si una relación del tipo dado puede unir un elemento de kind `source` con uno de kind `target`. */
+export function canRelate(kind: RelationKind, source: ElementKind, target: ElementKind): boolean {
+  if (kind === CONNECTOR_KIND) return true;
+  const family = RELATION_ENDPOINT_KINDS[kind];
+  if (family && !(family.includes(source) && family.includes(target))) return false;
+  const rule = ENDPOINT_RULES[kind];
+  return !rule || rule.pairs.some(([s, t]) => s === source && t === target);
+}
+
+/** Qué une cada tipo de relación, para explicar el error de extremos. */
+function endpointHint(kind: RelationKind): string {
+  const rule = ENDPOINT_RULES[kind];
+  if (rule) return `Regla: ${rule.text}.`;
+  const family = RELATION_ENDPOINT_KINDS[kind] ?? [];
+  return `${kind} solo une elementos de: ${family.join(', ')}. Para unir familias distintas usa connector.`;
+}
+
 export function checkRelations({ diagram, elementsById }: RuleContext): ValidationError[] {
   const errors: ValidationError[] = [];
-  const allowedKinds = ALLOWED_RELATIONS_BY_DIAGRAM[diagram.type];
 
   diagram.relations.forEach((rel, i) => {
     const base = `/relations/${i}`;
     const notAllowed = (message: string, hint: string) =>
       errors.push(validationError('RELATION_NOT_ALLOWED', `${base}/kind`, message, hint));
 
-    if (!allowedKinds.includes(rel.kind)) {
-      notAllowed(
-        `La relación "${rel.id}" de tipo "${rel.kind}" no está permitida en "${diagram.type}".`,
-        `En "${diagram.type}" usa: ${allowedKinds.join(', ')}.`,
-      );
-    } else {
-      const source = elementsById.get(rel.source);
-      const target = elementsById.get(rel.target);
-      if (source && target) {
-        const group = [source, target].find((e) => isGroupKind(e.kind));
-        if (group) {
-          notAllowed(
-            `La relación "${rel.id}" conecta el grupo "${group.id}" (${group.kind}).`,
-            'Las relaciones unen elementos, no grupos: conecta un elemento contenido en el grupo.',
-          );
-        } else {
-          const rule = ENDPOINT_RULES[rel.kind];
-          if (rule && !rule.pairs.some(([s, t]) => s === source.kind && t === target.kind)) {
-            notAllowed(
-              `"${rel.id}": ${source.id} (${source.kind}) → ${target.id} (${target.kind}) no es válido.`,
-              `Regla: ${rule.text}.`,
-            );
-          }
-        }
+    const source = elementsById.get(rel.source);
+    const target = elementsById.get(rel.target);
+    if (source && target) {
+      const group = [source, target].find((e) => isGroupKind(e.kind));
+      if (group) {
+        notAllowed(
+          `La relación "${rel.id}" conecta el grupo "${group.id}" (${group.kind}).`,
+          'Las relaciones unen elementos, no grupos: conecta un elemento contenido en el grupo.',
+        );
+      } else if (!canRelate(rel.kind, source.kind, target.kind)) {
+        notAllowed(
+          `"${rel.id}": ${source.id} (${source.kind}) → ${target.id} (${target.kind}) no es válido para ${rel.kind}.`,
+          endpointHint(rel.kind),
+        );
       }
     }
 
@@ -96,6 +105,11 @@ export function checkRelations({ diagram, elementsById }: RuleContext): Validati
       const why = 'las puntas y el trazo discontinuo solo aplican a relaciones connector';
       field('arrowheads', why);
       field('dashed', why);
+    }
+    if (rel.kind !== 'er-rel' && rel.kind !== 'connector') {
+      const why = 'la participación total solo aplica a er-rel y connector';
+      field('sourceTotal', why);
+      field('targetTotal', why);
     }
     if (rel.kind !== 'association') field('navigable', 'navigable solo aplica a association');
     if (rel.kind !== 'c4-rel') field('technology', 'technology solo aplica a relaciones c4-rel');

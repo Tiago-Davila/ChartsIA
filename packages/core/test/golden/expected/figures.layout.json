@@ -7,8 +7,8 @@
       "name": "Usuario",
       "kind": "person",
       "layout": {
-        "x": 909.75,
-        "y": 30,
+        "x": 4573.75,
+        "y": 88,
         "width": 220,
         "height": 142,
         "pinned": false
@@ -21,7 +21,7 @@
       "shape": "circle",
       "layout": {
         "x": 30,
-        "y": 51,
+        "y": 80,
         "width": 100,
         "height": 100,
         "pinned": false
@@ -34,7 +34,7 @@
       "shape": "square",
       "layout": {
         "x": 190,
-        "y": 51,
+        "y": 80,
         "width": 100,
         "height": 100,
         "pinned": false
@@ -46,8 +46,8 @@
       "kind": "figure",
       "shape": "rectangle",
       "layout": {
-        "x": 587,
-        "y": 59,
+        "x": 3684,
+        "y": 88,
         "width": 153,
         "height": 84,
         "pinned": false
@@ -59,10 +59,62 @@
       "kind": "figure",
       "shape": "triangle",
       "layout": {
-        "x": 931.75,
-        "y": 566,
+        "x": 4595.75,
+        "y": 624,
         "width": 176,
         "height": 104,
+        "pinned": false
+      }
+    },
+    {
+      "id": "equilatero",
+      "name": "Equilátero",
+      "kind": "figure",
+      "shape": "equilateral-triangle",
+      "layout": {
+        "x": 350,
+        "y": 49,
+        "width": 187,
+        "height": 162,
+        "pinned": false
+      }
+    },
+    {
+      "id": "isosceles",
+      "name": "Isósceles",
+      "kind": "figure",
+      "shape": "isosceles-triangle",
+      "layout": {
+        "x": 2338,
+        "y": 78,
+        "width": 172,
+        "height": 104,
+        "pinned": false
+      }
+    },
+    {
+      "id": "escaleno",
+      "name": "Escaleno",
+      "kind": "figure",
+      "shape": "scalene-triangle",
+      "layout": {
+        "x": 597,
+        "y": 64,
+        "width": 165,
+        "height": 132,
+        "pinned": false
+      }
+    },
+    {
+      "id": "rectangulo-triangulo",
+      "name": "Rectángulo",
+      "kind": "figure",
+      "shape": "right-triangle",
+      "layout": {
+        "x": 3897,
+        "y": 30,
+        "width": 249,
+        "height": 200,
         "pinned": false
       }
     },
@@ -72,8 +124,8 @@
       "kind": "figure",
       "shape": "hexagon",
       "layout": {
-        "x": 955.75,
-        "y": 422,
+        "x": 4619.75,
+        "y": 480,
         "width": 128,
         "height": 64,
         "pinned": false
@@ -85,10 +137,166 @@
       "kind": "figure",
       "shape": "cloud",
       "layout": {
-        "x": 949.75,
-        "y": 252,
+        "x": 4613.75,
+        "y": 310,
         "width": 140,
         "height": 90,
+        "pinned": false
+      }
+    },
+    {
+      "id": "ovalo",
+      "name": "Óvalo",
+      "kind": "figure",
+      "shape": "oval",
+      "layout": {
+        "x": 3060,
+        "y": 98,
+        "width": 120,
+        "height": 64,
+        "pinned": false
+      }
+    },
+    {
+      "id": "rombo",
+      "name": "Rombo con texto largo",
+      "kind": "figure",
+      "shape": "diamond",
+      "layout": {
+        "x": 4206,
+        "y": 74,
+        "width": 198,
+        "height": 112,
+        "pinned": false
+      }
+    },
+    {
+      "id": "paralelogramo",
+      "name": "Paralelogramo",
+      "kind": "figure",
+      "shape": "parallelogram",
+      "layout": {
+        "x": 3240,
+        "y": 98,
+        "width": 164,
+        "height": 64,
+        "pinned": false
+      }
+    },
+    {
+      "id": "pentagono",
+      "name": "Pentágono",
+      "kind": "figure",
+      "shape": "pentagon",
+      "layout": {
+        "x": 3464,
+        "y": 80,
+        "width": 160,
+        "height": 100,
+        "pinned": false
+      }
+    },
+    {
+      "id": "heptagono",
+      "name": "Heptágono",
+      "kind": "figure",
+      "shape": "heptagon",
+      "layout": {
+        "x": 2116,
+        "y": 80,
+        "width": 162,
+        "height": 100,
+        "pinned": false
+      }
+    },
+    {
+      "id": "octogono",
+      "name": "Octógono con un nombre largo",
+      "kind": "figure",
+      "shape": "octagon",
+      "layout": {
+        "x": 2807,
+        "y": 66.5,
+        "width": 193,
+        "height": 127,
+        "pinned": false
+      }
+    },
+    {
+      "id": "flecha",
+      "name": "Flecha simple",
+      "kind": "figure",
+      "shape": "arrow",
+      "layout": {
+        "x": 822,
+        "y": 96.5,
+        "width": 151,
+        "height": 67,
+        "pinned": false
+      }
+    },
+    {
+      "id": "flecha-doble",
+      "name": "Flecha doble",
+      "kind": "figure",
+      "shape": "double-arrow",
+      "layout": {
+        "x": 1699,
+        "y": 96.5,
+        "width": 177,
+        "height": 67,
+        "pinned": false
+      }
+    },
+    {
+      "id": "flecha-derecha",
+      "name": "Flecha de bloque",
+      "kind": "figure",
+      "shape": "arrow-right",
+      "layout": {
+        "x": 1512,
+        "y": 90,
+        "width": 127,
+        "height": 80,
+        "pinned": false
+      }
+    },
+    {
+      "id": "flecha-izquierda",
+      "name": "Izquierda",
+      "kind": "figure",
+      "shape": "arrow-left",
+      "layout": {
+        "x": 1936,
+        "y": 98,
+        "width": 120,
+        "height": 64,
+        "pinned": false
+      }
+    },
+    {
+      "id": "flecha-arriba",
+      "name": "Arriba",
+      "kind": "figure",
+      "shape": "arrow-up",
+      "layout": {
+        "x": 1324,
+        "y": 70,
+        "width": 128,
+        "height": 120,
+        "pinned": false
+      }
+    },
+    {
+      "id": "flecha-abajo",
+      "name": "Abajo con un nombre largo",
+      "kind": "figure",
+      "shape": "arrow-down",
+      "layout": {
+        "x": 1033,
+        "y": 44,
+        "width": 231,
+        "height": 172,
         "pinned": false
       }
     },
@@ -113,8 +321,8 @@
       "strokeColor": "#b42318",
       "strokeWidth": 3.5,
       "layout": {
-        "x": 800,
-        "y": 80.13,
+        "x": 4464,
+        "y": 109.13,
         "width": 49.75,
         "height": 41.75,
         "pinned": false
@@ -142,8 +350,8 @@
       "strokeWidth": 14,
       "highlighter": true,
       "layout": {
-        "x": 350,
-        "y": 91.5,
+        "x": 2570,
+        "y": 120.5,
         "width": 177,
         "height": 19,
         "pinned": false
@@ -159,12 +367,12 @@
       "label": "usa",
       "route": [
         {
-          "x": 1019.75,
-          "y": 172
+          "x": 4683.75,
+          "y": 230
         },
         {
-          "x": 1019.75,
-          "y": 252
+          "x": 4683.75,
+          "y": 310
         }
       ]
     },
@@ -175,12 +383,12 @@
       "target": "hexagono",
       "route": [
         {
-          "x": 1019.75,
-          "y": 342
+          "x": 4683.75,
+          "y": 400
         },
         {
-          "x": 1019.75,
-          "y": 422
+          "x": 4683.75,
+          "y": 480
         }
       ]
     },
@@ -191,12 +399,12 @@
       "target": "triangulo",
       "route": [
         {
-          "x": 1019.75,
-          "y": 486
+          "x": 4683.75,
+          "y": 544
         },
         {
-          "x": 1019.75,
-          "y": 566
+          "x": 4683.75,
+          "y": 624
         }
       ]
     }

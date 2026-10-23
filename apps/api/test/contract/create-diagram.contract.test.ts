@@ -68,7 +68,7 @@ describe('contract: create_diagram', () => {
     ['SCHEMA_VIOLATION', { ...minimalClass, title: '' }],
     ['DUPLICATE_ID', { ...minimalClass, elements: [...minimalClass.elements, { id: 'Pedido', kind: 'enum', name: 'X', literals: ['A'] }] }],
     ['UNKNOWN_REFERENCE', { ...minimalClass, relations: [{ id: 'r', kind: 'association', source: 'Pedido', target: 'Nadie' }] }],
-    ['KIND_NOT_ALLOWED', { ...minimalClass, elements: [{ id: 'P', kind: 'person', name: 'P' }] }],
+    ['INVALID_PARENT', { ...minimalClass, elements: [{ id: 'C', kind: 'component', name: 'C' }] }],
     ['RELATION_NOT_ALLOWED', { ...minimalClass, elements: [...minimalClass.elements, { id: 'E', kind: 'enum', name: 'E', literals: ['A'] }], relations: [{ id: 'r', kind: 'inheritance', source: 'Pedido', target: 'E' }] }],
     ['INHERITANCE_CYCLE', { ...minimalClass, relations: [{ id: 'r', kind: 'inheritance', source: 'Pedido', target: 'Pedido' }] }],
     ['INVALID_PARENT', { ...minimalClass, elements: [...minimalClass.elements, { id: 'X', kind: 'class', name: 'X', attributes: [], operations: [], parentId: 'Pedido' }] }],

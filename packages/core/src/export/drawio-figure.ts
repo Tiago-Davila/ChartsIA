@@ -1,12 +1,18 @@
 import { type Element } from '../model/diagram.js';
 import { type FigureShape } from '../model/enums.js';
+import { ARROWS, SLOPE } from '../shapes/general/figure.js';
 import { FONT } from '../shapes/types.js';
 import { type DrawioCell } from './drawio.js';
 import { drawioBox, drawioFont } from './drawio-style.js';
 
 const COMMON = 'whiteSpace=wrap;html=0;align=center;fontSize=14;fillColor=#fffef5;strokeColor=#1f2933;';
 
-/** Forma nativa de draw.io para cada figura; el hexágono lleva su inclinación como fracción del ancho. */
+/** Inclinación de los lados (hexágono y paralelogramo) como fracción del ancho, igual que el contorno del núcleo. */
+function slant(geo: { width: number; height: number }): number {
+  return Math.round((SLOPE * geo.height / geo.width) * 100) / 100;
+}
+
+/** Forma nativa de draw.io para cada figura; las formas inclinadas llevan su inclinación como fracción del ancho. */
 function figureStyle(shape: FigureShape, geo: { width: number; height: number }): string {
   switch (shape) {
     case 'circle':
@@ -16,11 +22,44 @@ function figureStyle(shape: FigureShape, geo: { width: number; height: number })
     case 'rectangle':
       return 'rounded=0;';
     case 'triangle':
+    case 'isosceles-triangle':
+    case 'equilateral-triangle':
       return 'triangle;direction=north;verticalAlign=bottom;';
+    case 'scalene-triangle':
+      return 'shape=mxgraph.basic.acute_triangle;dx=30;verticalAlign=bottom;';
+    case 'right-triangle':
+      return 'shape=mxgraph.basic.right_triangle;verticalAlign=bottom;';
     case 'hexagon':
-      return `shape=hexagon;perimeter=hexagonPerimeter2;size=${Math.round((0.3 * geo.height / geo.width) * 100) / 100};`;
+      return `shape=hexagon;perimeter=hexagonPerimeter2;size=${slant(geo)};`;
+    case 'parallelogram':
+      return `shape=parallelogram;perimeter=parallelogramPerimeter;size=${slant(geo)};`;
+    case 'diamond':
+      return 'rhombus;';
+    case 'oval':
+      return 'ellipse;';
     case 'cloud':
       return 'ellipse;shape=cloud;';
+    case 'pentagon':
+      return 'shape=mxgraph.basic.pentagon;';
+    // draw.io no trae heptágono, así que se aproxima con una elipse.
+    case 'heptagon':
+      return 'ellipse;aspect=fixed;';
+    // El corte de cada esquina es 0,29 del lado, lo que deja un octágono regular.
+    case 'octagon':
+      return `shape=mxgraph.basic.octagon2;dx=${Math.round(0.29 * Math.min(geo.width, geo.height))};`;
+    // Las flechas de bloque de draw.io llevan el grosor del tramo como fracción de la caja.
+    case 'arrow':
+      return `shape=singleArrow;direction=east;arrowWidth=${ARROWS.arrow!.shaft};`;
+    case 'double-arrow':
+      return `shape=doubleArrow;arrowWidth=${ARROWS['double-arrow']!.shaft};`;
+    case 'arrow-right':
+      return `shape=singleArrow;direction=east;arrowWidth=${ARROWS['arrow-right']!.shaft};`;
+    case 'arrow-left':
+      return `shape=singleArrow;direction=west;arrowWidth=${ARROWS['arrow-left']!.shaft};`;
+    case 'arrow-up':
+      return `shape=singleArrow;direction=north;arrowWidth=${ARROWS['arrow-up']!.shaft};`;
+    case 'arrow-down':
+      return `shape=singleArrow;direction=south;arrowWidth=${ARROWS['arrow-down']!.shaft};`;
   }
 }
 

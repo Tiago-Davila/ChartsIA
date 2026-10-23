@@ -92,7 +92,7 @@ describe('contract: apply_changes', () => {
   it.each([
     ['SCHEMA_VIOLATION', { operations: [] }],
     ['SCHEMA_VIOLATION', { operations: [{ op: 'explode' }] }],
-    ['KIND_NOT_ALLOWED', { operations: [{ op: 'add_element', element: { id: 'P', kind: 'person', name: 'P' } }] }],
+    ['INVALID_PARENT', { operations: [{ op: 'add_element', element: { id: 'C', kind: 'component', name: 'C' } }] }],
     ['DUPLICATE_ID', { operations: [{ op: 'add_element', element: { id: 'Libro', kind: 'enum', name: 'L', literals: ['A'] } }] }],
     ['FIELD_NOT_ALLOWED', { operations: [{ op: 'update_element', id: 'Libro', changes: { technology: 'Java' } }] }],
   ])('%s alcanzable', async (code, args) => {

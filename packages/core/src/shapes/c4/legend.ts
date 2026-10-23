@@ -1,5 +1,5 @@
 import { type DiagramContent } from '../../model/diagram.js';
-import { isC4Diagram } from '../../model/enums.js';
+import { C4_ELEMENT_KINDS } from '../../model/enums.js';
 import { lineHeight, measureText } from '../text-metrics.js';
 import { FONT, type Primitive, type Size } from '../types.js';
 import { C4_PALETTE } from './palette.js';
@@ -24,9 +24,9 @@ const LABELS: Record<LegendEntry['key'], string> = {
   relationship: 'Relación',
 };
 
-/** Entradas de la leyenda C4 (FR-015) solo para lo que aparece en el diagrama. */
+/** Entradas de la leyenda C4 (FR-015) solo para lo que aparece en el diagrama, si hay elementos C4. */
 export function legendEntries(diagram: DiagramContent): LegendEntry[] {
-  if (!isC4Diagram(diagram.type)) return [];
+  if (!diagram.elements.some((el) => (C4_ELEMENT_KINDS as readonly string[]).includes(el.kind))) return [];
   const present = new Set<LegendEntry['key']>();
   for (const el of diagram.elements) {
     if ('external' in el && el.external) present.add('external');

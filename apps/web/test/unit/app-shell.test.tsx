@@ -220,12 +220,14 @@ describe('AppShell: barra de figuras', () => {
   const diagram = (type: 'class' | 'nosql') => ({ id: 'dg_aaaaaaaaaaaa', type, title: 'Prueba', revision: 1, createdAt: '', updatedAt: '', elements: [], relations: [] });
   const figura = (clave: string) => document.querySelector(`[data-figure="${clave}"]`)!;
 
-  it('muestra solo las figuras del tipo de diagrama abierto', () => {
+  it('muestra todas las figuras, sin importar el tipo de diagrama abierto', () => {
     renderShell({ diagram: diagram('class'), onAddFigure: vi.fn() });
     const barra = screen.getByRole('complementary', { name: 'Figuras' });
     expect(barra).toHaveTextContent('Clase');
     expect(barra).toHaveTextContent('Círculo');
-    expect(barra).not.toHaveTextContent('Colección');
+    expect(barra).toHaveTextContent('Persona');
+    expect(barra).toHaveTextContent('Entidad');
+    expect(barra).toHaveTextContent('Colección');
   });
 
   it('no aparece en solo lectura, en la configuración ni sin diagrama', () => {
@@ -252,5 +254,13 @@ describe('AppShell: barra de figuras', () => {
     Object.defineProperties(drop, { clientX: { value: 240 }, clientY: { value: 130 } });
     fireEvent(lienzo, drop);
     expect(onAddFigure).toHaveBeenCalledWith('class', { x: 240, y: 130 });
+  });
+
+  it('doble clic en una figura la agrega en el centro de la vista', () => {
+    const onAddFigureAtCenter = vi.fn();
+    renderShell({ diagram: diagram('class'), onAddFigure: vi.fn(), onAddFigureAtCenter });
+    fireEvent.doubleClick(figura('figure-circle'));
+    // jsdom no calcula el diseño: el lienzo mide 0 y su centro es el origen.
+    expect(onAddFigureAtCenter).toHaveBeenCalledWith('figure-circle', { x: 0, y: 0 });
   });
 });

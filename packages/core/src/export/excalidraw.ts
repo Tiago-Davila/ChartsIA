@@ -1,10 +1,10 @@
 import { type Point } from '../model/common.js';
 import { type Diagram, type Element } from '../model/diagram.js';
 import { isHighlighter, HIGHLIGHTER_OPACITY } from '../model/drawing-elements.js';
-import { type Cardinality, isGroupKind } from '../model/enums.js';
+import { C4_ELEMENT_KINDS, type Cardinality, ER_ELEMENT_KINDS, isGroupKind } from '../model/enums.js';
 import { type Relation } from '../model/relation.js';
 import { hashSeed } from '../render/hash.js';
-import { edgeLabelLines } from '../render/edges.js';
+import { edgeLabelLines, totalLine } from '../render/edges.js';
 import { LINE_WIDTH_PX, type Style, type StyleFontFamily } from '../model/style.js';
 import { imageDataUrlDimensions } from '../model/image-data.js';
 import { c4Colors, C4_PALETTE } from '../shapes/c4/palette.js';
@@ -16,11 +16,13 @@ import { classBox } from '../shapes/uml/class.js';
 import { enumBox } from '../shapes/uml/enum.js';
 import { interfaceBox } from '../shapes/uml/interface.js';
 import { WEAK_GAP } from '../shapes/er/entity.js';
+import { IDENTIFYING_GAP, rhombusPoints } from '../shapes/er/relationship.js';
+import { TRIANGLE_HEIGHT, TRIANGLE_WIDTH } from '../shapes/er/specialization.js';
 import { MULTIVALUED_GAP } from '../shapes/er/attribute.js';
 import { tableBox } from '../shapes/er/table.js';
 import { valueListBox } from '../shapes/er/value-list.js';
 import { collectionShape } from '../shapes/nosql/collection.js';
-import { lineHeight } from '../shapes/text-metrics.js';
+import { lineHeight, measureText } from '../shapes/text-metrics.js';
 import { type Primitive } from '../shapes/types.js';
 import { CIRCLE_RADIUS, crowFoot, isCardinality, markerFrame, relationStyle, type MarkerKind } from '../shapes/uml/markers.js';
 import { orderKeys } from './fractional-index.js';
@@ -197,20 +199,50 @@ function addC4(b: Builder, el: Element, box: Box): void {
   }
 }
 
+/** Relación Chen como rombo con su nombre; la identificante lleva un segundo rombo interior. */
+function addRelationship(b: Builder, el: Extract<Element, { kind: 'relationship' }>, box: Box): void {
+  b.polygon(el.id, rhombusPoints(box.width, box.height), box, boxOf(el.style, '#fffef5'));
+  if (el.identifying) b.polygon(`${el.id}-inner`, rhombusPoints(box.width, box.height, IDENTIFYING_GAP), box, strokeOf(el.style));
+  // El rectángulo inscrito del rombo mide la mitad de cada lado.
+  b.text(`${el.id}-label`, el.name, { x: box.x + box.width / 4, y: box.y + box.height / 4, width: box.width / 2, height: box.height / 2 }, {
+    textAlign: 'center', verticalAlign: 'middle', ...fontOf(el.style, FONT.name),
+  });
+}
+
+/** Especialización como triángulo con la letra d u o dentro; el nombre va debajo. */
+function addSpecialization(b: Builder, el: Extract<Element, { kind: 'specialization' }>, box: Box): void {
+  const cx = box.width / 2;
+  b.polygon(el.id, [{ x: cx, y: 0 }, { x: cx + TRIANGLE_WIDTH / 2, y: TRIANGLE_HEIGHT }, { x: cx - TRIANGLE_WIDTH / 2, y: TRIANGLE_HEIGHT }], box, boxOf(el.style, '#fffef5'));
+  b.text(`${el.id}-kind`, el.overlapping ? 'o' : 'd', { x: box.x + cx - 8, y: box.y + TRIANGLE_HEIGHT * 0.55, width: 16, height: 18 }, {
+    textAlign: 'center', verticalAlign: 'middle', ...fontOf(el.style, FONT.small),
+  });
+  b.text(`${el.id}-label`, el.name, { x: box.x, y: box.y + TRIANGLE_HEIGHT + 4, width: box.width, height: box.height - TRIANGLE_HEIGHT - 4 }, {
+    textAlign: 'center', verticalAlign: 'top', ...fontOf(el.style, FONT.name),
+  });
+}
+
 function addEr(b: Builder, el: Element, box: Box): void {
   if (el.kind === 'table' || el.kind === 'value-list') return addUml(b, el, box);
   if (el.kind === 'attribute') {
     const dashed = el.derived ? { strokeStyle: 'dashed' } : {};
     const oval = b.shape(el.id, 'ellipse', box, { ...boxOf(el.style, '#fffef5'), ...dashed });
     b.boundText(oval, el.name, fontOf(el.style, FONT.member));
+    if (el.partialKey) {
+      const font = textFont(el.style, FONT.member);
+      const half = measureText(el.name, font) / 2;
+      const y = box.y + box.height / 2 + lineHeight(font.size) / 2 + 2;
+      b.line(`${el.id}-partial-key`, { x: box.x + box.width / 2 - half, y }, { x: box.x + box.width / 2 + half, y }, { ...strokeOf(el.style), strokeStyle: 'dashed' });
+    }
     if (el.multivalued) {
       const inner = { x: box.x + MULTIVALUED_GAP, y: box.y + MULTIVALUED_GAP, width: box.width - MULTIVALUED_GAP * 2, height: box.height - MULTIVALUED_GAP * 2 };
       b.shape(`${el.id}-inner`, 'ellipse', inner, { ...strokeOf(el.style), ...dashed });
     }
     return;
   }
+  if (el.kind === 'relationship') return addRelationship(b, el, box);
+  if (el.kind === 'specialization') return addSpecialization(b, el, box);
   if (el.kind !== 'entity') return;
-  const rect = b.shape(el.id, 'rectangle', box, boxOf(el.style, '#fffef5'));
+  const rect = b.shape(el.id, 'rectangle', box, { ...boxOf(el.style, '#fffef5'), ...(el.associative ? { strokeStyle: 'dashed' } : {}) });
   b.boundText(rect, el.name, fontOf(el.style, FONT.name));
   if (el.weak) {
     const inner = { x: box.x + WEAK_GAP, y: box.y + WEAK_GAP, width: box.width - WEAK_GAP * 2, height: box.height - WEAK_GAP * 2 };
@@ -218,14 +250,14 @@ function addEr(b: Builder, el: Element, box: Box): void {
   }
 }
 
-/** Figura general: Excalidraw no tiene nube, así que se aproxima con una elipse; triángulo y hexágono son polígonos. */
+/** Figura general: Excalidraw no tiene nube, así que se aproxima con una elipse; el resto de formas poligonales son polígonos. */
 function addFigure(b: Builder, el: Element, box: Box): void {
   if (el.kind !== 'figure') return;
   const paint = boxOf(el.style, '#fffef5');
   const font = fontOf(el.style, FONT.name);
   const outline = figureOutline(el.shape, box);
   if (!outline) {
-    const container = b.shape(el.id, el.shape === 'circle' || el.shape === 'cloud' ? 'ellipse' : 'rectangle', box, paint);
+    const container = b.shape(el.id, el.shape === 'circle' || el.shape === 'oval' || el.shape === 'cloud' ? 'ellipse' : 'rectangle', box, paint);
     b.boundText(container, el.name, font);
     return;
   }
@@ -319,6 +351,17 @@ function addCardinality(b: Builder, rel: Relation, kind: Cardinality, tag: strin
   }
 }
 
+/** Línea doble de la participación total: una segunda línea paralela a la mitad de la ruta. */
+function addTotal(b: Builder, rel: Relation, end: 'start' | 'end', color: string): void {
+  const line = totalLine(rel.route ?? [], end);
+  const xs = line.map((p) => p.x);
+  const ys = line.map((p) => p.y);
+  const x = Math.min(...xs);
+  const y = Math.min(...ys);
+  const box = { x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y };
+  b.polyline(`${rel.id}-total-${end}`, line.map((p) => ({ x: p.x - x, y: p.y - y })), box, { strokeColor: color, ...widthOf(rel.style) });
+}
+
 function addArrow(b: Builder, rel: Relation, byId: Map<string, Json>): void {
   const route = rel.route ?? [];
   if (route.length < 2) return;
@@ -344,6 +387,8 @@ function addArrow(b: Builder, rel: Relation, byId: Map<string, Json>): void {
     const target = byId.get(id);
     if (target) target.boundElements = [...((target.boundElements as Json[] | null) ?? []), { type: 'arrow', id: rel.id }];
   }
+  if (rel.sourceTotal) addTotal(b, rel, 'start', style.color);
+  if (rel.targetTotal) addTotal(b, rel, 'end', style.color);
   if (style.start && isCardinality(style.start)) addCardinality(b, rel, style.start, 'src', route[0]!, route[1]!, style.color, style.fill, style.width);
   if (style.end && isCardinality(style.end)) addCardinality(b, rel, style.end, 'dst', route[route.length - 1]!, route[route.length - 2]!, style.color, style.fill, style.width);
   const lines = edgeLabelLines(rel);
@@ -398,13 +443,12 @@ export function exportExcalidraw(diagram: Diagram): string {
     else if (el.kind === 'collection') addCollection(b, el, box);
     else if (el.kind === 'figure') addFigure(b, el, box);
     else if (el.kind === 'frame') addFrame(b, el, box);
-    else if (diagram.type === 'class') {
-      if (el.kind === 'package') {
-        b.shape(el.id, 'rectangle', box, { ...strokeOf(el.style), ...(el.style?.fillColor ? { backgroundColor: el.style.fillColor } : {}) });
-        b.text(`${el.id}-title`, el.name, { x: box.x + 10, y: box.y + 6, width: box.width - 20, height: 20 }, fontOf(el.style, FONT.name));
-      } else addUml(b, el, box);
-    } else if (diagram.type === 'er') addEr(b, el, box);
-    else addC4(b, el, box);
+    else if (el.kind === 'package') {
+      b.shape(el.id, 'rectangle', box, { ...strokeOf(el.style), ...(el.style?.fillColor ? { backgroundColor: el.style.fillColor } : {}) });
+      b.text(`${el.id}-title`, el.name, { x: box.x + 10, y: box.y + 6, width: box.width - 20, height: 20 }, fontOf(el.style, FONT.name));
+    } else if ((ER_ELEMENT_KINDS as readonly string[]).includes(el.kind)) addEr(b, el, box);
+    else if ((C4_ELEMENT_KINDS as readonly string[]).includes(el.kind)) addC4(b, el, box);
+    else addUml(b, el, box);
     const groupIds = frameGroupIds(el);
     if (groupIds.length > 0) {
       for (const generated of b.elements.slice(start)) {

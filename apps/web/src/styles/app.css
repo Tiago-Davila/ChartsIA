@@ -77,16 +77,29 @@
   border-bottom: 1px solid var(--border);
 }
 .figure-sidebar__list {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  padding: 12px;
   overflow-y: auto;
+}
+.figure-sidebar__section {
+  border-bottom: 1px solid var(--border);
+}
+.figure-sidebar__section-title {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+.figure-sidebar__items {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  padding: 4px 12px 12px;
 }
 .figure-sidebar__item {
   padding: 10px 6px;
   font-size: 12px;
   text-align: center;
+  overflow-wrap: anywhere;
   cursor: grab;
   user-select: none;
   background: var(--surface-muted);

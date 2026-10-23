@@ -1,0 +1,43 @@
+{
+  "type": "er",
+  "title": "Figuras Chen & <notación>",
+  "elements": [
+    { "id": "empleado", "kind": "entity", "name": "Empleado" },
+    { "id": "proyecto", "kind": "entity", "name": "Proyecto" },
+    { "id": "asignacion", "kind": "entity", "name": "Asignación", "associative": true },
+    { "id": "dependiente", "kind": "entity", "name": "Dependiente", "weak": true },
+    { "id": "gerente", "kind": "entity", "name": "Gerente" },
+    { "id": "tecnico", "kind": "entity", "name": "Técnico" },
+    { "id": "trabaja", "kind": "relationship", "name": "Trabaja en" },
+    { "id": "tiene", "kind": "relationship", "name": "Tiene", "identifying": true },
+    { "id": "tipo", "kind": "specialization", "name": "Tipo" },
+    { "id": "rol", "kind": "specialization", "name": "Rol", "overlapping": true },
+    { "id": "legajo", "kind": "attribute", "name": "Legajo", "key": true },
+    { "id": "nombre", "kind": "attribute", "name": "Nombre completo" },
+    { "id": "nombre_pila", "kind": "attribute", "name": "Nombre" },
+    { "id": "apellido", "kind": "attribute", "name": "Apellido" },
+    { "id": "telefonos", "kind": "attribute", "name": "Teléfonos", "multivalued": true },
+    { "id": "antiguedad", "kind": "attribute", "name": "Antigüedad", "derived": true },
+    { "id": "dep_nombre", "kind": "attribute", "name": "Nombre del dependiente", "partialKey": true }
+  ],
+  "relations": [
+    { "id": "r1", "kind": "er-rel", "source": "empleado", "target": "proyecto", "sourceCardinality": "one", "targetCardinality": "zero-many", "sourceTotal": true },
+    { "id": "c1", "kind": "connector", "source": "empleado", "target": "trabaja", "label": "N", "arrowheads": "none", "sourceTotal": true },
+    { "id": "c2", "kind": "connector", "source": "trabaja", "target": "proyecto", "label": "M", "arrowheads": "none", "targetTotal": true },
+    { "id": "c3", "kind": "connector", "source": "asignacion", "target": "trabaja", "dashed": true, "arrowheads": "none" },
+    { "id": "c4", "kind": "connector", "source": "empleado", "target": "tiene", "arrowheads": "none", "label": "1" },
+    { "id": "c5", "kind": "connector", "source": "tiene", "target": "dependiente", "arrowheads": "none", "label": "N", "targetTotal": true },
+    { "id": "c6", "kind": "connector", "source": "empleado", "target": "tipo", "arrowheads": "none" },
+    { "id": "c7", "kind": "connector", "source": "tipo", "target": "gerente", "arrowheads": "none" },
+    { "id": "c8", "kind": "connector", "source": "tipo", "target": "tecnico", "arrowheads": "none" },
+    { "id": "c9", "kind": "connector", "source": "proyecto", "target": "rol", "arrowheads": "none" },
+    { "id": "c10", "kind": "connector", "source": "rol", "target": "gerente", "arrowheads": "none" },
+    { "id": "a1", "kind": "er-attr", "source": "empleado", "target": "legajo" },
+    { "id": "a2", "kind": "er-attr", "source": "empleado", "target": "nombre" },
+    { "id": "a3", "kind": "er-attr", "source": "nombre", "target": "nombre_pila" },
+    { "id": "a4", "kind": "er-attr", "source": "nombre", "target": "apellido" },
+    { "id": "a5", "kind": "er-attr", "source": "empleado", "target": "telefonos" },
+    { "id": "a6", "kind": "er-attr", "source": "empleado", "target": "antiguedad" },
+    { "id": "a7", "kind": "er-attr", "source": "dependiente", "target": "dep_nombre" }
+  ]
+}

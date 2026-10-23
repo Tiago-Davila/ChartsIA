@@ -8,8 +8,9 @@ type EntityElement = ElementOfKind<'entity'>;
 /** Separación entre el borde exterior y el interior de una entidad débil. */
 export const WEAK_GAP = 5;
 const PAD = 16;
+const DASH = [6, 4];
 
-/** Entidad ER: rectángulo con el nombre centrado; la débil lleva un segundo borde dentro. */
+/** Entidad ER: rectángulo con el nombre centrado; la débil lleva un segundo borde dentro y la asociativa lo tiene discontinuo. */
 export const entityShape: ShapeDefinition<EntityElement> = {
   measure: (el) => {
     const font = textFont(el.style, FONT.name);
@@ -22,7 +23,7 @@ export const entityShape: ShapeDefinition<EntityElement> = {
     const c = paintOf(el.style, { fill: COLORS.umlFill, stroke: COLORS.stroke, text: COLORS.text });
     const font = textFont(el.style, FONT.name);
     return [
-      { type: 'rect', x: 0, y: 0, width, height, fill: c.fill, stroke: c.stroke, strokeWidth: c.strokeWidth },
+      { type: 'rect', x: 0, y: 0, width, height, fill: c.fill, stroke: c.stroke, strokeWidth: c.strokeWidth, ...(el.associative ? { dash: DASH } : {}) },
       ...(el.weak
         ? [{ type: 'rect' as const, x: WEAK_GAP, y: WEAK_GAP, width: width - WEAK_GAP * 2, height: height - WEAK_GAP * 2, fill: 'none', stroke: c.stroke, strokeWidth: c.strokeWidth }]
         : []),

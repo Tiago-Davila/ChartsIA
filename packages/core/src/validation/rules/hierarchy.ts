@@ -9,7 +9,7 @@ export function checkParents({ diagram, elementsById }: RuleContext): Validation
     const invalid = (message: string, hint: string) =>
       errors.push(validationError('INVALID_PARENT', path, message, hint));
 
-    if (el.kind === 'component' && diagram.type === 'c4-component') {
+    if (el.kind === 'component') {
       let container = el.parentId ? elementsById.get(el.parentId) : undefined;
       const parentExists = Boolean(container);
       const visited = new Set<string>();

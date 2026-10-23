@@ -50,15 +50,15 @@ describe('diagrama er', () => {
     }
   });
 
-  it('prohíbe kinds de clases y C4 en er', () => {
+  it('acepta kinds de clases y C4 en er, porque cualquier kind vale en cualquier tipo', () => {
     const res = validateDiagram({ type: 'er', title: 'T', relations: [], elements: [{ id: 'A', kind: 'class', name: 'A', attributes: [], operations: [] }] });
-    expect(errorAt(res, 'KIND_NOT_ALLOWED')?.path).toBe('/elements/0/kind');
+    expect(res.ok).toBe(true);
   });
 
-  it('prohíbe entity y er-rel en class', () => {
+  it('acepta entity en class, pero er-rel entre clases sigue prohibida', () => {
     const base = classDiagram();
     const kind = validateDiagram({ ...base, elements: [...base.elements, { id: 'E', kind: 'entity', name: 'E' }] } as DiagramInput);
-    expect(errorAt(kind, 'KIND_NOT_ALLOWED')).toBeDefined();
+    expect(kind.ok).toBe(true);
     const rel = validateDiagram({ ...base, relations: [{ id: 'x', kind: 'er-rel', source: 'Libro', target: 'Autor', sourceCardinality: 'one', targetCardinality: 'one' }] } as DiagramInput);
     expect(errorAt(rel, 'RELATION_NOT_ALLOWED')).toBeDefined();
   });
