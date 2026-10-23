@@ -24,9 +24,11 @@ imprime al arrancar (ver [app-api.md](./contracts/app-api.md)).
 
 ## Conectar agentes
 
-- **Claude Code (HTTP)**: `claude mcp add --transport http chartsia http://127.0.0.1:3333/mcp`
-- **Claude Desktop / stdio**: comando `pnpm --filter @chartsia/api exec chartsia-mcp`
-  (puente stdio → hub; el hub debe estar corriendo).
+- **Claude Code (HTTP)**: `claude mcp add --transport http --scope user chartsia http://127.0.0.1:3333/mcp`
+  (`--scope user` lo deja disponible en todas las carpetas).
+- **Claude Desktop / stdio**: comando `node <RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js`
+  tras `pnpm build` (puente stdio → hub; el hub debe estar corriendo). En Claude Desktop va en el
+  bloque `mcpServers` de `claude_desktop_config.json`, que es global por usuario (ver README).
 - **OpenAI Responses API**: herramienta `{"type":"mcp","server_label":"chartsia",
   "server_url":"https://<túnel>/mcp","authorization":"<CHARTSIA_TOKEN>"}`; el hub debe estar
   expuesto públicamente (p. ej. túnel) con `CHARTSIA_HOST=0.0.0.0`.
