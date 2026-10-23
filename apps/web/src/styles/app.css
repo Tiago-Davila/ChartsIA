@@ -107,9 +107,11 @@
   border-radius: 6px;
 }
 .figure-sidebar__item:hover { border-color: var(--accent); }
+/* En columna, la barra no se extiende sobre la barra de flechas de arriba. */
 .drawing-tool {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 6px;
   padding: 4px;
   background: var(--surface);

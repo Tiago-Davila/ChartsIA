@@ -46,7 +46,10 @@ const MAX_CAPTURE_POINTS = 2048;
 /** Relleno inicial del balde: el rojo de la paleta del panel de estilo. */
 const BUCKET_DEFAULT_COLOR = PALETTE[3].value;
 
-type CanvasTool = 'pen' | 'highlighter' | 'bucket';
+/** Herramienta activa de la barra. `select` es la de por defecto y apaga a las demás. */
+type CanvasTool = 'select' | 'pen' | 'highlighter' | 'bucket';
+/** Herramientas con color propio elegido en la barra. */
+type ColoredTool = 'pen' | 'highlighter' | 'bucket';
 
 function nodeColor(node: Node): string {
   const kind = node.type ?? '';
@@ -78,8 +81,8 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   const activePointer = useRef<number | undefined>(undefined);
   const strokePoints = useRef<Point[]>([]);
   const screenPoints = useRef<Point[]>([]);
-  const [tool, setTool] = useState<CanvasTool>();
-  const [colors, setColors] = useState<Record<CanvasTool, string>>({ pen: DRAWING_DEFAULT_COLOR, highlighter: HIGHLIGHTER_DEFAULT_COLOR, bucket: BUCKET_DEFAULT_COLOR });
+  const [tool, setTool] = useState<CanvasTool>('select');
+  const [colors, setColors] = useState<Record<ColoredTool, string>>({ pen: DRAWING_DEFAULT_COLOR, highlighter: HIGHLIGHTER_DEFAULT_COLOR, bucket: BUCKET_DEFAULT_COLOR });
   const [widths, setWidths] = useState<Record<'pen' | 'highlighter', StyleLineWidth>>({ pen: 'medium', highlighter: 'medium' });
   const highlighter = tool === 'highlighter';
   const drawingMode = tool === 'pen' || highlighter;
@@ -106,7 +109,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     strokePoints.current = [];
     screenPoints.current = [];
     setPreview([]);
-    setTool(undefined);
+    setTool('select');
   }, [diagramId]);
   // Al abrir otro diagrama se encuadra completo, cuando React Flow ya midió sus nodos.
   useEffect(() => {
@@ -191,6 +194,13 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     setPreview([]);
   }, []);
 
+  // Botón de la barra: al pulsar la herramienta activa vuelve a la selección.
+  const toolButton = (value: CanvasTool, label: string) => (
+    <button type="button" className={`button${tool === value ? ' button--primary' : ''}`} aria-pressed={tool === value} onClick={() => setTool((active) => (active === value ? 'select' : value))}>
+      {label}
+    </button>
+  );
+
   return (
     <div
       ref={canvas}
@@ -234,21 +244,16 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
         {readOnly ? null : <SelectionPanel nodes={nodes} edges={edges} editingEdge={editingEdge} onEditEdge={setEditingEdge} />}
         {readOnly ? null : (
           <Panel position="top-left" className="drawing-tool nodrag nopan">
-            <button type="button" className={`button${tool === 'pen' ? ' button--primary' : ''}`} aria-pressed={tool === 'pen'} onClick={() => setTool((active) => (active === 'pen' ? undefined : 'pen'))}>
-              Lápiz
-            </button>
-            <button type="button" className={`button${highlighter ? ' button--primary' : ''}`} aria-pressed={highlighter} onClick={() => setTool((active) => (active === 'highlighter' ? undefined : 'highlighter'))}>
-              Marcador
-            </button>
+            {toolButton('select', 'Selección')}
+            {toolButton('pen', 'Lápiz')}
+            {toolButton('highlighter', 'Marcador')}
             {drawingMode ? (
               <input type="color" aria-label={highlighter ? 'Color del marcador' : 'Color del lápiz'} value={drawingColor} onChange={(event) => setColors((current) => ({ ...current, [tool]: event.target.value }))} />
             ) : null}
             {drawingMode ? (
               <WidthPicker label={highlighter ? 'Grosor del marcador' : 'Grosor del lápiz'} value={widths[tool]} onPick={(width) => setWidths((current) => ({ ...current, [tool]: width }))} />
             ) : null}
-            <button type="button" className={`button${bucketMode ? ' button--primary' : ''}`} aria-pressed={bucketMode} onClick={() => setTool((active) => (active === 'bucket' ? undefined : 'bucket'))}>
-              Balde
-            </button>
+            {toolButton('bucket', 'Balde')}
             {bucketMode ? <input type="color" aria-label="Color del balde" value={bucketColor} onChange={(event) => setColors((current) => ({ ...current, bucket: event.target.value }))} /> : null}
           </Panel>
         )}
