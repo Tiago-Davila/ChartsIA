@@ -29,6 +29,13 @@ describe('portapapeles de elementos', () => {
     expect(clip.relations.map((r) => r.id)).toEqual(['r1']);
   });
 
+  it('pegar no copia el bloqueo', () => {
+    const locked: Diagram = { ...diagram, elements: diagram.elements.map((e) => (e.id === 'Libro' ? { ...e, locked: true } : e)) };
+    copyElements(locked, ['Libro']);
+    const ops = pasteOperations(getClipboard()!, locked, 30);
+    expect(ops.find((o) => o.op === 'add_element')?.element).not.toHaveProperty('locked');
+  });
+
   it('sin selección no copia nada y conserva lo anterior', () => {
     copyElements(diagram, ['Libro']);
     expect(copyElements(diagram, [])).toBe(false);

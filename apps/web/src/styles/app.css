@@ -505,7 +505,7 @@ button:disabled,
   padding: 3px;
   border: 1px solid var(--accent);
   border-radius: 50%;
-  background: #fff;
+  background: var(--surface);
   color: var(--accent);
   pointer-events: none;
 }
