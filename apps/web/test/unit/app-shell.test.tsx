@@ -1,4 +1,4 @@
-import { createEvent, fireEvent, render, screen } from '@testing-library/react';
+import { createEvent, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactFlowProvider } from '@xyflow/react';
 import { describe, expect, it, vi } from 'vitest';
@@ -85,38 +85,40 @@ describe('AppShell', () => {
     expect(onMoveDiagram).toHaveBeenCalledWith('dg_bbbbbbbbbbbb', 'pr_2');
   });
 
-  it('"Nuevo proyecto…" no llama al hub si el nombre está vacío o se cancela', async () => {
+  it('"Nuevo proyecto…" abre una ventana y solo llama al hub con un nombre no vacío', async () => {
     const onNewProject = vi.fn();
-    const prompt = vi.spyOn(window, 'prompt');
     renderShell({ onNewProject });
-    for (const respuesta of [null, '   ']) {
-      prompt.mockReturnValueOnce(respuesta);
+    const abrir = async () => {
       await userEvent.click(screen.getByRole('button', { name: 'Opciones de Biblioteca' }));
       await userEvent.click(screen.getByRole('menuitem', { name: 'Nuevo proyecto…' }));
-    }
+      return screen.getByRole('dialog', { name: 'Nuevo proyecto' });
+    };
+    await userEvent.click(within(await abrir()).getByRole('button', { name: 'Cancelar' }));
+    await userEvent.type(within(await abrir()).getByLabelText('Nombre'), '   {Enter}');
+    await userEvent.keyboard('{Escape}');
     expect(onNewProject).not.toHaveBeenCalled();
-    prompt.mockReturnValueOnce(' Nuevo ');
-    await userEvent.click(screen.getByRole('button', { name: 'Opciones de Biblioteca' }));
-    await userEvent.click(screen.getByRole('menuitem', { name: 'Nuevo proyecto…' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    await userEvent.type(within(await abrir()).getByLabelText('Nombre'), ' Nuevo {Enter}');
     expect(onNewProject).toHaveBeenCalledWith('dg_aaaaaaaaaaaa', 'Nuevo');
-    prompt.mockRestore();
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('"Renombrar…" no llama al hub si está cancelado, vacío o igual, y llama con el id correcto', async () => {
+  it('"Renombrar…" abre la ventana con el título actual y solo llama al hub si cambia', async () => {
     const onRenameDiagram = vi.fn();
-    const prompt = vi.spyOn(window, 'prompt');
     renderShell({ onRenameDiagram });
-    const renombrar = async (respuesta: string | null) => {
-      prompt.mockReturnValueOnce(respuesta);
+    const abrir = async () => {
       await userEvent.click(screen.getByRole('button', { name: 'Opciones de Biblioteca' }));
       await userEvent.click(screen.getByRole('menuitem', { name: 'Renombrar…' }));
+      return within(screen.getByRole('dialog', { name: 'Renombrar diagrama' })).getByLabelText('Nombre');
     };
-    for (const respuesta of [null, '   ', 'Biblioteca']) await renombrar(respuesta);
+    expect(await abrir()).toHaveValue('Biblioteca');
+    await userEvent.keyboard('{Enter}');
     expect(onRenameDiagram).not.toHaveBeenCalled();
-    await renombrar(' Otro ');
-    expect(prompt).toHaveBeenLastCalledWith('Nuevo título del diagrama', 'Biblioteca');
+    const campo = await abrir();
+    await userEvent.clear(campo);
+    await userEvent.type(campo, ' Otro {Enter}');
     expect(onRenameDiagram).toHaveBeenCalledWith('dg_aaaaaaaaaaaa', 'Otro');
-    prompt.mockRestore();
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 
   it('Escape cierra el menú', async () => {
