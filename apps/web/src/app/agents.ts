@@ -3,8 +3,6 @@ export interface Agent {
   name: string;
   /** Instrucción corta de uso. */
   help: string;
-  /** Si el agente admite una configuración global (todas las carpetas). */
-  globalDisponible: boolean;
   /** Comando o configuración que se copia. */
   snippet(mcpUrl: string): string;
 }
@@ -21,7 +19,6 @@ export const AGENTS: Agent[] = [
     id: 'claude-code',
     name: 'Claude Code (HTTP)',
     help: 'Ejecuta este comando en tu terminal. Con --scope user queda disponible en todas tus carpetas (se guarda en ~/.claude.json).',
-    globalDisponible: true,
     snippet: (mcpUrl) =>
       `claude mcp add --transport http --scope user chartsia ${mcpUrl}${esLoopback(mcpUrl) ? '' : ' --header "Authorization: Bearer <CHARTSIA_TOKEN>"'}`,
   },
@@ -29,7 +26,6 @@ export const AGENTS: Agent[] = [
     id: 'claude-desktop',
     name: 'Claude Desktop (stdio)',
     help: 'Claude Desktop es global por usuario. Pega este bloque en claude_desktop_config.json (macOS: ~/Library/Application Support/Claude/; Windows: %APPDATA%\\Claude\\), sustituye <RUTA_AL_REPO_CHARTSIA> (antes ejecuta "pnpm build"), reinicia Claude Desktop y deja el hub corriendo.',
-    globalDisponible: true,
     snippet: (mcpUrl) =>
       JSON.stringify(
         {
@@ -49,14 +45,12 @@ export const AGENTS: Agent[] = [
     id: 'openai',
     name: 'OpenAI Responses API',
     help: 'No tiene configuración global ni carpetas: la herramienta va en cada petición, en el array "tools". El hub debe ser accesible desde internet y el token va en authorization.',
-    globalDisponible: false,
     snippet: (mcpUrl) => JSON.stringify({ type: 'mcp', server_label: 'chartsia', server_url: mcpUrl, authorization: '<CHARTSIA_TOKEN>' }),
   },
   {
     id: 'opencode-remote',
     name: 'OpenCode (HTTP)',
     help: 'Añádelo a "mcp" en ~/.config/opencode/opencode.json para todos tus proyectos, o en el opencode.json de un proyecto. Fuera de loopback, sustituye <CHARTSIA_TOKEN> y no lo subas al repositorio.',
-    globalDisponible: true,
     snippet: (mcpUrl) =>
       JSON.stringify(
         {
@@ -77,7 +71,6 @@ export const AGENTS: Agent[] = [
     id: 'opencode-local',
     name: 'OpenCode (stdio)',
     help: 'Puente stdio hacia el hub (debe estar corriendo). Para todos tus proyectos, añádelo a ~/.config/opencode/opencode.json; "cwd" debe apuntar al repo de ChartsIA porque el comando usa pnpm. Fuera de loopback sustituye <CHARTSIA_TOKEN> y no lo subas al repositorio.',
-    globalDisponible: true,
     snippet: (mcpUrl) =>
       JSON.stringify(
         {

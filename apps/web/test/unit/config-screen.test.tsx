@@ -32,11 +32,9 @@ describe('ConfigScreen', () => {
     expect(claude.snippet('https://hub.example.com/mcp')).toContain('Authorization: Bearer <CHARTSIA_TOKEN>');
   });
 
-  it('cada agente sin configuración global lo explica en su ayuda', () => {
-    const sinGlobal = AGENTS.filter((a) => !a.globalDisponible);
+  it('solo la Responses API, que no tiene configuración global, lo explica en su ayuda', () => {
+    const sinGlobal = AGENTS.filter((a) => /no tiene configuración global/i.test(a.help));
     expect(sinGlobal.map((a) => a.id)).toEqual(['openai']);
-    for (const agent of sinGlobal) expect(agent.help).toMatch(/no tiene configuración global/i);
-    for (const agent of AGENTS.filter((a) => a.globalDisponible)) expect(agent.help).not.toMatch(/no tiene configuración global/i);
   });
 
   it('muestra en la tarjeta la ayuda de Claude Desktop con su archivo de configuración', () => {
