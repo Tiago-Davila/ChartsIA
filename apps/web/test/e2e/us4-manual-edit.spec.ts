@@ -19,7 +19,7 @@ test.describe('US4 · escenarios 6–7: edición manual', () => {
     expect(moved.x).not.toBe(before.x);
 
     await agent.apply([{ op: 'add_element', element: { id: 'Nuevo', kind: 'class', name: 'Nuevo', attributes: [], operations: [] } }]);
-    await expect(page.getByText('Nuevo', { exact: true })).toBeVisible();
+    await expect(page.locator('.react-flow').getByText('Nuevo', { exact: true })).toBeVisible();
     expect((await agent.layout(id)).elements.find((e) => e.id === 'Autor')!.layout).toEqual(moved);
   });
 

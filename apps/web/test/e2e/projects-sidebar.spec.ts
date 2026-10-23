@@ -2,7 +2,7 @@ import { library } from './support/fake-agent';
 import { expect, test } from './support/fixtures';
 
 test.describe('barra lateral con proyectos', () => {
-  test('el diagrama asignado va en su sección, los demás en "Sin proyecto", y se pliega', async ({ page, agent, request }) => {
+  test('el diagrama asignado cuelga de su proyecto, Recientes muestra todos, y el proyecto y la sección se pliegan', async ({ page, agent, request }) => {
     const enProyecto = await agent.create({ ...library, title: 'Dentro del proyecto' });
     await agent.create({ ...library, title: 'Suelto' });
     await page.goto('/');
@@ -15,14 +15,24 @@ test.describe('barra lateral con proyectos', () => {
 
     const titulo = lista.locator('.diagram-list__section-title', { hasText: 'Mi proyecto' });
     const seccion = lista.locator('li.diagram-list__section', { hasText: 'Mi proyecto' });
-    await expect(seccion.locator('.diagram-list__item', { hasText: 'Dentro del proyecto' })).toBeVisible();
-    const sinProyecto = lista.locator('li.diagram-list__section', { hasText: 'Sin proyecto' });
-    await expect(sinProyecto.locator('.diagram-list__item', { hasText: 'Suelto' })).toBeVisible();
-    await expect(sinProyecto.locator('.diagram-list__item', { hasText: 'Dentro del proyecto' })).toHaveCount(0);
+    const enArbol = seccion.locator('.project-tree__item', { hasText: 'Dentro del proyecto' });
+    await expect(enArbol).toBeVisible();
+    await expect(seccion.locator('.project-tree__item', { hasText: 'Suelto' })).toHaveCount(0);
+    const recientes = lista.getByRole('list', { name: 'Recientes' });
+    await expect(recientes.locator('.diagram-list__item', { hasText: 'Suelto' })).toBeVisible();
+    await expect(recientes.locator('.diagram-list__item', { hasText: 'Dentro del proyecto' })).toContainText('Mi proyecto');
 
     await titulo.click();
     await expect(titulo).toHaveAttribute('aria-expanded', 'false');
-    await expect(lista.locator('.diagram-list__item', { hasText: 'Dentro del proyecto' })).toHaveCount(0);
+    await expect(enArbol).toBeHidden();
+    await titulo.click();
+    await expect(enArbol).toBeVisible();
+
+    const proyectos = lista.getByRole('button', { name: 'Proyectos', exact: true });
+    await proyectos.click();
+    await expect(proyectos).toHaveAttribute('aria-expanded', 'false');
+    await expect(titulo).toBeHidden();
+    await expect(recientes.locator('.diagram-list__item', { hasText: 'Dentro del proyecto' })).toBeVisible();
   });
 
   test('el menú ⋯ mueve un diagrama a un proyecto nuevo, persiste al recargar y lo quita', async ({ page, agent }) => {
@@ -47,15 +57,15 @@ test.describe('barra lateral con proyectos', () => {
     await ventana.getByRole('button', { name: 'Crear' }).click();
     await expect(ventana).toHaveCount(0);
     const seccion = lista.locator('li.diagram-list__section', { hasText: 'Proyecto nuevo' });
-    await expect(seccion.locator('.diagram-list__item', { hasText: 'Para mover' })).toBeVisible();
+    await expect(seccion.locator('.project-tree__item', { hasText: 'Para mover' })).toBeVisible();
 
     await page.reload();
-    await expect(seccion.locator('.diagram-list__item', { hasText: 'Para mover' })).toBeVisible();
+    await expect(seccion.locator('.project-tree__item', { hasText: 'Para mover' })).toBeVisible();
 
     await lista.getByRole('button', { name: 'Opciones de Para mover' }).click();
     await page.getByRole('menuitem', { name: 'Quitar del proyecto' }).click();
-    const sinProyecto = lista.locator('li.diagram-list__section', { hasText: 'Sin proyecto' });
-    await expect(sinProyecto.locator('.diagram-list__item', { hasText: 'Para mover' })).toBeVisible();
+    await expect(seccion.locator('.project-tree__item', { hasText: 'Para mover' })).toHaveCount(0);
+    await expect(lista.locator('.diagram-list__item', { hasText: 'Para mover' })).not.toContainText('Proyecto nuevo');
   });
 
   test('el menú del proyecto lo renombra en la lista y persiste al recargar', async ({ page, agent, request }) => {
@@ -74,11 +84,11 @@ test.describe('barra lateral con proyectos', () => {
     await expect(ventana).toHaveCount(0);
 
     const renombrado = lista.locator('li.diagram-list__section', { hasText: 'Nombre nuevo' });
-    await expect(renombrado.locator('.diagram-list__item', { hasText: 'Dentro' })).toBeVisible();
-    await expect(lista.getByText('Nombre viejo')).toHaveCount(0);
+    await expect(renombrado.locator('.project-tree__item', { hasText: 'Dentro' })).toBeVisible();
+    await expect(lista.getByText('Nombre viejo', { exact: false })).toHaveCount(0);
 
     await page.reload();
-    await expect(lista.locator('li.diagram-list__section', { hasText: 'Nombre nuevo' }).locator('.diagram-list__item', { hasText: 'Dentro' })).toBeVisible();
+    await expect(lista.locator('li.diagram-list__section', { hasText: 'Nombre nuevo' }).locator('.project-tree__item', { hasText: 'Dentro' })).toBeVisible();
     const { projects } = (await (await request.get('/api/projects')).json()) as { projects: { id: string; name: string }[] };
     expect(projects.find((p) => p.id === proyecto.id)?.name).toBe('Nombre nuevo');
   });
