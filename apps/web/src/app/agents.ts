@@ -10,6 +10,13 @@ export interface Agent {
 /** Los hubs fuera de loopback exigen token; en loopback se omite. */
 const esLoopback = (mcpUrl: string) => ['127.0.0.1', 'localhost', '[::1]'].includes(new URL(mcpUrl).hostname);
 
+/** URL del MCP para los agentes: `*.localhost` solo lo resuelven los navegadores, así que pasa a 127.0.0.1. */
+export function mcpUrlParaAgentes(origin: string): string {
+  const url = new URL(origin);
+  if (url.hostname.endsWith('.localhost')) url.hostname = '127.0.0.1';
+  return `${url.origin}/mcp`;
+}
+
 /**
  * Agentes de la pantalla de configuración: para sumar una tarjeta basta añadir una entrada aquí.
  * Los comandos replican la sección "Conectar agentes" del README: mantenerlos sincronizados.

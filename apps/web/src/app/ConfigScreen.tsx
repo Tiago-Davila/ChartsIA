@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { type ConnectedAgent } from '../state/api-client';
 import { getToken } from '../state/auth-token';
-import { AGENTS, promptInstalacion, type Agent } from './agents';
+import { AGENTS, mcpUrlParaAgentes, promptInstalacion, type Agent } from './agents';
 import { ConnectionStatus, type ConnectionState } from './ConnectionStatus';
 import { formatDate } from './labels';
 
@@ -75,7 +75,7 @@ function ConnectedAgents({ agents }: { agents: ConnectedAgent[] }) {
 
 /** Pantalla `/config`: URL del MCP, estado del hub, token, agentes conectados y una tarjeta por agente. */
 export function ConfigScreen({ origin, agents, connection, onBack }: { origin: string; agents: ConnectedAgent[]; connection: ConnectionState; onBack(): void }) {
-  const mcpUrl = `${origin}/mcp`;
+  const mcpUrl = mcpUrlParaAgentes(origin);
   return (
     <section className="config" aria-labelledby="config-title">
       <button type="button" className="button" onClick={onBack}>← Volver al lienzo</button>
