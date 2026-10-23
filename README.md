@@ -72,11 +72,10 @@ La app y la herramienta MCP `import_mermaid` importan `classDiagram` y `classDia
     { "mcp": { "chartsia": { "type": "remote", "url": "http://127.0.0.1:3333/mcp" } } }
     ```
     Fuera de loopback añade `"headers": { "Authorization": "Bearer <CHARTSIA_TOKEN>" }`.
-  - stdio (puente `chartsia-mcp`; el hub debe estar corriendo):
+  - stdio (puente `chartsia-mcp`, tras `pnpm build`; el hub debe estar corriendo):
     ```json
     { "mcp": { "chartsia": { "type": "local",
-      "command": ["pnpm", "--filter", "@chartsia/api", "exec", "chartsia-mcp"],
-      "cwd": "<RUTA_AL_REPO_CHARTSIA>",
+      "command": ["node", "<RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js"],
       "environment": { "CHARTSIA_URL": "http://127.0.0.1:3333/mcp" } } } }
     ```
     Fuera de loopback añade `"CHARTSIA_TOKEN": "<CHARTSIA_TOKEN>"` en `environment`.
