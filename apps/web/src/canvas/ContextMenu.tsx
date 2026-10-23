@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 export interface ContextMenuItem {
   label: string;
@@ -15,6 +15,14 @@ export interface ContextMenuProps {
 /** Menú contextual del lienzo: se cierra con Escape, con un clic afuera o al elegir una acción. */
 export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
   const menu = useRef<HTMLUListElement>(null);
+  const [position, setPosition] = useState({ left: x, top: y });
+
+  // Corre el menú hacia adentro si se saldría de la ventana por la derecha o por abajo.
+  useLayoutEffect(() => {
+    const box = menu.current?.getBoundingClientRect();
+    if (!box) return;
+    setPosition({ left: Math.max(0, Math.min(x, window.innerWidth - box.width - 4)), top: Math.max(0, Math.min(y, window.innerHeight - box.height - 4)) });
+  }, [x, y, items.length]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -32,7 +40,7 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
   }, [onClose]);
 
   return (
-    <ul ref={menu} role="menu" className="canvas-menu" style={{ left: x, top: y }}>
+    <ul ref={menu} role="menu" className="canvas-menu" style={position}>
       {items.map((item) => (
         <li key={item.label} role="none">
           <button
