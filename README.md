@@ -24,22 +24,29 @@ draw.io o Excalidraw.
 
 ```bash
 pnpm install
-pnpm dev            # hub en http://127.0.0.1:3333 y app en http://127.0.0.1:5173
+pnpm dev            # hub en http://127.0.0.1:3333 y app en http://chartsia.localhost:5173
 ```
 
 Producción (un solo proceso: el hub sirve también la app compilada):
 
 ```bash
 pnpm build
-pnpm --filter @chartsia/api start      # app y MCP en http://127.0.0.1:3333
+pnpm --filter @chartsia/api start      # app y MCP en http://chartsia.localhost:3333
 ```
+
+La app se abre en `http://chartsia.localhost:<puerto>`. Los navegadores resuelven `*.localhost`
+a loopback, así que no hace falta tocar `/etc/hosts`; `127.0.0.1` también funciona. Cada
+diagrama tiene una dirección `/d/<slug-del-título>-<id-corto>`, por ejemplo
+`/d/biblioteca-gvqrp4kdubn3`: el slug es decorativo y se actualiza si cambia el título, y el
+id corto (la parte del id sin `dg_`) es lo que identifica al diagrama. Las direcciones viejas
+`/d/dg_<id>` siguen abriendo el diagrama y se sustituyen por la nueva.
 
 | Variable | Defecto | Uso |
 |----------|---------|-----|
 | `CHARTSIA_PORT` | `3333` | Puerto del hub |
 | `CHARTSIA_HOST` | `127.0.0.1` | Interfaz; fuera de loopback se exige token |
 | `CHARTSIA_TOKEN` | generado | Token de acceso fuera de loopback |
-| `CHARTSIA_PUBLIC_URL` | `http://<host>:<port>` | Base de `viewUrl` y de las descargas |
+| `CHARTSIA_PUBLIC_URL` | `http://chartsia.localhost:<port>` (en loopback), `http://<host>:<port>` en otro caso | Base de `viewUrl`, de las descargas y de la URL que muestra el arranque |
 | `CHARTSIA_DATA_DIR` | `~/.chartsia/diagrams` | Diagramas en JSON (escritura atómica) |
 | `CHARTSIA_MAX_ELEMENTS` | `500` | Máximo de elementos por diagrama |
 | `CHARTSIA_MAX_REQUEST_BYTES` | `8388608` | Tamaño máximo de petición |
@@ -84,7 +91,7 @@ Contrato completo en [specs/001-mcp-class-c4-diagrams/contracts](specs/001-mcp-c
 ### Acceso desde la red
 
 En loopback no hace falta token (y se rechazan cabeceras `Host` ajenas para evitar DNS
-rebinding). Si el hub escucha en otra interfaz, exige `Authorization: Bearer <token>` en `/mcp`
+rebinding: solo se aceptan loopback, `*.localhost` y el host de `CHARTSIA_PUBLIC_URL`). Si el hub escucha en otra interfaz, exige `Authorization: Bearer <token>` en `/mcp`
 y `/api`, y `auth.token` en el canal en vivo. Al arrancar muestra la URL de la app con el token
 en el fragmento (`…/#token=<token>`): el fragmento no llega al servidor y la app lo guarda solo
 para la pestaña. Si falta, la app pide el token.
