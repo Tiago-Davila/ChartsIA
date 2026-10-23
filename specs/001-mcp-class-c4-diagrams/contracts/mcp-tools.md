@@ -68,6 +68,10 @@ En `apply_changes`, `update_element` admite `weak`, `columns` (reemplaza la list
 `derived`, `values` (reemplaza la lista) y `update_relation` admite
 `sourceCardinality`, `targetCardinality` e `identifying`.
 
+Bloqueo: `locked` (booleano, opcional en cualquier elemento) lo fija en la app: no se mueve, redimensiona,
+edita ni borra desde la app, y el layout automático lo trata como fijado sin guardarlo como `pinned`. Se cambia
+con `update_element` (`changes: { "locked": true | false }`). Por MCP el agente sigue pudiendo editarlo.
+
 Figuras generales: `figure` es un elemento básico con `shape` (`circle`, `square`, `rectangle`,
 `triangle`, `hexagon` o `cloud`) y el `name` centrado dentro. Se permite en **todos** los tipos de
 diagrama (`class`, `c4-*` y `er`; decisión del issue #194) y se conecta con las relaciones propias
