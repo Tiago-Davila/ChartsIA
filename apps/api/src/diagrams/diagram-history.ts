@@ -19,6 +19,11 @@ export class DiagramHistory {
     stacks.redo = [];
   }
 
+  /** Olvida las pilas de un diagrama borrado. */
+  forget(diagramId: string): void {
+    this.stacks.delete(diagramId);
+  }
+
   /** Saca el estado a restaurar y apila el actual en la dirección contraria. */
   step(current: Diagram, direction: HistoryDirection): Snapshot | undefined {
     const stacks = this.stacksOf(current.id);

@@ -18,7 +18,7 @@ describe('contract sobre HTTP real (Streamable HTTP)', () => {
 
   it('crear → aplicar → exportar', async () => {
     const tools = (await client.listTools()).tools;
-    expect(tools).toHaveLength(10);
+    expect(tools).toHaveLength(11);
     expect(tools.map((tool) => tool.name)).toContain('import_mermaid');
     const created = await client.callTool({ name: 'create_diagram', arguments: sampleDiagram });
     const diagramId = (created.structuredContent as { diagramId: string }).diagramId;

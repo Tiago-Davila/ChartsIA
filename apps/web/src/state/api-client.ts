@@ -100,6 +100,9 @@ export function createApiClient({ baseUrl = '', getToken, fetch: fetchImpl = (..
     deleteProject: async (projectId: string) => {
       await request(`/api/projects/${id(projectId)}`, { method: 'DELETE' });
     },
+    deleteDiagram: async (diagramId: string) => {
+      await request(`/api/diagrams/${id(diagramId)}`, { method: 'DELETE' });
+    },
     setDiagramProject: async (diagramId: string, projectId: string | null) => {
       await request(`/api/diagrams/${id(diagramId)}/project`, { method: 'PUT', body: JSON.stringify({ projectId }) });
     },

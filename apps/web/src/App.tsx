@@ -15,7 +15,7 @@ import { setToken } from './state/auth-token';
 import { api } from './state/clients';
 import { diagramStore, useDiagramStore } from './state/diagram-store';
 import { downloadBlob } from './state/download';
-import { useHubSync } from './state/use-hub-sync';
+import { forgetDiagram, useHubSync } from './state/use-hub-sync';
 
 const openDiagram = (diagramId: string) => navigate(diagramPath(diagramId));
 
@@ -116,6 +116,16 @@ function ConnectedApp() {
     }
   }, []);
 
+  // Borra un diagrama del hub; el evento `diagram.deleted` avisa a las demás apps.
+  const onDeleteDiagram = useCallback(async (diagramId: string) => {
+    try {
+      await api.deleteDiagram(diagramId);
+      forgetDiagram(diagramId);
+    } catch (error) {
+      reportError(error);
+    }
+  }, []);
+
   // Renombra un diagrama; el abierto entra al historial y los demás se actualizan pidiendo la lista de nuevo.
   const onRenameDiagram = useCallback(
     async (diagramId: string, title: string) => {
@@ -180,6 +190,7 @@ function ConnectedApp() {
           onRenameProject={onRenameProject}
           onDeleteProject={onDeleteProject}
           onRenameDiagram={onRenameDiagram}
+          onDeleteDiagram={onDeleteDiagram}
           onExport={onExport}
           onImportImages={edits.insertImages}
           onAddFigure={edits.addFigure}

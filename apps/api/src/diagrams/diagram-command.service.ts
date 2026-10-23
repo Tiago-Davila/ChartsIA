@@ -113,6 +113,16 @@ export class DiagramCommandService {
     this.events.emit({ name: 'active.changed', payload: { diagramId } });
   }
 
+  /** Borra un diagrama con su historial de deshacer; las apps que lo tengan abierto vuelven a la lista. */
+  deleteDiagram(diagramId: string): Promise<void> {
+    return this.lock.run(diagramId, async () => {
+      if (!(await this.repo.get(diagramId))) throw notFound(diagramId);
+      await this.repo.delete(diagramId);
+      this.history.forget(diagramId);
+      this.events.emit({ name: 'diagram.deleted', payload: { diagramId } });
+    });
+  }
+
   /** Crea un proyecto con ese nombre (se guarda como texto, sin interpretar). */
   createProject(name: unknown): Promise<Project> {
     return this.lock.run(PROJECTS_KEY, async () => {

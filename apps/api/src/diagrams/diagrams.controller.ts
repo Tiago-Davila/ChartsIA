@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Inject, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post } from '@nestjs/common';
 import { z } from 'zod';
 import { type Diagram } from '@chartsia/core/model';
 import { MAX_MERMAID_SOURCE_LENGTH } from '@chartsia/core/import';
@@ -102,5 +102,11 @@ export class DiagramsController {
   @HttpCode(204)
   async activate(@Param('id') id: string): Promise<void> {
     await this.commands.activate(id);
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  async remove(@Param('id') id: string): Promise<void> {
+    await this.commands.deleteDiagram(id);
   }
 }

@@ -25,6 +25,7 @@ import { exportDiagramTool } from './tools/export-diagram.tool.js';
 import { getDiagramTool } from './tools/get-diagram.tool.js';
 import { createProjectTool } from './tools/create-project.tool.js';
 import { moveDiagramTool } from './tools/move-diagram.tool.js';
+import { deleteDiagramTool } from './tools/delete-diagram.tool.js';
 import { listDiagramsTool } from './tools/list-diagrams.tool.js';
 import { openDiagramTool } from './tools/open-diagram.tool.js';
 import { undoChangesTool } from './tools/undo-changes.tool.js';
@@ -41,6 +42,7 @@ const INSTRUCTIONS = [
   'Usa get_diagram para conocer los ids actuales antes de editar y list_diagrams / open_diagram para cambiar de diagrama.',
   'No agrupes diagramas en proyectos (create_project, move_diagram, projectId de create_diagram) salvo que la persona lo pida.',
   'No agrupes elementos en package, boundary o frame salvo que la persona lo pida (o que un component lo exija).',
+  'No borres diagramas (delete_diagram) salvo que la persona lo pida: no se puede deshacer.',
   'Si una herramienta devuelve isError, lee code, path y hint de cada error, corrige la entrada y vuelve a llamarla.',
 ].join(' ');
 
@@ -73,6 +75,7 @@ export class McpServerFactory {
       undoChangesTool(commands, results),
       createProjectTool(commands),
       moveDiagramTool(commands),
+      deleteDiagramTool(commands),
     ];
     const failure = toToolJsonSchema(FailureSchema);
     this.listing = this.tools.map((tool) => ({
