@@ -24,11 +24,12 @@ import { nodeTypes } from '../nodes';
 import { useDiagramEditActions } from '../nodes/edit-context';
 import { type ElementNodeData } from '../nodes/types';
 import { ContextMenu, type ContextMenuItem } from './ContextMenu';
-import { SelectionPanel } from './SelectionPanel';
+import { drawingTargets, SelectionPanel, styleTargets } from './SelectionPanel';
 import { WidthPicker } from './WidthPicker';
 import { sampleStroke } from './drawing';
 import { type FrameBox } from './figure-palette';
-import { fieldUpdates, PALETTE } from './style-edits';
+import { hasClipboard } from './clipboard';
+import { copiedStyle, copyStyleOf, fieldUpdates, PALETTE, pasteUpdates } from './style-edits';
 
 export interface DiagramCanvasProps {
   diagramId: string;
@@ -38,6 +39,9 @@ export interface DiagramCanvasProps {
   onNodeDragStop?: OnNodeDrag;
   onDelete?: (params: { nodes: Node[]; edges: Edge[] }) => void;
   onDuplicate?: () => void;
+  onCopy?: () => void;
+  onCut?: () => void;
+  onPaste?: () => void;
   onReorder?: (to: StackOrderTarget) => void;
   onConnect?: OnConnect;
   onDraw?: (points: Point[], screenPoints: Point[], color: string, width: number, highlighter: boolean) => void;
@@ -95,13 +99,15 @@ function keepSelection<T extends Node | Edge>(prev: T[], next: T[]): T[] {
  * Lienzo infinito (React Flow): pan, zoom, minimapa y controles. El estado local permite
  * arrastrar con fluidez; cada actualización del hub lo reemplaza (el hub es la fuente de verdad).
  */
-export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incomingEdges, readOnly = false, onNodeDragStop, onDelete, onDuplicate, onReorder, onConnect, onDraw, onAddText, onAddFrame }: DiagramCanvasProps) {
+export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incomingEdges, readOnly = false, onNodeDragStop, onDelete, onDuplicate, onCopy, onCut, onPaste, onReorder, onConnect, onDraw, onAddText, onAddFrame }: DiagramCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(incomingNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(incomingEdges);
   const { fitView, screenToFlowPosition, deleteElements } = useReactFlow();
-  // Posición de pantalla del menú contextual abierto.
-  const [menu, setMenu] = useState<Point>();
+  // Posición de pantalla del menú contextual abierto; `pane` si se abrió sobre el lienzo vacío.
+  const [menu, setMenu] = useState<Point & { pane?: boolean }>();
   const closeMenu = useCallback(() => setMenu(undefined), []);
+  // Elemento o flecha sobre el que se abrió el menú, para "Copiar estilo".
+  const menuTarget = useRef<{ id: string; relation: boolean }>(undefined);
   const { zoom } = useViewport();
   const initialized = useNodesInitialized();
   const canvas = useRef<HTMLDivElement>(null);
@@ -285,6 +291,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     if (readOnly) return;
     event.preventDefault();
     if (!node.selected) selectOnly(node.id);
+    menuTarget.current = { id: node.id, relation: false };
     setMenu({ x: event.clientX, y: event.clientY });
   }, [readOnly, selectOnly]);
 
@@ -292,13 +299,22 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     if (readOnly) return;
     event.preventDefault();
     if (!edge.selected) selectOnly(undefined, edge.id);
+    menuTarget.current = { id: edge.id, relation: true };
     setMenu({ x: event.clientX, y: event.clientY });
   }, [readOnly, selectOnly]);
 
   const onSelectionContextMenu = useCallback((event: ReactMouseEvent) => {
     if (readOnly) return;
     event.preventDefault();
+    menuTarget.current = undefined;
     setMenu({ x: event.clientX, y: event.clientY });
+  }, [readOnly]);
+
+  // Clic derecho sobre el lienzo vacío: solo ofrece Pegar, y si no hay nada copiado queda el menú del navegador.
+  const onPaneContextMenu = useCallback((event: ReactMouseEvent | MouseEvent) => {
+    if (readOnly || !hasClipboard()) return;
+    event.preventDefault();
+    setMenu({ x: event.clientX, y: event.clientY, pane: true });
   }, [readOnly]);
 
   // Borra lo seleccionado igual que la tecla Supr.
@@ -320,9 +336,31 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
         { label: 'Enviar atrás un nivel', onSelect: () => onReorder?.('backward') },
       ]
     : [];
-  const menuItems: ContextMenuItem[] = [
+
+  // Estilo del elemento o flecha del clic derecho, o del primero seleccionado, para pegarlo luego.
+  const copyStyle = () => {
+    const targets = styleTargets(nodes.filter((n) => n.selected), edges.filter((e) => e.selected));
+    const clicked = menuTarget.current;
+    const source = targets.find((t) => t.id === clicked?.id && t.relation === clicked?.relation) ?? targets[0];
+    if (source) copyStyleOf(source);
+  };
+
+  // Aplica el estilo copiado a toda la selección en un solo lote.
+  const pasteStyle = () => {
+    const style = copiedStyle();
+    if (style) updateStyles(pasteUpdates(styleTargets(nodes.filter((n) => n.selected), edges.filter((e) => e.selected)), drawingTargets(nodes.filter((n) => n.selected)), style));
+  };
+
+  const pasteItem = { label: 'Pegar', onSelect: () => onPaste?.() };
+  const menuItems: ContextMenuItem[] = menu?.pane ? [pasteItem] : [
+    { label: 'Copiar', onSelect: () => onCopy?.() },
+    { label: 'Cortar', onSelect: () => onCut?.() },
+    // Pegar solo aparece con algo copiado.
+    ...(hasClipboard() ? [pasteItem] : []),
     { label: 'Duplicar', onSelect: () => onDuplicate?.() },
     ...reorderItems,
+    { label: 'Copiar estilo', onSelect: copyStyle },
+    ...(copiedStyle() ? [{ label: 'Pegar estilo', onSelect: pasteStyle }] : []),
     { label: 'Borrar', onSelect: deleteSelection },
   ];
 
@@ -349,6 +387,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
           onNodeContextMenu={onNodeContextMenu}
           onEdgeContextMenu={onEdgeContextMenu}
           onSelectionContextMenu={onSelectionContextMenu}
+          onPaneContextMenu={onPaneContextMenu}
           nodesDraggable={!readOnly && !drawingMode && !bucketMode && !handMode && !frameMode}
           onNodeClick={paintNode}
           onConnect={onConnect}

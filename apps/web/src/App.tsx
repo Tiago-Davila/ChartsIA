@@ -41,7 +41,7 @@ function ConnectedApp() {
   const changedIds = useDiagramStore((s) => s.lastChangedIds);
   const animate = useDiagramStore((s) => s.lastOrigin === 'agent');
   const edits = useDiagramEdits(api);
-  const shortcuts = useMemo(() => ({ history: edits.history, duplicate: edits.duplicate }), [edits.history, edits.duplicate]);
+  const shortcuts = useMemo(() => ({ history: edits.history, duplicate: edits.duplicate, copy: edits.copy, cut: edits.cut, paste: edits.paste }), [edits.history, edits.duplicate, edits.copy, edits.cut, edits.paste]);
   useShortcuts(shortcuts, diagram !== undefined);
 
   // `viewVersion` fuerza a rehacer los nodos y descartar cambios optimistas rechazados.
@@ -199,6 +199,9 @@ function ConnectedApp() {
           onNodeDragStop={edits.onNodeDragStop}
           onDelete={edits.onDelete}
           onDuplicate={edits.duplicate}
+          onCopy={edits.copy}
+          onCut={edits.cut}
+          onPaste={edits.paste}
           onReorder={edits.reorder}
           onConnect={edits.onConnect}
           onDraw={edits.onDraw}

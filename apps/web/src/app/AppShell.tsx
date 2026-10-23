@@ -50,6 +50,9 @@ export interface AppShellProps {
   onNodeDragStop?: DiagramCanvasProps['onNodeDragStop'];
   onDelete?: DiagramCanvasProps['onDelete'];
   onDuplicate?: DiagramCanvasProps['onDuplicate'];
+  onCopy?: DiagramCanvasProps['onCopy'];
+  onCut?: DiagramCanvasProps['onCut'];
+  onPaste?: DiagramCanvasProps['onPaste'];
   onReorder?: DiagramCanvasProps['onReorder'];
   onConnect?: DiagramCanvasProps['onConnect'];
   onDraw?: (points: Point[], screenPoints: Point[], color: string, width: number, highlighter: boolean) => void;
@@ -141,6 +144,9 @@ export function AppShell(props: AppShellProps) {
                 onNodeDragStop={props.onNodeDragStop}
                 onDelete={props.onDelete}
                 onDuplicate={props.onDuplicate}
+                onCopy={props.onCopy}
+                onCut={props.onCut}
+                onPaste={props.onPaste}
                 onReorder={props.onReorder}
                 onConnect={props.onConnect}
                 onDraw={props.onDraw}

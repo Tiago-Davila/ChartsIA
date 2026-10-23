@@ -43,6 +43,32 @@ test.describe('menú contextual del lienzo', () => {
     await expect.poll(async () => (await agent.layout(id)).elements.map((e) => e.id).sort()).toEqual(['Libro', 'Prestamo']);
   });
 
+  test('Copiar estilo de una clase y Pegar estilo en varias es un solo paso de Ctrl+Z', async ({ page, agent }) => {
+    const id = await agent.create({ ...library, title: 'Copiar estilo menú' });
+    await page.goto(`/d/${id}`);
+    const estiloDe = async (elemento: string) => ((await agent.layout(id)) as { elements: { id: string; style?: unknown }[] }).elements.find((e) => e.id === elemento)?.style;
+
+    await page.locator('[data-element-id="Autor"]').click({ position: { x: 20, y: 8 } });
+    await page.getByRole('button', { name: 'Relleno: Rojo' }).click();
+    await expect.poll(() => estiloDe('Autor')).toEqual({ fillColor: '#dc2626' });
+
+    await page.locator('[data-element-id="Autor"]').click({ button: 'right', position: { x: 20, y: 8 } });
+    await page.getByRole('menuitem', { name: 'Copiar estilo' }).click();
+
+    await page.locator('[data-element-id="Libro"]').click({ position: { x: 20, y: 8 } });
+    await page.locator('[data-element-id="Socio"]').click({ position: { x: 20, y: 8 }, modifiers: ['Control'] });
+    await page.locator('[data-element-id="Libro"]').click({ button: 'right', position: { x: 20, y: 8 } });
+    await page.getByRole('menuitem', { name: 'Pegar estilo' }).click();
+
+    await expect.poll(() => estiloDe('Libro')).toEqual({ fillColor: '#dc2626' });
+    await expect.poll(() => estiloDe('Socio')).toEqual({ fillColor: '#dc2626' });
+
+    await page.keyboard.press('Control+z');
+    await expect.poll(() => estiloDe('Libro')).toBeUndefined();
+    await expect.poll(() => estiloDe('Socio')).toBeUndefined();
+    await expect.poll(() => estiloDe('Autor')).toEqual({ fillColor: '#dc2626' });
+  });
+
   test('Enviar al fondo deja la figura en el primer lugar del orden de dibujo', async ({ page, agent }) => {
     const id = await agent.create({ ...library, title: 'Fondo menú' });
     await page.goto(`/d/${id}`);
