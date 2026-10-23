@@ -20,6 +20,15 @@ test.describe('pantalla de configuración', () => {
   });
 });
 
+test('el botón de copiar prompt deja en el portapapeles el prompt con la URL del MCP', async ({ page, context, baseURL }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('/config');
+  await page.getByRole('button', { name: 'Copiar prompt de Claude Code (HTTP)' }).click();
+  await expect(page.getByText('Copiado')).toBeVisible();
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copied).toContain(`${baseURL}/mcp`);
+});
+
 test('un agente que se conecta aparece en /config sin recargar', async ({ page, baseURL }) => {
   await page.goto('/config');
   await expect(page.getByRole('heading', { name: 'Configuración' })).toBeVisible();

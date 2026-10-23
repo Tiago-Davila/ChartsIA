@@ -49,8 +49,9 @@
 túnel público; no se puede ejecutar desde el entorno de implementación. Procedimiento:
 
 1. `pnpm build && pnpm --filter @chartsia/api start` (o `pnpm dev`).
-2. Claude Code: `claude mcp add --transport http chartsia http://127.0.0.1:3333/mcp`.
-   Claude Desktop: comando `pnpm --filter @chartsia/api exec chartsia-mcp`.
+2. Claude Code: `claude mcp add --transport http --scope user chartsia http://127.0.0.1:3333/mcp`.
+   Claude Desktop: comando `node <RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js` en
+   `claude_desktop_config.json` (ver README).
 3. Ejecutar los escenarios 1, 3, 4, 5 y 8 y las 30 peticiones de [eval-prompts.md](./eval-prompts.md);
    anotar por petición: aceptada / solapes / turnos hasta corregir.
 4. GPT: hub con `CHARTSIA_HOST=0.0.0.0`, túnel HTTPS y herramienta `mcp` de la Responses API con

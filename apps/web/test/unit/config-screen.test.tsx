@@ -1,7 +1,7 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { AGENTS } from '../../src/app/agents';
+import { AGENTS, promptInstalacion } from '../../src/app/agents';
 import { ConfigScreen } from '../../src/app/ConfigScreen';
 import { type ConnectedAgent } from '../../src/state/api-client';
 import { clearToken, setToken } from '../../src/state/auth-token';
@@ -22,7 +22,34 @@ describe('ConfigScreen', () => {
     expect(screen.getByText(`${origin}/mcp`)).toBeInTheDocument();
     expect(screen.getByText('Conectado al hub')).toBeInTheDocument();
     for (const agent of AGENTS) expect(screen.getByRole('article', { name: agent.name })).toBeInTheDocument();
-    expect(screen.getByText(`claude mcp add --transport http chartsia ${origin}/mcp`)).toBeInTheDocument();
+    expect(screen.getByText(`claude mcp add --transport http --scope user chartsia ${origin}/mcp`)).toBeInTheDocument();
+  });
+
+  it('el comando de Claude Code es de usuario y añade el token fuera de loopback', () => {
+    const claude = AGENTS.find((a) => a.id === 'claude-code')!;
+    expect(claude.snippet(`${origin}/mcp`)).toBe(`claude mcp add --transport http --scope user chartsia ${origin}/mcp`);
+    expect(claude.snippet('https://hub.example.com/mcp')).toContain('--scope user');
+    expect(claude.snippet('https://hub.example.com/mcp')).toContain('Authorization: Bearer <CHARTSIA_TOKEN>');
+  });
+
+  it('los agentes stdio lanzan el puente con node y su ruta absoluta, no con pnpm exec (#251)', () => {
+    const mcpUrl = `${origin}/mcp`;
+    for (const agent of AGENTS) expect(agent.snippet(mcpUrl)).not.toContain('chartsia-mcp');
+    for (const id of ['claude-desktop', 'opencode-local']) {
+      expect(AGENTS.find((a) => a.id === id)!.snippet(mcpUrl)).toContain('<RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js');
+    }
+  });
+
+  it('solo la Responses API, que no tiene configuración global, lo explica en su ayuda', () => {
+    const sinGlobal = AGENTS.filter((a) => /no tiene configuración global/i.test(a.help));
+    expect(sinGlobal.map((a) => a.id)).toEqual(['openai']);
+  });
+
+  it('muestra en la tarjeta la ayuda de Claude Desktop con su archivo de configuración', () => {
+    renderScreen();
+    const card = screen.getByRole('article', { name: 'Claude Desktop (stdio)' });
+    expect(card).toHaveTextContent('claude_desktop_config.json');
+    expect(JSON.parse(AGENTS.find((a) => a.id === 'claude-desktop')!.snippet(`${origin}/mcp`)).mcpServers.chartsia.command).toBe('node');
   });
 
   it('los snippets de OpenCode son JSON válido con la URL del hub', () => {
@@ -53,8 +80,35 @@ describe('ConfigScreen', () => {
     const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
     renderScreen();
     await user.click(screen.getByRole('button', { name: 'Copiar configuración de Claude Code (HTTP)' }));
-    expect(writeText).toHaveBeenCalledWith(`claude mcp add --transport http chartsia ${origin}/mcp`);
+    expect(writeText).toHaveBeenCalledWith(`claude mcp add --transport http --scope user chartsia ${origin}/mcp`);
     expect(await screen.findByText('Copiado')).toBeInTheDocument();
+  });
+
+  it('todos los agentes tienen prompt de instalación con la URL del MCP', () => {
+    for (const agent of AGENTS) {
+      const prompt = promptInstalacion(agent, `${origin}/mcp`);
+      expect(prompt.trim()).not.toBe('');
+      expect(prompt).toContain(`${origin}/mcp`);
+      expect(prompt).toContain('create_diagram');
+    }
+  });
+
+  it('cada tarjeta muestra el botón de copiar comando y el de copiar prompt', () => {
+    renderScreen();
+    for (const agent of AGENTS) {
+      const card = screen.getByRole('article', { name: agent.name });
+      expect(within(card).getByRole('button', { name: `Copiar configuración de ${agent.name}` })).toBeInTheDocument();
+      expect(within(card).getByRole('button', { name: `Copiar prompt de ${agent.name}` })).toBeInTheDocument();
+    }
+  });
+
+  it('copia el prompt de la tarjeta', async () => {
+    const user = userEvent.setup();
+    const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
+    renderScreen();
+    const claude = AGENTS.find((a) => a.id === 'claude-code')!;
+    await user.click(screen.getByRole('button', { name: `Copiar prompt de ${claude.name}` }));
+    expect(writeText).toHaveBeenCalledWith(promptInstalacion(claude, `${origin}/mcp`));
   });
 
   it('avisa si no se puede copiar', async () => {

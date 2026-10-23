@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -20,7 +21,8 @@ describe('smoke del puente stdio chartsia-mcp', () => {
 
   it('lista herramientas y crea un diagrama a través del hub', async () => {
     const client = new Client({ name: 'stdio-smoke', version: '1.0.0' });
-    await client.connect(new StdioClientTransport({ command: process.execPath, args: [bridge], env: { ...process.env, CHARTSIA_URL: `${hub.url}/mcp` } as Record<string, string> }));
+    // Mismo comando que documentan el README y /config: node con la ruta absoluta, lanzado fuera del repo.
+    await client.connect(new StdioClientTransport({ command: process.execPath, args: [bridge], cwd: tmpdir(), env: { ...process.env, CHARTSIA_URL: `${hub.url}/mcp` } as Record<string, string> }));
     expect((await client.listTools()).tools.map((t) => t.name)).toContain('create_diagram');
     const res = await client.callTool({ name: 'create_diagram', arguments: sampleDiagram });
     const id = (res.structuredContent as { diagramId: string }).diagramId;
