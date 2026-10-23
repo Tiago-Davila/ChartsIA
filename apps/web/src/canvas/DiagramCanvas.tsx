@@ -50,7 +50,8 @@ export interface DiagramCanvasProps {
   onAddFrame?: (box: FrameBox) => void;
 }
 
-export const FIT_VIEW_OPTIONS = { padding: 0.15, maxZoom: 1.25 };
+// Arriba deja lugar para la barra de herramientas, que flota sobre el lienzo.
+export const FIT_VIEW_OPTIONS = { padding: { top: '96px' as const, x: 0.15, bottom: 0.15 }, maxZoom: 1.25 };
 const PRO_OPTIONS = { hideAttribution: true };
 const MINIMAP_STYLE = { width: 180, height: 120 };
 const MAX_CAPTURE_POINTS = 2048;
@@ -411,12 +412,12 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
           maxZoom={4}
           proOptions={PRO_OPTIONS}
         >
-          <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#d5d9e0" />
+          <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
           <MiniMap pannable zoomable nodeColor={nodeColor} nodeStrokeColor="#9aa5b1" style={MINIMAP_STYLE} />
           <Controls showInteractive={false} />
           {readOnly ? null : <SelectionPanel nodes={nodes} edges={edges} editingEdge={editingEdge} onEditEdge={setEditingEdge} />}
           {readOnly ? null : (
-            <Panel position="top-left" className="drawing-tool nodrag nopan">
+            <Panel position="top-center" className="drawing-tool nodrag nopan">
               {toolButton('select', 'Selección')}
               {toolButton('hand', 'Mano')}
               {toolButton('pen', 'Lápiz')}

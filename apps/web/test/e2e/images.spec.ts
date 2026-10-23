@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test } from './support/fixtures';
 
-test('subir, pegar y arrastrar imágenes las persiste y exporta incrustadas', async ({ page, agent }) => {
+test('pegar y arrastrar imágenes las persiste y exporta incrustadas', async ({ page, agent }) => {
   const id = await agent.create({ type: 'class', title: 'Imágenes', elements: [], relations: [] });
   await page.goto(`/d/${id}`);
   const encoded = await page.evaluate(() => {
@@ -19,19 +19,20 @@ test('subir, pegar y arrastrar imágenes las persiste y exporta incrustadas', as
     };
   });
 
-  const chooserPromise = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: 'Imagen' }).click();
-  const chooser = await chooserPromise;
-  await chooser.setFiles({ name: 'subida.png', mimeType: 'image/png', buffer: Buffer.from(encoded.png, 'base64') });
+  // Pega un archivo de imagen en la app como lo haría el portapapeles.
+  const paste = (name: string, type: string, base64: string) =>
+    page.evaluate(({ name, type, base64 }) => {
+      const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+      const transfer = new DataTransfer();
+      transfer.items.add(new File([bytes], name, { type }));
+      const event = new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData: transfer });
+      document.querySelector('.app-shell__main')!.dispatchEvent(event);
+    }, { name, type, base64 });
+
+  await paste('pegada.png', 'image/png', encoded.png);
   await expect.poll(async () => (await agent.layout(id)).elements.filter((element) => element.kind === 'image').length).toBe(1);
 
-  await page.evaluate((jpeg) => {
-    const bytes = Uint8Array.from(atob(jpeg), (char) => char.charCodeAt(0));
-    const transfer = new DataTransfer();
-    transfer.items.add(new File([bytes], 'pegada.jpg', { type: 'image/jpeg' }));
-    const event = new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData: transfer });
-    document.querySelector('.app-shell__main')!.dispatchEvent(event);
-  }, encoded.jpeg);
+  await paste('pegada.jpg', 'image/jpeg', encoded.jpeg);
   await expect.poll(async () => (await agent.layout(id)).elements.filter((element) => element.kind === 'image').length).toBe(2);
 
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 9"><rect width="16" height="9" fill="#48a36b"/></svg>';

@@ -17,7 +17,7 @@ test.describe('bloque de texto', () => {
     await expect(page.getByRole('button', { name: 'Texto', exact: true })).toHaveAttribute('aria-pressed', 'false');
     await editor.fill(MARKDOWN);
     // Salir del campo confirma el texto.
-    await page.locator('.react-flow__pane').click({ position: { x: 600, y: 40 } });
+    await page.locator('.react-flow__pane').click({ position: { x: 20, y: 90 } });
     await expect(editor).toHaveCount(0);
 
     const bloque = page.locator('[data-element-id="Texto"]');
