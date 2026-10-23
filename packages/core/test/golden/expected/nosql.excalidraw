@@ -4,209 +4,6 @@
   "source": "https://github.com/chartsia/chartsia",
   "elements": [
     {
-      "id": "Clientes",
-      "type": "rectangle",
-      "x": 75.5,
-      "y": 474,
-      "width": 180,
-      "height": 126,
-      "angle": 0,
-      "strokeColor": "#1f2933",
-      "backgroundColor": "#f8fafc",
-      "fillStyle": "solid",
-      "strokeWidth": 1.5,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [
-        "Clientes-group"
-      ],
-      "frameId": null,
-      "roundness": {
-        "type": 3
-      },
-      "seed": 1736208823,
-      "version": 1,
-      "versionNonce": 727072508,
-      "isDeleted": false,
-      "boundElements": [
-        {
-          "type": "arrow",
-          "id": "cliente-referencia"
-        }
-      ],
-      "updated": 1792490400000,
-      "link": null,
-      "locked": false,
-      "customData": {
-        "kind": "collection",
-        "fields": [
-          {
-            "path": [
-              "_id"
-            ],
-            "type": "objectId"
-          },
-          {
-            "path": [
-              "nombre"
-            ],
-            "type": "string"
-          }
-        ]
-      },
-      "index": "a0"
-    },
-    {
-      "id": "Clientes-nosql-1",
-      "type": "rectangle",
-      "x": 75.5,
-      "y": 474,
-      "width": 180,
-      "height": 40,
-      "angle": 0,
-      "strokeColor": "transparent",
-      "backgroundColor": "#dbeafe",
-      "fillStyle": "solid",
-      "strokeWidth": 1,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [
-        "Clientes-group"
-      ],
-      "frameId": null,
-      "roundness": {
-        "type": 3
-      },
-      "seed": 840473751,
-      "version": 1,
-      "versionNonce": 2016802778,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1792490400000,
-      "link": null,
-      "locked": false,
-      "index": "a1"
-    },
-    {
-      "id": "Clientes-nosql-2",
-      "type": "text",
-      "x": 87.5,
-      "y": 486.42,
-      "width": 168,
-      "height": 20,
-      "angle": 0,
-      "strokeColor": "#1f2933",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 1,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [
-        "Clientes-group"
-      ],
-      "frameId": null,
-      "roundness": null,
-      "seed": 890806608,
-      "version": 1,
-      "versionNonce": 1290072279,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1792490400000,
-      "link": null,
-      "locked": false,
-      "text": "clientes",
-      "originalText": "clientes",
-      "fontSize": 14,
-      "fontFamily": 5,
-      "textAlign": "left",
-      "verticalAlign": "middle",
-      "containerId": null,
-      "autoResize": true,
-      "lineHeight": 1.25,
-      "index": "a2"
-    },
-    {
-      "id": "Clientes-nosql-3",
-      "type": "text",
-      "x": 99.5,
-      "y": 533.46,
-      "width": 156,
-      "height": 19,
-      "angle": 0,
-      "strokeColor": "#1f2933",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 1,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [
-        "Clientes-group"
-      ],
-      "frameId": null,
-      "roundness": null,
-      "seed": 874028989,
-      "version": 1,
-      "versionNonce": 1633294168,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1792490400000,
-      "link": null,
-      "locked": false,
-      "text": "_id: ObjectId",
-      "originalText": "_id: ObjectId",
-      "fontSize": 13,
-      "fontFamily": 5,
-      "textAlign": "left",
-      "verticalAlign": "middle",
-      "containerId": null,
-      "autoResize": true,
-      "lineHeight": 1.25,
-      "index": "a3"
-    },
-    {
-      "id": "Clientes-nosql-4",
-      "type": "text",
-      "x": 99.5,
-      "y": 566.46,
-      "width": 156,
-      "height": 19,
-      "angle": 0,
-      "strokeColor": "#1f2933",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 1,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [
-        "Clientes-group"
-      ],
-      "frameId": null,
-      "roundness": null,
-      "seed": 790140894,
-      "version": 1,
-      "versionNonce": 1064439867,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1792490400000,
-      "link": null,
-      "locked": false,
-      "text": "nombre: string",
-      "originalText": "nombre: string",
-      "fontSize": 13,
-      "fontFamily": 5,
-      "textAlign": "left",
-      "verticalAlign": "middle",
-      "containerId": null,
-      "autoResize": true,
-      "lineHeight": 1.25,
-      "index": "a4"
-    },
-    {
       "id": "Pedidos",
       "type": "rectangle",
       "x": 30,
@@ -301,7 +98,7 @@
           }
         ]
       },
-      "index": "a5"
+      "index": "a0"
     },
     {
       "id": "Pedidos-nosql-1",
@@ -333,7 +130,7 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "index": "a6"
+      "index": "a1"
     },
     {
       "id": "Pedidos-nosql-2",
@@ -372,7 +169,7 @@
       "containerId": null,
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "a7"
+      "index": "a2"
     },
     {
       "id": "Pedidos-nosql-3",
@@ -411,7 +208,7 @@
       "containerId": null,
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "a8"
+      "index": "a3"
     },
     {
       "id": "Pedidos-nosql-4",
@@ -450,7 +247,7 @@
       "containerId": null,
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "a9"
+      "index": "a4"
     },
     {
       "id": "Pedidos-nosql-5",
@@ -489,7 +286,7 @@
       "containerId": null,
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "aA"
+      "index": "a5"
     },
     {
       "id": "Pedidos-nosql-6",
@@ -521,7 +318,7 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "index": "aB"
+      "index": "a6"
     },
     {
       "id": "Pedidos-nosql-7",
@@ -560,7 +357,7 @@
       "containerId": null,
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "aC"
+      "index": "a7"
     },
     {
       "id": "Pedidos-nosql-8",
@@ -599,7 +396,7 @@
       "containerId": null,
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "aD"
+      "index": "a8"
     },
     {
       "id": "Pedidos-nosql-9",
@@ -631,7 +428,7 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "index": "aE"
+      "index": "a9"
     },
     {
       "id": "Pedidos-nosql-10",
@@ -670,7 +467,7 @@
       "containerId": null,
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "aF"
+      "index": "aA"
     },
     {
       "id": "Pedidos-nosql-11",
@@ -709,7 +506,7 @@
       "containerId": null,
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "aG"
+      "index": "aB"
     },
     {
       "id": "Pedidos-nosql-12",
@@ -741,6 +538,209 @@
       "locked": false,
       "text": "ciudad: string",
       "originalText": "ciudad: string",
+      "fontSize": 13,
+      "fontFamily": 5,
+      "textAlign": "left",
+      "verticalAlign": "middle",
+      "containerId": null,
+      "autoResize": true,
+      "lineHeight": 1.25,
+      "index": "aC"
+    },
+    {
+      "id": "Clientes",
+      "type": "rectangle",
+      "x": 75.5,
+      "y": 474,
+      "width": 180,
+      "height": 126,
+      "angle": 0,
+      "strokeColor": "#1f2933",
+      "backgroundColor": "#f8fafc",
+      "fillStyle": "solid",
+      "strokeWidth": 1.5,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [
+        "Clientes-group"
+      ],
+      "frameId": null,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 1736208823,
+      "version": 1,
+      "versionNonce": 727072508,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "type": "arrow",
+          "id": "cliente-referencia"
+        }
+      ],
+      "updated": 1792490400000,
+      "link": null,
+      "locked": false,
+      "customData": {
+        "kind": "collection",
+        "fields": [
+          {
+            "path": [
+              "_id"
+            ],
+            "type": "objectId"
+          },
+          {
+            "path": [
+              "nombre"
+            ],
+            "type": "string"
+          }
+        ]
+      },
+      "index": "aD"
+    },
+    {
+      "id": "Clientes-nosql-1",
+      "type": "rectangle",
+      "x": 75.5,
+      "y": 474,
+      "width": 180,
+      "height": 40,
+      "angle": 0,
+      "strokeColor": "transparent",
+      "backgroundColor": "#dbeafe",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [
+        "Clientes-group"
+      ],
+      "frameId": null,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 840473751,
+      "version": 1,
+      "versionNonce": 2016802778,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1792490400000,
+      "link": null,
+      "locked": false,
+      "index": "aE"
+    },
+    {
+      "id": "Clientes-nosql-2",
+      "type": "text",
+      "x": 87.5,
+      "y": 486.42,
+      "width": 168,
+      "height": 20,
+      "angle": 0,
+      "strokeColor": "#1f2933",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [
+        "Clientes-group"
+      ],
+      "frameId": null,
+      "roundness": null,
+      "seed": 890806608,
+      "version": 1,
+      "versionNonce": 1290072279,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1792490400000,
+      "link": null,
+      "locked": false,
+      "text": "clientes",
+      "originalText": "clientes",
+      "fontSize": 14,
+      "fontFamily": 5,
+      "textAlign": "left",
+      "verticalAlign": "middle",
+      "containerId": null,
+      "autoResize": true,
+      "lineHeight": 1.25,
+      "index": "aF"
+    },
+    {
+      "id": "Clientes-nosql-3",
+      "type": "text",
+      "x": 99.5,
+      "y": 533.46,
+      "width": 156,
+      "height": 19,
+      "angle": 0,
+      "strokeColor": "#1f2933",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [
+        "Clientes-group"
+      ],
+      "frameId": null,
+      "roundness": null,
+      "seed": 874028989,
+      "version": 1,
+      "versionNonce": 1633294168,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1792490400000,
+      "link": null,
+      "locked": false,
+      "text": "_id: ObjectId",
+      "originalText": "_id: ObjectId",
+      "fontSize": 13,
+      "fontFamily": 5,
+      "textAlign": "left",
+      "verticalAlign": "middle",
+      "containerId": null,
+      "autoResize": true,
+      "lineHeight": 1.25,
+      "index": "aG"
+    },
+    {
+      "id": "Clientes-nosql-4",
+      "type": "text",
+      "x": 99.5,
+      "y": 566.46,
+      "width": 156,
+      "height": 19,
+      "angle": 0,
+      "strokeColor": "#1f2933",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [
+        "Clientes-group"
+      ],
+      "frameId": null,
+      "roundness": null,
+      "seed": 790140894,
+      "version": 1,
+      "versionNonce": 1064439867,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1792490400000,
+      "link": null,
+      "locked": false,
+      "text": "nombre: string",
+      "originalText": "nombre: string",
       "fontSize": 13,
       "fontFamily": 5,
       "textAlign": "left",

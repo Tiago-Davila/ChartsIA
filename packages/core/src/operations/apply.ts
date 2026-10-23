@@ -1,6 +1,7 @@
 import { type z } from 'zod';
 import { type Diagram, type Element, ElementSchema } from '../model/diagram.js';
-import { isGroupKind } from '../model/enums.js';
+import { drawLevel } from '../model/draw-order.js';
+import { isGroupKind, type StackOrderTarget } from '../model/enums.js';
 import { type Operation, OperationBatchSchema } from '../model/operations.js';
 import { type Relation, RelationSchema } from '../model/relation.js';
 import { checkRules, type RuleOptions } from '../validation/index.js';
@@ -70,6 +71,26 @@ function descendants(elements: Element[], groupId: string): Set<string> {
     frontier = next.map((e) => e.id);
   }
   return out;
+}
+
+/** Mueve el elemento en `index` dentro del array; forward y backward saltan solo sobre su mismo nivel de dibujo. */
+function reorderElement(elements: Element[], index: number, to: StackOrderTarget): Element[] {
+  const element = elements[index]!;
+  const rest = elements.filter((_, i) => i !== index);
+  const insertAt = (at: number) => [...rest.slice(0, at), element, ...rest.slice(at)];
+  if (to === 'front') return insertAt(rest.length);
+  if (to === 'back') return insertAt(0);
+  const byId = new Map(elements.map((e) => [e.id, e]));
+  const level = drawLevel(byId, element);
+  if (to === 'forward') {
+    const above = elements.findIndex((e, i) => i > index && drawLevel(byId, e) === level);
+    return above < 0 ? elements : insertAt(above);
+  }
+  let below = -1;
+  elements.forEach((e, i) => {
+    if (i < index && drawLevel(byId, e) === level) below = i;
+  });
+  return below < 0 ? elements : insertAt(below);
 }
 
 interface Draft {
@@ -154,6 +175,9 @@ function applyOne(draft: Draft, op: Operation, base: string): void {
       d.elements[index] = { ...el, layout: { ...layout, width: op.width, height: op.height, pinned: true, resized: true } };
       return;
     }
+    case 'reorder_element':
+      d.elements = reorderElement(d.elements, findElement(op.id), op.to);
+      return;
     case 'set_title':
       d.title = op.title;
       return;
