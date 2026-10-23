@@ -47,9 +47,9 @@
     {
       "id": "cliente-label",
       "type": "text",
-      "x": 44.5,
-      "y": 38,
-      "width": 104,
+      "x": 70,
+      "y": 45.25,
+      "width": 53,
       "height": 17.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -125,9 +125,9 @@
     {
       "id": "nombre-label",
       "type": "text",
-      "x": 38,
-      "y": 364,
-      "width": 77,
+      "x": 50.5,
+      "y": 369.88,
+      "width": 52,
       "height": 16.25,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -161,11 +161,11 @@
     },
     {
       "id": "nube",
-      "type": "ellipse",
-      "x": 163,
-      "y": 158,
-      "width": 140,
-      "height": 90,
+      "type": "line",
+      "x": 198,
+      "y": 180.5,
+      "width": 124.51,
+      "height": 77.06,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "#fffef5",
@@ -174,38 +174,137 @@
       "strokeStyle": "solid",
       "roughness": 1,
       "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "nube-group"
+      ],
       "frameId": null,
-      "roundness": null,
+      "roundness": {
+        "type": 2
+      },
       "seed": 69857888,
       "version": 1,
       "versionNonce": 499136839,
       "isDeleted": false,
-      "boundElements": [
-        {
-          "type": "text",
-          "id": "nube-label"
-        },
-        {
-          "type": "arrow",
-          "id": "r2"
-        },
-        {
-          "type": "arrow",
-          "id": "r3"
-        }
-      ],
+      "boundElements": null,
       "updated": 1792490400000,
       "link": null,
       "locked": false,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          -16.93,
+          3.59
+        ],
+        [
+          -25.2,
+          11.81
+        ],
+        [
+          -24.02,
+          20.88
+        ],
+        [
+          -12.6,
+          27
+        ],
+        [
+          -21.33,
+          35.96
+        ],
+        [
+          -17.32,
+          45.34
+        ],
+        [
+          -5.71,
+          51.17
+        ],
+        [
+          8.4,
+          49.5
+        ],
+        [
+          22.47,
+          59.63
+        ],
+        [
+          42.18,
+          63
+        ],
+        [
+          62.15,
+          59.63
+        ],
+        [
+          77,
+          49.5
+        ],
+        [
+          92.91,
+          46.55
+        ],
+        [
+          99.31,
+          39.38
+        ],
+        [
+          97.18,
+          30.52
+        ],
+        [
+          87.5,
+          22.5
+        ],
+        [
+          92.86,
+          9.42
+        ],
+        [
+          85.75,
+          -1.12
+        ],
+        [
+          70.77,
+          -6.61
+        ],
+        [
+          52.5,
+          -4.5
+        ],
+        [
+          37.9,
+          -12.02
+        ],
+        [
+          22.31,
+          -14.06
+        ],
+        [
+          8.7,
+          -10.2
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "polygon": true,
+      "lastCommittedPoint": null,
+      "startBinding": null,
+      "endBinding": null,
+      "startArrowhead": null,
+      "endArrowhead": null,
       "index": "a4"
     },
     {
       "id": "nube-label",
       "type": "text",
-      "x": 171,
-      "y": 166,
-      "width": 124,
+      "x": 214,
+      "y": 192,
+      "width": 38,
       "height": 17.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -215,7 +314,9 @@
       "strokeStyle": "solid",
       "roughness": 1,
       "opacity": 100,
-      "groupIds": [],
+      "groupIds": [
+        "nube-group"
+      ],
       "frameId": null,
       "roundness": null,
       "seed": 1057006705,
@@ -232,7 +333,7 @@
       "fontFamily": 5,
       "textAlign": "center",
       "verticalAlign": "middle",
-      "containerId": "nube",
+      "containerId": null,
       "autoResize": true,
       "lineHeight": 1.25,
       "index": "a5"
@@ -281,9 +382,9 @@
     {
       "id": "circulo-label",
       "type": "text",
-      "x": 191,
-      "y": 336,
-      "width": 84,
+      "x": 206.5,
+      "y": 369.25,
+      "width": 53,
       "height": 17.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -359,9 +460,9 @@
     {
       "id": "cuadrado-label",
       "type": "text",
-      "x": 51.17,
-      "y": 516,
-      "width": 84,
+      "x": 57.42,
+      "y": 549.25,
+      "width": 71.5,
       "height": 17.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -500,11 +601,7 @@
         "focus": 0,
         "gap": 1
       },
-      "endBinding": {
-        "elementId": "nube",
-        "focus": 0,
-        "gap": 1
-      },
+      "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": "arrow",
       "elbowed": false,
@@ -513,9 +610,9 @@
     {
       "id": "r2-label",
       "type": "text",
-      "x": 124.5,
-      "y": 86,
-      "width": 100.5,
+      "x": 127,
+      "y": 86.5,
+      "width": 95.5,
       "height": 15,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -584,11 +681,7 @@
         ]
       ],
       "lastCommittedPoint": null,
-      "startBinding": {
-        "elementId": "nube",
-        "focus": 0,
-        "gap": 1
-      },
+      "startBinding": null,
       "endBinding": {
         "elementId": "circulo",
         "focus": 0,
@@ -637,10 +730,6 @@
         [
           -123.16,
           16
-        ],
-        [
-          -123.16,
-          64
         ],
         [
           -123.16,
@@ -701,10 +790,6 @@
         ],
         [
           0,
-          92
-        ],
-        [
-          0,
           108
         ]
       ],
@@ -727,9 +812,9 @@
     {
       "id": "r5-label",
       "type": "text",
-      "x": 84.5,
-      "y": 408,
-      "width": -16,
+      "x": 61.75,
+      "y": 446.5,
+      "width": 29.5,
       "height": 15,
       "angle": 0,
       "strokeColor": "#1e1e1e",
