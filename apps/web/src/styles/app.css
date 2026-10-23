@@ -208,6 +208,20 @@
 .diagram-list__section-title:hover {
   background: var(--surface-muted);
 }
+.diagram-list__section-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.diagram-list__section-head .diagram-list__section-title {
+  flex: 1;
+  min-width: 0;
+}
+.diagram-list__section-head .diagram-list__menu-button {
+  position: static;
+  flex: none;
+  line-height: 20px;
+}
 .diagram-list__count {
   margin-left: auto;
 }
@@ -378,6 +392,14 @@
 .button--primary:hover {
   background: #0d5aa5;
 }
+.button--danger {
+  color: #fff;
+  background: var(--danger);
+  border-color: var(--danger);
+}
+.button--danger:hover {
+  filter: brightness(0.92);
+}
 button:disabled,
 .is-disabled {
   opacity: 0.5;
@@ -412,6 +434,56 @@ button:disabled,
 }
 .menu li button:hover {
   background: var(--surface-muted);
+}
+
+/* Ventana modal y ventana de nombre */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(16 24 40 / 35%);
+}
+.modal {
+  width: min(360px, 100%);
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.modal__title {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+.modal__form {
+  display: grid;
+  gap: 12px;
+}
+.modal__text {
+  margin: 0 0 16px;
+  font-size: 14px;
+}
+.modal__field {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.modal__field input {
+  padding: 6px 8px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 /* Lienzo y nodos */

@@ -8,6 +8,7 @@ export type Origin = 'agent' | 'app';
 export type DiagramEvent =
   | { name: 'diagram.created'; payload: { diagramId: string; title: string; type: DiagramType } }
   | { name: 'diagram.updated'; payload: { diagramId: string; revision: number; origin: Origin; diagram: Diagram } }
+  | { name: 'diagram.deleted'; payload: { diagramId: string } }
   | { name: 'projects.changed'; payload: { projects: Project[] } }
   | { name: 'active.changed'; payload: { diagramId: string } }
   | { name: 'agents.changed'; payload: { agents: ConnectedAgent[] } };

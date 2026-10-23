@@ -29,6 +29,8 @@ export interface DiagramState {
   applyUpdate(event: DiagramUpdatedEvent): void;
   reconcile(remote: Diagram): void;
   diagramCreated(event: { diagramId: string; title: string; type: DiagramType }): void;
+  /** Quita el diagrama de la lista; si estaba abierto o activo, ya no lo está. */
+  diagramDeleted(diagramId: string): void;
   setActive(diagramId: string): void;
   setConnection(state: ConnectionState): void;
   setNeedsToken(value: boolean): void;
@@ -100,6 +102,12 @@ export function createDiagramStore() {
           ? s
           : { diagrams: upsert(s.diagrams, { diagramId, title, type, revision: 1, updatedAt: new Date().toISOString() }) },
       ),
+    diagramDeleted: (diagramId) =>
+      set((s) => ({
+        diagrams: s.diagrams.filter((d) => d.diagramId !== diagramId),
+        activeDiagramId: s.activeDiagramId === diagramId ? null : s.activeDiagramId,
+        ...(s.openDiagramId === diagramId ? { openDiagramId: null, diagram: undefined, lastOrigin: undefined, lastChangedIds: [] } : {}),
+      })),
     setActive: (diagramId) => set({ activeDiagramId: diagramId }),
     setConnection: (connection) => set({ connection }),
     setNeedsToken: (needsToken) => set({ needsToken }),

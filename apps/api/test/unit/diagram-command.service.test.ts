@@ -170,3 +170,34 @@ describe('DiagramCommandService.activate', () => {
     expect(errors[0]?.code).toBe('DIAGRAM_NOT_FOUND');
   });
 });
+
+describe('DiagramCommandService.deleteDiagram', () => {
+  it('quita el diagrama, su historial y emite diagram.deleted', async () => {
+    const { commands, repo, emitted } = createServices();
+    const { diagram } = await commands.create(libraryInput);
+    await commands.apply({ diagramId: diagram.id, operations: [{ op: 'set_title', title: 'A' }], origin: 'app' });
+    emitted.length = 0;
+    await commands.deleteDiagram(diagram.id);
+    expect(await repo.get(diagram.id)).toBeUndefined();
+    expect(await repo.list()).toEqual([]);
+    expect(emitted).toEqual([{ name: 'diagram.deleted', payload: { diagramId: diagram.id } }]);
+    expect((await domainErrors(commands.undo({ diagramId: diagram.id, direction: 'undo', origin: 'app' })))[0]?.code).toBe('DIAGRAM_NOT_FOUND');
+  });
+
+  it('borrar el activo deja el activo vacío; borrar otro lo conserva', async () => {
+    const { commands, repo } = createServices();
+    const first = await commands.create(libraryInput);
+    const second = await commands.create({ ...libraryInput, title: 'Segundo' });
+    await commands.deleteDiagram(first.diagram.id);
+    expect(await repo.getActiveId()).toBe(second.diagram.id);
+    await commands.deleteDiagram(second.diagram.id);
+    expect(await repo.getActiveId()).toBeNull();
+  });
+
+  it('id inexistente ⇒ DIAGRAM_NOT_FOUND y no emite', async () => {
+    const { commands, emitted } = createServices();
+    const errors = await domainErrors(commands.deleteDiagram('dg_zzzzzzzzzzzz'));
+    expect(errors[0]?.code).toBe('DIAGRAM_NOT_FOUND');
+    expect(emitted).toEqual([]);
+  });
+});
