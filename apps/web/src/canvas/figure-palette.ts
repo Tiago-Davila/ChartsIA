@@ -2,6 +2,7 @@ import {
   C4_ELEMENT_KINDS,
   CLASS_ELEMENT_KINDS,
   type Diagram,
+  type DiagramType,
   type Element,
   type ElementKind,
   ER_ELEMENT_KINDS,
@@ -100,9 +101,21 @@ const SECCIONES: readonly { id: string; title: string; kinds: readonly ElementKi
   { id: 'figuras-generales', title: 'Figuras generales', kinds: [...FIGURE_ELEMENT_KINDS, ...FRAME_ELEMENT_KINDS] },
 ];
 
-/** Reparte PALETTE_ITEMS en las secciones de la barra, cada figura en una sola. */
-export function paletteSections(): PaletteSection[] {
-  return SECCIONES.map(({ id, title, kinds }) => ({ id, title, items: PALETTE_ITEMS.filter((item) => kinds.includes(item.kind)) }));
+/** Sección propia de cada tipo de diagrama; los tipos C4 comparten la de C4. */
+const SECCION_DE_TIPO: Record<DiagramType, string> = {
+  class: 'clases',
+  'c4-context': 'c4',
+  'c4-container': 'c4',
+  'c4-component': 'c4',
+  er: 'er',
+  nosql: 'nosql',
+};
+
+/** Reparte PALETTE_ITEMS en las secciones de la barra, cada figura en una sola; la del tipo de diagrama va primero. */
+export function paletteSections(tipo?: DiagramType): PaletteSection[] {
+  const propia = tipo ? SECCION_DE_TIPO[tipo] : undefined;
+  const ordenadas = [...SECCIONES].sort((a, b) => Number(b.id === propia) - Number(a.id === propia));
+  return ordenadas.map(({ id, title, kinds }) => ({ id, title, items: PALETTE_ITEMS.filter((item) => kinds.includes(item.kind)) }));
 }
 
 /** Sub-atributo que trae consigo un atributo compuesto. */

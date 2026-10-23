@@ -139,4 +139,10 @@ test.describe('barra de figuras', () => {
     await expect(seccionC4).toHaveJSProperty('open', true);
     await expect(page.locator('[data-figure="person"]')).toBeVisible();
   });
+
+  test('en un diagrama ER la sección ER va primera en la barra', async ({ page, agent }) => {
+    const er = await agent.create({ type: 'er', title: 'ER', elements: [], relations: [] });
+    await page.goto(`/d/${er}`);
+    await expect(page.locator('details.figure-sidebar__section').first().locator('summary')).toHaveText('ER');
+  });
 });
