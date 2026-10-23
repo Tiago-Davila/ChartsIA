@@ -28,6 +28,7 @@ import { SelectionPanel } from './SelectionPanel';
 import { WidthPicker } from './WidthPicker';
 import { sampleStroke } from './drawing';
 import { type FrameBox } from './figure-palette';
+import { hasClipboard } from './clipboard';
 import { fieldUpdates, PALETTE } from './style-edits';
 
 export interface DiagramCanvasProps {
@@ -38,6 +39,9 @@ export interface DiagramCanvasProps {
   onNodeDragStop?: OnNodeDrag;
   onDelete?: (params: { nodes: Node[]; edges: Edge[] }) => void;
   onDuplicate?: () => void;
+  onCopy?: () => void;
+  onCut?: () => void;
+  onPaste?: () => void;
   onConnect?: OnConnect;
   onDraw?: (points: Point[], screenPoints: Point[], color: string, width: number, highlighter: boolean) => void;
   onAddText?: (screenPosition: { x: number; y: number }) => void;
@@ -94,7 +98,7 @@ function keepSelection<T extends Node | Edge>(prev: T[], next: T[]): T[] {
  * Lienzo infinito (React Flow): pan, zoom, minimapa y controles. El estado local permite
  * arrastrar con fluidez; cada actualización del hub lo reemplaza (el hub es la fuente de verdad).
  */
-export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incomingEdges, readOnly = false, onNodeDragStop, onDelete, onDuplicate, onConnect, onDraw, onAddText, onAddFrame }: DiagramCanvasProps) {
+export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incomingEdges, readOnly = false, onNodeDragStop, onDelete, onDuplicate, onCopy, onCut, onPaste, onConnect, onDraw, onAddText, onAddFrame }: DiagramCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(incomingNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(incomingEdges);
   const { fitView, screenToFlowPosition, deleteElements } = useReactFlow();
@@ -311,6 +315,10 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   );
 
   const menuItems: ContextMenuItem[] = [
+    { label: 'Copiar', onSelect: () => onCopy?.() },
+    { label: 'Cortar', onSelect: () => onCut?.() },
+    // Pegar solo aparece con algo copiado.
+    ...(hasClipboard() ? [{ label: 'Pegar', onSelect: () => onPaste?.() }] : []),
     { label: 'Duplicar', onSelect: () => onDuplicate?.() },
     { label: 'Borrar', onSelect: deleteSelection },
   ];

@@ -11,6 +11,7 @@ import { readImageFile } from './image-import';
 import { changesForAddMember, changesForRemoveMember, changesForSlot, type MemberKind } from './slot-edits';
 import { type StyleUpdate } from './style-edits';
 import { simplifyStroke } from './drawing';
+import { copyElements, getClipboard, PASTE_STEP, pasteOperations } from './clipboard';
 import { newTextBlock } from './text-block';
 import { framePadding } from '@chartsia/core/shapes';
 
@@ -369,6 +370,28 @@ export function useDiagramEdits(api: ApiClient) {
     void send(ops);
   }, [getEdges, selectedBoxes, send]);
 
+  /** Ctrl+C y menú: copia la selección en el portapapeles en memoria. */
+  const copy = useCallback(() => {
+    const diagram = diagramStore.getState().diagram;
+    if (diagram) copyElements(diagram, getNodes().filter((n) => n.selected).map((n) => n.id));
+  }, [getNodes]);
+
+  /** Ctrl+X y menú: copia la selección y la borra en un solo lote, un paso de Ctrl+Z. */
+  const cut = useCallback(() => {
+    const diagram = diagramStore.getState().diagram;
+    const nodes = getNodes().filter((n) => n.selected);
+    if (diagram && copyElements(diagram, nodes.map((n) => n.id))) onDelete({ nodes, edges: getEdges().filter((e) => e.selected) });
+  }, [getEdges, getNodes, onDelete]);
+
+  /** Ctrl+V y menú: pega el portapapeles; en el mismo diagrama cada pegado se corre 30 px. */
+  const paste = useCallback(() => {
+    const diagram = diagramStore.getState().diagram;
+    const clip = getClipboard();
+    if (!diagram || !clip) return;
+    const offset = clip.diagramId === diagram.id ? PASTE_STEP * ++clip.pastes : 0;
+    void send(pasteOperations(clip, diagram, offset));
+  }, [send]);
+
   /** Alinea o distribuye los elementos seleccionados. */
   const align = useCallback(
     (mode: AlignMode) => void send(alignBoxes(selectedBoxes(), mode).map((m) => ({ op: 'move_element', ...m }))),
@@ -449,5 +472,5 @@ export function useDiagramEdits(api: ApiClient) {
     [editText, addMember, removeMember, resize, updateRelation, updateStyles, leaveGroup, ungroup, groupInFrame],
   );
 
-  return { onNodeDragStop, onDelete, onConnect, onDraw: addDrawing, editText, editActions, history, duplicate, align, rename, insertImages, addFigure, addFigureAtCenter, addText, addFrame };
+  return { onNodeDragStop, onDelete, onConnect, onDraw: addDrawing, editText, editActions, history, duplicate, copy, cut, paste, align, rename, insertImages, addFigure, addFigureAtCenter, addText, addFrame };
 }
