@@ -98,6 +98,15 @@ function ConnectedApp() {
     }
   }, []);
 
+  // Renombra un proyecto; la lista se actualiza con el evento `projects.changed`.
+  const onRenameProject = useCallback(async (projectId: string, name: string) => {
+    try {
+      await api.renameProject(projectId, name);
+    } catch (error) {
+      reportError(error);
+    }
+  }, []);
+
   // Elimina el proyecto; sus diagramas quedan sin proyecto y la lista se actualiza con `projects.changed`.
   const onDeleteProject = useCallback(async (projectId: string) => {
     try {
@@ -168,6 +177,7 @@ function ConnectedApp() {
           onImportMermaid={onImportMermaid}
           onMoveDiagram={onMoveDiagram}
           onNewProject={onNewProject}
+          onRenameProject={onRenameProject}
           onDeleteProject={onDeleteProject}
           onRenameDiagram={onRenameDiagram}
           onExport={onExport}

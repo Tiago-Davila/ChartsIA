@@ -95,6 +95,8 @@ export function createApiClient({ baseUrl = '', getToken, fetch: fetchImpl = (..
       await request(`/api/diagrams/${id(diagramId)}/activate`, { method: 'POST' });
     },
     createProject: (name: string) => json<Project>('/api/projects', { method: 'POST', body: JSON.stringify({ name }) }),
+    renameProject: (projectId: string, name: string) =>
+      json<Project>(`/api/projects/${id(projectId)}`, { method: 'PATCH', body: JSON.stringify({ name }) }),
     deleteProject: async (projectId: string) => {
       await request(`/api/projects/${id(projectId)}`, { method: 'DELETE' });
     },
