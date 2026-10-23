@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { type DiagramType } from '@chartsia/core/model';
 import { type Project } from '../state/api-client';
+import { DeleteProjectDialog } from './DeleteProjectDialog';
 import { DIAGRAM_TYPE_LABELS, formatDate } from './labels';
 import { NameDialog } from './NameDialog';
 
@@ -27,6 +28,8 @@ export interface DiagramListProps {
   onRenameProject(projectId: string, name: string): void;
   /** Cambia el título del diagrama sin abrirlo. */
   onRename(diagramId: string, title: string): void;
+  /** Elimina el proyecto; sus diagramas pasan a "Sin proyecto". */
+  onDeleteProject(projectId: string): void;
 }
 
 /** Quita mayúsculas y acentos para comparar títulos. */
@@ -59,14 +62,15 @@ export function agruparPorProyecto(diagramas: DiagramListItem[], proyectos: Proj
   return busqueda.trim() ? secciones.filter((s) => s.diagramas.length > 0) : secciones;
 }
 
-/** Ventana abierta desde un menú ⋯: nombre de un proyecto nuevo, nombre de un proyecto o título de un diagrama. */
+/** Ventana abierta desde un menú ⋯: nombre de un proyecto nuevo, nombre de un proyecto, título de un diagrama o confirmación para eliminar un proyecto. */
 type Dialogo =
   | { tipo: 'proyecto'; diagramId: string }
   | { tipo: 'renombrar-proyecto'; projectId: string; nombre: string }
-  | { tipo: 'titulo'; diagrama: DiagramListItem };
+  | { tipo: 'titulo'; diagrama: DiagramListItem }
+  | { tipo: 'eliminarProyecto'; proyectoId: string; nombre: string };
 
 /** Barra lateral con los diagramas agrupados por proyecto (FR-025); el activo de los agentes va marcado. */
-export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId, onOpen, onMove, onNewProject, onRenameProject, onRename }: DiagramListProps) {
+export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId, onOpen, onMove, onNewProject, onRenameProject, onRename, onDeleteProject }: DiagramListProps) {
   const [busqueda, setBusqueda] = useState('');
   const [plegadas, setPlegadas] = useState<ReadonlySet<string>>(new Set());
   const [menuAbierto, setMenuAbierto] = useState<string | null>(null);
@@ -165,6 +169,7 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
     );
   };
 
+  // Menú ⋯ de la cabecera de un proyecto; hoy solo permite eliminarlo.
   return (
     <nav className="diagram-list" aria-label="Diagramas">
       <h2 className="diagram-list__title">Diagramas</h2>
@@ -216,6 +221,11 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
                               Renombrar…
                             </button>
                           </li>
+                          <li role="none">
+                            <button type="button" role="menuitem" onClick={() => elegir(() => setDialogo({ tipo: 'eliminarProyecto', proyectoId: projectId, nombre: s.nombre }))}>
+                              Eliminar proyecto…
+                            </button>
+                          </li>
                         </ul>
                       ) : null}
                     </div>
@@ -227,6 +237,17 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
           })}
         </ul>
       )}
+      {dialogo?.tipo === 'eliminarProyecto' ? (
+        <DeleteProjectDialog
+          nombre={dialogo.nombre}
+          diagramas={diagrams.filter((d) => d.projectId === dialogo.proyectoId).length}
+          onCerrar={cerrarDialogo}
+          onConfirmar={() => {
+            onDeleteProject(dialogo.proyectoId);
+            cerrarDialogo();
+          }}
+        />
+      ) : null}
       {dialogo?.tipo === 'proyecto' ? (
         <NameDialog
           titulo="Nuevo proyecto"

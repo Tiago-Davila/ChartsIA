@@ -24,6 +24,7 @@ const base: AppShellProps = {
   onMoveDiagram: vi.fn(),
   onNewProject: vi.fn(),
   onRenameProject: vi.fn(),
+  onDeleteProject: vi.fn(),
   onRenameDiagram: vi.fn(),
   onExport: vi.fn(),
 };
