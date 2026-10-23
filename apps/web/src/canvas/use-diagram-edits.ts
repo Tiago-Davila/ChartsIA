@@ -6,7 +6,7 @@ import { ApiError, type ApiClient } from '../state/api-client';
 import { diagramStore } from '../state/diagram-store';
 import { type AlignMode, alignBoxes } from './align';
 import { connectionRelation, freeId } from './edge-edits';
-import { centeredFreePoint, newPaletteEdit, type PaletteItem, PALETTE_ITEMS } from './figure-palette';
+import { centeredFreePoint, type FrameBox, newFrameElement, newPaletteEdit, type PaletteItem, PALETTE_ITEMS } from './figure-palette';
 import { readImageFile } from './image-import';
 import { changesForAddMember, changesForRemoveMember, changesForSlot, type MemberKind } from './slot-edits';
 import { type StyleUpdate } from './style-edits';
@@ -140,6 +140,16 @@ export function useDiagramEdits(api: ApiClient) {
       });
     },
     [screenToFlowPosition, send],
+  );
+
+  /** Herramienta Marco: crea un marco con el rectángulo arrastrado, en coordenadas del lienzo. */
+  const addFrame = useCallback(
+    (box: FrameBox) => {
+      const diagram = diagramStore.getState().diagram;
+      if (!diagram) return;
+      void send([{ op: 'add_element', element: newFrameElement(diagram, box) }]);
+    },
+    [send],
   );
 
   /** Ctrl+Z / Ctrl+Y: deshace o rehace el último cambio del diagrama en el hub. */
@@ -428,5 +438,5 @@ export function useDiagramEdits(api: ApiClient) {
     [editText, addMember, removeMember, resize, updateRelation, updateStyles, leaveGroup, ungroup, groupInFrame],
   );
 
-  return { onNodeDragStop, onDelete, onConnect, onDraw: addDrawing, editText, editActions, history, duplicate, align, rename, insertImages, addFigure, addFigureAtCenter, addText };
+  return { onNodeDragStop, onDelete, onConnect, onDraw: addDrawing, editText, editActions, history, duplicate, align, rename, insertImages, addFigure, addFigureAtCenter, addText, addFrame };
 }

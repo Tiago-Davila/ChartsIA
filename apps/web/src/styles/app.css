@@ -65,6 +65,14 @@
   overflow: visible;
   pointer-events: none;
 }
+/* Rectángulo que se ve mientras se arrastra la herramienta Marco. */
+.diagram-canvas__frame {
+  position: absolute;
+  z-index: 5;
+  border: 1px dashed var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  pointer-events: none;
+}
 .figure-sidebar {
   display: flex;
   flex-direction: column;

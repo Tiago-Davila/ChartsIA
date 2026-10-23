@@ -26,6 +26,7 @@ import { type ElementNodeData } from '../nodes/types';
 import { SelectionPanel } from './SelectionPanel';
 import { WidthPicker } from './WidthPicker';
 import { sampleStroke } from './drawing';
+import { type FrameBox } from './figure-palette';
 import { fieldUpdates, PALETTE } from './style-edits';
 
 export interface DiagramCanvasProps {
@@ -38,6 +39,7 @@ export interface DiagramCanvasProps {
   onConnect?: OnConnect;
   onDraw?: (points: Point[], screenPoints: Point[], color: string, width: number, highlighter: boolean) => void;
   onAddText?: (screenPosition: { x: number; y: number }) => void;
+  onAddFrame?: (box: FrameBox) => void;
 }
 
 export const FIT_VIEW_OPTIONS = { padding: 0.15, maxZoom: 1.25 };
@@ -48,9 +50,27 @@ const MAX_CAPTURE_POINTS = 2048;
 const BUCKET_DEFAULT_COLOR = PALETTE[3].value;
 
 /** Herramienta activa de la barra. `select` es la de por defecto y apaga a las demás. */
-type CanvasTool = 'select' | 'hand' | 'pen' | 'highlighter' | 'bucket' | 'text';
+type CanvasTool = 'select' | 'hand' | 'pen' | 'highlighter' | 'bucket' | 'text' | 'frame';
 /** Herramientas con color propio elegido en la barra. */
 type ColoredTool = 'pen' | 'highlighter' | 'bucket';
+/** Arrastre de la herramienta Marco: esquinas inicial y actual, en píxeles del lienzo. */
+interface FrameDrag {
+  start: Point;
+  end: Point;
+}
+/** Un arrastre más corto que esto, en píxeles de pantalla, no crea marco. */
+const MIN_FRAME_PX = 10;
+
+/** Punto del puntero en píxeles relativos al lienzo. */
+function canvasPoint(event: ReactPointerEvent<HTMLDivElement>): Point {
+  const rect = event.currentTarget.getBoundingClientRect();
+  return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+}
+
+/** Rectángulo entre dos esquinas, con la esquina superior izquierda y tamaños positivos. */
+function boxBetween(a: Point, b: Point) {
+  return { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), width: Math.abs(a.x - b.x), height: Math.abs(a.y - b.y) };
+}
 
 function nodeColor(node: Node): string {
   const kind = node.type ?? '';
@@ -72,7 +92,7 @@ function keepSelection<T extends Node | Edge>(prev: T[], next: T[]): T[] {
  * Lienzo infinito (React Flow): pan, zoom, minimapa y controles. El estado local permite
  * arrastrar con fluidez; cada actualización del hub lo reemplaza (el hub es la fuente de verdad).
  */
-export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incomingEdges, readOnly = false, onNodeDragStop, onDelete, onConnect, onDraw, onAddText }: DiagramCanvasProps) {
+export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incomingEdges, readOnly = false, onNodeDragStop, onDelete, onConnect, onDraw, onAddText, onAddFrame }: DiagramCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(incomingNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(incomingEdges);
   const { fitView, screenToFlowPosition } = useReactFlow();
@@ -89,6 +109,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   const drawingMode = tool === 'pen' || highlighter;
   const bucketMode = tool === 'bucket';
   const textMode = tool === 'text';
+  const frameMode = tool === 'frame';
   // Con la mano, arrastrar desplaza el lienzo aunque sea sobre una figura.
   const handMode = tool === 'hand';
   const drawingColor = highlighter ? colors.highlighter : colors.pen;
@@ -96,6 +117,9 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   const bucketColor = colors.bucket;
   const { updateStyles } = useDiagramEditActions();
   const [preview, setPreview] = useState<Point[]>([]);
+  const frameDrag = useRef<FrameDrag | undefined>(undefined);
+  const [framePreview, setFramePreview] = useState<FrameDrag>();
+  const framePreviewBox = framePreview && boxBetween(framePreview.start, framePreview.end);
   const fittedFor = useRef<string | null>(null);
   const [editingEdge, setEditingEdge] = useState<string>();
   // Cierra el formulario de textos cuando la flecha deja de estar seleccionada.
@@ -106,6 +130,11 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   // Cada actualización del hub reemplaza nodos y aristas, pero conserva lo seleccionado.
   useEffect(() => setNodes((prev) => keepSelection(prev, incomingNodes)), [incomingNodes, setNodes]);
   useEffect(() => setEdges((prev) => keepSelection(prev, incomingEdges)), [incomingEdges, setEdges]);
+  // Descarta el arrastre de la herramienta Marco en curso.
+  const clearFrame = useCallback(() => {
+    frameDrag.current = undefined;
+    setFramePreview(undefined);
+  }, []);
   useEffect(() => {
     const pointerId = activePointer.current;
     activePointer.current = undefined;
@@ -113,8 +142,9 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     strokePoints.current = [];
     screenPoints.current = [];
     setPreview([]);
+    clearFrame();
     setTool('select');
-  }, [diagramId]);
+  }, [diagramId, clearFrame]);
   // Al abrir otro diagrama se encuadra completo, cuando React Flow ya midió sus nodos.
   useEffect(() => {
     if (!initialized || fittedFor.current === diagramId) return;
@@ -124,8 +154,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
 
   // Convierte una muestra de pantalla al lienzo y la conserva para la vista previa.
   const addSample = useCallback((event: ReactPointerEvent<HTMLDivElement>, force = false) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const screen = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    const screen = canvasPoint(event);
     const previous = screenPoints.current.at(-1);
     if (previous) {
       const distance = Math.hypot(screen.x - previous.x, screen.y - previous.y);
@@ -158,6 +187,17 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
       setTool('select');
       return;
     }
+    // Con la herramienta Marco, el arrastre dibuja el rectángulo del marco.
+    if (frameMode) {
+      event.preventDefault();
+      event.stopPropagation();
+      activePointer.current = event.pointerId;
+      event.currentTarget.setPointerCapture(event.pointerId);
+      const start = canvasPoint(event);
+      frameDrag.current = { start, end: start };
+      setFramePreview(frameDrag.current);
+      return;
+    }
     if (!drawingMode) return;
     event.preventDefault();
     event.stopPropagation();
@@ -166,12 +206,17 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     strokePoints.current = [];
     screenPoints.current = [];
     addSample(event, true);
-  }, [addSample, drawingMode, onAddText, readOnly, textMode]);
+  }, [addSample, drawingMode, frameMode, onAddText, readOnly, textMode]);
 
   const moveDrawing = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     if (activePointer.current !== event.pointerId) return;
     event.preventDefault();
     event.stopPropagation();
+    if (frameDrag.current) {
+      frameDrag.current = { ...frameDrag.current, end: canvasPoint(event) };
+      setFramePreview(frameDrag.current);
+      return;
+    }
     addSample(event);
   }, [addSample]);
 
@@ -179,6 +224,20 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     if (activePointer.current !== event.pointerId) return;
     event.preventDefault();
     event.stopPropagation();
+    if (frameDrag.current) {
+      const box = boxBetween(frameDrag.current.start, canvasPoint(event));
+      clearFrame();
+      activePointer.current = undefined;
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+      setTool('select');
+      // Un arrastre muy chico no crea nada.
+      if (Math.max(box.width, box.height) < MIN_FRAME_PX) return;
+      const rect = event.currentTarget.getBoundingClientRect();
+      const topLeft = screenToFlowPosition({ x: rect.left + box.x, y: rect.top + box.y });
+      const bottomRight = screenToFlowPosition({ x: rect.left + box.x + box.width, y: rect.top + box.y + box.height });
+      onAddFrame?.({ x: topLeft.x, y: topLeft.y, width: bottomRight.x - topLeft.x, height: bottomRight.y - topLeft.y });
+      return;
+    }
     addSample(event, true);
     const points = strokePoints.current;
     const screen = screenPoints.current;
@@ -188,7 +247,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     setPreview([]);
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
     onDraw?.(points, screen, drawingColor, drawingWidth, highlighter);
-  }, [addSample, drawingColor, drawingWidth, highlighter, onDraw]);
+  }, [addSample, clearFrame, drawingColor, drawingWidth, highlighter, onAddFrame, onDraw, screenToFlowPosition]);
 
   const cancelDrawing = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     if (activePointer.current !== event.pointerId) return;
@@ -196,8 +255,9 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     strokePoints.current = [];
     screenPoints.current = [];
     setPreview([]);
+    clearFrame();
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
-  }, []);
+  }, [clearFrame]);
 
   const loseDrawing = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     if (activePointer.current !== event.pointerId) return;
@@ -205,7 +265,8 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     strokePoints.current = [];
     screenPoints.current = [];
     setPreview([]);
-  }, []);
+    clearFrame();
+  }, [clearFrame]);
 
   // Botón de la barra: al pulsar la herramienta activa vuelve a la selección.
   const toolButton = (value: CanvasTool, label: string) => (
@@ -217,7 +278,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   return (
     <div
       ref={canvas}
-      className={`diagram-canvas${drawingMode ? ' is-drawing' : ''}${bucketMode ? ' is-painting' : ''}${textMode ? ' is-placing' : ''}${handMode ? ' is-hand' : ''}`}
+      className={`diagram-canvas${drawingMode || frameMode ? ' is-drawing' : ''}${bucketMode ? ' is-painting' : ''}${textMode ? ' is-placing' : ''}${handMode ? ' is-hand' : ''}`}
       onPointerDownCapture={startDrawing}
       onPointerMoveCapture={moveDrawing}
       onPointerUpCapture={finishDrawing}
@@ -233,15 +294,15 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
         onEdgesChange={onEdgesChange}
         onNodeDragStop={onNodeDragStop}
         onDelete={onDelete}
-        nodesDraggable={!readOnly && !drawingMode && !bucketMode && !handMode}
+        nodesDraggable={!readOnly && !drawingMode && !bucketMode && !handMode && !frameMode}
         onNodeClick={paintNode}
         onConnect={onConnect}
         onEdgeDoubleClick={(_, edge) => !readOnly && setEditingEdge(edge.id)}
         onSelectionChange={onSelectionChange}
-        nodesConnectable={!readOnly && !drawingMode && !bucketMode && !handMode}
+        nodesConnectable={!readOnly && !drawingMode && !bucketMode && !handMode && !frameMode}
         connectionMode={ConnectionMode.Loose}
         elementsSelectable={!bucketMode && !handMode}
-        selectionOnDrag={!drawingMode && !bucketMode && !handMode}
+        selectionOnDrag={!drawingMode && !bucketMode && !handMode && !frameMode}
         selectionMode={SelectionMode.Partial}
         panOnScroll
         panOnDrag={handMode}
@@ -270,6 +331,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
             {toolButton('bucket', 'Balde')}
             {bucketMode ? <input type="color" aria-label="Color del balde" value={bucketColor} onChange={(event) => setColors((current) => ({ ...current, bucket: event.target.value }))} /> : null}
             {toolButton('text', 'Texto')}
+            {toolButton('frame', 'Marco')}
           </Panel>
         )}
       </ReactFlow>
@@ -279,6 +341,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
 
         </svg>
       ) : null}
+      {framePreviewBox ? <div className="diagram-canvas__frame" style={{ left: framePreviewBox.x, top: framePreviewBox.y, width: framePreviewBox.width, height: framePreviewBox.height }} /> : null}
     </div>
   );
 }
