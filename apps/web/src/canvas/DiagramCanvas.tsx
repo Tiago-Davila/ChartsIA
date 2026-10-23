@@ -47,7 +47,10 @@ const MAX_CAPTURE_POINTS = 2048;
 /** Relleno inicial del balde: el rojo de la paleta del panel de estilo. */
 const BUCKET_DEFAULT_COLOR = PALETTE[3].value;
 
-type CanvasTool = 'pen' | 'highlighter' | 'bucket' | 'text';
+/** Herramienta activa de la barra. `select` es la de por defecto y apaga a las demás. */
+type CanvasTool = 'select' | 'hand' | 'pen' | 'highlighter' | 'bucket' | 'text';
+/** Herramientas con color propio elegido en la barra. */
+type ColoredTool = 'pen' | 'highlighter' | 'bucket';
 
 function nodeColor(node: Node): string {
   const kind = node.type ?? '';
@@ -79,13 +82,15 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   const activePointer = useRef<number | undefined>(undefined);
   const strokePoints = useRef<Point[]>([]);
   const screenPoints = useRef<Point[]>([]);
-  const [tool, setTool] = useState<CanvasTool>();
-  const [colors, setColors] = useState<Record<'pen' | 'highlighter' | 'bucket', string>>({ pen: DRAWING_DEFAULT_COLOR, highlighter: HIGHLIGHTER_DEFAULT_COLOR, bucket: BUCKET_DEFAULT_COLOR });
+  const [tool, setTool] = useState<CanvasTool>('select');
+  const [colors, setColors] = useState<Record<ColoredTool, string>>({ pen: DRAWING_DEFAULT_COLOR, highlighter: HIGHLIGHTER_DEFAULT_COLOR, bucket: BUCKET_DEFAULT_COLOR });
   const [widths, setWidths] = useState<Record<'pen' | 'highlighter', StyleLineWidth>>({ pen: 'medium', highlighter: 'medium' });
   const highlighter = tool === 'highlighter';
   const drawingMode = tool === 'pen' || highlighter;
   const bucketMode = tool === 'bucket';
   const textMode = tool === 'text';
+  // Con la mano, arrastrar desplaza el lienzo aunque sea sobre una figura.
+  const handMode = tool === 'hand';
   const drawingColor = highlighter ? colors.highlighter : colors.pen;
   const drawingWidth = highlighter ? HIGHLIGHTER_WIDTH_PX[widths.highlighter] : DRAWING_WIDTH_PX[widths.pen];
   const bucketColor = colors.bucket;
@@ -108,7 +113,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     strokePoints.current = [];
     screenPoints.current = [];
     setPreview([]);
-    setTool(undefined);
+    setTool('select');
   }, [diagramId]);
   // Al abrir otro diagrama se encuadra completo, cuando React Flow ya midió sus nodos.
   useEffect(() => {
@@ -150,7 +155,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
       event.preventDefault();
       event.stopPropagation();
       onAddText?.({ x: event.clientX, y: event.clientY });
-      setTool(undefined);
+      setTool('select');
       return;
     }
     if (!drawingMode) return;
@@ -202,10 +207,17 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     setPreview([]);
   }, []);
 
+  // Botón de la barra: al pulsar la herramienta activa vuelve a la selección.
+  const toolButton = (value: CanvasTool, label: string) => (
+    <button type="button" className={`button${tool === value ? ' button--primary' : ''}`} aria-pressed={tool === value} onClick={() => setTool((active) => (active === value ? 'select' : value))}>
+      {label}
+    </button>
+  );
+
   return (
     <div
       ref={canvas}
-      className={`diagram-canvas${drawingMode ? ' is-drawing' : ''}${bucketMode ? ' is-painting' : ''}${textMode ? ' is-placing' : ''}`}
+      className={`diagram-canvas${drawingMode ? ' is-drawing' : ''}${bucketMode ? ' is-painting' : ''}${textMode ? ' is-placing' : ''}${handMode ? ' is-hand' : ''}`}
       onPointerDownCapture={startDrawing}
       onPointerMoveCapture={moveDrawing}
       onPointerUpCapture={finishDrawing}
@@ -221,18 +233,18 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
         onEdgesChange={onEdgesChange}
         onNodeDragStop={onNodeDragStop}
         onDelete={onDelete}
-        nodesDraggable={!readOnly && !drawingMode && !bucketMode}
+        nodesDraggable={!readOnly && !drawingMode && !bucketMode && !handMode}
         onNodeClick={paintNode}
         onConnect={onConnect}
         onEdgeDoubleClick={(_, edge) => !readOnly && setEditingEdge(edge.id)}
         onSelectionChange={onSelectionChange}
-        nodesConnectable={!readOnly && !drawingMode && !bucketMode}
+        nodesConnectable={!readOnly && !drawingMode && !bucketMode && !handMode}
         connectionMode={ConnectionMode.Loose}
-        elementsSelectable={!bucketMode}
-        selectionOnDrag={!drawingMode && !bucketMode}
+        elementsSelectable={!bucketMode && !handMode}
+        selectionOnDrag={!drawingMode && !bucketMode && !handMode}
         selectionMode={SelectionMode.Partial}
         panOnScroll
-        panOnDrag={false}
+        panOnDrag={handMode}
         panActivationKeyCode="Space"
         deleteKeyCode={readOnly ? null : ['Delete', 'Backspace']}
         minZoom={0.05}
@@ -245,25 +257,19 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
         {readOnly ? null : <SelectionPanel nodes={nodes} edges={edges} editingEdge={editingEdge} onEditEdge={setEditingEdge} />}
         {readOnly ? null : (
           <Panel position="top-left" className="drawing-tool nodrag nopan">
-            <button type="button" className={`button${tool === 'pen' ? ' button--primary' : ''}`} aria-pressed={tool === 'pen'} onClick={() => setTool((active) => (active === 'pen' ? undefined : 'pen'))}>
-              Lápiz
-            </button>
-            <button type="button" className={`button${highlighter ? ' button--primary' : ''}`} aria-pressed={highlighter} onClick={() => setTool((active) => (active === 'highlighter' ? undefined : 'highlighter'))}>
-              Marcador
-            </button>
+            {toolButton('select', 'Selección')}
+            {toolButton('hand', 'Mano')}
+            {toolButton('pen', 'Lápiz')}
+            {toolButton('highlighter', 'Marcador')}
             {drawingMode ? (
               <input type="color" aria-label={highlighter ? 'Color del marcador' : 'Color del lápiz'} value={drawingColor} onChange={(event) => setColors((current) => ({ ...current, [tool]: event.target.value }))} />
             ) : null}
             {drawingMode ? (
               <WidthPicker label={highlighter ? 'Grosor del marcador' : 'Grosor del lápiz'} value={widths[tool]} onPick={(width) => setWidths((current) => ({ ...current, [tool]: width }))} />
             ) : null}
-            <button type="button" className={`button${bucketMode ? ' button--primary' : ''}`} aria-pressed={bucketMode} onClick={() => setTool((active) => (active === 'bucket' ? undefined : 'bucket'))}>
-              Balde
-            </button>
+            {toolButton('bucket', 'Balde')}
             {bucketMode ? <input type="color" aria-label="Color del balde" value={bucketColor} onChange={(event) => setColors((current) => ({ ...current, bucket: event.target.value }))} /> : null}
-            <button type="button" className={`button${textMode ? ' button--primary' : ''}`} aria-pressed={textMode} onClick={() => setTool((active) => (active === 'text' ? undefined : 'text'))}>
-              Texto
-            </button>
+            {toolButton('text', 'Texto')}
           </Panel>
         )}
       </ReactFlow>
