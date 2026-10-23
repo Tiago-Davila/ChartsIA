@@ -51,6 +51,10 @@
 }
 .diagram-canvas.is-drawing .react-flow__pane { cursor: crosshair; }
 .diagram-canvas.is-painting .react-flow__node { cursor: copy; }
+.diagram-canvas.is-hand .react-flow__pane,
+.diagram-canvas.is-hand .react-flow__node { cursor: grab; }
+.diagram-canvas.is-hand:active .react-flow__pane,
+.diagram-canvas.is-hand:active .react-flow__node { cursor: grabbing; }
 .diagram-canvas__preview {
   position: absolute;
   inset: 0;

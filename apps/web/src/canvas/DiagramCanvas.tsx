@@ -46,7 +46,7 @@ const MAX_CAPTURE_POINTS = 2048;
 /** Relleno inicial del balde: el rojo de la paleta del panel de estilo. */
 const BUCKET_DEFAULT_COLOR = PALETTE[3].value;
 
-type CanvasTool = 'pen' | 'highlighter' | 'bucket';
+type CanvasTool = 'hand' | 'pen' | 'highlighter' | 'bucket';
 
 function nodeColor(node: Node): string {
   const kind = node.type ?? '';
@@ -79,11 +79,13 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   const strokePoints = useRef<Point[]>([]);
   const screenPoints = useRef<Point[]>([]);
   const [tool, setTool] = useState<CanvasTool>();
-  const [colors, setColors] = useState<Record<CanvasTool, string>>({ pen: DRAWING_DEFAULT_COLOR, highlighter: HIGHLIGHTER_DEFAULT_COLOR, bucket: BUCKET_DEFAULT_COLOR });
+  const [colors, setColors] = useState<Record<Exclude<CanvasTool, 'hand'>, string>>({ pen: DRAWING_DEFAULT_COLOR, highlighter: HIGHLIGHTER_DEFAULT_COLOR, bucket: BUCKET_DEFAULT_COLOR });
   const [widths, setWidths] = useState<Record<'pen' | 'highlighter', StyleLineWidth>>({ pen: 'medium', highlighter: 'medium' });
   const highlighter = tool === 'highlighter';
   const drawingMode = tool === 'pen' || highlighter;
   const bucketMode = tool === 'bucket';
+  // Con la mano, arrastrar desplaza el lienzo aunque sea sobre una figura.
+  const handMode = tool === 'hand';
   const drawingColor = highlighter ? colors.highlighter : colors.pen;
   const drawingWidth = highlighter ? HIGHLIGHTER_WIDTH_PX[widths.highlighter] : DRAWING_WIDTH_PX[widths.pen];
   const bucketColor = colors.bucket;
@@ -194,7 +196,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   return (
     <div
       ref={canvas}
-      className={`diagram-canvas${drawingMode ? ' is-drawing' : ''}${bucketMode ? ' is-painting' : ''}`}
+      className={`diagram-canvas${drawingMode ? ' is-drawing' : ''}${bucketMode ? ' is-painting' : ''}${handMode ? ' is-hand' : ''}`}
       onPointerDownCapture={startDrawing}
       onPointerMoveCapture={moveDrawing}
       onPointerUpCapture={finishDrawing}
@@ -210,18 +212,18 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
         onEdgesChange={onEdgesChange}
         onNodeDragStop={onNodeDragStop}
         onDelete={onDelete}
-        nodesDraggable={!readOnly && !drawingMode && !bucketMode}
+        nodesDraggable={!readOnly && !drawingMode && !bucketMode && !handMode}
         onNodeClick={paintNode}
         onConnect={onConnect}
         onEdgeDoubleClick={(_, edge) => !readOnly && setEditingEdge(edge.id)}
         onSelectionChange={onSelectionChange}
-        nodesConnectable={!readOnly && !drawingMode && !bucketMode}
+        nodesConnectable={!readOnly && !drawingMode && !bucketMode && !handMode}
         connectionMode={ConnectionMode.Loose}
-        elementsSelectable={!bucketMode}
-        selectionOnDrag={!drawingMode && !bucketMode}
+        elementsSelectable={!bucketMode && !handMode}
+        selectionOnDrag={!drawingMode && !bucketMode && !handMode}
         selectionMode={SelectionMode.Partial}
         panOnScroll
-        panOnDrag={false}
+        panOnDrag={handMode}
         panActivationKeyCode="Space"
         deleteKeyCode={readOnly ? null : ['Delete', 'Backspace']}
         minZoom={0.05}
@@ -234,6 +236,9 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
         {readOnly ? null : <SelectionPanel nodes={nodes} edges={edges} editingEdge={editingEdge} onEditEdge={setEditingEdge} />}
         {readOnly ? null : (
           <Panel position="top-left" className="drawing-tool nodrag nopan">
+            <button type="button" className={`button${handMode ? ' button--primary' : ''}`} aria-pressed={handMode} onClick={() => setTool((active) => (active === 'hand' ? undefined : 'hand'))}>
+              Mano
+            </button>
             <button type="button" className={`button${tool === 'pen' ? ' button--primary' : ''}`} aria-pressed={tool === 'pen'} onClick={() => setTool((active) => (active === 'pen' ? undefined : 'pen'))}>
               Lápiz
             </button>
