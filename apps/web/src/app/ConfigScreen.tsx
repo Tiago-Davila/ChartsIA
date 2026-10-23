@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { type ConnectedAgent } from '../state/api-client';
 import { getToken } from '../state/auth-token';
-import { AGENTS, type Agent } from './agents';
+import { AGENTS, promptInstalacion, type Agent } from './agents';
 import { ConnectionStatus, type ConnectionState } from './ConnectionStatus';
 import { formatDate } from './labels';
 
@@ -25,15 +25,20 @@ function CopyButton({ text, label }: { text: string; label: string }) {
   );
 }
 
-/** Tarjeta de un agente: instrucciones y el comando a copiar. */
+/** Tarjeta de un agente: instrucciones, el comando y el prompt de instalación, cada uno con su botón de copiar. */
 function AgentCard({ agent, mcpUrl }: { agent: Agent; mcpUrl: string }) {
   const snippet = agent.snippet(mcpUrl);
+  const prompt = promptInstalacion(agent, mcpUrl);
   return (
     <article className="config__card" aria-label={agent.name}>
       <h3>{agent.name}</h3>
       <p>{agent.help}</p>
       <code>{snippet}</code>
       <CopyButton text={snippet} label={`Copiar configuración de ${agent.name}`} />
+      <h4>Prompt de instalación</h4>
+      <p>Pégalo en el propio agente y deja que se conecte solo.</p>
+      <pre className="config__prompt"><code>{prompt}</code></pre>
+      <CopyButton text={prompt} label={`Copiar prompt de ${agent.name}`} />
     </article>
   );
 }
