@@ -29,7 +29,7 @@ describe('contract: apply_changes', () => {
   it('entrada válida mínima (sobre el diagrama activo)', async () => {
     const res = await h.call('apply_changes', { operations: [{ op: 'set_title', title: 'Biblioteca 2' }] });
     expect(res.isError).toBeFalsy();
-    expect(res.structuredContent).toEqual({ diagramId: id, revision: 2, viewUrl: `http://127.0.0.1:3333/d/${id}`, applied: 1, warnings: [] });
+    expect(res.structuredContent).toEqual({ diagramId: id, revision: 2, viewUrl: `http://chartsia.localhost:3333/d/${id}`, applied: 1, warnings: [] });
     expect((res.content as { type: string }[])[1]).toMatchObject({ type: 'resource_link' });
   });
 
