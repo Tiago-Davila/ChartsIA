@@ -9,6 +9,9 @@ import { lineHeight, measureText } from '../shapes/text-metrics.js';
 import { type DrawioCell } from './drawio.js';
 import { drawioBox, drawioFont } from './drawio-style.js';
 
+/** Alto de la celda del subrayado discontinuo; una celda sin alto no se puede seleccionar en draw.io. */
+const UNDERLINE_HEIGHT = 4;
+
 /** Flechas nativas de draw.io para cada cardinalidad pata de gallo. */
 const ARROWS: Record<Cardinality, string> = {
   one: 'ERmandOne',
@@ -51,11 +54,12 @@ function attributeCells(el: Extract<Element, { kind: 'attribute' }>, parent: str
   if (!el.partialKey) return [oval];
   const font = textFont(el.style, FONT.member);
   const width = measureText(el.name, font);
-  const y = geo.y + geo.height / 2 + lineHeight(font.size) / 4 + 3;
+  // `shape=line` dibuja la raya en el medio de la celda, así que se le da algo de alto alrededor de esa altura.
+  const y = geo.y + geo.height / 2 + lineHeight(font.size) / 4 + 3 - UNDERLINE_HEIGHT / 2;
   const underline: DrawioCell = {
     id: `${el.id}-partial-key`, parent, vertex: true, value: '',
     style: 'shape=line;strokeColor=#1f2933;dashed=1;dashPattern=4 3;',
-    geometry: { x: geo.x + (geo.width - width) / 2, y, width, height: 0 },
+    geometry: { x: geo.x + (geo.width - width) / 2, y, width, height: UNDERLINE_HEIGHT },
   };
   return [oval, underline];
 }

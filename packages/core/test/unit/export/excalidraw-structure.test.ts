@@ -26,7 +26,13 @@ describe.each(fixtureNames())('estructura de Excalidraw: %s', (name) => {
     expect(Array.isArray(file.elements)).toBe(true);
     expect(file.elements.length).toBeGreaterThan(0);
     expect(typeof file.appState).toBe('object');
-    expect(file.files).toEqual({});
+    // Cada archivo embebido es el de una imagen del diagrama, y cada imagen tiene su archivo.
+    const fileIds = (file.elements as El[]).filter((e) => e.type === 'image').map((e) => e.fileId);
+    expect(Object.keys(file.files).sort()).toEqual([...new Set(fileIds)].sort());
+    for (const [id, entry] of Object.entries(file.files as Record<string, { id: string; dataURL: string }>)) {
+      expect(entry.id).toBe(id);
+      expect(entry.dataURL).toMatch(/^data:image\//);
+    }
   });
 
   it('todos los elementos traen los campos obligatorios de su tipo, con números finitos', async () => {
@@ -37,7 +43,7 @@ describe.each(fixtureNames())('estructura de Excalidraw: %s', (name) => {
       for (const key of ['x', 'y', 'width', 'height', 'angle', 'seed', 'version', 'versionNonce', 'updated']) {
         expect(Number.isFinite(el[key]), `${el.id}.${key}`).toBe(true);
       }
-      expect(['rectangle', 'ellipse', 'text', 'line', 'arrow']).toContain(el.type);
+      expect(['rectangle', 'ellipse', 'text', 'line', 'arrow', 'image']).toContain(el.type);
       expect(el.isDeleted).toBe(false);
       expect(Array.isArray(el.groupIds)).toBe(true);
     }

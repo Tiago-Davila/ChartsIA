@@ -72,9 +72,11 @@ describe.each(fixtureNames())('estructura de draw.io: %s', (name) => {
       if (cell.attrs.edge === '1') {
         expect(cell.attrs.vertex).toBeUndefined();
         expect(geometry.attrs.relative).toBe('1');
-        for (const end of [cell.attrs.source, cell.attrs.target]) {
-          expect(end, `la arista ${id} no tiene extremo`).toBeDefined();
-          expect(byId.get(end!)?.attrs.vertex, `la arista ${id} apunta a ${end}, que no es un vértice`).toBe('1');
+        // Un trazo libre no se conecta a celdas: sus extremos son puntos sueltos de la geometría.
+        const points = findAll(geometry, 'mxPoint').map((p) => p.attrs.as);
+        for (const [end, as] of [[cell.attrs.source, 'sourcePoint'], [cell.attrs.target, 'targetPoint']] as const) {
+          if (end === undefined) expect(points, `la arista ${id} no tiene extremo`).toContain(as);
+          else expect(byId.get(end)?.attrs.vertex, `la arista ${id} apunta a ${end}, que no es un vértice`).toBe('1');
         }
         for (const point of findAll(geometry, 'mxPoint')) {
           for (const key of ['x', 'y']) expect(Number.isFinite(Number(point.attrs[key]))).toBe(true);

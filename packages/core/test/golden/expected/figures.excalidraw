@@ -6,8 +6,8 @@
     {
       "id": "marcador",
       "type": "line",
-      "x": 2570,
-      "y": 120.5,
+      "x": 2577,
+      "y": 127.5,
       "width": 177,
       "height": 19,
       "angle": 0,
@@ -31,16 +31,16 @@
       "locked": false,
       "points": [
         [
-          7,
-          7
+          0,
+          0
         ],
         [
-          90,
-          12
+          83,
+          5
         ],
         [
-          170,
-          7
+          163,
+          0
         ]
       ],
       "lastCommittedPoint": null,
@@ -2377,8 +2377,8 @@
     {
       "id": "trazo",
       "type": "line",
-      "x": 4464,
-      "y": 109.13,
+      "x": 4466,
+      "y": 112.13,
       "width": 49.75,
       "height": 41.75,
       "angle": 0,
@@ -2402,16 +2402,16 @@
       "locked": false,
       "points": [
         [
-          2,
-          3
+          0,
+          0
         ],
         [
-          30,
-          18
+          28,
+          15
         ],
         [
-          48,
-          40
+          46,
+          37
         ]
       ],
       "lastCommittedPoint": null,

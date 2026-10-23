@@ -113,10 +113,11 @@ class Builder {
     }));
   }
 
-  /** Trazo abierto con puntos relativos a la caja del elemento. */
+  /** Trazo abierto con puntos relativos a `box`; el primer punto fija el origen de la línea, como espera Excalidraw. */
   polyline(id: string, points: Point[], box: Box, extra: Json = {}): void {
-    this.elements.push(this.base(id, 'line', box, {
-      points: points.map((p) => [r(p.x), r(p.y)]), lastCommittedPoint: null, startBinding: null, endBinding: null,
+    const origin = points[0] ?? { x: 0, y: 0 };
+    this.elements.push(this.base(id, 'line', { ...box, x: box.x + origin.x, y: box.y + origin.y }, {
+      points: points.map((p) => [r(p.x - origin.x), r(p.y - origin.y)]), lastCommittedPoint: null, startBinding: null, endBinding: null,
       startArrowhead: null, endArrowhead: null, ...extra,
     }));
   }
