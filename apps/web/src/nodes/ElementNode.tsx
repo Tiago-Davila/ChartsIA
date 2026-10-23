@@ -9,6 +9,7 @@ import { useDiagramEditActions } from './edit-context';
 import { diagramStore } from '../state/diagram-store';
 import { InlineEditableText, type Suggestions } from './InlineEditableText';
 import { MemberControls } from './MemberControls';
+import { TextBlockEditor } from './TextBlockEditor';
 import { type ElementFlowNode } from './types';
 
 type TextPrimitive = Extract<Primitive, { type: 'text' }>;
@@ -42,9 +43,18 @@ function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<Elemen
   const size = { width: width ?? minimum.width, height: height ?? minimum.height };
   const { editText, addMember, removeMember, resize, readOnly } = useDiagramEditActions();
   const [editing, setEditing] = useState<TextPrimitive>();
+  // Bloque de texto en edición multilínea (su markdown completo).
+  const [writing, setWriting] = useState(false);
   // Slot del miembro recién agregado: cuando llega al diagrama se abre en edición.
   const [newSlot, setNewSlot] = useState<string>();
   const showMemberControls = selected && !readOnly && memberKinds(element).length > 0;
+
+  // Un bloque recién creado con la herramienta Texto se abre en edición al llegar al lienzo.
+  useEffect(() => {
+    if (element.kind !== 'text' || diagramStore.getState().pendingTextEdit !== id) return;
+    diagramStore.getState().setPendingTextEdit(undefined);
+    if (!readOnly) setWriting(true);
+  }, [element.kind, id, readOnly]);
 
   useEffect(() => {
     if (!newSlot) return;
@@ -56,15 +66,17 @@ function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<Elemen
 
   const onTextDoubleClick = useCallback(
     (p: TextPrimitive) => {
-      if (!readOnly && p.slot) setEditing(p);
+      if (readOnly || !p.slot) return;
+      if (element.kind === 'text') setWriting(true);
+      else setEditing(p);
     },
-    [readOnly],
+    [element.kind, readOnly],
   );
 
   return (
     <div className={`chartsia-node${selected ? ' is-selected' : ''}`} style={{ width: size.width, height: size.height }} data-element-id={id}>
       <CleanShape element={element} size={size} onTextDoubleClick={onTextDoubleClick} />
-      {selected && !readOnly && element.kind !== 'drawing' ? (
+      {selected && !readOnly && element.kind !== 'drawing' && element.kind !== 'text' ? (
         <NodeResizer minWidth={minimum.width} minHeight={minimum.height} color="var(--accent)" onResizeEnd={(_, box) => resize(id, box)} />
       ) : null}
       {showMemberControls ? (
@@ -77,6 +89,18 @@ function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<Elemen
       ) : null}
       <Handle type="target"position={Position.Top} isConnectable={!readOnly} className="chartsia-handle" />
       <Handle type="source" position={Position.Bottom} isConnectable={!readOnly} className="chartsia-handle" />
+      {writing && element.kind === 'text' ? (
+        <TextBlockEditor
+          value={element.name}
+          width={size.width}
+          height={size.height}
+          onCommit={(value) => {
+            setWriting(false);
+            editText(id, 'name', value);
+          }}
+          onCancel={() => setWriting(false)}
+        />
+      ) : null}
       {editing ? (
         <InlineEditableText
           value={slotValue(element, editing.slot!, editing.text)}

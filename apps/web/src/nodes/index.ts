@@ -30,6 +30,7 @@ export const nodeTypes = {
   figure: ElementNode,
   drawing: ElementNode,
   image: ElementNode,
+  text: ElementNode,
   collection: ElementNode,
   frame: GroupNode,
   attribute: ErAttributeNode,

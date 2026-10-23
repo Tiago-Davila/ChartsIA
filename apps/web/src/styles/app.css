@@ -51,6 +51,7 @@
 }
 .diagram-canvas.is-drawing .react-flow__pane { cursor: crosshair; }
 .diagram-canvas.is-painting .react-flow__node { cursor: copy; }
+.diagram-canvas.is-placing .react-flow__pane { cursor: text; }
 .diagram-canvas__preview {
   position: absolute;
   inset: 0;
@@ -593,6 +594,26 @@ button:disabled,
 }
 .chartsia-edge.is-selected path:first-child {
   stroke: var(--accent);
+}
+/* Editor multilínea de un bloque de texto: ocupa el bloque y muestra el markdown tal cual. */
+.text-block-editor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  box-sizing: border-box;
+  min-width: 160px;
+  min-height: 48px;
+  padding: 8px;
+  font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text);
+  background: #fff;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  outline: none;
+  resize: none;
 }
 .inline-edit {
   position: absolute;
