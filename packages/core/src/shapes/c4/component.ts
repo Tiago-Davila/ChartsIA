@@ -18,7 +18,7 @@ export const componentShape: ShapeDefinition<ComponentElement> = {
   primitives: (el, { width, height }) => {
     const c = paintOf(el.style, c4Colors('component'));
     return [
-      { type: 'rect', x: 0, y: 0, width, height, rx: 6, fill: c.fill, stroke: c.stroke, strokeWidth: 1.5 },
+      { type: 'rect', x: 0, y: 0, width, height, rx: 6, fill: c.fill, stroke: c.stroke, strokeWidth: c.strokeWidth },
       ...c4TextPrimitives(text(el), { x: 0, y: 0, width, height }, c.text),
     ];
   },

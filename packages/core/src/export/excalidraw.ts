@@ -1,23 +1,31 @@
 import { type Point } from '../model/common.js';
 import { type Diagram, type Element } from '../model/diagram.js';
-import { type Cardinality, isGroupKind } from '../model/enums.js';
+import { drawOrder } from '../model/draw-order.js';
+import { HIGHLIGHTER_OPACITY } from '../model/drawing-elements.js';
+import { C4_ELEMENT_KINDS, type Cardinality, ER_ELEMENT_KINDS } from '../model/enums.js';
 import { type Relation } from '../model/relation.js';
 import { hashSeed } from '../render/hash.js';
-import { edgeLabelLines, labelAnchor } from '../render/edges.js';
-import { type Style, type StyleFontFamily } from '../model/style.js';
+import { edgeLabelLines, labelAnchor, totalLine } from '../render/edges.js';
+import { LINE_WIDTH_PX, type Style, type StyleFontFamily } from '../model/style.js';
+import { imageDataUrlDimensions } from '../model/image-data.js';
 import { c4Colors, C4_PALETTE } from '../shapes/c4/palette.js';
 import { cloudPoints, figureOutline, figureTextArea, figureTextLines } from '../shapes/general/figure.js';
+import { textBlockShape } from '../shapes/general/text-block.js';
 import { paintOf, textFont } from '../shapes/style.js';
-import { measureText, wrapText } from '../shapes/text-metrics.js';
 import { FONT } from '../shapes/types.js';
 import { boxGeometry } from '../shapes/uml/compartments.js';
 import { classBox } from '../shapes/uml/class.js';
 import { enumBox } from '../shapes/uml/enum.js';
 import { interfaceBox } from '../shapes/uml/interface.js';
 import { WEAK_GAP } from '../shapes/er/entity.js';
+import { IDENTIFYING_GAP, rhombusPoints } from '../shapes/er/relationship.js';
+import { TRIANGLE_HEIGHT, TRIANGLE_WIDTH } from '../shapes/er/specialization.js';
 import { MULTIVALUED_GAP } from '../shapes/er/attribute.js';
 import { tableBox } from '../shapes/er/table.js';
 import { valueListBox } from '../shapes/er/value-list.js';
+import { collectionShape } from '../shapes/nosql/collection.js';
+import { lineHeight, measureText, wrapText } from '../shapes/text-metrics.js';
+import { type Primitive } from '../shapes/types.js';
 import { CIRCLE_RADIUS, crowFoot, isCardinality, markerFrame, relationStyle, type MarkerKind } from '../shapes/uml/markers.js';
 import { orderKeys } from './fractional-index.js';
 
@@ -37,9 +45,14 @@ const FONT_FAMILY = 5;
 const STYLE_FONT_FAMILIES: Record<StyleFontFamily, number> = { 'sans-serif': 2, serif: 2, monospace: 3, handwritten: 5 };
 const r = (n: number) => Math.round(n * 100) / 100;
 
-/** Color del borde o de la línea cuando el estilo lo fija. */
+/** Grosor del borde o de la línea cuando el estilo lo fija. */
+function widthOf(style: Style | undefined): Json {
+  return style?.lineWidth ? { strokeWidth: LINE_WIDTH_PX[style.lineWidth] } : {};
+}
+
+/** Color y grosor del borde o de la línea cuando el estilo los fija. */
 function strokeOf(style: Style | undefined): Json {
-  return style?.borderColor ? { strokeColor: style.borderColor } : {};
+  return { ...(style?.borderColor ? { strokeColor: style.borderColor } : {}), ...widthOf(style) };
 }
 
 /** Borde y relleno de una forma: los del estilo o, si falta el relleno, `fill`. */
@@ -58,6 +71,7 @@ function fontOf(style: Style | undefined, size: number): Json {
 
 class Builder {
   readonly elements: Json[] = [];
+  readonly files: Json = {};
   private readonly updated: number;
   constructor(private readonly diagram: Diagram) {
     this.updated = Date.parse(diagram.updatedAt) || 0;
@@ -99,6 +113,14 @@ class Builder {
     }));
   }
 
+  /** Trazo abierto con puntos relativos a la caja del elemento. */
+  polyline(id: string, points: Point[], box: Box, extra: Json = {}): void {
+    this.elements.push(this.base(id, 'line', box, {
+      points: points.map((p) => [r(p.x), r(p.y)]), lastCommittedPoint: null, startBinding: null, endBinding: null,
+      startArrowhead: null, endArrowhead: null, ...extra,
+    }));
+  }
+
   text(id: string, text: string, box: Box, extra: Json = {}): Json {
     const fontSize = (extra.fontSize as number | undefined) ?? 14;
     const el = this.base(id, 'text', box, {
@@ -114,6 +136,19 @@ class Builder {
     const y = (text.y as number) + ((text.fontSize as number) * 1.1);
     const x = text.x as number;
     this.line(id, { x, y }, { x: x + width, y }, extra);
+  }
+
+  image(id: string, box: Box, dataURL: string): void {
+    const fileId = `file_${id}`;
+    const mimeType = /^data:(image\/(?:png|jpeg|svg\+xml));base64,/.exec(dataURL)?.[1];
+    if (!mimeType) throw new Error('La imagen no tiene un data URL válido.');
+    const dimensions = imageDataUrlDimensions(dataURL);
+    const aspect = dimensions ? dimensions.width / dimensions.height : box.width / box.height;
+    const width = Math.min(box.width, box.height * aspect);
+    const height = Math.min(box.height, box.width / aspect);
+    const fitted = { x: box.x + (box.width - width) / 2, y: box.y + (box.height - height) / 2, width, height };
+    this.elements.push(this.base(id, 'image', fitted, { fileId, status: 'saved', scale: [1, 1], crop: null }));
+    this.files[fileId] = { id: fileId, dataURL, mimeType, created: this.updated, lastRetrieved: this.updated };
   }
 
   /**
@@ -189,7 +224,7 @@ function addUml(b: Builder, el: Element, box: Box): void {
 function addC4(b: Builder, el: Element, box: Box): void {
   if (el.kind === 'boundary') {
     const c = paintOf(el.style, { ...C4_PALETTE.boundary, fill: 'transparent' });
-    b.shape(el.id, 'rectangle', box, { strokeStyle: 'dashed', strokeColor: c.stroke, backgroundColor: c.fill, roundness: { type: 3 } });
+    b.shape(el.id, 'rectangle', box, { strokeStyle: 'dashed', strokeColor: c.stroke, ...widthOf(el.style), backgroundColor: c.fill, roundness: { type: 3 } });
     const type = { enterprise: '[Enterprise]', system: '[Software System]', container: '[Container]' }[el.boundaryType];
     b.text(`${el.id}-title`, `${el.name}\n${type}`, { x: box.x + 12, y: box.y + 10, width: box.width - 24, height: 40 }, { ...fontOf(el.style, FONT.name), strokeColor: c.text });
     return;
@@ -197,7 +232,7 @@ function addC4(b: Builder, el: Element, box: Box): void {
   if (el.kind !== 'person' && el.kind !== 'software-system' && el.kind !== 'container' && el.kind !== 'component') return;
   const external = 'external' in el ? el.external : undefined;
   const c = paintOf(el.style, c4Colors(el.kind, external));
-  const paint = { backgroundColor: c.fill, strokeColor: c.stroke, roundness: { type: 3 } };
+  const paint = { backgroundColor: c.fill, strokeColor: c.stroke, ...widthOf(el.style), roundness: { type: 3 } };
   const font = { ...fontOf(el.style, FONT.name), strokeColor: c.text };
   const type =
     el.kind === 'person' ? (external ? 'Person - External' : 'Person')
@@ -219,22 +254,47 @@ function addC4(b: Builder, el: Element, box: Box): void {
   }
 }
 
+/** Relación Chen como rombo con su nombre; la identificante lleva un segundo rombo interior. */
+function addRelationship(b: Builder, el: Extract<Element, { kind: 'relationship' }>, box: Box): void {
+  b.polygon(el.id, rhombusPoints(box.width, box.height), box, boxOf(el.style, '#fffef5'));
+  if (el.identifying) b.polygon(`${el.id}-inner`, rhombusPoints(box.width, box.height, IDENTIFYING_GAP), box, strokeOf(el.style));
+  // El rectángulo inscrito del rombo mide la mitad de cada lado.
+  b.text(`${el.id}-label`, el.name, { x: box.x + box.width / 4, y: box.y + box.height / 4, width: box.width / 2, height: box.height / 2 }, {
+    textAlign: 'center', verticalAlign: 'middle', ...fontOf(el.style, FONT.name),
+  });
+}
+
+/** Especialización como triángulo con la letra d u o dentro; el nombre va debajo. */
+function addSpecialization(b: Builder, el: Extract<Element, { kind: 'specialization' }>, box: Box): void {
+  const cx = box.width / 2;
+  b.polygon(el.id, [{ x: cx, y: 0 }, { x: cx + TRIANGLE_WIDTH / 2, y: TRIANGLE_HEIGHT }, { x: cx - TRIANGLE_WIDTH / 2, y: TRIANGLE_HEIGHT }], box, boxOf(el.style, '#fffef5'));
+  b.text(`${el.id}-kind`, el.overlapping ? 'o' : 'd', { x: box.x + cx - 8, y: box.y + TRIANGLE_HEIGHT * 0.55, width: 16, height: 18 }, {
+    textAlign: 'center', verticalAlign: 'middle', ...fontOf(el.style, FONT.small),
+  });
+  b.text(`${el.id}-label`, el.name, { x: box.x, y: box.y + TRIANGLE_HEIGHT + 4, width: box.width, height: box.height - TRIANGLE_HEIGHT - 4 }, {
+    textAlign: 'center', verticalAlign: 'top', ...fontOf(el.style, FONT.name),
+  });
+}
+
 function addEr(b: Builder, el: Element, box: Box): void {
   if (el.kind === 'table' || el.kind === 'value-list') return addUml(b, el, box);
   if (el.kind === 'attribute') {
     const dashed = el.derived ? { strokeStyle: 'dashed' } : {};
-    const group = el.key ? { groupIds: [`${el.id}-group`] } : {};
+    const group = el.key || el.partialKey ? { groupIds: [`${el.id}-group`] } : {};
     const oval = b.shape(el.id, 'ellipse', box, { ...boxOf(el.style, '#fffef5'), ...dashed, ...group });
     const label = b.boundText(oval, el.name, { ...fontOf(el.style, FONT.member), ...group });
     if (el.key) b.underline(`${el.id}-underline`, label, label.width as number, { strokeColor: el.style?.fontColor ?? '#1e1e1e', ...group });
+    if (el.partialKey) b.underline(`${el.id}-partial-key`, label, label.width as number, { ...strokeOf(el.style), strokeStyle: 'dashed', ...group });
     if (el.multivalued) {
       const inner = { x: box.x + MULTIVALUED_GAP, y: box.y + MULTIVALUED_GAP, width: box.width - MULTIVALUED_GAP * 2, height: box.height - MULTIVALUED_GAP * 2 };
       b.shape(`${el.id}-inner`, 'ellipse', inner, { ...strokeOf(el.style), ...dashed });
     }
     return;
   }
+  if (el.kind === 'relationship') return addRelationship(b, el, box);
+  if (el.kind === 'specialization') return addSpecialization(b, el, box);
   if (el.kind !== 'entity') return;
-  const rect = b.shape(el.id, 'rectangle', box, boxOf(el.style, '#fffef5'));
+  const rect = b.shape(el.id, 'rectangle', box, { ...boxOf(el.style, '#fffef5'), ...(el.associative ? { strokeStyle: 'dashed' } : {}) });
   b.boundText(rect, el.name, fontOf(el.style, FONT.name));
   if (el.weak) {
     const inner = { x: box.x + WEAK_GAP, y: box.y + WEAK_GAP, width: box.width - WEAK_GAP * 2, height: box.height - WEAK_GAP * 2 };
@@ -243,8 +303,8 @@ function addEr(b: Builder, el: Element, box: Box): void {
 }
 
 /**
- * Figura general: círculo, cuadrado y rectángulo son formas nativas con el texto ligado; triángulo,
- * hexágono y nube son una línea cerrada (la nube con curva suave) con el texto agrupado encima.
+ * Figura general: círculo, óvalo, cuadrado y rectángulo son formas nativas con el texto ligado; el resto
+ * (polígonos, flechas y nube) son una línea cerrada (la nube con curva suave) con el texto agrupado encima.
  */
 function addFigure(b: Builder, el: Element, box: Box): void {
   if (el.kind !== 'figure') return;
@@ -254,7 +314,7 @@ function addFigure(b: Builder, el: Element, box: Box): void {
   const text = lines.join('\n');
   const outline = el.shape === 'cloud' ? cloudPoints(box) : figureOutline(el.shape, box);
   if (!outline) {
-    const container = b.shape(el.id, el.shape === 'circle' ? 'ellipse' : 'rectangle', box, paint);
+    const container = b.shape(el.id, el.shape === 'circle' || el.shape === 'oval' ? 'ellipse' : 'rectangle', box, paint);
     b.boundText(container, text, { ...font, originalText: el.name });
     return;
   }
@@ -266,13 +326,119 @@ function addFigure(b: Builder, el: Element, box: Box): void {
   b.text(`${el.id}-label`, text, at, { textAlign: 'center', verticalAlign: 'middle', originalText: el.name, groupIds: group, ...font });
 }
 
+/** Marco exportado como una forma con título; `groupIds` hacen que mueva a sus miembros. */
+function addFrame(b: Builder, el: Element, box: Box): void {
+  if (el.kind !== 'frame') return;
+  const c = paintOf(el.style, { fill: 'transparent', stroke: '#8492a6', text: '#475569' });
+  const groupIds = [`${el.id}-frame`];
+  b.shape(el.id, 'rectangle', box, {
+    strokeColor: c.stroke,
+    ...widthOf(el.style),
+    backgroundColor: c.fill,
+    strokeStyle: 'dashed',
+    roundness: { type: 3 },
+    groupIds,
+  });
+  b.text(`${el.id}-title`, el.name, { x: box.x + 12, y: box.y + 8, width: box.width - 24, height: 24 }, {
+    ...fontOf(el.style, FONT.name),
+    strokeColor: c.text,
+    groupIds,
+  });
+}
+
+/** Trazo libre con color y grosor editables en Excalidraw. */
+function addDrawing(b: Builder, el: Element, box: Box): void {
+  if (el.kind !== 'drawing') return;
+  b.polyline(el.id, el.points, box, { strokeColor: el.strokeColor, strokeWidth: el.strokeWidth, ...(el.highlighter ? { opacity: HIGHLIGHTER_OPACITY * 100 } : {}) });
+}
+
+/** Colección documental exportada con las mismas cajas anidadas que la app. */
+function addCollection(b: Builder, el: Element, box: Box): void {
+  if (el.kind !== 'collection') return;
+  const primitives = collectionShape.primitives(el, { width: box.width, height: box.height });
+  const outer = primitives[0];
+  if (!outer || outer.type !== 'rect') return;
+  const paintColor = (color: string | undefined, fallback: string) => !color || color === 'none' ? fallback : color;
+  const groupIds = [`${el.id}-group`];
+  b.shape(el.id, 'rectangle', box, {
+    backgroundColor: paintColor(outer.fill, '#f8fafc'),
+    strokeColor: paintColor(outer.stroke, '#1f2933'),
+    strokeWidth: outer.strokeWidth ?? 1,
+    roundness: { type: 3 },
+    groupIds,
+    customData: { kind: 'collection', fields: el.fields },
+  });
+  primitives.slice(1).forEach((primitive: Primitive, i) => {
+    const index = i + 1;
+    if (primitive.type === 'rect') {
+      b.shape(`${el.id}-nosql-${index}`, 'rectangle', {
+        x: box.x + primitive.x,
+        y: box.y + primitive.y,
+        width: primitive.width,
+        height: primitive.height,
+      }, {
+        backgroundColor: paintColor(primitive.fill, 'transparent'),
+        strokeColor: paintColor(primitive.stroke, 'transparent'),
+        strokeWidth: primitive.strokeWidth ?? 1,
+        roundness: { type: 3 },
+        groupIds,
+      });
+    } else if (primitive.type === 'text') {
+      b.text(`${el.id}-nosql-${index}`, primitive.text, {
+        x: box.x + primitive.x,
+        y: box.y + primitive.y - primitive.size * 0.875,
+        width: Math.max(0, box.width - primitive.x),
+        height: lineHeight(primitive.size),
+      }, {
+        fontSize: primitive.size,
+        fontFamily: primitive.fontFamily ? STYLE_FONT_FAMILIES[primitive.fontFamily] : FONT_FAMILY,
+        strokeColor: primitive.color,
+        textAlign: primitive.anchor === 'middle' ? 'center' : primitive.anchor === 'end' ? 'right' : 'left',
+        verticalAlign: 'middle',
+        groupIds,
+      });
+    }
+  });
+}
+
+/** Bloque de texto como sus primitivas: recuadros del código y líneas de texto (Excalidraw no tiene negrita por tramo). */
+function addTextBlock(b: Builder, el: Element, box: Box): void {
+  if (el.kind !== 'text') return;
+  const groupIds = [`${el.id}-group`];
+  textBlockShape.primitives(el, { width: box.width, height: box.height }).forEach((primitive: Primitive, index) => {
+    if (primitive.type === 'rect') {
+      b.shape(`${el.id}-rect-${index}`, 'rectangle', { x: box.x + primitive.x, y: box.y + primitive.y, width: primitive.width, height: primitive.height }, {
+        backgroundColor: primitive.fill && primitive.fill !== 'none' ? primitive.fill : 'transparent',
+        strokeColor: primitive.stroke && primitive.stroke !== 'none' ? primitive.stroke : 'transparent',
+        strokeWidth: primitive.strokeWidth ?? 1,
+        roundness: { type: 3 },
+        groupIds,
+      });
+    } else if (primitive.type === 'text') {
+      b.text(`${el.id}-text-${index}`, primitive.text, {
+        x: box.x + primitive.x,
+        y: box.y + primitive.y - primitive.size * 0.875,
+        width: Math.max(0, box.width - primitive.x),
+        height: lineHeight(primitive.size),
+      }, {
+        fontSize: primitive.size,
+        fontFamily: primitive.fontFamily ? STYLE_FONT_FAMILIES[primitive.fontFamily] : FONT_FAMILY,
+        strokeColor: primitive.color,
+        textAlign: 'left',
+        verticalAlign: 'middle',
+        groupIds,
+      });
+    }
+  });
+}
+
 /** Marca pata de gallo como líneas y un círculo, porque Excalidraw no tiene cero-o-uno nativo. */
-function addCardinality(b: Builder, rel: Relation, kind: Cardinality, tag: string, tip: Point, from: Point, color: string, fill = '#ffffff'): void {
+function addCardinality(b: Builder, rel: Relation, kind: Cardinality, tag: string, tip: Point, from: Point, color: string, fill = '#ffffff', width = 1.5): void {
   const { lines, circle } = crowFoot(kind, markerFrame(tip, from));
-  lines.forEach((l, i) => b.line(`${rel.id}-${tag}-${i}`, l[0], l[1], { strokeColor: color, strokeWidth: 1.5 }));
+  lines.forEach((l, i) => b.line(`${rel.id}-${tag}-${i}`, l[0], l[1], { strokeColor: color, strokeWidth: width }));
   if (circle) {
     const box = { x: circle.x - CIRCLE_RADIUS, y: circle.y - CIRCLE_RADIUS, width: CIRCLE_RADIUS * 2, height: CIRCLE_RADIUS * 2 };
-    b.shape(`${rel.id}-${tag}-o`, 'ellipse', box, { strokeColor: color, backgroundColor: fill, strokeWidth: 1.5 });
+    b.shape(`${rel.id}-${tag}-o`, 'ellipse', box, { strokeColor: color, backgroundColor: fill, strokeWidth: width });
   }
 }
 
@@ -283,6 +449,17 @@ function withoutCollinear(route: Point[]): Point[] {
     const c = route[i + 1];
     return !a || !c || (p.x - a.x) * (c.y - a.y) !== (p.y - a.y) * (c.x - a.x);
   });
+}
+
+/** Línea doble de la participación total: una segunda línea paralela a la mitad de la ruta. */
+function addTotal(b: Builder, rel: Relation, end: 'start' | 'end', color: string): void {
+  const line = totalLine(rel.route ?? [], end);
+  const xs = line.map((p) => p.x);
+  const ys = line.map((p) => p.y);
+  const x = Math.min(...xs);
+  const y = Math.min(...ys);
+  const box = { x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y };
+  b.polyline(`${rel.id}-total-${end}`, line.map((p) => ({ x: p.x - x, y: p.y - y })), box, { strokeColor: color, ...widthOf(rel.style) });
 }
 
 function addArrow(b: Builder, rel: Relation, byId: Map<string, Json>): void {
@@ -297,6 +474,7 @@ function addArrow(b: Builder, rel: Relation, byId: Map<string, Json>): void {
   const arrow = b.shape(rel.id, 'rectangle', { x: origin.x, y: origin.y, width: Math.max(...xs) - Math.min(...xs), height: Math.max(...ys) - Math.min(...ys) }, {
     type: 'arrow',
     strokeColor: style.color,
+    ...widthOf(rel.style),
     strokeStyle: style.dash ? 'dashed' : 'solid',
     points: path.map((p) => [r(p.x - origin.x), r(p.y - origin.y)]),
     lastCommittedPoint: null,
@@ -310,8 +488,10 @@ function addArrow(b: Builder, rel: Relation, byId: Map<string, Json>): void {
     const target = byId.get(id);
     if (target) target.boundElements = [...((target.boundElements as Json[] | null) ?? []), { type: 'arrow', id: rel.id }];
   }
-  if (style.start && isCardinality(style.start)) addCardinality(b, rel, style.start, 'src', route[0]!, route[1]!, style.color, style.fill);
-  if (style.end && isCardinality(style.end)) addCardinality(b, rel, style.end, 'dst', route[route.length - 1]!, route[route.length - 2]!, style.color, style.fill);
+  if (rel.sourceTotal) addTotal(b, rel, 'start', style.color);
+  if (rel.targetTotal) addTotal(b, rel, 'end', style.color);
+  if (style.start && isCardinality(style.start)) addCardinality(b, rel, style.start, 'src', route[0]!, route[1]!, style.color, style.fill, style.width);
+  if (style.end && isCardinality(style.end)) addCardinality(b, rel, style.end, 'dst', route[route.length - 1]!, route[route.length - 2]!, style.color, style.fill, style.width);
   const lines = edgeLabelLines(rel);
   if (lines.length > 0) b.boundText(arrow, lines.join('\n'), fontOf(rel.style, 12));
 }
@@ -323,28 +503,51 @@ function addArrow(b: Builder, rel: Relation, byId: Map<string, Json>): void {
  */
 export function exportExcalidraw(diagram: Diagram): string {
   const b = new Builder(diagram);
-  const groupsFirst = [...diagram.elements].sort((a, c) => Number(!isGroupKind(a.kind)) - Number(!isGroupKind(c.kind)) || (a.id < c.id ? -1 : 1));
-  for (const el of groupsFirst) {
+  const byId = new Map(diagram.elements.map((el) => [el.id, el]));
+  const frameGroupIds = (element: Element) => {
+    const frames: string[] = [];
+    let current: Element | undefined = element;
+    const visited = new Set<string>();
+    while (current && !visited.has(current.id)) {
+      visited.add(current.id);
+      if (current.kind === 'frame') frames.push(`${current.id}-frame`);
+      current = current.parentId ? byId.get(current.parentId) : undefined;
+    }
+    return frames;
+  };
+  for (const el of drawOrder(diagram.elements)) {
     const l = el.layout;
     if (!l || l.width === undefined || l.height === undefined) continue;
     const box = { x: l.x, y: l.y, width: l.width, height: l.height };
-    if (el.kind === 'figure') addFigure(b, el, box);
-    else if (diagram.type === 'class') {
-      if (el.kind === 'package') {
-        b.shape(el.id, 'rectangle', box, { ...strokeOf(el.style), ...(el.style?.fillColor ? { backgroundColor: el.style.fillColor } : {}) });
-        b.text(`${el.id}-title`, el.name, { x: box.x + 10, y: box.y + 6, width: box.width - 20, height: 20 }, fontOf(el.style, FONT.name));
-      } else addUml(b, el, box);
-    } else if (diagram.type === 'er') addEr(b, el, box);
-    else addC4(b, el, box);
+    const start = b.elements.length;
+    if (el.kind === 'drawing') addDrawing(b, el, box);
+    else if (el.kind === 'image') b.image(el.id, box, el.src);
+    else if (el.kind === 'collection') addCollection(b, el, box);
+    else if (el.kind === 'text') addTextBlock(b, el, box);
+    else if (el.kind === 'figure') addFigure(b, el, box);
+    else if (el.kind === 'frame') addFrame(b, el, box);
+    else if (el.kind === 'package') {
+      b.shape(el.id, 'rectangle', box, { ...strokeOf(el.style), ...(el.style?.fillColor ? { backgroundColor: el.style.fillColor } : {}) });
+      b.text(`${el.id}-title`, el.name, { x: box.x + 10, y: box.y + 6, width: box.width - 20, height: 20 }, fontOf(el.style, FONT.name));
+    } else if ((ER_ELEMENT_KINDS as readonly string[]).includes(el.kind)) addEr(b, el, box);
+    else if ((C4_ELEMENT_KINDS as readonly string[]).includes(el.kind)) addC4(b, el, box);
+    else addUml(b, el, box);
+    const groupIds = frameGroupIds(el);
+    if (groupIds.length > 0) {
+      for (const generated of b.elements.slice(start)) {
+        const own = Array.isArray(generated.groupIds) ? generated.groupIds as string[] : [];
+        generated.groupIds = [...new Set([...own, ...groupIds])];
+      }
+    }
   }
-  // Las líneas cerradas (triángulo, hexágono, nube) no admiten vínculos de flecha en Excalidraw, así que las flechas hacia ellas quedan sin vincular.
-  const byId = new Map(b.elements.filter((e) => e.type !== 'line' && diagram.elements.some((d) => d.id === e.id)).map((e) => [e.id as string, e]));
-  for (const rel of [...diagram.relations].sort((a, c) => (a.id < c.id ? -1 : 1))) addArrow(b, rel, byId);
+  // Las líneas cerradas (polígonos, flechas y nube) no admiten vínculos de flecha en Excalidraw, así que las flechas hacia ellas quedan sin vincular.
+  const exportedById = new Map(b.elements.filter((e) => e.type !== 'line' && diagram.elements.some((d) => d.id === e.id)).map((e) => [e.id as string, e]));
+  for (const rel of [...diagram.relations].sort((a, c) => (a.id < c.id ? -1 : 1))) addArrow(b, rel, exportedById);
 
   const keys = orderKeys(b.elements.length);
   const elements = b.elements.map((e, i) => ({ ...e, index: keys[i] }));
   return JSON.stringify(
-    { type: 'excalidraw', version: 2, source: 'https://github.com/chartsia/chartsia', elements, appState: { gridSize: 20, viewBackgroundColor: '#ffffff' }, files: {} },
+    { type: 'excalidraw', version: 2, source: 'https://github.com/chartsia/chartsia', elements, appState: { gridSize: 20, viewBackgroundColor: '#ffffff' }, files: b.files },
     null,
     2,
   ) + '\n';

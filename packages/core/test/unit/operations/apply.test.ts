@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { Diagram } from '../../../src/model/index.js';
+import { DiagramSchema, DiagramInputSchema } from '../../../src/model/index.js';
 import { applyOperations } from '../../../src/operations/index.js';
 import { codes } from '../../support/fixtures.js';
+import { pngDataUrl } from '../../support/images.js';
 
 function base(): Diagram {
   return {
@@ -126,6 +128,33 @@ describe('applyOperations', () => {
     expect(res.ok && res.diagram.elements.find((e) => e.id === 'Libro')?.layout).toMatchObject({ x: 170, y: 120 });
   });
 
+  it('mover un frame desplaza una sola vez sus hijos anidados y desagrupar conserva coordenadas', () => {
+    const d: Diagram = {
+      ...base(),
+      elements: [
+        { id: 'outer', kind: 'frame', name: 'Exterior', layout: { x: 100, y: 100, width: 400, height: 300, pinned: false } },
+        { id: 'inner', kind: 'frame', name: 'Interior', parentId: 'outer', layout: { x: 140, y: 150, width: 200, height: 150, pinned: false } },
+        { id: 'A', kind: 'class', name: 'A', attributes: [], operations: [], parentId: 'inner', layout: { x: 160, y: 180, width: 80, height: 40, pinned: false } },
+        { id: 'logo', kind: 'figure', name: 'Logo', shape: 'circle', parentId: 'outer', layout: { x: 120, y: 130, width: 30, height: 30, pinned: false } },
+      ],
+      relations: [],
+    };
+    const moved = apply([{ op: 'move_element', id: 'outer', x: 120, y: 130 }], d);
+    expect(moved.ok).toBe(true);
+    if (!moved.ok) return;
+    expect(moved.diagram.elements.map(({ id, layout }) => [id, layout?.x, layout?.y])).toEqual([
+      ['outer', 120, 130], ['inner', 160, 180], ['A', 180, 210], ['logo', 140, 160],
+    ]);
+    const ungrouped = apply([{ op: 'remove_element', id: 'outer', cascade: 'reparent' }], moved.diagram);
+    expect(ungrouped.ok).toBe(true);
+    if (!ungrouped.ok) return;
+    const inner = ungrouped.diagram.elements.find((e) => e.id === 'inner')!;
+    expect(inner).not.toHaveProperty('parentId');
+    expect(inner).toMatchObject({ layout: { x: 160, y: 180 } });
+    expect(ungrouped.diagram.elements.find((e) => e.id === 'A')).toMatchObject({ parentId: 'inner', layout: { x: 180, y: 210 } });
+    expect(ungrouped.diagram.elements.find((e) => e.id === 'logo')).toMatchObject({ layout: { x: 140, y: 160 } });
+  });
+
   it('update_element cambia campos, null elimina opcionales y no admite id/kind', () => {
     const res = apply([
       { op: 'update_element', id: 'Libro', changes: { name: 'Ejemplar', parentId: null, description: 'Copia física' } },
@@ -146,6 +175,18 @@ describe('applyOperations', () => {
     const res = apply([{ op: 'update_element', id: 'Libro', changes: { technology: 'Java' } }]);
     expect(res.ok).toBe(false);
     if (!res.ok) expect(res.errors[0]).toMatchObject({ code: 'FIELD_NOT_ALLOWED', path: '/operations/0/changes/technology' });
+  });
+
+  it('update_element bloquea y desbloquea un elemento; locked debe ser booleano', () => {
+    const locked = apply([{ op: 'update_element', id: 'Libro', changes: { locked: true } }]);
+    expect(locked.ok && locked.diagram.elements.find((e) => e.id === 'Libro')?.locked).toBe(true);
+    const unlocked = apply([
+      { op: 'update_element', id: 'Libro', changes: { locked: true } },
+      { op: 'update_element', id: 'Libro', changes: { locked: false } },
+    ]);
+    expect(unlocked.ok && unlocked.diagram.elements.find((e) => e.id === 'Libro')?.locked).toBe(false);
+    const bad = apply([{ op: 'update_element', id: 'Libro', changes: { locked: 'si' } }]);
+    expect(!bad.ok && codes(bad.errors)).toContain('SCHEMA_VIOLATION');
   });
 
   it('resize_element fija el elemento, guarda el tamaño y lo marca como redimensionado', () => {
@@ -199,13 +240,46 @@ describe('applyOperations', () => {
   });
 
   it('valida las reglas de dominio sobre el resultado', () => {
-    const res = apply([{ op: 'add_element', element: { id: 'P', kind: 'person', name: 'P' } }]);
-    expect(!res.ok && codes(res.errors)).toEqual(['KIND_NOT_ALLOWED']);
+    const res = apply([{ op: 'add_element', element: { id: 'C', kind: 'component', name: 'C' } }]);
+    expect(!res.ok && codes(res.errors)).toEqual(['INVALID_PARENT']);
   });
 
   it('respeta el máximo de elementos', () => {
     const res = applyOperations(base(), [{ op: 'add_element', element: { id: 'X', kind: 'package', name: 'X' } }], { maxElements: 5 });
     expect(!res.ok && codes(res.errors)).toEqual(['LIMIT_EXCEEDED']);
+  });
+
+  it('rechaza de forma atómica el presupuesto de imágenes acumulado al crear y actualizar', () => {
+    const usual = pngDataUrl({ ancillaryBytes: Math.floor(4.3 * 1024 * 1024) });
+    const replacement = pngDataUrl({ ancillaryBytes: Math.floor(4.9 * 1024 * 1024) });
+    const images = Array.from({ length: 6 }, (_, index) => ({ id: `img${index}`, kind: 'image', name: `Imagen ${index}`, src: usual }));
+    expect(DiagramInputSchema.safeParse({ type: 'class', title: 'Imágenes', elements: images, relations: [] }).success).toBe(false);
+
+    const before = DiagramSchema.parse({
+      ...base(),
+      elements: images.slice(0, 5),
+    });
+    const result = applyOperations(before, [
+      { op: 'set_title', title: 'Debe ser atómico' },
+      { op: 'update_element', id: 'img0', changes: { src: replacement } },
+      { op: 'add_element', element: images[5] },
+    ]);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors).toContainEqual(expect.objectContaining({ code: 'LIMIT_EXCEEDED', message: expect.stringContaining('25 MiB') }));
+    expect(before.title).toBe('Biblioteca');
+    expect(before.elements[0]?.kind).toBe('image');
+    if (before.elements[0]?.kind === 'image') expect(before.elements[0].src).toBe(usual);
+  }, 30_000);
+
+  it('rechaza el presupuesto acumulado de píxeles raster en una operación', () => {
+    const before = DiagramSchema.parse({
+      ...base(),
+      elements: [{ id: 'img0', kind: 'image', name: 'Imagen 0', src: pngDataUrl({ width: 7_000, height: 4_000 }) }],
+    });
+    const next = { id: 'img1', kind: 'image', name: 'Imagen 1', src: pngDataUrl({ width: 4_000, height: 4_000 }) };
+    const result = applyOperations(before, [{ op: 'add_element', element: next }]);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors).toContainEqual(expect.objectContaining({ code: 'LIMIT_EXCEEDED', message: expect.stringContaining('40 millones') }));
   });
 
   it('update_element y update_relation fijan, reemplazan y quitan el estilo', () => {

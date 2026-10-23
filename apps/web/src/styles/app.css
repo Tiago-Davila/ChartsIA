@@ -4,6 +4,10 @@
   height: 100%;
 }
 
+.app-shell--figures {
+  grid-template-columns: var(--sidebar-width) 1fr var(--figures-width);
+}
+
 .app-shell__sidebar {
   display: flex;
   flex-direction: column;
@@ -40,12 +44,115 @@
   min-height: 0;
 }
 
+.diagram-canvas {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.diagram-canvas.is-drawing .react-flow__pane { cursor: crosshair; }
+.diagram-canvas.is-painting .react-flow__node { cursor: copy; }
+.diagram-canvas.is-placing .react-flow__pane { cursor: text; }
+.diagram-canvas.is-hand .react-flow__pane,
+.diagram-canvas.is-hand .react-flow__node { cursor: grab; }
+.diagram-canvas.is-hand:active .react-flow__pane,
+.diagram-canvas.is-hand:active .react-flow__node { cursor: grabbing; }
+.diagram-canvas__preview {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+/* Rectángulo que se ve mientras se arrastra la herramienta Marco. */
+.diagram-canvas__frame {
+  position: absolute;
+  z-index: 5;
+  border: 1px dashed var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  pointer-events: none;
+}
+.figure-sidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+}
+.figure-sidebar__title {
+  display: flex;
+  align-items: center;
+  height: var(--toolbar-height);
+  margin: 0;
+  padding: 0 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+}
+.figure-sidebar__list {
+  overflow-y: auto;
+}
+.figure-sidebar__section {
+  border-bottom: 1px solid var(--border);
+}
+.figure-sidebar__section-title {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+.figure-sidebar__items {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  padding: 4px 12px 12px;
+}
+.figure-sidebar__item {
+  padding: 10px 6px;
+  font-size: 12px;
+  text-align: center;
+  overflow-wrap: anywhere;
+  cursor: grab;
+  user-select: none;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.figure-sidebar__item:hover { border-color: var(--accent); }
+/* En columna, la barra no se extiende sobre la barra de flechas de arriba. */
+.drawing-tool {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  align-items: stretch;
+  gap: 6px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.drawing-tool input[type='color'] {
+  width: 34px;
+  height: 32px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
 /* Nuevo diagrama */
 .new-diagram__open { margin: 12px 16px 0; }
+.new-diagram__entry { display: flex; flex-direction: column; align-items: stretch; }
 .new-diagram { display: flex; flex-direction: column; gap: 8px; margin: 12px 16px 0; font-size: 12px; color: var(--text-muted); }
 .new-diagram label { display: flex; flex-direction: column; gap: 2px; }
 .new-diagram input,
+.new-diagram textarea,
 .new-diagram select { padding: 6px 8px; color: inherit; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
+.new-diagram textarea { resize: vertical; font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.new-diagram__hint { margin: 0; font-size: 11px; }
+.new-diagram__import-warnings { padding: 8px; color: var(--text); background: var(--surface-muted); border: 1px solid var(--border); border-radius: 6px; }
+.new-diagram__import-warnings ul { margin: 6px 0 0; padding-left: 18px; }
 .new-diagram__actions { display: flex; gap: 8px; }
 
 /* Lista de diagramas */
@@ -100,6 +207,20 @@
 }
 .diagram-list__section-title:hover {
   background: var(--surface-muted);
+}
+.diagram-list__section-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.diagram-list__section-head .diagram-list__section-title {
+  flex: 1;
+  min-width: 0;
+}
+.diagram-list__section-head .diagram-list__menu-button {
+  position: static;
+  flex: none;
+  line-height: 20px;
 }
 .diagram-list__count {
   margin-left: auto;
@@ -271,6 +392,14 @@
 .button--primary:hover {
   background: #0d5aa5;
 }
+.button--danger {
+  color: #fff;
+  background: var(--danger);
+  border-color: var(--danger);
+}
+.button--danger:hover {
+  filter: brightness(0.92);
+}
 button:disabled,
 .is-disabled {
   opacity: 0.5;
@@ -307,6 +436,56 @@ button:disabled,
   background: var(--surface-muted);
 }
 
+/* Ventana modal y ventana de nombre */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(16 24 40 / 35%);
+}
+.modal {
+  width: min(360px, 100%);
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.modal__title {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+.modal__form {
+  display: grid;
+  gap: 12px;
+}
+.modal__text {
+  margin: 0 0 16px;
+  font-size: 14px;
+}
+.modal__field {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.modal__field input {
+  padding: 6px 8px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 /* Lienzo y nodos */
 .chartsia-node {
   position: relative;
@@ -316,6 +495,56 @@ button:disabled,
 }
 .chartsia-node text[data-slot] {
   cursor: text;
+}
+/* Candado de un elemento bloqueado: esquina superior derecha, sin capturar el puntero. */
+.chartsia-node__lock {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  display: flex;
+  padding: 3px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--accent);
+  pointer-events: none;
+}
+/* Botones para agregar y quitar miembros: viven fuera del SVG de la forma. */
+.member-add {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 0;
+  z-index: 5;
+  display: flex;
+  gap: 4px;
+  white-space: nowrap;
+}
+.member-add__button,
+.member-remove {
+  font: inherit;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--accent);
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+}
+.member-add__button {
+  padding: 4px 8px;
+}
+.member-remove {
+  position: absolute;
+  left: calc(100% + 6px);
+  z-index: 5;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+}
+.member-add__button:hover,
+.member-remove:hover {
+  color: #fff;
+  background: var(--accent);
 }
 .chartsia-node.is-selected svg {
   filter: drop-shadow(0 0 0.5px var(--accent)) drop-shadow(0 0 3px rgb(17 104 189 / 45%));
@@ -361,6 +590,104 @@ button:disabled,
 .edge-toolbar .button {
   padding: 4px 8px;
 }
+/* Menú contextual del lienzo, en la posición del clic derecho. */
+.canvas-menu {
+  position: fixed;
+  z-index: 50;
+  min-width: 180px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.canvas-menu button {
+  width: 100%;
+  padding: 8px 10px;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+}
+.canvas-menu button:hover {
+  background: var(--surface-muted);
+}
+/* Panel de estilo del elemento o la flecha seleccionada. */
+.style-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 220px;
+  padding: 8px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  pointer-events: all;
+}
+.style-panel__row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.style-panel__label {
+  color: var(--text-muted);
+}
+.style-panel__swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.style-panel__swatch {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.style-panel__swatch[aria-pressed='true'] {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.width-picker {
+  display: flex;
+  gap: 4px;
+}
+.width-picker__option {
+  padding: 4px 6px;
+  line-height: 0;
+}
+.width-picker__option[aria-pressed='true'] {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+/* En la botonera del lápiz el grosor va sin rótulo; el grupo conserva su nombre accesible. */
+.drawing-tool .style-panel__label {
+  display: none;
+}
+.style-panel select,
+.style-panel input[type='number'] {
+  height: 28px;
+  padding: 0 6px;
+  font: inherit;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.style-panel input[type='color'] {
+  width: 24px;
+  height: 20px;
+  padding: 0;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
 .edge-form {
   display: flex;
   gap: 4px;
@@ -386,11 +713,32 @@ button:disabled,
   padding: 0;
 }
 .react-flow__node-package,
-.react-flow__node-boundary {
+.react-flow__node-boundary,
+.react-flow__node-frame {
   z-index: -1;
 }
 .chartsia-edge.is-selected path:first-child {
   stroke: var(--accent);
+}
+/* Editor multilínea de un bloque de texto: ocupa el bloque y muestra el markdown tal cual. */
+.text-block-editor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  box-sizing: border-box;
+  min-width: 160px;
+  min-height: 48px;
+  padding: 8px;
+  font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text);
+  background: #fff;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  outline: none;
+  resize: none;
 }
 .inline-edit {
   position: absolute;

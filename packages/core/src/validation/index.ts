@@ -5,20 +5,21 @@ import { fromZodError, type ValidationError } from './errors.js';
 import { checkChen } from './rules/chen.js';
 import { checkColumns } from './rules/columns.js';
 import { checkInheritanceCycles, checkParentCycles, checkParents } from './rules/hierarchy.js';
-import { checkKinds } from './rules/kinds.js';
 import { checkMembers } from './rules/members.js';
 import { checkLimits } from './rules/limits.js';
+import { checkNoSqlFields } from './rules/nosql-fields.js';
 import { checkDuplicateIds, checkReferences } from './rules/references.js';
 import { checkRelations } from './rules/relations.js';
 
 export * from './errors.js';
+export { canRelate } from './rules/relations.js';
 export type { RuleOptions } from './context.js';
 
 const RULES: Rule[] = [
   checkLimits,
+  checkNoSqlFields,
   checkDuplicateIds,
   checkReferences,
-  checkKinds,
   checkMembers,
   checkColumns,
   checkChen,

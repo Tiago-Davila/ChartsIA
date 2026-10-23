@@ -1,10 +1,16 @@
 import { type Point } from '../model/common.js';
 import { type Diagram, type Element } from '../model/diagram.js';
+import { drawOrder } from '../model/draw-order.js';
 import { type Relation } from '../model/relation.js';
 import { c4Cells } from './drawio-c4.js';
 import { classCells } from './drawio-class.js';
 import { erCells, erEdgeStyle } from './drawio-er.js';
 import { figureCells, figureConstraint } from './drawio-figure.js';
+import { drawingXml } from './drawio-drawing.js';
+import { imageCells } from './drawio-image.js';
+import { textBlockCells } from './drawio-text.js';
+import { collectionCells } from './drawio-nosql.js';
+import { frameCells } from './drawio-frame.js';
 import { drawioFont, drawioStroke } from './drawio-style.js';
 import { xmlElement } from './xml-escape.js';
 import { FONT } from '../shapes/types.js';
@@ -35,6 +41,7 @@ const EDGE_STYLES: Record<Relation['kind'], string> = {
   'c4-rel': 'endArrow=blockThin;endFill=1;endSize=12;strokeColor=#707070;fontColor=#404040;dashed=1;',
   'er-rel': 'endArrow=none;',
   'er-attr': 'endArrow=none;',
+  'nosql-rel': 'endArrow=block;endFill=1;endSize=12;',
   connector: 'endArrow=open;endSize=12;',
 };
 
@@ -94,10 +101,8 @@ function edgeXml(rel: Relation, byId: Map<string, Element>): string {
  */
 export function exportDrawio(diagram: Diagram): string {
   const byId = new Map(diagram.elements.map((e) => [e.id, e]));
-  const depth = (el: Element): number => (el.parentId && byId.has(el.parentId) ? 1 + depth(byId.get(el.parentId)!) : 0);
-  const ordered = [...diagram.elements].sort((a, b) => depth(a) - depth(b) || (a.id < b.id ? -1 : 1));
   const cells: string[] = [xmlElement('mxCell', { id: '0' }), xmlElement('mxCell', { id: '1', parent: '0' })];
-  for (const el of ordered) {
+  for (const el of drawOrder(diagram.elements)) {
     const l = el.layout ?? { x: 0, y: 0, width: 120, height: 60 };
     const parentEl = el.parentId ? byId.get(el.parentId) : undefined;
     const geo = {
@@ -107,7 +112,12 @@ export function exportDrawio(diagram: Diagram): string {
       height: l.height ?? 60,
     };
     const parent = parentEl ? parentEl.id : '1';
-    const vertices = classCells(el, parent, geo) ?? c4Cells(el, parent, geo) ?? erCells(el, parent, geo) ?? figureCells(el, parent, geo) ?? [];
+    const drawing = drawingXml(el, parent, geo);
+    if (drawing) {
+      cells.push(drawing);
+      continue;
+    }
+    const vertices = frameCells(el, parent, geo) ?? classCells(el, parent, geo) ?? c4Cells(el, parent, geo) ?? erCells(el, parent, geo) ?? figureCells(el, parent, geo) ?? imageCells(el, parent, geo) ?? textBlockCells(el, parent, geo) ?? collectionCells(el, parent, geo) ?? [];
     cells.push(...vertices.map(vertexXml));
   }
   for (const rel of [...diagram.relations].sort((a, b) => (a.id < b.id ? -1 : 1))) cells.push(edgeXml(rel, byId));

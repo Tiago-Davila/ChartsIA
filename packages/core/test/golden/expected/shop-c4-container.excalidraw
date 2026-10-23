@@ -71,6 +71,118 @@
       "index": "a1"
     },
     {
+      "id": "cliente-head",
+      "type": "ellipse",
+      "x": 528.17,
+      "y": 30,
+      "width": 56,
+      "height": 56,
+      "angle": 0,
+      "strokeColor": "#073B6F",
+      "backgroundColor": "#08427B",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [
+        "cliente-group"
+      ],
+      "frameId": null,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 741394775,
+      "version": 1,
+      "versionNonce": 2062460188,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1792490400000,
+      "link": null,
+      "locked": false,
+      "index": "a2"
+    },
+    {
+      "id": "cliente",
+      "type": "rectangle",
+      "x": 446.17,
+      "y": 72,
+      "width": 220,
+      "height": 106,
+      "angle": 0,
+      "strokeColor": "#073B6F",
+      "backgroundColor": "#08427B",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [
+        "cliente-group"
+      ],
+      "frameId": null,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 2127320482,
+      "version": 1,
+      "versionNonce": 59983987,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "type": "text",
+          "id": "cliente-label"
+        },
+        {
+          "type": "arrow",
+          "id": "u1"
+        }
+      ],
+      "updated": 1792490400000,
+      "link": null,
+      "locked": false,
+      "index": "a3"
+    },
+    {
+      "id": "cliente-label",
+      "type": "text",
+      "x": 467.67,
+      "y": 81.25,
+      "width": 177,
+      "height": 87.5,
+      "angle": 0,
+      "strokeColor": "#ffffff",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [
+        "cliente-group"
+      ],
+      "frameId": null,
+      "roundness": null,
+      "seed": 684946629,
+      "version": 1,
+      "versionNonce": 1714439840,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1792490400000,
+      "link": null,
+      "locked": false,
+      "text": "Cliente\n[Person]\n\nCompra productos en la\ntienda",
+      "originalText": "Cliente\n[Person]\n\nCompra productos en la tienda",
+      "fontSize": 14,
+      "fontFamily": 5,
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "cliente",
+      "autoResize": true,
+      "lineHeight": 1.25,
+      "index": "a4"
+    },
+    {
       "id": "admin-head",
       "type": "ellipse",
       "x": 248.17,
@@ -100,7 +212,7 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "index": "a2"
+      "index": "a5"
     },
     {
       "id": "admin",
@@ -141,7 +253,7 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "index": "a3"
+      "index": "a6"
     },
     {
       "id": "admin-label",
@@ -180,7 +292,91 @@
       "containerId": "admin",
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "a4"
+      "index": "a7"
+    },
+    {
+      "id": "web",
+      "type": "rectangle",
+      "x": 409.5,
+      "y": 329,
+      "width": 220,
+      "height": 134,
+      "angle": 0,
+      "strokeColor": "#3C7FC0",
+      "backgroundColor": "#438DD5",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 265927826,
+      "version": 1,
+      "versionNonce": 866076865,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "type": "text",
+          "id": "web-label"
+        },
+        {
+          "type": "arrow",
+          "id": "u1"
+        },
+        {
+          "type": "arrow",
+          "id": "u2"
+        },
+        {
+          "type": "arrow",
+          "id": "u3"
+        }
+      ],
+      "updated": 1792490400000,
+      "link": null,
+      "locked": false,
+      "index": "a8"
+    },
+    {
+      "id": "web-label",
+      "type": "text",
+      "x": 447.5,
+      "y": 361,
+      "width": 144,
+      "height": 70,
+      "angle": 0,
+      "strokeColor": "#ffffff",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": null,
+      "seed": 121758709,
+      "version": 1,
+      "versionNonce": 540720688,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1792490400000,
+      "link": null,
+      "locked": false,
+      "text": "Aplicación web\n[Container: React]\n\nInterfaz de compra",
+      "originalText": "Aplicación web\n[Container: React]\n\nInterfaz de compra",
+      "fontSize": 14,
+      "fontFamily": 5,
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "web",
+      "autoResize": true,
+      "lineHeight": 1.25,
+      "index": "a9"
     },
     {
       "id": "api",
@@ -231,7 +427,7 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "index": "a5"
+      "index": "aA"
     },
     {
       "id": "api-label",
@@ -266,194 +462,6 @@
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "api",
-      "autoResize": true,
-      "lineHeight": 1.25,
-      "index": "a6"
-    },
-    {
-      "id": "cliente-head",
-      "type": "ellipse",
-      "x": 528.17,
-      "y": 30,
-      "width": 56,
-      "height": 56,
-      "angle": 0,
-      "strokeColor": "#073B6F",
-      "backgroundColor": "#08427B",
-      "fillStyle": "solid",
-      "strokeWidth": 1,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [
-        "cliente-group"
-      ],
-      "frameId": null,
-      "roundness": {
-        "type": 3
-      },
-      "seed": 741394775,
-      "version": 1,
-      "versionNonce": 2062460188,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1792490400000,
-      "link": null,
-      "locked": false,
-      "index": "a7"
-    },
-    {
-      "id": "cliente",
-      "type": "rectangle",
-      "x": 446.17,
-      "y": 72,
-      "width": 220,
-      "height": 106,
-      "angle": 0,
-      "strokeColor": "#073B6F",
-      "backgroundColor": "#08427B",
-      "fillStyle": "solid",
-      "strokeWidth": 1,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [
-        "cliente-group"
-      ],
-      "frameId": null,
-      "roundness": {
-        "type": 3
-      },
-      "seed": 2127320482,
-      "version": 1,
-      "versionNonce": 59983987,
-      "isDeleted": false,
-      "boundElements": [
-        {
-          "type": "text",
-          "id": "cliente-label"
-        },
-        {
-          "type": "arrow",
-          "id": "u1"
-        }
-      ],
-      "updated": 1792490400000,
-      "link": null,
-      "locked": false,
-      "index": "a8"
-    },
-    {
-      "id": "cliente-label",
-      "type": "text",
-      "x": 467.67,
-      "y": 81.25,
-      "width": 177,
-      "height": 87.5,
-      "angle": 0,
-      "strokeColor": "#ffffff",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 1,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [
-        "cliente-group"
-      ],
-      "frameId": null,
-      "roundness": null,
-      "seed": 684946629,
-      "version": 1,
-      "versionNonce": 1714439840,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1792490400000,
-      "link": null,
-      "locked": false,
-      "text": "Cliente\n[Person]\n\nCompra productos en la\ntienda",
-      "originalText": "Cliente\n[Person]\n\nCompra productos en la tienda",
-      "fontSize": 14,
-      "fontFamily": 5,
-      "textAlign": "center",
-      "verticalAlign": "middle",
-      "containerId": "cliente",
-      "autoResize": true,
-      "lineHeight": 1.25,
-      "index": "a9"
-    },
-    {
-      "id": "cola",
-      "type": "rectangle",
-      "x": 451,
-      "y": 733,
-      "width": 247,
-      "height": 110,
-      "angle": 0,
-      "strokeColor": "#3C7FC0",
-      "backgroundColor": "#438DD5",
-      "fillStyle": "solid",
-      "strokeWidth": 1,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "roundness": {
-        "type": 3
-      },
-      "seed": 1699009843,
-      "version": 1,
-      "versionNonce": 149683790,
-      "isDeleted": false,
-      "boundElements": [
-        {
-          "type": "text",
-          "id": "cola-label"
-        },
-        {
-          "type": "arrow",
-          "id": "u5"
-        }
-      ],
-      "updated": 1792490400000,
-      "link": null,
-      "locked": false,
-      "index": "aA"
-    },
-    {
-      "id": "cola-label",
-      "type": "text",
-      "x": 490.75,
-      "y": 770.5,
-      "width": 167.5,
-      "height": 35,
-      "angle": 0,
-      "strokeColor": "#ffffff",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 1,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "roundness": null,
-      "seed": 1935919648,
-      "version": 1,
-      "versionNonce": 1824905001,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1792490400000,
-      "link": null,
-      "locked": false,
-      "text": "Cola de eventos\n[Container: RabbitMQ]",
-      "originalText": "Cola de eventos\n[Container: RabbitMQ]",
-      "fontSize": 14,
-      "fontFamily": 5,
-      "textAlign": "center",
-      "verticalAlign": "middle",
-      "containerId": "cola",
       "autoResize": true,
       "lineHeight": 1.25,
       "index": "aB"
@@ -565,6 +573,82 @@
       "index": "aE"
     },
     {
+      "id": "cola",
+      "type": "rectangle",
+      "x": 451,
+      "y": 733,
+      "width": 247,
+      "height": 110,
+      "angle": 0,
+      "strokeColor": "#3C7FC0",
+      "backgroundColor": "#438DD5",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": {
+        "type": 3
+      },
+      "seed": 1699009843,
+      "version": 1,
+      "versionNonce": 149683790,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "type": "text",
+          "id": "cola-label"
+        },
+        {
+          "type": "arrow",
+          "id": "u5"
+        }
+      ],
+      "updated": 1792490400000,
+      "link": null,
+      "locked": false,
+      "index": "aF"
+    },
+    {
+      "id": "cola-label",
+      "type": "text",
+      "x": 490.75,
+      "y": 770.5,
+      "width": 167.5,
+      "height": 35,
+      "angle": 0,
+      "strokeColor": "#ffffff",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": null,
+      "seed": 1935919648,
+      "version": 1,
+      "versionNonce": 1824905001,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1792490400000,
+      "link": null,
+      "locked": false,
+      "text": "Cola de eventos\n[Container: RabbitMQ]",
+      "originalText": "Cola de eventos\n[Container: RabbitMQ]",
+      "fontSize": 14,
+      "fontFamily": 5,
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "cola",
+      "autoResize": true,
+      "lineHeight": 1.25,
+      "index": "aG"
+    },
+    {
       "id": "pagos",
       "type": "rectangle",
       "x": 30,
@@ -601,7 +685,7 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "index": "aF"
+      "index": "aH"
     },
     {
       "id": "pagos-label",
@@ -636,90 +720,6 @@
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "pagos",
-      "autoResize": true,
-      "lineHeight": 1.25,
-      "index": "aG"
-    },
-    {
-      "id": "web",
-      "type": "rectangle",
-      "x": 409.5,
-      "y": 329,
-      "width": 220,
-      "height": 134,
-      "angle": 0,
-      "strokeColor": "#3C7FC0",
-      "backgroundColor": "#438DD5",
-      "fillStyle": "solid",
-      "strokeWidth": 1,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "roundness": {
-        "type": 3
-      },
-      "seed": 265927826,
-      "version": 1,
-      "versionNonce": 866076865,
-      "isDeleted": false,
-      "boundElements": [
-        {
-          "type": "text",
-          "id": "web-label"
-        },
-        {
-          "type": "arrow",
-          "id": "u1"
-        },
-        {
-          "type": "arrow",
-          "id": "u2"
-        },
-        {
-          "type": "arrow",
-          "id": "u3"
-        }
-      ],
-      "updated": 1792490400000,
-      "link": null,
-      "locked": false,
-      "index": "aH"
-    },
-    {
-      "id": "web-label",
-      "type": "text",
-      "x": 447.5,
-      "y": 361,
-      "width": 144,
-      "height": 70,
-      "angle": 0,
-      "strokeColor": "#ffffff",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 1,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "roundness": null,
-      "seed": 121758709,
-      "version": 1,
-      "versionNonce": 540720688,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1792490400000,
-      "link": null,
-      "locked": false,
-      "text": "Aplicación web\n[Container: React]\n\nInterfaz de compra",
-      "originalText": "Aplicación web\n[Container: React]\n\nInterfaz de compra",
-      "fontSize": 14,
-      "fontFamily": 5,
-      "textAlign": "center",
-      "verticalAlign": "middle",
-      "containerId": "web",
       "autoResize": true,
       "lineHeight": 1.25,
       "index": "aI"

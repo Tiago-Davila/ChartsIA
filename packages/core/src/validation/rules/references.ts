@@ -32,7 +32,7 @@ export function checkReferences({ diagram, elementsById }: RuleContext): Validat
           'UNKNOWN_REFERENCE',
           `/elements/${i}/parentId`,
           `El elemento "${el.id}" tiene parentId "${el.parentId}", que no existe.`,
-          `Crea primero el grupo "${el.parentId}" o usa el id de un package/boundary existente.`,
+          `Crea primero el grupo "${el.parentId}" o usa el id de un package, boundary o frame existente.`,
         ),
       );
     }

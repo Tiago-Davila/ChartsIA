@@ -89,10 +89,17 @@ describe('contract: apply_changes', () => {
     expect(d?.elements.find((e) => e.id === 'Autor')?.layout).toMatchObject({ x: 900, y: 50, pinned: true });
   });
 
+  it('reorder_element cambia el orden de dibujo y se devuelve en get_diagram', async () => {
+    const res = await h.call('apply_changes', { diagramId: id, operations: [{ op: 'reorder_element', id: 'Libro', to: 'front' }] });
+    expect(res.isError).toBeFalsy();
+    const d = await h.repo.get(id);
+    expect(d?.elements.map((e) => e.id)).toEqual(['Autor', 'Socio', 'Prestamo', 'Libro']);
+  });
+
   it.each([
     ['SCHEMA_VIOLATION', { operations: [] }],
     ['SCHEMA_VIOLATION', { operations: [{ op: 'explode' }] }],
-    ['KIND_NOT_ALLOWED', { operations: [{ op: 'add_element', element: { id: 'P', kind: 'person', name: 'P' } }] }],
+    ['INVALID_PARENT', { operations: [{ op: 'add_element', element: { id: 'C', kind: 'component', name: 'C' } }] }],
     ['DUPLICATE_ID', { operations: [{ op: 'add_element', element: { id: 'Libro', kind: 'enum', name: 'L', literals: ['A'] } }] }],
     ['FIELD_NOT_ALLOWED', { operations: [{ op: 'update_element', id: 'Libro', changes: { technology: 'Java' } }] }],
   ])('%s alcanzable', async (code, args) => {

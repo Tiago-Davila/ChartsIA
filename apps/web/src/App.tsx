@@ -15,7 +15,7 @@ import { setToken } from './state/auth-token';
 import { api } from './state/clients';
 import { diagramStore, useDiagramStore } from './state/diagram-store';
 import { downloadBlob } from './state/download';
-import { useHubSync } from './state/use-hub-sync';
+import { forgetDiagram, useHubSync } from './state/use-hub-sync';
 
 const openDiagram = (diagramId: string) => navigate(diagramPath(diagramId));
 
@@ -41,7 +41,7 @@ function ConnectedApp() {
   const changedIds = useDiagramStore((s) => s.lastChangedIds);
   const animate = useDiagramStore((s) => s.lastOrigin === 'agent');
   const edits = useDiagramEdits(api);
-  const shortcuts = useMemo(() => ({ history: edits.history, duplicate: edits.duplicate }), [edits.history, edits.duplicate]);
+  const shortcuts = useMemo(() => ({ history: edits.history, duplicate: edits.duplicate, copy: edits.copy, cut: edits.cut, paste: edits.paste }), [edits.history, edits.duplicate, edits.copy, edits.cut, edits.paste]);
   useShortcuts(shortcuts, diagram !== undefined);
 
   // `viewVersion` fuerza a rehacer los nodos y descartar cambios optimistas rechazados.
@@ -68,6 +68,17 @@ function ConnectedApp() {
     }
   }, []);
 
+  const onImportMermaid = useCallback(async (source: string, title?: string, projectId?: string) => {
+    try {
+      const { diagramId, warnings } = await api.importMermaid({ source, ...(title ? { title } : {}), ...(projectId ? { projectId } : {}) });
+      openDiagram(diagramId);
+      return warnings;
+    } catch (error) {
+      reportError(error);
+      return null;
+    }
+  }, []);
+
   // Mueve un diagrama de proyecto; la lista se actualiza con el evento `projects.changed`.
   const onMoveDiagram = useCallback(async (diagramId: string, projectId: string | null) => {
     try {
@@ -82,6 +93,34 @@ function ConnectedApp() {
     try {
       const project = await api.createProject(name);
       await api.setDiagramProject(diagramId, project.id);
+    } catch (error) {
+      reportError(error);
+    }
+  }, []);
+
+  // Renombra un proyecto; la lista se actualiza con el evento `projects.changed`.
+  const onRenameProject = useCallback(async (projectId: string, name: string) => {
+    try {
+      await api.renameProject(projectId, name);
+    } catch (error) {
+      reportError(error);
+    }
+  }, []);
+
+  // Elimina el proyecto; sus diagramas quedan sin proyecto y la lista se actualiza con `projects.changed`.
+  const onDeleteProject = useCallback(async (projectId: string) => {
+    try {
+      await api.deleteProject(projectId);
+    } catch (error) {
+      reportError(error);
+    }
+  }, []);
+
+  // Borra un diagrama del hub; el evento `diagram.deleted` avisa a las demás apps.
+  const onDeleteDiagram = useCallback(async (diagramId: string) => {
+    try {
+      await api.deleteDiagram(diagramId);
+      forgetDiagram(diagramId);
     } catch (error) {
       reportError(error);
     }
@@ -145,14 +184,30 @@ function ConnectedApp() {
           onCloseConfig={() => navigate(diagram ? diagramPath(diagram.id) : '/')}
           onOpen={openDiagram}
           onCreateDiagram={onCreateDiagram}
+          onImportMermaid={onImportMermaid}
           onMoveDiagram={onMoveDiagram}
           onNewProject={onNewProject}
+          onRenameProject={onRenameProject}
+          onDeleteProject={onDeleteProject}
           onRenameDiagram={onRenameDiagram}
+          onDeleteDiagram={onDeleteDiagram}
           onExport={onExport}
+          onImportImages={edits.insertImages}
+          onAddFigure={edits.addFigure}
+          onAddFigureAtCenter={edits.addFigureAtCenter}
           onRename={edits.rename}
           onNodeDragStop={edits.onNodeDragStop}
           onDelete={edits.onDelete}
+          onDuplicate={edits.duplicate}
+          onCopy={edits.copy}
+          onCut={edits.cut}
+          onPaste={edits.paste}
+          onReorder={edits.reorder}
+          onToggleLock={edits.setLocked}
           onConnect={edits.onConnect}
+          onDraw={edits.onDraw}
+          onAddText={edits.addText}
+          onAddFrame={edits.addFrame}
           onAlign={edits.align}
           changedIds={changedIds}
           onOpenLatest={onOpenLatest}

@@ -90,3 +90,51 @@ export function changesForSlot(element: Element, slot: string, value: string): E
       return undefined;
   }
 }
+
+export type MemberKind = 'attribute' | 'operation' | 'literal';
+
+export const MEMBER_LABELS: Record<MemberKind, string> = { attribute: 'atributo', operation: 'método', literal: 'literal' };
+
+/** Tipos de miembro que el elemento admite y que la app puede agregar. */
+export function memberKinds(element: Element): MemberKind[] {
+  if (element.kind === 'class' || element.kind === 'interface') return ['attribute', 'operation'];
+  if (element.kind === 'enum') return ['literal', 'attribute', 'operation'];
+  return [];
+}
+
+/** Primer nombre libre: base, base2, base3… */
+function freeName(base: string, taken: string[]): string {
+  let name = base;
+  for (let n = 2; taken.includes(name); n++) name = `${base}${n}`;
+  return name;
+}
+
+/** Agrega un miembro con texto por defecto válido y devuelve los `changes` y el `slot` nuevo. */
+export function changesForAddMember(element: Element, kind: MemberKind): { changes: ElementChanges; slot: string } | undefined {
+  if (!memberKinds(element).includes(kind)) return undefined;
+  if (kind === 'literal' && element.kind === 'enum') {
+    return { changes: { literals: [...element.literals, freeName('VALOR', element.literals)] }, slot: `literal:${element.literals.length}` };
+  }
+  if (kind === 'attribute' && (element.kind === 'class' || element.kind === 'interface' || element.kind === 'enum')) {
+    const current = element.attributes ?? [];
+    const added = parseAttribute(`${freeName('atributo', current.map((a) => a.name))}: String`);
+    return added && { changes: { attributes: [...current, added] }, slot: `attribute:${current.length}` };
+  }
+  if (kind === 'operation' && (element.kind === 'class' || element.kind === 'interface' || element.kind === 'enum')) {
+    const current = element.operations ?? [];
+    const added = parseMethod(`${freeName('metodo', current.map((m) => m.name))}(): void`);
+    return added && { changes: { operations: [...current, added] }, slot: `operation:${current.length}` };
+  }
+  return undefined;
+}
+
+/** Quita el miembro del `slot`; una enumeración no puede quedarse sin literales. */
+export function changesForRemoveMember(element: Element, slot: string): ElementChanges | undefined {
+  const [kind, indexText] = slot.split(':');
+  const index = Number(indexText);
+  const without = <T>(items: T[]) => items.filter((_, i) => i !== index);
+  if (kind === 'attribute' && 'attributes' in element && element.attributes?.[index]) return { attributes: without(element.attributes) };
+  if (kind === 'operation' && 'operations' in element && element.operations?.[index]) return { operations: without(element.operations) };
+  if (kind === 'literal' && element.kind === 'enum' && element.literals.length > 1 && element.literals[index] !== undefined) return { literals: without(element.literals) };
+  return undefined;
+}

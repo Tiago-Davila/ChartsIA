@@ -8,6 +8,7 @@
       "style": {
         "borderColor": "#b42318",
         "fillColor": "#fee4e2",
+        "lineWidth": "thick",
         "fontColor": "#7a271a",
         "fontFamily": "serif",
         "fontSize": 18
@@ -63,6 +64,7 @@
       "name": "Pagable",
       "style": {
         "borderColor": "#175cd3",
+        "lineWidth": "thin",
         "fontColor": "#175cd3",
         "fontFamily": "handwritten",
         "fontSize": 12
@@ -82,7 +84,8 @@
       "name": "Modelo",
       "style": {
         "borderColor": "#067647",
-        "fillColor": "#ecfdf3"
+        "fillColor": "#ecfdf3",
+        "lineWidth": "thick"
       },
       "kind": "package",
       "layout": {
@@ -121,6 +124,7 @@
       "style": {
         "borderColor": "#b42318",
         "fillColor": "#fda29b",
+        "lineWidth": "thick",
         "fontColor": "#b42318",
         "fontFamily": "serif",
         "fontSize": 16
@@ -147,7 +151,8 @@
       "target": "Pagable",
       "style": {
         "borderColor": "#175cd3",
-        "fillColor": "#d1e9ff"
+        "fillColor": "#d1e9ff",
+        "lineWidth": "thin"
       },
       "route": [
         {

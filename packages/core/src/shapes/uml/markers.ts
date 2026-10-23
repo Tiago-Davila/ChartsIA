@@ -1,5 +1,6 @@
 import { type Cardinality } from '../../model/enums.js';
 import { type Relation } from '../../model/relation.js';
+import { strokeWidthOf } from '../style.js';
 import { type Point } from '../../model/common.js';
 import { COLORS, type Primitive } from '../types.js';
 
@@ -13,6 +14,8 @@ export type MarkerKind =
 
 export interface RelationStyle {
   color: string;
+  /** Grosor de la línea y de sus marcadores en px. */
+  width: number;
   /** Relleno de las marcas (rombos, puntas) fijado por el estilo; sin él, cada marca usa el suyo. */
   fill?: string;
   dash?: number[];
@@ -34,12 +37,13 @@ export function relationStyle(
   const base = defaultRelationStyle(rel);
   return {
     ...base,
+    width: strokeWidthOf(rel.style),
     color: rel.style?.borderColor ?? base.color,
     ...(rel.style?.fillColor ? { fill: rel.style.fillColor } : {}),
   };
 }
 
-function defaultRelationStyle(rel: Pick<Relation, 'kind' | 'navigable' | 'sourceCardinality' | 'targetCardinality' | 'identifying' | 'arrowheads' | 'dashed'>): RelationStyle {
+function defaultRelationStyle(rel: Pick<Relation, 'kind' | 'navigable' | 'sourceCardinality' | 'targetCardinality' | 'identifying' | 'arrowheads' | 'dashed'>): Omit<RelationStyle, 'width'> {
   switch (rel.kind) {
     case 'inheritance':
       return { color: COLORS.edge, end: 'triangle-hollow' };
@@ -56,6 +60,8 @@ function defaultRelationStyle(rel: Pick<Relation, 'kind' | 'navigable' | 'source
       return { color: COLORS.edge };
     case 'c4-rel':
       return { color: '#707070', dash: DASH, end: 'arrow-filled' };
+    case 'nosql-rel':
+      return { color: COLORS.edge, end: 'arrow-filled' };
     case 'er-attr':
       return { color: COLORS.edge };
     case 'connector': {
@@ -120,12 +126,12 @@ export function crowFoot(kind: Cardinality, at: Frame): { lines: [Point, Point][
   }
 }
 
-/** Primitivas del marcador con la punta en `tip`, orientado según la dirección `from → tip`; `fill` sustituye su relleno. */
-export function markerPrimitives(kind: MarkerKind, tip: Point, from: Point, color: string, fill?: string): Primitive[] {
+/** Primitivas del marcador con la punta en `tip`, orientado según la dirección `from → tip`; `fill` sustituye su relleno y `width` es el grosor del trazo. */
+export function markerPrimitives(kind: MarkerKind, tip: Point, from: Point, color: string, fill?: string, width = 1.5): Primitive[] {
   const at = markerFrame(tip, from);
   if (isCardinality(kind)) {
     const { lines, circle } = crowFoot(kind, at);
-    const stroke = { stroke: color, strokeWidth: 1.5 };
+    const stroke = { stroke: color, strokeWidth: width };
     return [
       ...lines.map((l): Primitive => ({ type: 'path', d: `M ${l[0].x} ${l[0].y} L ${l[1].x} ${l[1].y}`, fill: 'none', ...stroke })),
       ...(circle ? [{ type: 'ellipse' as const, cx: circle.x, cy: circle.y, rx: CIRCLE_RADIUS, ry: CIRCLE_RADIUS, fill: fill ?? '#ffffff', ...stroke }] : []),
@@ -136,7 +142,7 @@ export function markerPrimitives(kind: MarkerKind, tip: Point, from: Point, colo
     d: `M ${pts.map((p) => `${p.x} ${p.y}`).join(' L ')} Z`,
     fill,
     stroke: color,
-    strokeWidth: 1.5,
+    strokeWidth: width,
   });
   switch (kind) {
     case 'triangle-hollow':
@@ -151,7 +157,7 @@ export function markerPrimitives(kind: MarkerKind, tip: Point, from: Point, colo
       const a = at(12, 7);
       const b = at(12, -7);
       const t = at(0, 0);
-      return [{ type: 'path', d: `M ${a.x} ${a.y} L ${t.x} ${t.y} L ${b.x} ${b.y}`, fill: 'none', stroke: color, strokeWidth: 1.5 }];
+      return [{ type: 'path', d: `M ${a.x} ${a.y} L ${t.x} ${t.y} L ${b.x} ${b.y}`, fill: 'none', stroke: color, strokeWidth: width }];
     }
   }
 }

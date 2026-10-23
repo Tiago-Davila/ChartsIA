@@ -19,10 +19,29 @@ describe('contract: figuras generales', () => {
   });
   afterEach(() => h.close());
 
-  it.each(['class', 'c4-context', 'c4-container', 'c4-component', 'er'])('se permiten en un diagrama %s', async (type) => {
+  it.each(['class', 'c4-context', 'c4-container', 'c4-component', 'er', 'nosql'])('se permiten en un diagrama %s', async (type) => {
     const res = await h.call('create_diagram', figures(type));
     expect(res.isError).toBeFalsy();
     expect(res.structuredContent!.counts).toEqual({ elements: 3, relations: 0 });
+  });
+
+  it('el pentágono, el heptágono y el octágono se crean, se exportan y se pueden asignar con apply_changes', async () => {
+    const polygons = {
+      type: 'c4-context', title: 'Polígonos',
+      elements: [
+        { id: 'p', kind: 'figure', name: 'Pentágono', shape: 'pentagon' },
+        { id: 'hp', kind: 'figure', name: 'Heptágono', shape: 'heptagon' },
+        { id: 'o', kind: 'figure', name: 'Octágono', shape: 'octagon' },
+      ],
+      relations: [],
+    };
+    const created = await h.call('create_diagram', polygons);
+    expect(created.isError).toBeFalsy();
+    const updated = await h.call('apply_changes', { operations: [{ op: 'update_element', id: 'p', changes: { shape: 'octagon' } }] });
+    expect(updated.isError).toBeFalsy();
+    const svg = (await h.call('export_diagram', { format: 'svg' })).structuredContent!.content as string;
+    expect(svg).toContain('Heptágono');
+    expect(svg).toContain('Octágono');
   });
 
   it('se dibujan en el SVG y se pueden cambiar de forma con apply_changes', async () => {
@@ -34,9 +53,115 @@ describe('contract: figuras generales', () => {
     expect(svg).toContain('Círculo');
   });
 
-  it('una forma inexistente (heptágono) se rechaza con SCHEMA_VIOLATION', async () => {
+  it('crea, actualiza y exporta trazos drawing mediante MCP', async () => {
+    const created = await h.call('create_diagram', {
+      type: 'class', title: 'Lápiz',
+      elements: [{ id: 'trazo', kind: 'drawing', name: 'Trazo', points: [{ x: 2, y: 3 }, { x: 40, y: 25 }, { x: 70, y: 50 }], strokeColor: '#b42318', strokeWidth: 3 }],
+      relations: [],
+    });
+    expect(created.isError).toBeFalsy();
+
+    const updated = await h.call('apply_changes', {
+      operations: [{ op: 'update_element', id: 'trazo', changes: { points: [{ x: 5, y: 6 }, { x: 45, y: 30 }], strokeColor: '#175cd3', strokeWidth: 4 } }],
+    });
+    expect(updated.isError).toBeFalsy();
+
+    const svg = (await h.call('export_diagram', { format: 'svg' })).structuredContent!.content as string;
+    const drawio = (await h.call('export_diagram', { format: 'drawio' })).structuredContent!.content as string;
+    const excalidraw = JSON.parse((await h.call('export_diagram', { format: 'excalidraw' })).structuredContent!.content as string);
+    expect(svg).toContain('stroke="#175cd3"');
+    expect(drawio).toContain('strokeColor=#175cd3;strokeWidth=4;');
+    expect(drawio).toContain('as="sourcePoint"');
+    expect(excalidraw.elements.find((e: { id: string }) => e.id === 'trazo')).toMatchObject({ type: 'line', strokeColor: '#175cd3', strokeWidth: 4 });
+  });
+
+  it('crea, convierte y exporta un marcador semitransparente mediante MCP', async () => {
+    const created = await h.call('create_diagram', {
+      type: 'class', title: 'Marcador',
+      elements: [
+        { id: 'zona', kind: 'drawing', name: 'Zona', points: [{ x: 7, y: 7 }, { x: 90, y: 12 }], strokeColor: '#facc15', strokeWidth: 14, highlighter: true },
+        { id: 'figura', kind: 'figure', name: 'Figura', shape: 'circle' },
+      ],
+      relations: [],
+    });
+    expect(created.isError).toBeFalsy();
+
+    const svg = (await h.call('export_diagram', { format: 'svg' })).structuredContent!.content as string;
+    expect(svg).toContain('stroke="#facc15" stroke-width="14" stroke-opacity="0.4"');
+    expect(svg.indexOf('data-id="zona"')).toBeLessThan(svg.indexOf('data-id="figura"'));
+    const drawio = (await h.call('export_diagram', { format: 'drawio' })).structuredContent!.content as string;
+    expect(drawio).toContain('strokeWidth=14;opacity=40;');
+    const excalidraw = JSON.parse((await h.call('export_diagram', { format: 'excalidraw' })).structuredContent!.content as string);
+    expect(excalidraw.elements.find((e: { id: string }) => e.id === 'zona')).toMatchObject({ type: 'line', opacity: 40 });
+
+    const pen = await h.call('apply_changes', { operations: [{ op: 'update_element', id: 'zona', changes: { highlighter: null } }] });
+    expect(pen.isError).toBeFalsy();
+    const opaque = (await h.call('export_diagram', { format: 'svg' })).structuredContent!.content as string;
+    expect(opaque).not.toContain('stroke-opacity');
+  });
+
+  it('rechaza highlighter distinto de true', async () => {
+    const res = await h.call('create_diagram', {
+      type: 'class', title: 'Marcador',
+      elements: [{ id: 'zona', kind: 'drawing', name: 'Zona', points: [{ x: 7, y: 7 }, { x: 90, y: 12 }], strokeColor: '#facc15', strokeWidth: 14, highlighter: false }],
+      relations: [],
+    });
+    expect(h.errorCodes(res)).toContain('SCHEMA_VIOLATION');
+  });
+
+  it('acepta el óvalo, el rombo y el paralelogramo al crear y al cambiar de forma', async () => {
+    const res = await h.call('create_diagram', {
+      type: 'er', title: 'Nuevas formas',
+      elements: [
+        { id: 'o', kind: 'figure', name: 'Óvalo', shape: 'oval' },
+        { id: 'r', kind: 'figure', name: 'Rombo', shape: 'diamond' },
+      ],
+      relations: [],
+    });
+    expect(res.isError).toBeFalsy();
+    const changed = await h.call('apply_changes', { operations: [{ op: 'update_element', id: 'r', changes: { shape: 'parallelogram' } }] });
+    expect(changed.isError).toBeFalsy();
+    const svg = (await h.call('export_diagram', { format: 'svg' })).structuredContent!.content as string;
+    expect(svg).toContain('Óvalo');
+    expect(svg).toContain('Rombo');
+  });
+
+  it('acepta las cuatro variantes de triángulo y las dibuja en el SVG', async () => {
+    const variantes = [['equilateral-triangle', 'Equilátero'], ['isosceles-triangle', 'Isósceles'], ['scalene-triangle', 'Escaleno'], ['right-triangle', 'Rectángulo']];
+    const res = await h.call('create_diagram', {
+      type: 'class',
+      title: 'Triángulos',
+      elements: variantes.map(([shape, name]) => ({ id: shape, kind: 'figure', name, shape })),
+      relations: [],
+    });
+    expect(res.isError).toBeFalsy();
+    expect(res.structuredContent!.counts).toEqual({ elements: 4, relations: 0 });
+    const svg = (await h.call('export_diagram', { format: 'svg' })).structuredContent!.content as string;
+    for (const [, name] of variantes) expect(svg).toContain(name);
+  });
+
+  it('acepta las flechas simple, doble y de bloque, las dibuja y cambia una con apply_changes', async () => {
+    const flechas = [['arrow', 'Simple'], ['double-arrow', 'Doble'], ['arrow-right', 'Derecha'], ['arrow-left', 'Izquierda'], ['arrow-up', 'Arriba'], ['arrow-down', 'Abajo']];
+    const res = await h.call('create_diagram', {
+      type: 'class',
+      title: 'Flechas',
+      elements: flechas.map(([shape, name]) => ({ id: shape, kind: 'figure', name, shape })),
+      relations: [],
+    });
+    expect(res.isError).toBeFalsy();
+    expect(res.structuredContent!.counts).toEqual({ elements: 6, relations: 0 });
+    const changed = await h.call('apply_changes', { operations: [{ op: 'update_element', id: 'arrow', changes: { shape: 'arrow-up' } }] });
+    expect(changed.isError).toBeFalsy();
+    const svg = (await h.call('export_diagram', { format: 'svg' })).structuredContent!.content as string;
+    for (const [, name] of flechas) expect(svg).toContain(name);
+    const drawio = (await h.call('export_diagram', { format: 'drawio' })).structuredContent!.content as string;
+    expect(drawio).toContain('shape=singleArrow;direction=north;');
+    expect(drawio).toContain('shape=doubleArrow;');
+  });
+
+  it('una forma inexistente (dodecágono) se rechaza con SCHEMA_VIOLATION', async () => {
     const bad = figures('class');
-    bad.elements[0]!.shape = 'heptagon';
+    bad.elements[0]!.shape = 'dodecagon';
     const res = await h.call('create_diagram', bad);
     expect(h.errorCodes(res)).toContain('SCHEMA_VIOLATION');
   });
@@ -47,6 +172,11 @@ describe('contract: figuras generales', () => {
       const text = (res.contents[0] as { text: string }).text;
       expect(text).toContain('`figure`');
       expect(text).toContain('hexagon');
+      expect(text).toContain('right-triangle');
+      expect(text).toContain('double-arrow');
+      expect(text).toContain('`drawing`');
+      expect(text).toContain('1024');
+      expect(text).toContain('highlighter');
     }
   });
 });

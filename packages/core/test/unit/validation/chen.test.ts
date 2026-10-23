@@ -90,7 +90,7 @@ describe('er-attr: a qué se puede unir', () => {
     expect(codes(errors(res))).toEqual(['FIELD_NOT_ALLOWED', 'FIELD_NOT_ALLOWED']);
   });
 
-  it('solo existe en diagramas er', () => {
+  it('er-attr no une elementos de clases', () => {
     const res = validateDiagram({ type: 'class', title: 'C', elements: [{ id: 'A', kind: 'class', name: 'A', attributes: [], operations: [] }, { id: 'B', kind: 'class', name: 'B', attributes: [], operations: [] }], relations: [link('a1', 'A', 'B')] } as DiagramInput);
     expect(errors(res)).toMatchObject([{ code: 'RELATION_NOT_ALLOWED', path: '/relations/0/kind' }]);
   });

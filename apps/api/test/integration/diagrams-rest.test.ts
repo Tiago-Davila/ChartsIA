@@ -121,4 +121,81 @@ describe('POST /api/diagrams', () => {
     const list = await body(await json('/api/diagrams'));
     expect(list.diagrams.find((d: { title: string }) => d.title === 'En proyecto')).toMatchObject({ projectId: project.id });
   });
+
+  it('POST /import-mermaid crea el diagrama canónico, lo activa y devuelve warnings', async () => {
+    const response = await json('/api/diagrams/import-mermaid', {
+      method: 'POST',
+      body: JSON.stringify({
+        source: [
+          'classDiagram',
+          'class Usuario {',
+          '  +String nombre',
+          '  +iniciarSesion(token: String) bool',
+          '}',
+          'class Sesion',
+          'Usuario "1" --> "0..*" Sesion : crea',
+          'API ()-- Usuario',
+          'click Usuario href "javascript:alert(1)" "malicioso"',
+        ].join('\n'),
+      }),
+    });
+    expect(response.status).toBe(201);
+    const created = await body(response);
+    expect(created).toMatchObject({
+      revision: 1,
+      counts: { elements: 3, relations: 2 },
+    });
+    expect(created.warnings).toEqual(expect.arrayContaining([
+      expect.stringContaining('no se ejecutaron callbacks'),
+      expect.stringContaining('lollipop'),
+    ]));
+    const diagram = await body(await json(`/api/diagrams/${created.diagramId}`));
+    expect(diagram).toMatchObject({
+      type: 'class',
+      title: 'Diagrama importado',
+      elements: [
+        { name: 'Usuario', attributes: [{ name: 'nombre', type: 'String' }], operations: [{ name: 'iniciarSesion', returnType: 'bool' }] },
+        { name: 'Sesion' },
+        { name: 'API', kind: 'interface' },
+      ],
+      relations: [
+        { kind: 'association', label: 'crea', sourceMultiplicity: '1', targetMultiplicity: '0..*' },
+        { kind: 'realization' },
+      ],
+    });
+    expect(JSON.stringify(diagram)).not.toContain('javascript:');
+    expect((await body(await json('/api/diagrams'))).activeDiagramId).toBe(created.diagramId);
+  });
+
+  it('rechaza Mermaid inválido y texto sobre el límite con ruta y ayuda sin persistir', async () => {
+    const before = await body(await json('/api/diagrams'));
+    const invalid = await json('/api/diagrams/import-mermaid', {
+      method: 'POST', body: JSON.stringify({ source: 'graph TD\nA --> B' }),
+    });
+    expect(invalid.status).toBe(422);
+    expect((await body(invalid)).errors[0]).toMatchObject({
+      code: 'SCHEMA_VIOLATION', path: '/source', message: expect.stringContaining('Línea 1'), hint: expect.stringContaining('256 Ki'),
+    });
+    const oversized = await json('/api/diagrams/import-mermaid', {
+      method: 'POST', body: JSON.stringify({ source: 'x'.repeat(256 * 1024 + 1) }),
+    });
+    expect(oversized.status).toBe(422);
+    expect((await body(oversized)).errors[0]).toMatchObject({ code: 'SCHEMA_VIOLATION', path: '/source' });
+    expect((await body(await json('/api/diagrams'))).diagrams).toHaveLength(before.diagrams.length);
+  });
+
+  it('rechaza SVG activo antes de persistirlo', async () => {
+    const created = await body(await json('/api/diagrams', {
+      method: 'POST',
+      body: JSON.stringify({ type: 'class', title: 'Malicioso' }),
+    }));
+    const src = `data:image/svg+xml;base64,${Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>').toString('base64')}`;
+    const response = await json(`/api/diagrams/${created.diagramId}/operations`, {
+      method: 'POST',
+      body: JSON.stringify({ operations: [{ op: 'add_element', element: { id: 'img', kind: 'image', name: 'Imagen', src } }] }),
+    });
+    expect(response.status).toBe(422);
+    expect((await body(response)).errors[0]).toMatchObject({ code: 'SCHEMA_VIOLATION', path: '/operations/0/element/src' });
+    expect((await body(await json(`/api/diagrams/${created.diagramId}`))).elements).toHaveLength(0);
+  });
 });

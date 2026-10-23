@@ -14,7 +14,7 @@
       "strokeColor": "#067647",
       "backgroundColor": "#ecfdf3",
       "fillStyle": "solid",
-      "strokeWidth": 1,
+      "strokeWidth": 3,
       "strokeStyle": "solid",
       "roughness": 1,
       "opacity": 100,
@@ -69,33 +69,41 @@
       "index": "a1"
     },
     {
-      "id": "Estado",
+      "id": "Pedido",
       "type": "rectangle",
-      "x": 260,
-      "y": 405,
-      "width": 140,
-      "height": 98,
+      "x": 57.33,
+      "y": 162,
+      "width": 143,
+      "height": 112,
       "angle": 0,
-      "strokeColor": "#1e1e1e",
-      "backgroundColor": "#fffef5",
+      "strokeColor": "#b42318",
+      "backgroundColor": "#fee4e2",
       "fillStyle": "solid",
-      "strokeWidth": 1,
+      "strokeWidth": 3,
       "strokeStyle": "solid",
       "roughness": 1,
       "opacity": 100,
       "groupIds": [
-        "Estado-group"
+        "Pedido-group"
       ],
       "frameId": null,
       "roundness": null,
-      "seed": 880519706,
+      "seed": 24785077,
       "version": 1,
-      "versionNonce": 1346193569,
+      "versionNonce": 796129788,
       "isDeleted": false,
       "boundElements": [
         {
           "type": "text",
-          "id": "Estado-label"
+          "id": "Pedido-label"
+        },
+        {
+          "type": "arrow",
+          "id": "r1"
+        },
+        {
+          "type": "arrow",
+          "id": "r2"
         },
         {
           "type": "arrow",
@@ -108,14 +116,14 @@
       "index": "a2"
     },
     {
-      "id": "Estado-label",
+      "id": "Pedido-label",
       "type": "text",
-      "x": 268,
-      "y": 413,
-      "width": 124,
-      "height": 35,
+      "x": 65.33,
+      "y": 170,
+      "width": 127,
+      "height": 22.5,
       "angle": 0,
-      "strokeColor": "#1e1e1e",
+      "strokeColor": "#7a271a",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 1,
@@ -123,52 +131,52 @@
       "roughness": 1,
       "opacity": 100,
       "groupIds": [
-        "Estado-group"
+        "Pedido-group"
       ],
       "frameId": null,
       "roundness": null,
-      "seed": 1058255589,
+      "seed": 175967444,
       "version": 1,
-      "versionNonce": 534056266,
+      "versionNonce": 1968467027,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "text": "«enumeration»\nEstado",
-      "originalText": "«enumeration»\nEstado",
-      "fontSize": 14,
-      "fontFamily": 5,
+      "text": "Pedido",
+      "originalText": "Pedido",
+      "fontSize": 18,
+      "fontFamily": 2,
       "textAlign": "center",
       "verticalAlign": "top",
-      "containerId": "Estado",
+      "containerId": "Pedido",
       "autoResize": true,
       "lineHeight": 1.25,
       "index": "a3"
     },
     {
-      "id": "Estado-sep-0",
+      "id": "Pedido-sep-0",
       "type": "line",
-      "x": 260,
-      "y": 453,
-      "width": 140,
+      "x": 57.33,
+      "y": 200,
+      "width": 143,
       "height": 0,
       "angle": 0,
-      "strokeColor": "#1e1e1e",
+      "strokeColor": "#b42318",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
-      "strokeWidth": 1,
+      "strokeWidth": 3,
       "strokeStyle": "solid",
       "roughness": 1,
       "opacity": 100,
       "groupIds": [
-        "Estado-group"
+        "Pedido-group"
       ],
       "frameId": null,
       "roundness": null,
-      "seed": 1500197818,
+      "seed": 762722473,
       "version": 1,
-      "versionNonce": 817101887,
+      "versionNonce": 1703226600,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1792490400000,
@@ -180,7 +188,7 @@
           0
         ],
         [
-          140,
+          143,
           0
         ]
       ],
@@ -192,14 +200,14 @@
       "index": "a4"
     },
     {
-      "id": "Estado-literal:0",
+      "id": "Pedido-attribute:0",
       "type": "text",
-      "x": 270,
-      "y": 459,
-      "width": 120,
-      "height": 19,
+      "x": 67.33,
+      "y": 206,
+      "width": 123,
+      "height": 25,
       "angle": 0,
-      "strokeColor": "#1e1e1e",
+      "strokeColor": "#7a271a",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 1,
@@ -207,22 +215,22 @@
       "roughness": 1,
       "opacity": 100,
       "groupIds": [
-        "Estado-group"
+        "Pedido-group"
       ],
       "frameId": null,
       "roundness": null,
-      "seed": 2039477096,
+      "seed": 1932962854,
       "version": 1,
-      "versionNonce": 1652677649,
+      "versionNonce": 493176261,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "text": "ABIERTO",
-      "originalText": "ABIERTO",
-      "fontSize": 13,
-      "fontFamily": 5,
+      "text": "- total: double",
+      "originalText": "- total: double",
+      "fontSize": 17,
+      "fontFamily": 2,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
@@ -231,14 +239,59 @@
       "index": "a5"
     },
     {
-      "id": "Estado-literal:1",
-      "type": "text",
-      "x": 270,
-      "y": 478,
-      "width": 120,
-      "height": 19,
+      "id": "Pedido-sep-1",
+      "type": "line",
+      "x": 57.33,
+      "y": 237,
+      "width": 143,
+      "height": 0,
       "angle": 0,
-      "strokeColor": "#1e1e1e",
+      "strokeColor": "#b42318",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 3,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [
+        "Pedido-group"
+      ],
+      "frameId": null,
+      "roundness": null,
+      "seed": 779500092,
+      "version": 1,
+      "versionNonce": 1616720923,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1792490400000,
+      "link": null,
+      "locked": false,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          143,
+          0
+        ]
+      ],
+      "lastCommittedPoint": null,
+      "startBinding": null,
+      "endBinding": null,
+      "startArrowhead": null,
+      "endArrowhead": null,
+      "index": "a6"
+    },
+    {
+      "id": "Pedido-operation:0",
+      "type": "text",
+      "x": 67.33,
+      "y": 243,
+      "width": 123,
+      "height": 25,
+      "angle": 0,
+      "strokeColor": "#7a271a",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 1,
@@ -246,28 +299,28 @@
       "roughness": 1,
       "opacity": 100,
       "groupIds": [
-        "Estado-group"
+        "Pedido-group"
       ],
       "frameId": null,
       "roundness": null,
-      "seed": 2022699477,
+      "seed": 1622907125,
       "version": 1,
-      "versionNonce": 1749525914,
+      "versionNonce": 1030224688,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "text": "CERRADO",
-      "originalText": "CERRADO",
-      "fontSize": 13,
-      "fontFamily": 5,
+      "text": "+ pagar()",
+      "originalText": "+ pagar()",
+      "fontSize": 17,
+      "fontFamily": 2,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "a6"
+      "index": "a7"
     },
     {
       "id": "Linea",
@@ -306,7 +359,7 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "index": "a7"
+      "index": "a8"
     },
     {
       "id": "Linea-label",
@@ -345,7 +398,7 @@
       "containerId": "Linea",
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "a8"
+      "index": "a9"
     },
     {
       "id": "Linea-sep-0",
@@ -390,7 +443,7 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
-      "index": "a9"
+      "index": "aA"
     },
     {
       "id": "Linea-attribute:0",
@@ -429,7 +482,7 @@
       "containerId": null,
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "aA"
+      "index": "aB"
     },
     {
       "id": "Linea-sep-1",
@@ -474,7 +527,7 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
-      "index": "aB"
+      "index": "aC"
     },
     {
       "id": "Pagable",
@@ -513,7 +566,7 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "index": "aC"
+      "index": "aD"
     },
     {
       "id": "Pagable-label",
@@ -552,7 +605,7 @@
       "containerId": "Pagable",
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "aD"
+      "index": "aE"
     },
     {
       "id": "Pagable-sep-0",
@@ -597,44 +650,36 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
-      "index": "aE"
+      "index": "aF"
     },
     {
-      "id": "Pedido",
+      "id": "Estado",
       "type": "rectangle",
-      "x": 57.33,
-      "y": 162,
-      "width": 143,
-      "height": 112,
+      "x": 260,
+      "y": 405,
+      "width": 140,
+      "height": 98,
       "angle": 0,
-      "strokeColor": "#b42318",
-      "backgroundColor": "#fee4e2",
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "#fffef5",
       "fillStyle": "solid",
       "strokeWidth": 1,
       "strokeStyle": "solid",
       "roughness": 1,
       "opacity": 100,
       "groupIds": [
-        "Pedido-group"
+        "Estado-group"
       ],
       "frameId": null,
       "roundness": null,
-      "seed": 24785077,
+      "seed": 880519706,
       "version": 1,
-      "versionNonce": 796129788,
+      "versionNonce": 1346193569,
       "isDeleted": false,
       "boundElements": [
         {
           "type": "text",
-          "id": "Pedido-label"
-        },
-        {
-          "type": "arrow",
-          "id": "r1"
-        },
-        {
-          "type": "arrow",
-          "id": "r2"
+          "id": "Estado-label"
         },
         {
           "type": "arrow",
@@ -644,17 +689,17 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "index": "aF"
+      "index": "aG"
     },
     {
-      "id": "Pedido-label",
+      "id": "Estado-label",
       "type": "text",
-      "x": 65.33,
-      "y": 170,
-      "width": 127,
-      "height": 22.5,
+      "x": 268,
+      "y": 413,
+      "width": 124,
+      "height": 35,
       "angle": 0,
-      "strokeColor": "#7a271a",
+      "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 1,
@@ -662,38 +707,38 @@
       "roughness": 1,
       "opacity": 100,
       "groupIds": [
-        "Pedido-group"
+        "Estado-group"
       ],
       "frameId": null,
       "roundness": null,
-      "seed": 175967444,
+      "seed": 1058255589,
       "version": 1,
-      "versionNonce": 1968467027,
+      "versionNonce": 534056266,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "text": "Pedido",
-      "originalText": "Pedido",
-      "fontSize": 18,
-      "fontFamily": 2,
+      "text": "«enumeration»\nEstado",
+      "originalText": "«enumeration»\nEstado",
+      "fontSize": 14,
+      "fontFamily": 5,
       "textAlign": "center",
       "verticalAlign": "top",
-      "containerId": "Pedido",
+      "containerId": "Estado",
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "aG"
+      "index": "aH"
     },
     {
-      "id": "Pedido-sep-0",
+      "id": "Estado-sep-0",
       "type": "line",
-      "x": 57.33,
-      "y": 200,
-      "width": 143,
+      "x": 260,
+      "y": 453,
+      "width": 140,
       "height": 0,
       "angle": 0,
-      "strokeColor": "#b42318",
+      "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 1,
@@ -701,13 +746,13 @@
       "roughness": 1,
       "opacity": 100,
       "groupIds": [
-        "Pedido-group"
+        "Estado-group"
       ],
       "frameId": null,
       "roundness": null,
-      "seed": 762722473,
+      "seed": 1500197818,
       "version": 1,
-      "versionNonce": 1703226600,
+      "versionNonce": 817101887,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1792490400000,
@@ -719,7 +764,7 @@
           0
         ],
         [
-          143,
+          140,
           0
         ]
       ],
@@ -728,17 +773,17 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
-      "index": "aH"
+      "index": "aI"
     },
     {
-      "id": "Pedido-attribute:0",
+      "id": "Estado-literal:0",
       "type": "text",
-      "x": 67.33,
-      "y": 206,
-      "width": 123,
-      "height": 25,
+      "x": 270,
+      "y": 459,
+      "width": 120,
+      "height": 19,
       "angle": 0,
-      "strokeColor": "#7a271a",
+      "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 1,
@@ -746,83 +791,38 @@
       "roughness": 1,
       "opacity": 100,
       "groupIds": [
-        "Pedido-group"
+        "Estado-group"
       ],
       "frameId": null,
       "roundness": null,
-      "seed": 1932962854,
+      "seed": 2039477096,
       "version": 1,
-      "versionNonce": 493176261,
+      "versionNonce": 1652677649,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "text": "- total: double",
-      "originalText": "- total: double",
-      "fontSize": 17,
-      "fontFamily": 2,
+      "text": "ABIERTO",
+      "originalText": "ABIERTO",
+      "fontSize": 13,
+      "fontFamily": 5,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "aI"
-    },
-    {
-      "id": "Pedido-sep-1",
-      "type": "line",
-      "x": 57.33,
-      "y": 237,
-      "width": 143,
-      "height": 0,
-      "angle": 0,
-      "strokeColor": "#b42318",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 1,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [
-        "Pedido-group"
-      ],
-      "frameId": null,
-      "roundness": null,
-      "seed": 779500092,
-      "version": 1,
-      "versionNonce": 1616720923,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1792490400000,
-      "link": null,
-      "locked": false,
-      "points": [
-        [
-          0,
-          0
-        ],
-        [
-          143,
-          0
-        ]
-      ],
-      "lastCommittedPoint": null,
-      "startBinding": null,
-      "endBinding": null,
-      "startArrowhead": null,
-      "endArrowhead": null,
       "index": "aJ"
     },
     {
-      "id": "Pedido-operation:0",
+      "id": "Estado-literal:1",
       "type": "text",
-      "x": 67.33,
-      "y": 243,
-      "width": 123,
-      "height": 25,
+      "x": 270,
+      "y": 478,
+      "width": 120,
+      "height": 19,
       "angle": 0,
-      "strokeColor": "#7a271a",
+      "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
       "strokeWidth": 1,
@@ -830,22 +830,22 @@
       "roughness": 1,
       "opacity": 100,
       "groupIds": [
-        "Pedido-group"
+        "Estado-group"
       ],
       "frameId": null,
       "roundness": null,
-      "seed": 1622907125,
+      "seed": 2022699477,
       "version": 1,
-      "versionNonce": 1030224688,
+      "versionNonce": 1749525914,
       "isDeleted": false,
       "boundElements": null,
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "text": "+ pagar()",
-      "originalText": "+ pagar()",
-      "fontSize": 17,
-      "fontFamily": 2,
+      "text": "CERRADO",
+      "originalText": "CERRADO",
+      "fontSize": 13,
+      "fontFamily": 5,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
@@ -864,7 +864,7 @@
       "strokeColor": "#b42318",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
-      "strokeWidth": 1,
+      "strokeWidth": 3,
       "strokeStyle": "solid",
       "roughness": 1,
       "opacity": 100,

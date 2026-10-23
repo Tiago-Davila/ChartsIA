@@ -13,6 +13,64 @@ async function drag(page: Page, from: { x: number; y: number }, to: { x: number;
 const center = (box: { x: number; y: number; width: number; height: number }) => ({ x: box.x + box.width / 2, y: box.y + box.height / 2 });
 
 test.describe('más edición en el lienzo', () => {
+  test('seleccionar con un rectángulo permite alinear y borrar varias clases', async ({ page, agent }) => {
+    const id = await agent.create({
+      type: 'class',
+      title: 'Selección múltiple',
+      elements: [
+        { id: 'Primera', kind: 'class', name: 'Primera', attributes: [], operations: [], layout: { x: 100, y: 100 } },
+        { id: 'Segunda', kind: 'class', name: 'Segunda', attributes: [], operations: [], layout: { x: 500, y: 350 } },
+        { id: 'Tercera', kind: 'class', name: 'Tercera', attributes: [], operations: [], layout: { x: 100, y: 900 } },
+      ],
+      relations: [],
+    });
+    await page.goto(`/d/${id}`);
+
+    const primero = (await page.locator('[data-element-id="Primera"]').boundingBox())!;
+    const segundo = (await page.locator('[data-element-id="Segunda"]').boundingBox())!;
+    await drag(
+      page,
+      { x: primero.x - 20, y: primero.y + 20 },
+      { x: segundo.x + segundo.width + 20, y: segundo.y + 20 },
+    );
+
+    await expect.poll(() => page.locator('.react-flow__node.selected').count()).toBe(2);
+    await page.getByText('Alinear', { exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Alinear arriba' }).click();
+    await expect
+      .poll(async () => {
+        const elements = (await agent.layout(id)).elements;
+        return elements.find((element) => element.id === 'Primera')!.layout.y === elements.find((element) => element.id === 'Segunda')!.layout.y;
+      })
+      .toBe(true);
+
+    await page.keyboard.press('Delete');
+    await expect.poll(async () => (await agent.layout(id)).elements.map((element) => element.id)).toEqual(['Tercera']);
+  });
+
+  test('la rueda y espacio más arrastre desplazan el lienzo', async ({ page, agent }) => {
+    const id = await agent.create({ ...library, title: 'Desplazar' });
+    await page.goto(`/d/${id}`);
+    await expect(page.locator('.react-flow__node')).toHaveCount(4);
+
+    const canvas = (await page.locator('.react-flow').boundingBox())!;
+    const from = { x: canvas.x + canvas.width - 30, y: canvas.y + 30 };
+    const to = { x: from.x - 70, y: from.y + 60 };
+    expect(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.classList.contains('react-flow__pane'), from)).toBe(true);
+    const viewport = page.locator('.react-flow__viewport');
+    await expect.poll(() => viewport.evaluate((element) => getComputedStyle(element).transform)).not.toBe('matrix(1, 0, 0, 1, 0, 0)');
+    const beforeWheel = await viewport.getAttribute('style');
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.wheel(0, 120);
+    await expect.poll(() => viewport.getAttribute('style')).not.toBe(beforeWheel);
+
+    const beforeDrag = await viewport.getAttribute('style');
+    await page.keyboard.down('Space');
+    await drag(page, from, to);
+    await page.keyboard.up('Space');
+    await expect.poll(() => viewport.getAttribute('style')).not.toBe(beforeDrag);
+  });
+
   test('redimensionar una clase fija su tamaño en el hub', async ({ page, agent }) => {
     const id = await agent.create({ ...library, title: 'Tamaño' });
     await page.goto(`/d/${id}`);

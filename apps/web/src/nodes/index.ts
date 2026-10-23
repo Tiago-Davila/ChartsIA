@@ -28,8 +28,15 @@ export const nodeTypes = {
   entity: ErEntityNode,
   table: ErTableNode,
   figure: ElementNode,
+  drawing: ElementNode,
+  image: ElementNode,
+  text: ElementNode,
+  collection: ElementNode,
+  frame: GroupNode,
   attribute: ErAttributeNode,
   'value-list': ErValueListNode,
+  relationship: ElementNode,
+  specialization: ElementNode,
 } satisfies Record<ElementKind, NodeTypes[string]> as NodeTypes;
 
 export type { ElementFlowNode, ElementNodeData } from './types';

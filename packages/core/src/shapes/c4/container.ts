@@ -36,7 +36,7 @@ export const containerShape: ShapeDefinition<ContainerElement> = {
   },
   primitives: (el, { width: w, height: h }) => {
     const c = paintOf(el.style, c4Colors('container'));
-    const paint = { fill: c.fill, stroke: c.stroke, strokeWidth: 1.5 };
+    const paint = { fill: c.fill, stroke: c.stroke, strokeWidth: c.strokeWidth };
     const ry = CAP / 2;
     let body: Primitive[];
     let area = { x: 0, y: 0, width: w, height: h };
@@ -58,7 +58,7 @@ export const containerShape: ShapeDefinition<ContainerElement> = {
       case 'web':
         body = [
           { type: 'rect', x: 0, y: 0, width: w, height: h, rx: 6, ...paint },
-          { type: 'line', x1: 0, y1: BAR, x2: w, y2: BAR, stroke: c.stroke, strokeWidth: 1.5 },
+          { type: 'line', x1: 0, y1: BAR, x2: w, y2: BAR, stroke: c.stroke, strokeWidth: c.strokeWidth },
           ...[0, 1, 2].map((i): Primitive => ({ type: 'ellipse', cx: 12 + i * 12, cy: BAR / 2, rx: 3.5, ry: 3.5, fill: '#ffffff', stroke: c.stroke })),
         ];
         area = { x: 0, y: BAR, width: w, height: h - BAR };

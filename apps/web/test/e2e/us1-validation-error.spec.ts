@@ -19,7 +19,7 @@ test('US1 · escenario 3: error UNKNOWN_REFERENCE accionable y nada cambia en la
     { op: 'add_relation', relation: { id: 'h1', kind: 'inheritance', source: 'Socio', target: 'Persona' } },
   ]);
   expect(fixed.isError).toBeFalsy();
-  await expect(page.getByText('Persona', { exact: true })).toBeVisible();
+  await expect(page.locator('[data-element-id="Persona"]')).toBeVisible();
   await expect(page.locator('.diagram-list__item')).toHaveCount(items);
   await expect(page.getByText(/rev 2/)).toBeVisible();
 });

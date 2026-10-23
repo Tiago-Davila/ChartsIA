@@ -1,11 +1,15 @@
 import { z } from 'zod';
-import { ARROWHEADS, BOUNDARY_TYPES, CARDINALITIES, CONTAINER_VARIANTS, FIGURE_SHAPES, MAX_OPERATIONS_PER_BATCH, NAVIGABILITIES, RELATION_KINDS, SIDES } from './enums.js';
+import { ARROWHEADS, BOUNDARY_TYPES, CARDINALITIES, CONTAINER_VARIANTS, FIGURE_SHAPES, MAX_OPERATIONS_PER_BATCH, NAVIGABILITIES, RELATION_KINDS, SIDES, STACK_ORDER_TARGETS } from './enums.js';
 import { AttributeSchema, MethodSchema } from './class-elements.js';
 import { ColumnSchema } from './er-elements.js';
-import { DescriptionSchema, ElementIdSchema, LayoutSchema, NameSchema, PointSchema } from './common.js';
+import { DescriptionSchema, ElementIdSchema, LayoutSchema, PointSchema } from './common.js';
 import { ElementSchema, TitleSchema } from './diagram.js';
+import { DrawingPointsSchema, DRAWING_MAX_STROKE_WIDTH, DRAWING_MIN_STROKE_WIDTH } from './drawing-elements.js';
 import { MultiplicitySchema, RelationSchema } from './relation.js';
 import { StyleSchema } from './style.js';
+import { ImageDataUrlSchema } from './image-elements.js';
+import { NoSqlFieldsSchema } from './nosql-elements.js';
+import { TEXT_BLOCK_MAX_LENGTH } from './text-elements.js';
 
 /**
  * Cambios parciales de un elemento: unión de los campos editables de todos los `kind`.
@@ -14,7 +18,8 @@ import { StyleSchema } from './style.js';
  */
 export const ElementChangesSchema = z
   .strictObject({
-    name: NameSchema.optional(),
+    // Un bloque de texto admite un markdown más largo; el resultado se valida contra el kind existente.
+    name: z.string().min(1).max(TEXT_BLOCK_MAX_LENGTH).optional(),
     description: DescriptionSchema.nullable().optional(),
     parentId: ElementIdSchema.nullable().optional(),
     abstract: z.boolean().nullable().optional(),
@@ -29,11 +34,22 @@ export const ElementChangesSchema = z
     columns: z.array(ColumnSchema).min(1).max(200).optional(),
     weak: z.boolean().nullable().optional(),
     shape: z.enum(FIGURE_SHAPES).optional(),
+    fields: NoSqlFieldsSchema.optional(),
+    points: DrawingPointsSchema.optional(),
+    strokeColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+    strokeWidth: z.number().finite().min(DRAWING_MIN_STROKE_WIDTH).max(DRAWING_MAX_STROKE_WIDTH).optional(),
+    highlighter: z.literal(true).nullable().optional(),
+    src: ImageDataUrlSchema.optional().describe('Reemplaza la imagen con un data URL PNG/JPG o SVG saneado'),
     key: z.boolean().nullable().optional(),
+    partialKey: z.boolean().nullable().optional(),
     multivalued: z.boolean().nullable().optional(),
     derived: z.boolean().nullable().optional(),
+    associative: z.boolean().nullable().optional(),
+    identifying: z.boolean().nullable().optional(),
+    overlapping: z.boolean().nullable().optional(),
     values: z.array(z.string().min(1).max(200)).min(1).max(200).optional(),
     style: StyleSchema.nullable().optional().describe('Reemplaza el estilo completo; null lo elimina'),
+    locked: z.boolean().optional().describe('Bloquea (true) o desbloquea (false) el elemento en la app'),
   })
   .describe('Campos a cambiar, p. ej. {"name":"Usuario"}; null elimina un campo opcional');
 export type ElementChanges = z.infer<typeof ElementChangesSchema>;
@@ -51,6 +67,8 @@ export const RelationChangesSchema = z
     sourceCardinality: z.enum(CARDINALITIES).nullable().optional(),
     targetCardinality: z.enum(CARDINALITIES).nullable().optional(),
     identifying: z.boolean().nullable().optional(),
+    sourceTotal: z.boolean().nullable().optional(),
+    targetTotal: z.boolean().nullable().optional(),
     arrowheads: z.enum(ARROWHEADS).nullable().optional(),
     dashed: z.boolean().nullable().optional(),
     sourceSide: z.enum(SIDES).nullable().optional(),
@@ -86,6 +104,11 @@ export const OperationSchema = z.discriminatedUnion('op', [
     id: ElementIdSchema,
     width: z.number().positive().max(5000),
     height: z.number().positive().max(5000),
+  }),
+  z.strictObject({
+    op: z.literal('reorder_element'),
+    id: ElementIdSchema,
+    to: z.enum(STACK_ORDER_TARGETS).describe('Orden de dibujo: front al frente, back al fondo, forward un nivel adelante, backward un nivel atrás'),
   }),
   z.strictObject({ op: z.literal('set_title'), title: TitleSchema }),
 ]);

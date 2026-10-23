@@ -17,6 +17,12 @@ export class InMemoryDiagramRepository implements DiagramRepository {
     this.diagrams.set(diagram.id, structuredClone(diagram));
   }
 
+  async delete(id: string): Promise<void> {
+    this.diagrams.delete(id);
+    this.projectOf.delete(id);
+    if (this.activeId === id) this.activeId = null;
+  }
+
   async list(): Promise<DiagramSummary[]> {
     return sortSummaries(
       [...this.diagrams.values()].map((d) => {

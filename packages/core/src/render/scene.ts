@@ -1,5 +1,5 @@
 import { type Diagram } from '../model/diagram.js';
-import { isGroupKind } from '../model/enums.js';
+import { drawOrder } from '../model/draw-order.js';
 import { legendEntries, legendPrimitives } from '../shapes/c4/legend.js';
 import { elementPrimitives } from '../shapes/registry.js';
 import { type Primitive } from '../shapes/types.js';
@@ -17,7 +17,7 @@ export interface SceneNode {
 
 export interface Scene {
   bounds: { x: number; y: number; width: number; height: number };
-  /** Grupos primero (de fuera hacia dentro) y luego elementos, para el orden de pintado. */
+  /** En orden de pintado: grupos, marcadores y luego el resto (ver `drawOrder`). */
   nodes: SceneNode[];
   /** Absolutas. */
   edges: { id: string; primitives: Primitive[] }[];
@@ -28,26 +28,9 @@ export const FONT_FAMILY = "Inter, 'Helvetica Neue', Arial, sans-serif";
 
 const MARGIN = 24;
 
-function depth(diagram: Diagram, id: string): number {
-  let d = 0;
-  let el = diagram.elements.find((e) => e.id === id);
-  while (el?.parentId && d < 64) {
-    d++;
-    const parentId: string = el.parentId;
-    el = diagram.elements.find((e) => e.id === parentId);
-  }
-  return d;
-}
-
 /** Escena de render compartida por el SVG exportado y la app. */
 export function buildScene(diagram: Diagram): Scene {
-  const ordered = [...diagram.elements].sort(
-    (a, b) =>
-      Number(!isGroupKind(a.kind)) - Number(!isGroupKind(b.kind)) ||
-      depth(diagram, a.id) - depth(diagram, b.id) ||
-      (a.id < b.id ? -1 : 1),
-  );
-  const nodes: SceneNode[] = ordered.map((el) => {
+  const nodes: SceneNode[] = drawOrder(diagram.elements).map((el) => {
     const l = el.layout ?? { x: 0, y: 0, width: 0, height: 0 };
     const width = l.width ?? 0;
     const height = l.height ?? 0;

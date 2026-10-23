@@ -29,6 +29,8 @@ export interface DiagramState {
   applyUpdate(event: DiagramUpdatedEvent): void;
   reconcile(remote: Diagram): void;
   diagramCreated(event: { diagramId: string; title: string; type: DiagramType }): void;
+  /** Quita el diagrama de la lista; si estaba abierto o activo, ya no lo está. */
+  diagramDeleted(diagramId: string): void;
   setActive(diagramId: string): void;
   setConnection(state: ConnectionState): void;
   setNeedsToken(value: boolean): void;
@@ -36,6 +38,9 @@ export interface DiagramState {
   dismissErrors(): void;
   refreshView(): void;
   clearChangedIds(): void;
+  /** Bloque de texto recién creado que debe abrirse en edición al aparecer en el lienzo. */
+  pendingTextEdit?: string;
+  setPendingTextEdit(id: string | undefined): void;
 }
 
 /** Ids de los elementos nuevos o distintos entre dos versiones del diagrama. */
@@ -97,12 +102,19 @@ export function createDiagramStore() {
           ? s
           : { diagrams: upsert(s.diagrams, { diagramId, title, type, revision: 1, updatedAt: new Date().toISOString() }) },
       ),
+    diagramDeleted: (diagramId) =>
+      set((s) => ({
+        diagrams: s.diagrams.filter((d) => d.diagramId !== diagramId),
+        activeDiagramId: s.activeDiagramId === diagramId ? null : s.activeDiagramId,
+        ...(s.openDiagramId === diagramId ? { openDiagramId: null, diagram: undefined, lastOrigin: undefined, lastChangedIds: [] } : {}),
+      })),
     setActive: (diagramId) => set({ activeDiagramId: diagramId }),
     setConnection: (connection) => set({ connection }),
     setNeedsToken: (needsToken) => set({ needsToken }),
     showErrors: (errors) => set((s) => ({ errors, viewVersion: s.viewVersion + 1 })),
     dismissErrors: () => set({ errors: [] }),
     clearChangedIds: () => set({ lastChangedIds: [] }),
+    setPendingTextEdit: (id) => set({ pendingTextEdit: id }),
     refreshView: () => set((s) => ({ viewVersion: s.viewVersion + 1 })),
   }));
 }

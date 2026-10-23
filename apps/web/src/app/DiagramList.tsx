@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { type DiagramType } from '@chartsia/core/model';
 import { type Project } from '../state/api-client';
+import { DeleteProjectDialog } from './DeleteProjectDialog';
+import { ConfirmDialog } from './ConfirmDialog';
 import { DIAGRAM_TYPE_LABELS, formatDate } from './labels';
+import { NameDialog } from './NameDialog';
 
 export interface DiagramListItem {
   diagramId: string;
@@ -22,8 +25,14 @@ export interface DiagramListProps {
   onMove(diagramId: string, projectId: string | null): void;
   /** Crea un proyecto con ese nombre y mueve el diagrama a él. */
   onNewProject(diagramId: string, name: string): void;
+  /** Cambia el nombre de un proyecto desde su menú ⋯. */
+  onRenameProject(projectId: string, name: string): void;
   /** Cambia el título del diagrama sin abrirlo. */
   onRename(diagramId: string, title: string): void;
+  /** Elimina el proyecto; sus diagramas pasan a "Sin proyecto". */
+  onDeleteProject(projectId: string): void;
+  /** Borra el diagrama; la ventana de confirmación se pide antes. */
+  onDelete(diagramId: string): void;
 }
 
 /** Quita mayúsculas y acentos para comparar títulos. */
@@ -56,11 +65,20 @@ export function agruparPorProyecto(diagramas: DiagramListItem[], proyectos: Proj
   return busqueda.trim() ? secciones.filter((s) => s.diagramas.length > 0) : secciones;
 }
 
+/** Ventana abierta desde un menú ⋯: nombre de un proyecto nuevo, nombre de un proyecto, título de un diagrama, o confirmar el borrado de un diagrama o de un proyecto. */
+type Dialogo =
+  | { tipo: 'proyecto'; diagramId: string }
+  | { tipo: 'renombrar-proyecto'; projectId: string; nombre: string }
+  | { tipo: 'titulo'; diagrama: DiagramListItem }
+  | { tipo: 'borrar'; diagrama: DiagramListItem }
+  | { tipo: 'eliminarProyecto'; proyectoId: string; nombre: string };
+
 /** Barra lateral con los diagramas agrupados por proyecto (FR-025); el activo de los agentes va marcado. */
-export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId, onOpen, onMove, onNewProject, onRename }: DiagramListProps) {
+export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId, onOpen, onMove, onNewProject, onRenameProject, onRename, onDelete, onDeleteProject }: DiagramListProps) {
   const [busqueda, setBusqueda] = useState('');
   const [plegadas, setPlegadas] = useState<ReadonlySet<string>>(new Set());
   const [menuAbierto, setMenuAbierto] = useState<string | null>(null);
+  const [dialogo, setDialogo] = useState<Dialogo | null>(null);
   const visibles = filtrarDiagramas(diagrams, busqueda);
   const secciones = agruparPorProyecto(diagrams, projects, busqueda);
 
@@ -77,16 +95,12 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
     };
   }, [menuAbierto]);
 
-  // Pide el nombre del proyecto nuevo; un nombre vacío o cancelado no llama al hub.
-  const pedirProyecto = (diagramId: string) => {
-    const nombre = window.prompt('Nombre del proyecto nuevo')?.trim();
-    if (nombre) onNewProject(diagramId, nombre);
-  };
+  const cerrarDialogo = () => setDialogo(null);
 
-  // Pide el título nuevo (máximo 120); uno vacío, igual al actual o cancelado no llama al hub.
-  const pedirTitulo = (d: DiagramListItem) => {
-    const titulo = window.prompt('Nuevo título del diagrama', d.title)?.trim().slice(0, 120);
-    if (titulo && titulo !== d.title) onRename(d.diagramId, titulo);
+  // Cierra el menú y ejecuta la opción elegida.
+  const elegir = (accion: () => void) => {
+    setMenuAbierto(null);
+    accion();
   };
 
   const alternar = (clave: string) =>
@@ -97,10 +111,6 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
     });
 
   const renderItem = (d: DiagramListItem) => {
-    const elegir = (accion: () => void) => {
-      setMenuAbierto(null);
-      accion();
-    };
     const tieneProyecto = d.projectId !== undefined && projects.some((p) => p.id === d.projectId);
     return (
     <li key={d.diagramId} className="diagram-list__row">
@@ -131,7 +141,7 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
         {menuAbierto === d.diagramId ? (
           <ul role="menu" className="diagram-list__menu">
             <li role="none">
-              <button type="button" role="menuitem" onClick={() => elegir(() => pedirTitulo(d))}>
+              <button type="button" role="menuitem" onClick={() => elegir(() => setDialogo({ tipo: 'titulo', diagrama: d }))}>
                 Renombrar…
               </button>
             </li>
@@ -145,7 +155,7 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
                 </li>
               ))}
             <li role="none">
-              <button type="button" role="menuitem" onClick={() => elegir(() => pedirProyecto(d.diagramId))}>
+              <button type="button" role="menuitem" onClick={() => elegir(() => setDialogo({ tipo: 'proyecto', diagramId: d.diagramId }))}>
                 Nuevo proyecto…
               </button>
             </li>
@@ -156,6 +166,11 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
                 </button>
               </li>
             ) : null}
+            <li role="none">
+              <button type="button" role="menuitem" onClick={() => elegir(() => setDialogo({ tipo: 'borrar', diagrama: d }))}>
+                Eliminar…
+              </button>
+            </li>
           </ul>
         ) : null}
       </div>
@@ -163,6 +178,7 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
     );
   };
 
+  // Menú ⋯ de la cabecera de un proyecto; hoy solo permite eliminarlo.
   return (
     <nav className="diagram-list" aria-label="Diagramas">
       <h2 className="diagram-list__title">Diagramas</h2>
@@ -186,17 +202,112 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
             const clave = s.id ?? 'sin-proyecto';
             // Buscando, las secciones se muestran abiertas para no esconder resultados.
             const abierta = busqueda.trim() !== '' || !plegadas.has(clave);
+            // "Sin proyecto" no tiene nombre que cambiar, así que no lleva menú.
+            const projectId = s.id;
+            const claveMenu = `proyecto:${clave}`;
             return (
               <li key={clave} className="diagram-list__section">
-                <button type="button" className="diagram-list__section-title" aria-expanded={abierta} onClick={() => alternar(clave)}>
-                  <span aria-hidden>{abierta ? '▾' : '▸'}</span> {s.nombre} <span className="diagram-list__count">{s.diagramas.length}</span>
-                </button>
+                <div className="diagram-list__section-head">
+                  <button type="button" className="diagram-list__section-title" aria-expanded={abierta} onClick={() => alternar(clave)}>
+                    <span aria-hidden>{abierta ? '▾' : '▸'}</span> {s.nombre} <span className="diagram-list__count">{s.diagramas.length}</span>
+                  </button>
+                  {projectId !== null ? (
+                    <div className="diagram-list__menu-wrap">
+                      <button
+                        type="button"
+                        className="diagram-list__menu-button"
+                        aria-label={`Opciones del proyecto ${s.nombre}`}
+                        aria-haspopup="menu"
+                        aria-expanded={menuAbierto === claveMenu}
+                        onClick={() => setMenuAbierto(menuAbierto === claveMenu ? null : claveMenu)}
+                      >
+                        ⋯
+                      </button>
+                      {menuAbierto === claveMenu ? (
+                        <ul role="menu" className="diagram-list__menu">
+                          <li role="none">
+                            <button type="button" role="menuitem" onClick={() => elegir(() => setDialogo({ tipo: 'renombrar-proyecto', projectId, nombre: s.nombre }))}>
+                              Renombrar…
+                            </button>
+                          </li>
+                          <li role="none">
+                            <button type="button" role="menuitem" onClick={() => elegir(() => setDialogo({ tipo: 'eliminarProyecto', proyectoId: projectId, nombre: s.nombre }))}>
+                              Eliminar proyecto…
+                            </button>
+                          </li>
+                        </ul>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
                 {abierta ? <ul>{s.diagramas.map(renderItem)}</ul> : null}
               </li>
             );
           })}
         </ul>
       )}
+      {dialogo?.tipo === 'eliminarProyecto' ? (
+        <DeleteProjectDialog
+          nombre={dialogo.nombre}
+          diagramas={diagrams.filter((d) => d.projectId === dialogo.proyectoId).length}
+          onCerrar={cerrarDialogo}
+          onConfirmar={() => {
+            onDeleteProject(dialogo.proyectoId);
+            cerrarDialogo();
+          }}
+        />
+      ) : null}
+      {dialogo?.tipo === 'proyecto' ? (
+        <NameDialog
+          titulo="Nuevo proyecto"
+          textoConfirmar="Crear"
+          onCerrar={cerrarDialogo}
+          onConfirmar={(nombre) => {
+            onNewProject(dialogo.diagramId, nombre);
+            cerrarDialogo();
+          }}
+        />
+      ) : null}
+      {dialogo?.tipo === 'renombrar-proyecto' ? (
+        <NameDialog
+          titulo="Renombrar proyecto"
+          textoConfirmar="Renombrar"
+          valorInicial={dialogo.nombre}
+          maxLength={100}
+          onCerrar={cerrarDialogo}
+          onConfirmar={(nombre) => {
+            // Un nombre igual al actual no llama al hub.
+            if (nombre !== dialogo.nombre) onRenameProject(dialogo.projectId, nombre);
+            cerrarDialogo();
+          }}
+        />
+      ) : null}
+      {dialogo?.tipo === 'titulo' ? (
+        <NameDialog
+          titulo="Renombrar diagrama"
+          textoConfirmar="Renombrar"
+          valorInicial={dialogo.diagrama.title}
+          maxLength={120}
+          onCerrar={cerrarDialogo}
+          onConfirmar={(titulo) => {
+            // Un título igual al actual no llama al hub.
+            if (titulo !== dialogo.diagrama.title) onRename(dialogo.diagrama.diagramId, titulo);
+            cerrarDialogo();
+          }}
+        />
+      ) : null}
+      {dialogo?.tipo === 'borrar' ? (
+        <ConfirmDialog
+          titulo="Eliminar diagrama"
+          mensaje={`¿Eliminar «${dialogo.diagrama.title}»? Se borra para siempre, con su historial de deshacer.`}
+          textoConfirmar="Eliminar"
+          onCerrar={cerrarDialogo}
+          onConfirmar={() => {
+            onDelete(dialogo.diagrama.diagramId);
+            cerrarDialogo();
+          }}
+        />
+      ) : null}
     </nav>
   );
 }

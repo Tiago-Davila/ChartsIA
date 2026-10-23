@@ -58,6 +58,26 @@ describe('JsonFileDiagramRepository', () => {
     expect((await repo.list()).map((s) => s.diagramId)).toEqual([recent.id, old.id]);
   });
 
+  it('borra el archivo y el resumen, y el borrado sobrevive reinicios', async () => {
+    const repo = await open();
+    const d = storedDiagram();
+    await repo.save(d);
+    await repo.setActiveId(d.id);
+    await repo.delete(d.id);
+    expect(await repo.get(d.id)).toBeUndefined();
+    expect(await readdir(dir)).not.toContain(`${d.id}.json`);
+    const again = await open();
+    expect(await again.list()).toEqual([]);
+    expect(await again.getActiveId()).toBeNull();
+  });
+
+  it('no toca archivos fuera del directorio de datos con un id malicioso', async () => {
+    const repo = await open('datos');
+    await writeFile(join(dir, 'fuera.json'), '{}');
+    await repo.delete('../fuera');
+    expect(await readdir(dir)).toContain('fuera.json');
+  });
+
   it('escritura atómica: si falla el rename no corrompe el archivo ni deja temporales', async () => {
     const repo = await open();
     const d = storedDiagram();

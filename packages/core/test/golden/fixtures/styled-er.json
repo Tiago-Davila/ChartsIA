@@ -3,20 +3,20 @@
   "title": "ER con estilo",
   "elements": [
     { "id": "cliente", "kind": "entity", "name": "Cliente",
-      "style": { "borderColor": "#175cd3", "fillColor": "#eff8ff", "fontFamily": "serif", "fontSize": 20 } },
+      "style": { "borderColor": "#175cd3", "lineWidth": "thick", "fillColor": "#eff8ff", "fontFamily": "serif", "fontSize": 20 } },
     { "id": "pedido", "kind": "entity", "name": "Pedido", "weak": true,
-      "style": { "borderColor": "#b42318" } },
+      "style": { "borderColor": "#b42318", "lineWidth": "thick" } },
     { "id": "dni", "kind": "attribute", "name": "DNI", "key": true,
       "style": { "fillColor": "#fef0c7", "fontColor": "#93370d", "fontFamily": "monospace" } },
     { "id": "telefonos", "kind": "attribute", "name": "Teléfonos", "multivalued": true,
       "style": { "borderColor": "#067647", "fontSize": 12 } },
     { "id": "items", "kind": "table", "name": "Items",
       "columns": [{ "name": "id", "type": "INT", "pk": true }, { "name": "precio", "type": "DECIMAL" }],
-      "style": { "fillColor": "#f4ebff", "borderColor": "#6941c6", "fontFamily": "handwritten" } }
+      "style": { "fillColor": "#f4ebff", "borderColor": "#6941c6", "lineWidth": "thin", "fontFamily": "handwritten" } }
   ],
   "relations": [
     { "id": "r1", "kind": "er-rel", "source": "cliente", "target": "pedido", "label": "hace", "sourceCardinality": "one", "targetCardinality": "zero-many",
-      "style": { "borderColor": "#175cd3", "fillColor": "#d1e9ff", "fontColor": "#175cd3", "fontSize": 16 } },
+      "style": { "borderColor": "#175cd3", "lineWidth": "thick", "fillColor": "#d1e9ff", "fontColor": "#175cd3", "fontSize": 16 } },
     { "id": "a1", "kind": "er-attr", "source": "cliente", "target": "dni" },
     { "id": "a2", "kind": "er-attr", "source": "cliente", "target": "telefonos" }
   ]

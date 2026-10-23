@@ -1,4 +1,5 @@
-import { ALLOWED_RELATIONS_BY_DIAGRAM, type Diagram, MULTIPLICITY_RELATION_KINDS, type Point, type Relation, type RelationChanges, type RelationKind } from '@chartsia/core/model';
+import { canRelate } from '@chartsia/core/validation';
+import { type Diagram, type Element, isGroupKind, MULTIPLICITY_RELATION_KINDS, type Point, RELATION_KINDS, type Relation, type RelationChanges, type RelationKind } from '@chartsia/core/model';
 
 /** Ids ya usados por elementos y relaciones (comparten espacio). */
 function usedIds(diagram: Pick<Diagram, 'elements' | 'relations'>): Set<string> {
@@ -18,37 +19,63 @@ export function relationId(diagram: Pick<Diagram, 'elements' | 'relations'>): st
   for (let n = diagram.relations.length + 1; ; n++) if (!used.has(`r${n}`)) return `r${n}`;
 }
 
-/** Relación nueva al conectar arrastrando; con una figura en er usa un conector, y con un atributo o lista una er-attr con el dueño como origen. */
-export function connectionRelation(diagram: Pick<Diagram, 'type' | 'elements' | 'relations'>, source: string, target: string): Relation {
+/** Relaciones que se prueban al conectar, de la más específica a la menos; en er-attr se prueba también con los extremos invertidos. */
+function connectionCandidates(id: string, source: string, target: string): Relation[] {
+  return [
+    { id, kind: 'association', source, target },
+    { id, kind: 'nosql-rel', source, target },
+    { id, kind: 'er-rel', source, target, sourceCardinality: 'one', targetCardinality: 'zero-many' },
+    { id, kind: 'er-attr', source, target },
+    { id, kind: 'er-attr', source: target, target: source },
+    { id, kind: 'c4-rel', source, target },
+  ];
+}
+
+/** Si un tipo de flecha admite el par de elementos (ninguno grupo), según sus familias y las reglas del núcleo. */
+function admits(elements: Element[], kind: RelationKind, source: string, target: string): boolean {
+  const from = elements.find((e) => e.id === source);
+  const to = elements.find((e) => e.id === target);
+  return !!from && !!to && !isGroupKind(from.kind) && !isGroupKind(to.kind) && canRelate(kind, from.kind, to.kind);
+}
+
+/** Relación nueva al conectar arrastrando: la primera semántica que admite el par o, si ninguna, un conector. */
+export function connectionRelation(diagram: Pick<Diagram, 'elements' | 'relations'>, source: string, target: string): Relation {
   const id = relationId(diagram);
-  const kindOf = (elementId: string) => diagram.elements.find((e) => e.id === elementId)?.kind;
-  const chen = (elementId: string) => kindOf(elementId) === 'attribute' || kindOf(elementId) === 'value-list';
-  if (diagram.type === 'er' && (kindOf(source) === 'figure' || kindOf(target) === 'figure')) return { id, kind: 'connector', source, target };
-  if (diagram.type === 'er' && (chen(source) || chen(target))) {
-    const swap = kindOf(target) === 'entity' || kindOf(source) === 'value-list';
-    return { id, kind: 'er-attr', source: swap ? target : source, target: swap ? source : target };
-  }
-  if (diagram.type === 'er') return { id, kind: 'er-rel', source, target, sourceCardinality: 'one', targetCardinality: 'zero-many' };
-  return { id, kind: diagram.type === 'class' ? 'association' : 'c4-rel', source, target };
+  const candidates = connectionCandidates(id, source, target);
+  return candidates.find((rel) => admits(diagram.elements, rel.kind, rel.source, rel.target)) ?? { id, kind: 'connector', source, target };
 }
 
-/** Tipos de flecha válidos en el diagrama. */
-export function relationKinds(type: Diagram['type']): readonly RelationKind[] {
-  return ALLOWED_RELATIONS_BY_DIAGRAM[type];
+/** Tipos de flecha que admiten los extremos de la relación; si ninguno, solo el suyo para no perderlo. */
+export function relationKinds(elements: Element[], relation: Relation): RelationKind[] {
+  const kinds = RELATION_KINDS.filter((kind) => admits(elements, kind, relation.source, relation.target));
+  return kinds.length > 0 ? kinds : [relation.kind];
 }
 
-/** Cambios para pasar a otro tipo de flecha, quitando los campos que el tipo nuevo no admite. */
+/** Tipos de flecha que admiten cada campo opcional; los demás tipos no lo aceptan. */
+const KINDS_BY_FIELD = {
+  sourceMultiplicity: MULTIPLICITY_RELATION_KINDS,
+  targetMultiplicity: MULTIPLICITY_RELATION_KINDS,
+  navigable: ['association'],
+  technology: ['c4-rel'],
+  sourceCardinality: ['er-rel'],
+  targetCardinality: ['er-rel'],
+  identifying: ['er-rel'],
+  sourceTotal: ['er-rel', 'connector'],
+  targetTotal: ['er-rel', 'connector'],
+  arrowheads: ['connector'],
+  dashed: ['connector'],
+} as const satisfies Partial<Record<keyof Relation, readonly RelationKind[]>>;
+
+/** Cambios para pasar a otro tipo de flecha, quitando los campos que el tipo nuevo no admite y agregando los obligatorios. */
 export function kindChanges(rel: Relation, kind: RelationKind): RelationChanges {
-  const multiplicities = (MULTIPLICITY_RELATION_KINDS as readonly string[]).includes(kind);
+  const removed = Object.entries(KINDS_BY_FIELD)
+    .filter(([field, kinds]) => rel[field as keyof typeof KINDS_BY_FIELD] !== undefined && !(kinds as readonly string[]).includes(kind))
+    .map(([field]) => [field, null]);
   return {
     kind,
-    ...(!multiplicities && (rel.sourceMultiplicity || rel.targetMultiplicity) ? { sourceMultiplicity: null, targetMultiplicity: null } : {}),
-    ...(kind !== 'association' && rel.navigable ? { navigable: null } : {}),
-    ...(kind === 'er-rel' && !rel.sourceCardinality ? { sourceCardinality: 'one' as const, targetCardinality: 'zero-many' as const } : {}),
-    ...(kind !== 'connector' && (rel.arrowheads || rel.dashed !== undefined) ? { arrowheads: null, dashed: null } : {}),
-    ...(kind !== 'er-rel' && (rel.sourceCardinality || rel.targetCardinality || rel.identifying !== undefined)
-      ? { sourceCardinality: null, targetCardinality: null, identifying: null }
-      : {}),
+    ...Object.fromEntries(removed),
+    ...(kind === 'er-rel' && !rel.sourceCardinality ? { sourceCardinality: 'one' as const } : {}),
+    ...(kind === 'er-rel' && !rel.targetCardinality ? { targetCardinality: 'zero-many' as const } : {}),
   };
 }
 
@@ -60,6 +87,7 @@ export function reverseChanges(rel: Relation): RelationChanges {
     sourceMultiplicity: rel.targetMultiplicity ?? null,
     targetMultiplicity: rel.sourceMultiplicity ?? null,
     ...(rel.kind === 'er-rel' ? { sourceCardinality: rel.targetCardinality ?? null, targetCardinality: rel.sourceCardinality ?? null } : {}),
+    ...(rel.sourceTotal !== undefined || rel.targetTotal !== undefined ? { sourceTotal: rel.targetTotal ?? null, targetTotal: rel.sourceTotal ?? null } : {}),
     sourceSide: rel.targetSide ?? null,
     targetSide: rel.sourceSide ?? null,
     ...(rel.waypoints ? { waypoints: [...rel.waypoints].reverse() } : {}),

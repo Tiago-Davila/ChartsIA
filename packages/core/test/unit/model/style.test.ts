@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DRAWING_DEFAULT_WIDTH,
+  DRAWING_MAX_STROKE_WIDTH,
+  DRAWING_MIN_STROKE_WIDTH,
+  DRAWING_WIDTH_PX,
   ElementSchema,
   FONT_FAMILIES,
+  LINE_WIDTHS,
+  LINE_WIDTH_PX,
   OperationBatchSchema,
   RelationSchema,
   StyleSchema,
@@ -38,6 +44,28 @@ describe('StyleSchema', () => {
     expect(StyleSchema.safeParse({ fontSize }).success).toBe(false);
   });
 
+  it.each(LINE_WIDTHS)('acepta el grosor "%s"', (lineWidth) => {
+    expect(StyleSchema.safeParse({ lineWidth }).success).toBe(true);
+  });
+
+  it.each(['fino', 'bold', 2, '', null])('rechaza el grosor %s', (lineWidth) => {
+    expect(StyleSchema.safeParse({ lineWidth }).success).toBe(false);
+  });
+
+  it('el grosor medio equivale al que siempre usaron las formas', () => {
+    expect(LINE_WIDTH_PX.medium).toBe(1.5);
+    expect(LINE_WIDTH_PX.thin).toBeLessThan(LINE_WIDTH_PX.medium);
+    expect(LINE_WIDTH_PX.thick).toBeGreaterThan(LINE_WIDTH_PX.medium);
+  });
+
+  it('las opciones del lápiz son válidas para un trazo y medium es el grosor por defecto', () => {
+    expect(DRAWING_WIDTH_PX.medium).toBe(DRAWING_DEFAULT_WIDTH);
+    for (const width of Object.values(DRAWING_WIDTH_PX)) {
+      expect(width).toBeGreaterThanOrEqual(DRAWING_MIN_STROKE_WIDTH);
+      expect(width).toBeLessThanOrEqual(DRAWING_MAX_STROKE_WIDTH);
+    }
+  });
+
   it('rechaza campos desconocidos', () => {
     expect(StyleSchema.safeParse({ color: '#000000' }).success).toBe(false);
   });
@@ -62,6 +90,7 @@ describe('StyleSchema', () => {
     const json = toToolJsonSchema(StyleSchema) as { additionalProperties: boolean; properties: Record<string, Record<string, unknown>> };
     expect(json.additionalProperties).toBe(false);
     expect(json.properties.fontFamily!.enum).toEqual([...FONT_FAMILIES]);
+    expect(json.properties.lineWidth!.enum).toEqual([...LINE_WIDTHS]);
     expect(json.properties.fontSize).toMatchObject({ type: 'integer', minimum: 8, maximum: 48 });
     expect(json.properties.fillColor).toHaveProperty('pattern');
   });

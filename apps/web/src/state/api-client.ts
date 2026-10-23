@@ -83,6 +83,8 @@ export function createApiClient({ baseUrl = '', getToken, fetch: fetchImpl = (..
     listDiagrams: () => json<DiagramListResponse>('/api/diagrams'),
     createDiagram: (body: { type: DiagramType; title: string; projectId?: string }) =>
       json<{ diagramId: string; revision: number; viewUrl: string }>('/api/diagrams', { method: 'POST', body: JSON.stringify(body) }),
+    importMermaid: (body: { source: string; title?: string; projectId?: string }) =>
+      json<{ diagramId: string; revision: number; viewUrl: string; counts: { elements: number; relations: number }; warnings: string[] }>('/api/diagrams/import-mermaid', { method: 'POST', body: JSON.stringify(body) }),
     listAgents: async () => (await json<{ agents: ConnectedAgent[] }>('/api/agents')).agents,
     getDiagram: (diagramId: string) => json<Diagram>(`/api/diagrams/${id(diagramId)}`),
     applyOperations: (diagramId: string, body: { baseRevision?: number; operations: Operation[] }) =>
@@ -93,6 +95,14 @@ export function createApiClient({ baseUrl = '', getToken, fetch: fetchImpl = (..
       await request(`/api/diagrams/${id(diagramId)}/activate`, { method: 'POST' });
     },
     createProject: (name: string) => json<Project>('/api/projects', { method: 'POST', body: JSON.stringify({ name }) }),
+    renameProject: (projectId: string, name: string) =>
+      json<Project>(`/api/projects/${id(projectId)}`, { method: 'PATCH', body: JSON.stringify({ name }) }),
+    deleteProject: async (projectId: string) => {
+      await request(`/api/projects/${id(projectId)}`, { method: 'DELETE' });
+    },
+    deleteDiagram: async (diagramId: string) => {
+      await request(`/api/diagrams/${id(diagramId)}`, { method: 'DELETE' });
+    },
     setDiagramProject: async (diagramId: string, projectId: string | null) => {
       await request(`/api/diagrams/${id(diagramId)}/project`, { method: 'PUT', body: JSON.stringify({ projectId }) });
     },

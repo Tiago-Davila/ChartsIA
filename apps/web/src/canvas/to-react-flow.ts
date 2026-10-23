@@ -1,18 +1,9 @@
-import { type Diagram, type Element, isGroupKind } from '@chartsia/core/model';
+import { type Diagram, drawOrder, isGroupKind, isHighlighter } from '@chartsia/core/model';
 import { measureElement } from '@chartsia/core/shapes';
 import { Position } from '@xyflow/react';
 import { type RoutedFlowEdge } from '../edges';
 import { type ElementFlowNode } from '../nodes';
-
-function depthOf(el: Element, byId: Map<string, Element>): number {
-  let depth = 0;
-  let parent = el.parentId ? byId.get(el.parentId) : undefined;
-  while (parent && depth < 64) {
-    depth++;
-    parent = parent.parentId ? byId.get(parent.parentId) : undefined;
-  }
-  return depth;
-}
+import { frozenIds } from './locks';
 
 /**
  * Modelo → nodos y aristas de React Flow. El tipo de nodo es el `kind`; los grupos son nodos
@@ -21,8 +12,8 @@ function depthOf(el: Element, byId: Map<string, Element>): number {
  */
 export function toReactFlow(diagram: Diagram): { nodes: ElementFlowNode[]; edges: RoutedFlowEdge[] } {
   const byId = new Map(diagram.elements.map((e) => [e.id, e]));
-  const ordered = [...diagram.elements].sort((a, b) => depthOf(a, byId) - depthOf(b, byId) || (a.id < b.id ? -1 : 1));
-  const nodes = ordered.map((element): ElementFlowNode => {
+  const frozen = frozenIds(diagram);
+  const nodes = drawOrder(diagram.elements).map((element): ElementFlowNode => {
     const size = element.layout?.width && element.layout.height ? { width: element.layout.width, height: element.layout.height } : measureElement(element);
     const parent = element.parentId ? byId.get(element.parentId) : undefined;
     const x = (element.layout?.x ?? 0) - (parent?.layout?.x ?? 0);
@@ -34,7 +25,9 @@ export function toReactFlow(diagram: Diagram): { nodes: ElementFlowNode[]; edges
       width: size.width,
       height: size.height,
       ...(parent ? { parentId: parent.id } : {}),
-      ...(isGroupKind(element.kind) ? { zIndex: -1 } : {}),
+      // Solo se marca el bloqueado: un `draggable: true` por nodo pisaría al `nodesDraggable` del lienzo (mano, lápiz, solo lectura).
+      ...(frozen.has(element.id) ? { draggable: false, deletable: false } : {}),
+      ...(isGroupKind(element.kind) || isHighlighter(element) ? { zIndex: -1 } : {}),
       data: { element },
       handles: [
         { type: 'target', position: Position.Top, x: size.width / 2, y: 0, width: 1, height: 1 },

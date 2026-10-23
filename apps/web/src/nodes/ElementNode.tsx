@@ -1,12 +1,15 @@
 import { CSS_FONT_FAMILIES, measureElement, type Primitive } from '@chartsia/core/shapes';
 import { Handle, NodeResizer, type NodeProps, Position } from '@xyflow/react';
-import { type CSSProperties, memo, useCallback, useMemo, useState } from 'react';
-import { slotValue } from '../canvas/slot-edits';
+import { type CSSProperties, memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memberKinds, slotValue } from '../canvas/slot-edits';
 import { suggestTypes, typeContext } from '../canvas/type-suggestions';
 import { CleanShape } from '../render/CleanShape';
+import { shapePrimitives } from '../render/shape-cache';
 import { useDiagramEditActions } from './edit-context';
 import { diagramStore } from '../state/diagram-store';
 import { InlineEditableText, type Suggestions } from './InlineEditableText';
+import { MemberControls } from './MemberControls';
+import { TextBlockEditor } from './TextBlockEditor';
 import { type ElementFlowNode } from './types';
 
 type TextPrimitive = Extract<Primitive, { type: 'text' }>;
@@ -38,24 +41,74 @@ function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<Elemen
   const { element } = data;
   const minimum = useMemo(() => measureElement(element), [element]);
   const size = { width: width ?? minimum.width, height: height ?? minimum.height };
-  const { editText, resize, readOnly } = useDiagramEditActions();
+  const { editText, addMember, removeMember, resize, readOnly } = useDiagramEditActions();
   const [editing, setEditing] = useState<TextPrimitive>();
+  // Bloque de texto en edición multilínea (su markdown completo).
+  const [writing, setWriting] = useState(false);
+  // Slot del miembro recién agregado: cuando llega al diagrama se abre en edición.
+  const [newSlot, setNewSlot] = useState<string>();
+  const locked = element.locked === true;
+  const showMemberControls = selected && !readOnly && !locked && memberKinds(element).length > 0;
+
+  // Un bloque recién creado con la herramienta Texto se abre en edición al llegar al lienzo.
+  useEffect(() => {
+    if (element.kind !== 'text' || diagramStore.getState().pendingTextEdit !== id) return;
+    diagramStore.getState().setPendingTextEdit(undefined);
+    if (!readOnly && !locked) setWriting(true);
+  }, [element.kind, id, locked, readOnly]);
+
+  useEffect(() => {
+    if (!newSlot) return;
+    const line = shapePrimitives(element, size).find((p): p is TextPrimitive => p.type === 'text' && p.slot === newSlot);
+    if (!line) return;
+    setNewSlot(undefined);
+    setEditing(line);
+  }, [element, newSlot, size.width, size.height]);
 
   const onTextDoubleClick = useCallback(
     (p: TextPrimitive) => {
-      if (!readOnly && p.slot) setEditing(p);
+      if (readOnly || locked || !p.slot) return;
+      if (element.kind === 'text') setWriting(true);
+      else setEditing(p);
     },
-    [readOnly],
+    [element.kind, locked, readOnly],
   );
 
   return (
     <div className={`chartsia-node${selected ? ' is-selected' : ''}`} style={{ width: size.width, height: size.height }} data-element-id={id}>
       <CleanShape element={element} size={size} onTextDoubleClick={onTextDoubleClick} />
-      {selected && !readOnly ? (
+      {selected && !readOnly && !locked && element.kind !== 'drawing' && element.kind !== 'text' ? (
         <NodeResizer minWidth={minimum.width} minHeight={minimum.height} color="var(--accent)" onResizeEnd={(_, box) => resize(id, box)} />
       ) : null}
-      <Handle type="target" position={Position.Top} isConnectable={!readOnly} className="chartsia-handle" />
+      {locked ? (
+        <span className="chartsia-node__lock" role="img" aria-label="Bloqueado">
+          <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
+            <path d="M4 7V5a4 4 0 0 1 8 0v2h1v8H3V7h1zm2 0h4V5a2 2 0 0 0-4 0v2z" fill="currentColor" />
+          </svg>
+        </span>
+      ) : null}
+      {showMemberControls ? (
+        <MemberControls
+          element={element}
+          texts={shapePrimitives(element, size).filter((p): p is TextPrimitive => p.type === 'text')}
+          onAdd={(kind) => void addMember(id, kind).then(setNewSlot)}
+          onRemove={(slot) => removeMember(id, slot)}
+        />
+      ) : null}
+      <Handle type="target"position={Position.Top} isConnectable={!readOnly} className="chartsia-handle" />
       <Handle type="source" position={Position.Bottom} isConnectable={!readOnly} className="chartsia-handle" />
+      {writing && element.kind === 'text' ? (
+        <TextBlockEditor
+          value={element.name}
+          width={size.width}
+          height={size.height}
+          onCommit={(value) => {
+            setWriting(false);
+            editText(id, 'name', value);
+          }}
+          onCancel={() => setWriting(false)}
+        />
+      ) : null}
       {editing ? (
         <InlineEditableText
           value={slotValue(element, editing.slot!, editing.text)}

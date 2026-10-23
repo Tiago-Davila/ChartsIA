@@ -23,7 +23,7 @@ export const softwareSystemShape: ShapeDefinition<SystemElement> = {
   primitives: (el, { width, height }) => {
     const colors = paintOf(el.style, c4Colors('software-system', el.external));
     return [
-      { type: 'rect', x: 0, y: 0, width, height, rx: 10, fill: colors.fill, stroke: colors.stroke, strokeWidth: 1.5 },
+      { type: 'rect', x: 0, y: 0, width, height, rx: 10, fill: colors.fill, stroke: colors.stroke, strokeWidth: colors.strokeWidth },
       ...c4TextPrimitives(text(el), { x: 0, y: 0, width, height }, colors.text),
     ];
   },

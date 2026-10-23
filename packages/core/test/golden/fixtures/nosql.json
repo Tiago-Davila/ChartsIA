@@ -1,0 +1,33 @@
+{
+  "type": "nosql",
+  "title": "Pedidos",
+  "elements": [
+    {
+      "id": "Pedidos",
+      "kind": "collection",
+      "name": "pedidos",
+      "fields": [
+        { "path": ["_id"], "type": "objectId" },
+        { "path": ["clienteId"], "type": "objectId" },
+        { "path": ["total"], "type": "number" },
+        { "path": ["cliente"], "type": "object" },
+        { "path": ["cliente", "nombre"], "type": "string" },
+        { "path": ["cliente", "direcciones"], "type": "array", "itemsType": "object" },
+        { "path": ["cliente", "direcciones", "calle"], "type": "string" },
+        { "path": ["cliente", "direcciones", "ciudad"], "type": "string" }
+      ]
+    },
+    {
+      "id": "Clientes",
+      "kind": "collection",
+      "name": "clientes",
+      "fields": [
+        { "path": ["_id"], "type": "objectId" },
+        { "path": ["nombre"], "type": "string" }
+      ]
+    }
+  ],
+  "relations": [
+    { "id": "cliente-referencia", "kind": "nosql-rel", "source": "Pedidos", "target": "Clientes", "label": "clienteId" }
+  ]
+}

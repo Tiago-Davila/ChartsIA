@@ -69,6 +69,14 @@ export class JsonFileDiagramRepository implements DiagramRepository {
     await this.writeIndex();
   }
 
+  /** Quita el resumen antes que el archivo: un fallo a medio camino no deja diagramas listados sin contenido. */
+  async delete(id: string): Promise<void> {
+    if (!isDiagramId(id) || !this.summaries.delete(id)) return;
+    if (this.activeId === id) this.activeId = null;
+    await this.writeIndex();
+    await fsp.rm(join(this.dir, `${id}.json`), { force: true });
+  }
+
   async listProjects(): Promise<Project[]> {
     return structuredClone([...this.projects.values()]);
   }

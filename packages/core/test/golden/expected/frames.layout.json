@@ -1,0 +1,104 @@
+{
+  "type": "class",
+  "title": "Marcos anidados",
+  "elements": [
+    {
+      "id": "externo",
+      "name": "Marco exterior",
+      "layout": {
+        "x": 100,
+        "y": 80,
+        "width": 610,
+        "height": 380,
+        "pinned": true
+      },
+      "kind": "frame"
+    },
+    {
+      "id": "interno",
+      "name": "Marco interior",
+      "parentId": "externo",
+      "layout": {
+        "x": 130,
+        "y": 140,
+        "width": 560,
+        "height": 300,
+        "pinned": true
+      },
+      "kind": "frame"
+    },
+    {
+      "id": "Pedido",
+      "name": "Pedido",
+      "parentId": "interno",
+      "layout": {
+        "x": 160,
+        "y": 200,
+        "width": 140,
+        "height": 52,
+        "pinned": true
+      },
+      "kind": "class",
+      "attributes": [],
+      "operations": []
+    },
+    {
+      "id": "Nota",
+      "name": "Nota",
+      "parentId": "externo",
+      "layout": {
+        "x": 120,
+        "y": 150,
+        "width": 120,
+        "height": 60,
+        "pinned": true
+      },
+      "kind": "figure",
+      "shape": "rectangle"
+    },
+    {
+      "id": "Trazo",
+      "name": "Trazo",
+      "parentId": "interno",
+      "layout": {
+        "x": 300,
+        "y": 200,
+        "width": 25,
+        "height": 15,
+        "pinned": true
+      },
+      "kind": "drawing",
+      "points": [
+        {
+          "x": 0,
+          "y": 0
+        },
+        {
+          "x": 24,
+          "y": 14
+        }
+      ],
+      "strokeColor": "#b42318",
+      "strokeWidth": 2
+    },
+    {
+      "id": "Logo",
+      "name": "Logo",
+      "parentId": "interno",
+      "layout": {
+        "x": 350,
+        "y": 200,
+        "width": 320,
+        "height": 220,
+        "pinned": true
+      },
+      "kind": "image",
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAYAAAD0In+KAAAAEUlEQVR4nGM4H2zxX6NsxX8AE2IEn6hGtYAAAAAASUVORK5CYII="
+    }
+  ],
+  "relations": [],
+  "id": "dg_goldengolden",
+  "revision": 1,
+  "createdAt": "2026-10-20T10:00:00.000Z",
+  "updatedAt": "2026-10-20T10:00:00.000Z"
+}
