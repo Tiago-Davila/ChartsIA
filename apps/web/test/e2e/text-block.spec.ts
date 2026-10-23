@@ -54,14 +54,13 @@ test.describe('bloque de texto', () => {
     });
     await page.goto(`/d/${id}`);
 
-    await page.locator('[data-element-id="Nota"]').getByText('Texto', { exact: true }).dblclick();
+    await page.locator('[data-element-id="Nota"]').getByText('Texto original', { exact: true }).dblclick();
     const editor = page.getByLabel('Editar bloque de texto');
     await editor.fill('descartado');
     await editor.press('Escape');
     await expect(editor).toHaveCount(0);
 
-    // Cada palabra es un trozo de texto aparte, así que se comprueba la última.
-    await expect(page.locator('[data-element-id="Nota"]').getByText('original', { exact: true })).toBeVisible();
+    await expect(page.locator('[data-element-id="Nota"]').getByText('Texto original', { exact: true })).toBeVisible();
     expect((await agent.layout(id)).elements.find((e) => e.id === 'Nota')?.name).toBe('Texto original');
   });
 });
