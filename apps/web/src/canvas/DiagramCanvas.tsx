@@ -317,78 +317,78 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
 
   return (
     <>
-    <div
-      ref={canvas}
-      className={`diagram-canvas${drawingMode || frameMode ? ' is-drawing' : ''}${bucketMode ? ' is-painting' : ''}${textMode ? ' is-placing' : ''}${handMode ? ' is-hand' : ''}`}
-      onPointerDownCapture={startDrawing}
-      onPointerMoveCapture={moveDrawing}
-      onPointerUpCapture={finishDrawing}
-      onPointerCancelCapture={cancelDrawing}
-      onLostPointerCapture={loseDrawing}
-    >
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onNodeDragStop={onNodeDragStop}
-        onDelete={onDelete}
-        onNodeContextMenu={onNodeContextMenu}
-        onEdgeContextMenu={onEdgeContextMenu}
-        onSelectionContextMenu={onSelectionContextMenu}
-        nodesDraggable={!readOnly && !drawingMode && !bucketMode && !handMode && !frameMode}
-        onNodeClick={paintNode}
-        onConnect={onConnect}
-        onEdgeDoubleClick={(_, edge) => !readOnly && setEditingEdge(edge.id)}
-        onSelectionChange={onSelectionChange}
-        nodesConnectable={!readOnly && !drawingMode && !bucketMode && !handMode && !frameMode}
-        connectionMode={ConnectionMode.Loose}
-        elementsSelectable={!bucketMode && !handMode}
-        selectionOnDrag={!drawingMode && !bucketMode && !handMode && !frameMode}
-        selectionMode={SelectionMode.Partial}
-        panOnScroll
-        panOnDrag={handMode}
-        panActivationKeyCode="Space"
-        deleteKeyCode={readOnly ? null : ['Delete', 'Backspace']}
-        minZoom={0.05}
-        maxZoom={4}
-        proOptions={PRO_OPTIONS}
+      <div
+        ref={canvas}
+        className={`diagram-canvas${drawingMode || frameMode ? ' is-drawing' : ''}${bucketMode ? ' is-painting' : ''}${textMode ? ' is-placing' : ''}${handMode ? ' is-hand' : ''}`}
+        onPointerDownCapture={startDrawing}
+        onPointerMoveCapture={moveDrawing}
+        onPointerUpCapture={finishDrawing}
+        onPointerCancelCapture={cancelDrawing}
+        onLostPointerCapture={loseDrawing}
       >
-        <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#d5d9e0" />
-        <MiniMap pannable zoomable nodeColor={nodeColor} nodeStrokeColor="#9aa5b1" style={MINIMAP_STYLE} />
-        <Controls showInteractive={false} />
-        {readOnly ? null : <SelectionPanel nodes={nodes} edges={edges} editingEdge={editingEdge} onEditEdge={setEditingEdge} />}
-        {readOnly ? null : (
-          <Panel position="top-left" className="drawing-tool nodrag nopan">
-            {toolButton('select', 'Selección')}
-            {toolButton('hand', 'Mano')}
-            {toolButton('pen', 'Lápiz')}
-            {toolButton('highlighter', 'Marcador')}
-            {drawingMode ? (
-              <input type="color" aria-label={highlighter ? 'Color del marcador' : 'Color del lápiz'} value={drawingColor} onChange={(event) => setColors((current) => ({ ...current, [tool]: event.target.value }))} />
-            ) : null}
-            {drawingMode ? (
-              <WidthPicker label={highlighter ? 'Grosor del marcador' : 'Grosor del lápiz'} value={widths[tool]} onPick={(width) => setWidths((current) => ({ ...current, [tool]: width }))} />
-            ) : null}
-            {toolButton('bucket', 'Balde')}
-            {bucketMode ? <input type="color" aria-label="Color del balde" value={bucketColor} onChange={(event) => setColors((current) => ({ ...current, bucket: event.target.value }))} /> : null}
-            {toolButton('text', 'Texto')}
-            {toolButton('frame', 'Marco')}
-          </Panel>
-        )}
-      </ReactFlow>
-      {preview.length > 1 ? (
-        <svg className="diagram-canvas__preview" aria-hidden="true">
-          <polyline points={preview.map((p) => `${p.x},${p.y}`).join(' ')} fill="none" stroke={drawingColor} strokeOpacity={highlighter ? HIGHLIGHTER_OPACITY : undefined} strokeWidth={drawingWidth * zoom} strokeLinecap="round" strokeLinejoin="round" />
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onNodeDragStop={onNodeDragStop}
+          onDelete={onDelete}
+          onNodeContextMenu={onNodeContextMenu}
+          onEdgeContextMenu={onEdgeContextMenu}
+          onSelectionContextMenu={onSelectionContextMenu}
+          nodesDraggable={!readOnly && !drawingMode && !bucketMode && !handMode && !frameMode}
+          onNodeClick={paintNode}
+          onConnect={onConnect}
+          onEdgeDoubleClick={(_, edge) => !readOnly && setEditingEdge(edge.id)}
+          onSelectionChange={onSelectionChange}
+          nodesConnectable={!readOnly && !drawingMode && !bucketMode && !handMode && !frameMode}
+          connectionMode={ConnectionMode.Loose}
+          elementsSelectable={!bucketMode && !handMode}
+          selectionOnDrag={!drawingMode && !bucketMode && !handMode && !frameMode}
+          selectionMode={SelectionMode.Partial}
+          panOnScroll
+          panOnDrag={handMode}
+          panActivationKeyCode="Space"
+          deleteKeyCode={readOnly ? null : ['Delete', 'Backspace']}
+          minZoom={0.05}
+          maxZoom={4}
+          proOptions={PRO_OPTIONS}
+        >
+          <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#d5d9e0" />
+          <MiniMap pannable zoomable nodeColor={nodeColor} nodeStrokeColor="#9aa5b1" style={MINIMAP_STYLE} />
+          <Controls showInteractive={false} />
+          {readOnly ? null : <SelectionPanel nodes={nodes} edges={edges} editingEdge={editingEdge} onEditEdge={setEditingEdge} />}
+          {readOnly ? null : (
+            <Panel position="top-left" className="drawing-tool nodrag nopan">
+              {toolButton('select', 'Selección')}
+              {toolButton('hand', 'Mano')}
+              {toolButton('pen', 'Lápiz')}
+              {toolButton('highlighter', 'Marcador')}
+              {drawingMode ? (
+                <input type="color" aria-label={highlighter ? 'Color del marcador' : 'Color del lápiz'} value={drawingColor} onChange={(event) => setColors((current) => ({ ...current, [tool]: event.target.value }))} />
+              ) : null}
+              {drawingMode ? (
+                <WidthPicker label={highlighter ? 'Grosor del marcador' : 'Grosor del lápiz'} value={widths[tool]} onPick={(width) => setWidths((current) => ({ ...current, [tool]: width }))} />
+              ) : null}
+              {toolButton('bucket', 'Balde')}
+              {bucketMode ? <input type="color" aria-label="Color del balde" value={bucketColor} onChange={(event) => setColors((current) => ({ ...current, bucket: event.target.value }))} /> : null}
+              {toolButton('text', 'Texto')}
+              {toolButton('frame', 'Marco')}
+            </Panel>
+          )}
+        </ReactFlow>
+        {preview.length > 1 ? (
+          <svg className="diagram-canvas__preview" aria-hidden="true">
+            <polyline points={preview.map((p) => `${p.x},${p.y}`).join(' ')} fill="none" stroke={drawingColor} strokeOpacity={highlighter ? HIGHLIGHTER_OPACITY : undefined} strokeWidth={drawingWidth * zoom} strokeLinecap="round" strokeLinejoin="round" />
 
-        </svg>
-      ) : null}
-      {framePreviewBox ? <div className="diagram-canvas__frame" style={{ left: framePreviewBox.x, top: framePreviewBox.y, width: framePreviewBox.width, height: framePreviewBox.height }} /> : null}
-    </div>
-    {/* Fuera del lienzo: sus manejadores de puntero no deben capturar los clics del menú. */}
-    {menu ? <ContextMenu x={menu.x} y={menu.y} items={menuItems} onClose={closeMenu} /> : null}
+          </svg>
+        ) : null}
+        {framePreviewBox ? <div className="diagram-canvas__frame" style={{ left: framePreviewBox.x, top: framePreviewBox.y, width: framePreviewBox.width, height: framePreviewBox.height }} /> : null}
+      </div>
+      {/* Fuera del lienzo: sus manejadores de puntero no deben capturar los clics del menú. */}
+      {menu ? <ContextMenu x={menu.x} y={menu.y} items={menuItems} onClose={closeMenu} /> : null}
     </>
   );
 }
