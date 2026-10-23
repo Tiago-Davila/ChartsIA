@@ -148,118 +148,6 @@
       "index": "a3"
     },
     {
-      "id": "Logo",
-      "type": "image",
-      "x": 350,
-      "y": 230,
-      "width": 320,
-      "height": 160,
-      "angle": 0,
-      "strokeColor": "#1e1e1e",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 1,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [
-        "interno-frame",
-        "externo-frame"
-      ],
-      "frameId": null,
-      "roundness": null,
-      "seed": 1839831483,
-      "version": 1,
-      "versionNonce": 150249818,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1792490400000,
-      "link": null,
-      "locked": false,
-      "fileId": "file_Logo",
-      "status": "saved",
-      "scale": [
-        1,
-        1
-      ],
-      "crop": null,
-      "index": "a4"
-    },
-    {
-      "id": "Nota",
-      "type": "rectangle",
-      "x": 120,
-      "y": 150,
-      "width": 120,
-      "height": 60,
-      "angle": 0,
-      "strokeColor": "#1e1e1e",
-      "backgroundColor": "#fffef5",
-      "fillStyle": "solid",
-      "strokeWidth": 1,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [
-        "externo-frame"
-      ],
-      "frameId": null,
-      "roundness": null,
-      "seed": 272677650,
-      "version": 1,
-      "versionNonce": 1881582401,
-      "isDeleted": false,
-      "boundElements": [
-        {
-          "type": "text",
-          "id": "Nota-label"
-        }
-      ],
-      "updated": 1792490400000,
-      "link": null,
-      "locked": false,
-      "index": "a5"
-    },
-    {
-      "id": "Nota-label",
-      "type": "text",
-      "x": 128,
-      "y": 158,
-      "width": 104,
-      "height": 17.5,
-      "angle": 0,
-      "strokeColor": "#1e1e1e",
-      "backgroundColor": "transparent",
-      "fillStyle": "solid",
-      "strokeWidth": 1,
-      "strokeStyle": "solid",
-      "roughness": 1,
-      "opacity": 100,
-      "groupIds": [
-        "externo-frame"
-      ],
-      "frameId": null,
-      "roundness": null,
-      "seed": 1266478709,
-      "version": 1,
-      "versionNonce": 1416826032,
-      "isDeleted": false,
-      "boundElements": null,
-      "updated": 1792490400000,
-      "link": null,
-      "locked": false,
-      "text": "Nota",
-      "originalText": "Nota",
-      "fontSize": 14,
-      "fontFamily": 5,
-      "textAlign": "center",
-      "verticalAlign": "middle",
-      "containerId": "Nota",
-      "autoResize": true,
-      "lineHeight": 1.25,
-      "index": "a6"
-    },
-    {
       "id": "Pedido",
       "type": "rectangle",
       "x": 160,
@@ -294,7 +182,7 @@
       "updated": 1792490400000,
       "link": null,
       "locked": false,
-      "index": "a7"
+      "index": "a4"
     },
     {
       "id": "Pedido-label",
@@ -335,7 +223,7 @@
       "containerId": "Pedido",
       "autoResize": true,
       "lineHeight": 1.25,
-      "index": "a8"
+      "index": "a5"
     },
     {
       "id": "Pedido-sep-0",
@@ -382,7 +270,7 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
-      "index": "a9"
+      "index": "a6"
     },
     {
       "id": "Pedido-sep-1",
@@ -429,7 +317,81 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
-      "index": "aA"
+      "index": "a7"
+    },
+    {
+      "id": "Nota",
+      "type": "rectangle",
+      "x": 120,
+      "y": 150,
+      "width": 120,
+      "height": 60,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "#fffef5",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [
+        "externo-frame"
+      ],
+      "frameId": null,
+      "roundness": null,
+      "seed": 272677650,
+      "version": 1,
+      "versionNonce": 1881582401,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "type": "text",
+          "id": "Nota-label"
+        }
+      ],
+      "updated": 1792490400000,
+      "link": null,
+      "locked": false,
+      "index": "a8"
+    },
+    {
+      "id": "Nota-label",
+      "type": "text",
+      "x": 128,
+      "y": 158,
+      "width": 104,
+      "height": 17.5,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [
+        "externo-frame"
+      ],
+      "frameId": null,
+      "roundness": null,
+      "seed": 1266478709,
+      "version": 1,
+      "versionNonce": 1416826032,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1792490400000,
+      "link": null,
+      "locked": false,
+      "text": "Nota",
+      "originalText": "Nota",
+      "fontSize": 14,
+      "fontFamily": 5,
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "Nota",
+      "autoResize": true,
+      "lineHeight": 1.25,
+      "index": "a9"
     },
     {
       "id": "Trazo",
@@ -475,6 +437,44 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
+      "index": "aA"
+    },
+    {
+      "id": "Logo",
+      "type": "image",
+      "x": 350,
+      "y": 230,
+      "width": 320,
+      "height": 160,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [
+        "interno-frame",
+        "externo-frame"
+      ],
+      "frameId": null,
+      "roundness": null,
+      "seed": 1839831483,
+      "version": 1,
+      "versionNonce": 150249818,
+      "isDeleted": false,
+      "boundElements": null,
+      "updated": 1792490400000,
+      "link": null,
+      "locked": false,
+      "fileId": "file_Logo",
+      "status": "saved",
+      "scale": [
+        1,
+        1
+      ],
+      "crop": null,
       "index": "aB"
     }
   ],

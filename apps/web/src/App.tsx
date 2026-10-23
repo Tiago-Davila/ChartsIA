@@ -202,6 +202,7 @@ function ConnectedApp() {
           onCopy={edits.copy}
           onCut={edits.cut}
           onPaste={edits.paste}
+          onReorder={edits.reorder}
           onConnect={edits.onConnect}
           onDraw={edits.onDraw}
           onAddText={edits.addText}

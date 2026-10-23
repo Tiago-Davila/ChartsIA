@@ -18,7 +18,7 @@ import {
   useViewport,
 } from '@xyflow/react';
 import { type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, useCallback, useEffect, useRef, useState } from 'react';
-import { DRAWING_DEFAULT_COLOR, DRAWING_WIDTH_PX, HIGHLIGHTER_DEFAULT_COLOR, HIGHLIGHTER_OPACITY, HIGHLIGHTER_WIDTH_PX, type Point, type StyleLineWidth } from '@chartsia/core/model';
+import { DRAWING_DEFAULT_COLOR, DRAWING_WIDTH_PX, HIGHLIGHTER_DEFAULT_COLOR, HIGHLIGHTER_OPACITY, HIGHLIGHTER_WIDTH_PX, type Point, type StackOrderTarget, type StyleLineWidth } from '@chartsia/core/model';
 import { edgeTypes } from '../edges';
 import { nodeTypes } from '../nodes';
 import { useDiagramEditActions } from '../nodes/edit-context';
@@ -42,6 +42,7 @@ export interface DiagramCanvasProps {
   onCopy?: () => void;
   onCut?: () => void;
   onPaste?: () => void;
+  onReorder?: (to: StackOrderTarget) => void;
   onConnect?: OnConnect;
   onDraw?: (points: Point[], screenPoints: Point[], color: string, width: number, highlighter: boolean) => void;
   onAddText?: (screenPosition: { x: number; y: number }) => void;
@@ -98,7 +99,7 @@ function keepSelection<T extends Node | Edge>(prev: T[], next: T[]): T[] {
  * Lienzo infinito (React Flow): pan, zoom, minimapa y controles. El estado local permite
  * arrastrar con fluidez; cada actualización del hub lo reemplaza (el hub es la fuente de verdad).
  */
-export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incomingEdges, readOnly = false, onNodeDragStop, onDelete, onDuplicate, onCopy, onCut, onPaste, onConnect, onDraw, onAddText, onAddFrame }: DiagramCanvasProps) {
+export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incomingEdges, readOnly = false, onNodeDragStop, onDelete, onDuplicate, onCopy, onCut, onPaste, onReorder, onConnect, onDraw, onAddText, onAddFrame }: DiagramCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(incomingNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(incomingEdges);
   const { fitView, screenToFlowPosition, deleteElements } = useReactFlow();
@@ -326,6 +327,16 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     </button>
   );
 
+  // El orden de dibujo solo aplica a figuras, así que las acciones aparecen con nodos seleccionados.
+  const reorderItems: ContextMenuItem[] = nodes.some((n) => n.selected)
+    ? [
+        { label: 'Traer al frente', onSelect: () => onReorder?.('front') },
+        { label: 'Enviar al fondo', onSelect: () => onReorder?.('back') },
+        { label: 'Traer adelante un nivel', onSelect: () => onReorder?.('forward') },
+        { label: 'Enviar atrás un nivel', onSelect: () => onReorder?.('backward') },
+      ]
+    : [];
+
   // Estilo del elemento o flecha del clic derecho, o del primero seleccionado, para pegarlo luego.
   const copyStyle = () => {
     const targets = styleTargets(nodes.filter((n) => n.selected), edges.filter((e) => e.selected));
@@ -347,6 +358,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     // Pegar solo aparece con algo copiado.
     ...(hasClipboard() ? [pasteItem] : []),
     { label: 'Duplicar', onSelect: () => onDuplicate?.() },
+    ...reorderItems,
     { label: 'Copiar estilo', onSelect: copyStyle },
     ...(copiedStyle() ? [{ label: 'Pegar estilo', onSelect: pasteStyle }] : []),
     { label: 'Borrar', onSelect: deleteSelection },
