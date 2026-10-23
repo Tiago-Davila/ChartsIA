@@ -1,4 +1,5 @@
 import { library } from './support/fake-agent';
+import { direccionDe } from './support/rutas';
 import { expect, test } from './support/fixtures';
 
 test.describe('título editable', () => {
@@ -21,6 +22,8 @@ test.describe('título editable', () => {
     const abierto = await agent.create({ ...library, title: 'Abierto' });
     await agent.create({ ...library, title: 'Para renombrar' });
     await page.goto(`/d/${abierto}`);
+    // La app sustituye la dirección por la legible al cargar el diagrama.
+    await expect(page).toHaveURL(direccionDe(abierto));
     const lista = page.getByRole('navigation', { name: 'Diagramas' });
     const url = page.url();
 

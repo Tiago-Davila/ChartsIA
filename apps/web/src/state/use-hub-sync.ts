@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { diagramPath, navigate, type Route } from '../app/routes';
+import { diagramPath, navigate, parseRoute, type Route } from '../app/routes';
 import { ApiError, type ApiClient } from './api-client';
 import { diagramStore, useDiagramStore } from './diagram-store';
 import { createLiveClient, type LiveClient } from './live-client';
@@ -11,9 +11,16 @@ function report(error: unknown) {
   else if (error instanceof ApiError && error.errors.length > 0) store.showErrors(error.errors);
 }
 
+/** Dirección de un diagrama con el título que ya conoce la app; si no lo conoce, la corrige al cargarlo. */
+export function pathDeDiagrama(diagramId: string): string {
+  const titulo = diagramStore.getState().diagrams.find((d) => d.diagramId === diagramId)?.title;
+  return diagramPath(diagramId, titulo);
+}
+
 /** Quita un diagrama borrado de la lista; si se estaba viendo, la app vuelve a la lista. */
 export function forgetDiagram(diagramId: string): void {
-  const viendolo = window.location.pathname === diagramPath(diagramId);
+  const route = parseRoute(window.location.pathname);
+  const viendolo = route.name === 'diagram' && route.diagramId === diagramId;
   diagramStore.getState().diagramDeleted(diagramId);
   if (viendolo) navigate('/', { replace: true });
 }
@@ -71,7 +78,7 @@ export function useHubSync(api: ApiClient, route: Route): { live: React.RefObjec
       onProjectsChanged: () => reloadListRef.current(),
       onActiveChanged: ({ diagramId }) => {
         store().setActive(diagramId);
-        navigate(diagramPath(diagramId));
+        navigate(pathDeDiagrama(diagramId));
       },
       onAgentsChanged: ({ agents }) => store().setAgents(agents),
       onStatus: (s) => store().setConnection(s),
@@ -91,9 +98,17 @@ export function useHubSync(api: ApiClient, route: Route): { live: React.RefObjec
     if (routeId) diagramStore.getState().open(routeId);
   }, [routeId]);
 
+  // La dirección lleva el título actual del diagrama cargado: el id manda y el slug se corrige con replace.
+  const cargado = useDiagramStore((s) => s.diagram);
+  const idCargado = cargado?.id;
+  const tituloCargado = cargado?.title;
+  useEffect(() => {
+    if (routeId && idCargado === routeId) navigate(diagramPath(routeId, tituloCargado), { replace: true });
+  }, [routeId, idCargado, tituloCargado]);
+
   // En "/" se abre el diagrama activo, si lo hay.
   useEffect(() => {
-    if (route.name === 'home' && activeDiagramId) navigate(diagramPath(activeDiagramId), { replace: true });
+    if (route.name === 'home' && activeDiagramId) navigate(pathDeDiagrama(activeDiagramId), { replace: true });
   }, [route.name, activeDiagramId]);
 
   // Diagrama abierto → cargarlo, suscribirse y marcarlo activo para los agentes.

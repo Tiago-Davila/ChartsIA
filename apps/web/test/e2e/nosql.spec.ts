@@ -1,3 +1,4 @@
+import { idDesdeUrl } from './support/rutas';
 import { library } from './support/fake-agent';
 import { expect, test } from './support/fixtures';
 
@@ -10,7 +11,7 @@ test('crea un diagrama NoSQL, muestra subdocumentos y conserva la edición al re
   await form.getByLabel('Título').fill('Pedidos documentales');
   await form.getByRole('button', { name: 'Crear' }).click();
   await expect(page.getByRole('heading', { name: /Pedidos documentales/ })).toBeVisible();
-  const id = page.url().split('/').at(-1)!;
+  const id = idDesdeUrl(page.url())!;
 
   const created = await agent.apply([
     {
