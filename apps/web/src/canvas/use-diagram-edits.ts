@@ -6,11 +6,12 @@ import { ApiError, type ApiClient } from '../state/api-client';
 import { diagramStore } from '../state/diagram-store';
 import { type AlignMode, alignBoxes } from './align';
 import { connectionRelation, freeId } from './edge-edits';
-import { centeredFreePoint, newPaletteEdit, type PaletteItem, PALETTE_ITEMS } from './figure-palette';
+import { centeredFreePoint, type FrameBox, newFrameElement, newPaletteEdit, type PaletteItem, PALETTE_ITEMS } from './figure-palette';
 import { readImageFile } from './image-import';
 import { changesForAddMember, changesForRemoveMember, changesForSlot, type MemberKind } from './slot-edits';
 import { type StyleUpdate } from './style-edits';
 import { simplifyStroke } from './drawing';
+import { newTextBlock } from './text-block';
 import { framePadding } from '@chartsia/core/shapes';
 
 function depth(id: string, byId: Map<string, Element>): number {
@@ -125,6 +126,30 @@ export function useDiagramEdits(api: ApiClient) {
       placeFigure(diagram, item, centeredFreePoint(diagram, item, screenToFlowPosition(screenCenter)));
     },
     [placeFigure, screenToFlowPosition],
+  );
+
+  /** Herramienta Texto: crea un bloque en la posición de pantalla indicada y lo deja en edición. */
+  const addText = useCallback(
+    (screenPosition: { x: number; y: number }) => {
+      const diagram = diagramStore.getState().diagram;
+      if (!diagram) return;
+      const element = newTextBlock(diagram, screenToFlowPosition(screenPosition));
+      diagramStore.getState().setPendingTextEdit(element.id);
+      void send([{ op: 'add_element', element }]).then((ok) => {
+        if (!ok) diagramStore.getState().setPendingTextEdit(undefined);
+      });
+    },
+    [screenToFlowPosition, send],
+  );
+
+  /** Herramienta Marco: crea un marco con el rectángulo arrastrado, en coordenadas del lienzo. */
+  const addFrame = useCallback(
+    (box: FrameBox) => {
+      const diagram = diagramStore.getState().diagram;
+      if (!diagram) return;
+      void send([{ op: 'add_element', element: newFrameElement(diagram, box) }]);
+    },
+    [send],
   );
 
   /** Ctrl+Z / Ctrl+Y: deshace o rehace el último cambio del diagrama en el hub. */
@@ -413,5 +438,5 @@ export function useDiagramEdits(api: ApiClient) {
     [editText, addMember, removeMember, resize, updateRelation, updateStyles, leaveGroup, ungroup, groupInFrame],
   );
 
-  return { onNodeDragStop, onDelete, onConnect, onDraw: addDrawing, editText, editActions, history, duplicate, align, rename, insertImages, addFigure, addFigureAtCenter };
+  return { onNodeDragStop, onDelete, onConnect, onDraw: addDrawing, editText, editActions, history, duplicate, align, rename, insertImages, addFigure, addFigureAtCenter, addText, addFrame };
 }

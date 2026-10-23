@@ -6,7 +6,7 @@ import { type ConnectedAgent, type Project } from '../state/api-client';
 import { type AlignMode } from '../canvas/align';
 import { DiagramCanvas, type DiagramCanvasProps } from '../canvas/DiagramCanvas';
 import { FigureSidebar } from '../canvas/FigureSidebar';
-import { FIGURE_DRAG_TYPE } from '../canvas/figure-palette';
+import { FIGURE_DRAG_TYPE, type FrameBox } from '../canvas/figure-palette';
 import { C4Legend } from '../legend/C4Legend';
 import { ConfigScreen } from './ConfigScreen';
 import { ConnectionStatus, type ConnectionState } from './ConnectionStatus';
@@ -48,6 +48,8 @@ export interface AppShellProps {
   onDelete?: DiagramCanvasProps['onDelete'];
   onConnect?: DiagramCanvasProps['onConnect'];
   onDraw?: (points: Point[], screenPoints: Point[], color: string, width: number, highlighter: boolean) => void;
+  onAddText?(screenPosition: { x: number; y: number }): void;
+  onAddFrame?(box: FrameBox): void;
   onAlign?(mode: AlignMode): void;
   changedIds?: string[];
   onOpenLatest?(): Promise<boolean>;
@@ -135,6 +137,8 @@ export function AppShell(props: AppShellProps) {
                 onDelete={props.onDelete}
                 onConnect={props.onConnect}
                 onDraw={props.onDraw}
+                onAddText={props.onAddText}
+                onAddFrame={props.onAddFrame}
               />
               <C4Legend diagram={diagram} />
             </div>

@@ -51,6 +51,11 @@
 }
 .diagram-canvas.is-drawing .react-flow__pane { cursor: crosshair; }
 .diagram-canvas.is-painting .react-flow__node { cursor: copy; }
+.diagram-canvas.is-placing .react-flow__pane { cursor: text; }
+.diagram-canvas.is-hand .react-flow__pane,
+.diagram-canvas.is-hand .react-flow__node { cursor: grab; }
+.diagram-canvas.is-hand:active .react-flow__pane,
+.diagram-canvas.is-hand:active .react-flow__node { cursor: grabbing; }
 .diagram-canvas__preview {
   position: absolute;
   inset: 0;
@@ -58,6 +63,14 @@
   width: 100%;
   height: 100%;
   overflow: visible;
+  pointer-events: none;
+}
+/* Rectángulo que se ve mientras se arrastra la herramienta Marco. */
+.diagram-canvas__frame {
+  position: absolute;
+  z-index: 5;
+  border: 1px dashed var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
   pointer-events: none;
 }
 .figure-sidebar {
@@ -107,9 +120,11 @@
   border-radius: 6px;
 }
 .figure-sidebar__item:hover { border-color: var(--accent); }
+/* En columna, la barra no se extiende sobre la barra de flechas de arriba. */
 .drawing-tool {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  align-items: stretch;
   gap: 6px;
   padding: 4px;
   background: var(--surface);
@@ -593,6 +608,26 @@ button:disabled,
 }
 .chartsia-edge.is-selected path:first-child {
   stroke: var(--accent);
+}
+/* Editor multilínea de un bloque de texto: ocupa el bloque y muestra el markdown tal cual. */
+.text-block-editor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  box-sizing: border-box;
+  min-width: 160px;
+  min-height: 48px;
+  padding: 8px;
+  font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text);
+  background: #fff;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  outline: none;
+  resize: none;
 }
 .inline-edit {
   position: absolute;

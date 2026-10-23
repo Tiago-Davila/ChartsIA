@@ -22,6 +22,7 @@ const samples: Record<string, Record<string, unknown>> = {
   figure: { kind: 'figure', shape: 'hexagon' },
   drawing: { kind: 'drawing', points: [{ x: 0, y: 0 }, { x: 12, y: 8 }], strokeColor: '#1f2933', strokeWidth: 2 },
   image: { kind: 'image', src: pngDataUrl() },
+  text: { kind: 'text', name: '# Título\n\n**Hola** *mundo*' },
   attribute: { kind: 'attribute' },
   'value-list': { kind: 'value-list', values: ['A'] },
 };

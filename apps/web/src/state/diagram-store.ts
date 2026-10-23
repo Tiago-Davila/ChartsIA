@@ -36,6 +36,9 @@ export interface DiagramState {
   dismissErrors(): void;
   refreshView(): void;
   clearChangedIds(): void;
+  /** Bloque de texto recién creado que debe abrirse en edición al aparecer en el lienzo. */
+  pendingTextEdit?: string;
+  setPendingTextEdit(id: string | undefined): void;
 }
 
 /** Ids de los elementos nuevos o distintos entre dos versiones del diagrama. */
@@ -103,6 +106,7 @@ export function createDiagramStore() {
     showErrors: (errors) => set((s) => ({ errors, viewVersion: s.viewVersion + 1 })),
     dismissErrors: () => set({ errors: [] }),
     clearChangedIds: () => set({ lastChangedIds: [] }),
+    setPendingTextEdit: (id) => set({ pendingTextEdit: id }),
     refreshView: () => set((s) => ({ viewVersion: s.viewVersion + 1 })),
   }));
 }

@@ -53,6 +53,8 @@ export const Primitives = memo(function Primitives({ primitives, onTextDoubleCli
                 fontWeight={p.bold ? 'bold' : undefined}
                 fontStyle={p.italic ? 'italic' : undefined}
                 textDecoration={p.underline ? 'underline' : undefined}
+                textLength={p.length}
+                lengthAdjust={p.length !== undefined ? 'spacing' : undefined}
                 data-slot={p.slot}
                 onDoubleClick={p.slot && onTextDoubleClick ? (e) => onTextDoubleClick(p, e) : undefined}
               >

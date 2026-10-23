@@ -41,6 +41,8 @@ export interface TextPrimitive {
   underline?: boolean;
   /** Familia elegida en el estilo; sin ella se usa la fuente por defecto. */
   fontFamily?: StyleFontFamily;
+  /** Ancho exacto en px del trozo: el dibujo ajusta el espaciado para que ocupe esa medida. */
+  length?: number;
   slot?: string;
 }
 

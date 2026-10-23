@@ -9,6 +9,7 @@ import { LINE_WIDTH_PX, type Style, type StyleFontFamily } from '../model/style.
 import { imageDataUrlDimensions } from '../model/image-data.js';
 import { c4Colors, C4_PALETTE } from '../shapes/c4/palette.js';
 import { figureOutline, figureTextArea } from '../shapes/general/figure.js';
+import { textBlockShape } from '../shapes/general/text-block.js';
 import { paintOf, textFont } from '../shapes/style.js';
 import { FONT } from '../shapes/types.js';
 import { boxGeometry } from '../shapes/uml/compartments.js';
@@ -341,6 +342,37 @@ function addCollection(b: Builder, el: Element, box: Box): void {
   });
 }
 
+/** Bloque de texto como sus primitivas: recuadros del código y líneas de texto (Excalidraw no tiene negrita por tramo). */
+function addTextBlock(b: Builder, el: Element, box: Box): void {
+  if (el.kind !== 'text') return;
+  const groupIds = [`${el.id}-group`];
+  textBlockShape.primitives(el, { width: box.width, height: box.height }).forEach((primitive: Primitive, index) => {
+    if (primitive.type === 'rect') {
+      b.shape(`${el.id}-rect-${index}`, 'rectangle', { x: box.x + primitive.x, y: box.y + primitive.y, width: primitive.width, height: primitive.height }, {
+        backgroundColor: primitive.fill && primitive.fill !== 'none' ? primitive.fill : 'transparent',
+        strokeColor: primitive.stroke && primitive.stroke !== 'none' ? primitive.stroke : 'transparent',
+        strokeWidth: primitive.strokeWidth ?? 1,
+        roundness: { type: 3 },
+        groupIds,
+      });
+    } else if (primitive.type === 'text') {
+      b.text(`${el.id}-text-${index}`, primitive.text, {
+        x: box.x + primitive.x,
+        y: box.y + primitive.y - primitive.size * 0.875,
+        width: Math.max(0, box.width - primitive.x),
+        height: lineHeight(primitive.size),
+      }, {
+        fontSize: primitive.size,
+        fontFamily: primitive.fontFamily ? STYLE_FONT_FAMILIES[primitive.fontFamily] : FONT_FAMILY,
+        strokeColor: primitive.color,
+        textAlign: 'left',
+        verticalAlign: 'middle',
+        groupIds,
+      });
+    }
+  });
+}
+
 /** Marca pata de gallo como líneas y un círculo, porque Excalidraw no tiene cero-o-uno nativo. */
 function addCardinality(b: Builder, rel: Relation, kind: Cardinality, tag: string, tip: Point, from: Point, color: string, fill = '#ffffff', width = 1.5): void {
   const { lines, circle } = crowFoot(kind, markerFrame(tip, from));
@@ -441,6 +473,7 @@ export function exportExcalidraw(diagram: Diagram): string {
     if (el.kind === 'drawing') addDrawing(b, el, box);
     else if (el.kind === 'image') b.image(el.id, box, el.src);
     else if (el.kind === 'collection') addCollection(b, el, box);
+    else if (el.kind === 'text') addTextBlock(b, el, box);
     else if (el.kind === 'figure') addFigure(b, el, box);
     else if (el.kind === 'frame') addFrame(b, el, box);
     else if (el.kind === 'package') {

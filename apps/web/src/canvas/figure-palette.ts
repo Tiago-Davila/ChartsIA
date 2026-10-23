@@ -7,7 +7,6 @@ import {
   type ElementKind,
   ER_ELEMENT_KINDS,
   FIGURE_ELEMENT_KINDS,
-  FRAME_ELEMENT_KINDS,
   type FigureShape,
   NOSQL_ELEMENT_KINDS,
   type Point,
@@ -82,8 +81,18 @@ export const PALETTE_ITEMS: readonly PaletteItem[] = [
   figure('arrow-left', 'Flecha izquierda', 'FlechaIzquierda'),
   figure('arrow-up', 'Flecha arriba', 'FlechaArriba'),
   figure('arrow-down', 'Flecha abajo', 'FlechaAbajo'),
-  { key: 'frame', label: 'Marco', kind: 'frame', idBase: 'Marco', build: (id, name) => ({ id, name, kind: 'frame', layout: { x: 0, y: 0, width: 320, height: 200 } }) },
 ];
+
+/** Caja de un elemento en coordenadas del lienzo. */
+export interface FrameBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/** Marco que dibuja la herramienta Marco; no es una figura de la barra. */
+const FRAME_ITEM: PaletteItem = { key: 'frame', label: 'Marco', kind: 'frame', idBase: 'Marco', build: (id, name) => ({ id, name, kind: 'frame' }) };
 
 /** Sección de la barra: título y las figuras que agrupa. */
 interface PaletteSection {
@@ -92,13 +101,13 @@ interface PaletteSection {
   items: PaletteItem[];
 }
 
-/** Secciones de la barra en su orden; cada una agrupa los kinds de una familia del núcleo y las figuras y marcos van aparte porque sirven en cualquier diagrama. */
+/** Secciones de la barra en su orden; cada una agrupa los kinds de una familia del núcleo y las figuras generales van aparte porque sirven en cualquier diagrama. */
 const SECCIONES: readonly { id: string; title: string; kinds: readonly ElementKind[] }[] = [
   { id: 'clases', title: 'Clases', kinds: CLASS_ELEMENT_KINDS },
   { id: 'c4', title: 'C4', kinds: C4_ELEMENT_KINDS },
   { id: 'er', title: 'ER', kinds: ER_ELEMENT_KINDS },
   { id: 'nosql', title: 'NoSQL', kinds: NOSQL_ELEMENT_KINDS },
-  { id: 'figuras-generales', title: 'Figuras generales', kinds: [...FIGURE_ELEMENT_KINDS, ...FRAME_ELEMENT_KINDS] },
+  { id: 'figuras-generales', title: 'Figuras generales', kinds: FIGURE_ELEMENT_KINDS },
 ];
 
 /** Sección propia de cada tipo de diagrama; los tipos C4 comparten la de C4. */
@@ -165,6 +174,13 @@ export function newPaletteEdit(diagram: Pick<Diagram, 'elements' | 'relations'>,
     relations.push({ id, kind: 'er-attr', source: owner.id, target: part.id });
   }
   return { elements: [owner, first, second], relations };
+}
+
+/** Marco con el rectángulo arrastrado: id y nombre por defecto como en la barra, sin reparentar elementos. */
+export function newFrameElement(diagram: Pick<Diagram, 'elements' | 'relations'>, box: FrameBox): Element {
+  const frame = placed(diagram, FRAME_ITEM, box);
+  // `resized` hace que el tamaño dibujado sea el mínimo del marco, en vez de su tamaño por contenido.
+  return { ...frame, layout: { x: Math.round(box.x), y: Math.round(box.y), width: Math.round(box.width), height: Math.round(box.height), resized: true } };
 }
 
 /**

@@ -36,6 +36,7 @@ export function primitivesToSvg(primitives: Primitive[]): string {
           if (p.bold) attrs += ' font-weight="bold"';
           if (p.italic) attrs += ' font-style="italic"';
           if (p.underline) attrs += ' text-decoration="underline"';
+          if (p.length !== undefined) attrs += ` textLength="${n(p.length)}" lengthAdjust="spacing"`;
           return `<text${attrs}>${escapeXml(p.text)}</text>`;
         }
       }

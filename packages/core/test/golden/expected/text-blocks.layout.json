@@ -1,0 +1,89 @@
+{
+  "type": "er",
+  "title": "Bloques de texto",
+  "elements": [
+    {
+      "id": "notas",
+      "name": "# Notas <de> diseño\n\nUn párrafo con **negrita**, *cursiva* y un texto largo que tiene que partirse en varias líneas para caber en el ancho del bloque de texto.\nSegunda línea del mismo párrafo.\n\n## Pasos\n- Crear el modelo\n- Validar **antes** de exportar\n\n### Orden\n1. Primero\n2. Segundo & último",
+      "layout": {
+        "x": 60,
+        "y": 60,
+        "width": 360,
+        "height": 315,
+        "pinned": true
+      },
+      "kind": "text"
+    },
+    {
+      "id": "codigo",
+      "name": "Ejemplo:\n```ts\n// Saluda al usuario\nconst saludo = \"hola\" + 42;\nexport function saluda(nombre: string): string {\n  return `Hola ${nombre}`;\n}\n```",
+      "layout": {
+        "x": 60,
+        "y": 360,
+        "width": 440,
+        "height": 177,
+        "pinned": true
+      },
+      "kind": "text"
+    },
+    {
+      "id": "python",
+      "name": "```py\nclass Pedido:\n    total = 3.5  # monto\n    def pagar(self):\n        return None\n```",
+      "layout": {
+        "x": 520,
+        "y": 360,
+        "width": 239,
+        "height": 128,
+        "pinned": true
+      },
+      "kind": "text"
+    },
+    {
+      "id": "sql",
+      "name": "```sql\nSELECT id, total FROM pedidos WHERE total > 10 -- solo grandes\n```\n```json\n{ \"ok\": true, \"n\": 1 }\n```\n```\nsin lenguaje 'texto'\n```",
+      "layout": {
+        "x": 520,
+        "y": 620,
+        "width": 558,
+        "height": 185,
+        "pinned": true
+      },
+      "kind": "text"
+    },
+    {
+      "id": "marco",
+      "name": "Marco con texto",
+      "layout": {
+        "x": 60,
+        "y": 760,
+        "width": 251,
+        "height": 107,
+        "pinned": true
+      },
+      "kind": "frame"
+    },
+    {
+      "id": "dentro",
+      "name": "## Dentro del marco",
+      "parentId": "marco",
+      "layout": {
+        "x": 90,
+        "y": 802,
+        "width": 201,
+        "height": 45,
+        "pinned": true
+      },
+      "style": {
+        "borderColor": "#fb923c",
+        "fillColor": "#fff7ed",
+        "fontColor": "#7c2d12"
+      },
+      "kind": "text"
+    }
+  ],
+  "relations": [],
+  "id": "dg_goldengolden",
+  "revision": 1,
+  "createdAt": "2026-10-20T10:00:00.000Z",
+  "updatedAt": "2026-10-20T10:00:00.000Z"
+}
