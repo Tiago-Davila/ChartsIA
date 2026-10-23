@@ -47,7 +47,7 @@ const MAX_CAPTURE_POINTS = 2048;
 const BUCKET_DEFAULT_COLOR = PALETTE[3].value;
 
 /** Herramienta activa de la barra. `select` es la de por defecto y apaga a las demás. */
-type CanvasTool = 'select' | 'pen' | 'highlighter' | 'bucket';
+type CanvasTool = 'select' | 'hand' | 'pen' | 'highlighter' | 'bucket';
 /** Herramientas con color propio elegido en la barra. */
 type ColoredTool = 'pen' | 'highlighter' | 'bucket';
 
@@ -87,6 +87,8 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   const highlighter = tool === 'highlighter';
   const drawingMode = tool === 'pen' || highlighter;
   const bucketMode = tool === 'bucket';
+  // Con la mano, arrastrar desplaza el lienzo aunque sea sobre una figura.
+  const handMode = tool === 'hand';
   const drawingColor = highlighter ? colors.highlighter : colors.pen;
   const drawingWidth = highlighter ? HIGHLIGHTER_WIDTH_PX[widths.highlighter] : DRAWING_WIDTH_PX[widths.pen];
   const bucketColor = colors.bucket;
@@ -204,7 +206,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   return (
     <div
       ref={canvas}
-      className={`diagram-canvas${drawingMode ? ' is-drawing' : ''}${bucketMode ? ' is-painting' : ''}`}
+      className={`diagram-canvas${drawingMode ? ' is-drawing' : ''}${bucketMode ? ' is-painting' : ''}${handMode ? ' is-hand' : ''}`}
       onPointerDownCapture={startDrawing}
       onPointerMoveCapture={moveDrawing}
       onPointerUpCapture={finishDrawing}
@@ -220,18 +222,18 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
         onEdgesChange={onEdgesChange}
         onNodeDragStop={onNodeDragStop}
         onDelete={onDelete}
-        nodesDraggable={!readOnly && !drawingMode && !bucketMode}
+        nodesDraggable={!readOnly && !drawingMode && !bucketMode && !handMode}
         onNodeClick={paintNode}
         onConnect={onConnect}
         onEdgeDoubleClick={(_, edge) => !readOnly && setEditingEdge(edge.id)}
         onSelectionChange={onSelectionChange}
-        nodesConnectable={!readOnly && !drawingMode && !bucketMode}
+        nodesConnectable={!readOnly && !drawingMode && !bucketMode && !handMode}
         connectionMode={ConnectionMode.Loose}
-        elementsSelectable={!bucketMode}
-        selectionOnDrag={!drawingMode && !bucketMode}
+        elementsSelectable={!bucketMode && !handMode}
+        selectionOnDrag={!drawingMode && !bucketMode && !handMode}
         selectionMode={SelectionMode.Partial}
         panOnScroll
-        panOnDrag={false}
+        panOnDrag={handMode}
         panActivationKeyCode="Space"
         deleteKeyCode={readOnly ? null : ['Delete', 'Backspace']}
         minZoom={0.05}
@@ -245,6 +247,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
         {readOnly ? null : (
           <Panel position="top-left" className="drawing-tool nodrag nopan">
             {toolButton('select', 'Selección')}
+            {toolButton('hand', 'Mano')}
             {toolButton('pen', 'Lápiz')}
             {toolButton('highlighter', 'Marcador')}
             {drawingMode ? (
