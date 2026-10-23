@@ -29,10 +29,8 @@ export function useShortcuts(actions: ShortcutActions, enabled: boolean): void {
         e.preventDefault();
         actions.duplicate();
       } else if (key === 'c') {
-        e.preventDefault();
         actions.copy();
       } else if (key === 'x') {
-        e.preventDefault();
         actions.cut();
       } else if (key === 'v') {
         actions.paste();

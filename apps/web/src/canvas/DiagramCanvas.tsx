@@ -102,8 +102,8 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   const [nodes, setNodes, onNodesChange] = useNodesState(incomingNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(incomingEdges);
   const { fitView, screenToFlowPosition, deleteElements } = useReactFlow();
-  // Posición de pantalla del menú contextual abierto.
-  const [menu, setMenu] = useState<Point>();
+  // Posición de pantalla del menú contextual abierto; `pane` si se abrió sobre el lienzo vacío.
+  const [menu, setMenu] = useState<Point & { pane?: boolean }>();
   const closeMenu = useCallback(() => setMenu(undefined), []);
   // Elemento o flecha sobre el que se abrió el menú, para "Copiar estilo".
   const menuTarget = useRef<{ id: string; relation: boolean }>(undefined);
@@ -309,6 +309,13 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     setMenu({ x: event.clientX, y: event.clientY });
   }, [readOnly]);
 
+  // Clic derecho sobre el lienzo vacío: solo ofrece Pegar, y si no hay nada copiado queda el menú del navegador.
+  const onPaneContextMenu = useCallback((event: ReactMouseEvent | MouseEvent) => {
+    if (readOnly || !hasClipboard()) return;
+    event.preventDefault();
+    setMenu({ x: event.clientX, y: event.clientY, pane: true });
+  }, [readOnly]);
+
   // Borra lo seleccionado igual que la tecla Supr.
   const deleteSelection = () => void deleteElements({ nodes: nodes.filter((n) => n.selected), edges: edges.filter((e) => e.selected) });
 
@@ -333,11 +340,12 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     if (style) updateStyles(pasteUpdates(styleTargets(nodes.filter((n) => n.selected), edges.filter((e) => e.selected)), drawingTargets(nodes.filter((n) => n.selected)), style));
   };
 
-  const menuItems: ContextMenuItem[] = [
+  const pasteItem = { label: 'Pegar', onSelect: () => onPaste?.() };
+  const menuItems: ContextMenuItem[] = menu?.pane ? [pasteItem] : [
     { label: 'Copiar', onSelect: () => onCopy?.() },
     { label: 'Cortar', onSelect: () => onCut?.() },
     // Pegar solo aparece con algo copiado.
-    ...(hasClipboard() ? [{ label: 'Pegar', onSelect: () => onPaste?.() }] : []),
+    ...(hasClipboard() ? [pasteItem] : []),
     { label: 'Duplicar', onSelect: () => onDuplicate?.() },
     { label: 'Copiar estilo', onSelect: copyStyle },
     ...(copiedStyle() ? [{ label: 'Pegar estilo', onSelect: pasteStyle }] : []),
@@ -367,6 +375,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
           onNodeContextMenu={onNodeContextMenu}
           onEdgeContextMenu={onEdgeContextMenu}
           onSelectionContextMenu={onSelectionContextMenu}
+          onPaneContextMenu={onPaneContextMenu}
           nodesDraggable={!readOnly && !drawingMode && !bucketMode && !handMode && !frameMode}
           onNodeClick={paintNode}
           onConnect={onConnect}

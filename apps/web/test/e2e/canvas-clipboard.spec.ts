@@ -70,4 +70,18 @@ test.describe('copiar, cortar y pegar', () => {
     await menu.getByRole('menuitem', { name: 'Pegar', exact: true }).click();
     await expect.poll(async () => (await agent.layout(id)).elements.map((e) => e.id)).toContain('Autor_copia');
   });
+
+  test('clic derecho en el lienzo vacío ofrece solo Pegar', async ({ page, agent }) => {
+    const id = await agent.create({ ...library, title: 'Pegar en el lienzo' });
+    await page.goto(`/d/${id}`);
+    const menu = page.getByRole('menu');
+    const pane = page.locator('.react-flow__pane');
+
+    await page.locator('[data-element-id="Autor"]').click({ position: { x: 20, y: 8 } });
+    await page.keyboard.press('Control+c');
+    await pane.click({ button: 'right', position: { x: 10, y: 10 } });
+    await expect(menu.getByRole('menuitem')).toHaveText(['Pegar']);
+    await menu.getByRole('menuitem', { name: 'Pegar', exact: true }).click();
+    await expect.poll(async () => (await agent.layout(id)).elements.map((e) => e.id)).toContain('Autor_copia');
+  });
 });
