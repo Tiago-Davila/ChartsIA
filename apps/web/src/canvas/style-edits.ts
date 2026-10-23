@@ -85,3 +85,25 @@ export function widthUpdates(targets: StyleTarget[], drawings: DrawingTarget[], 
     ...drawings.map((d): StyleUpdate => ({ id: d.id, relation: false, strokeWidth: widthTable(d)[width] })),
   ];
 }
+
+/** Estilo guardado por "Copiar estilo"; vive en memoria del módulo, así sobrevive a cerrar el menú. */
+let copied: Style | undefined;
+
+/** Guarda el estilo del objetivo para pegarlo después; un objetivo sin estilo guarda uno vacío. */
+export function copyStyleOf(target: StyleTarget): void {
+  copied = target.style ?? {};
+}
+
+/** Estilo copiado por última vez, o `undefined` si todavía no se copió ninguno. */
+export function copiedStyle(): Style | undefined {
+  return copied;
+}
+
+/** Cambios que pegan el estilo: cada objetivo queda con ese estilo completo; de los trazos solo se toma el grosor. */
+export function pasteUpdates(targets: StyleTarget[], drawings: DrawingTarget[], style: Style): StyleUpdate[] {
+  const next = Object.keys(style).length === 0 ? null : style;
+  return [
+    ...targets.map((t): StyleUpdate => ({ id: t.id, relation: t.relation, style: next })),
+    ...(style.lineWidth ? widthUpdates([], drawings, style.lineWidth) : []),
+  ];
+}

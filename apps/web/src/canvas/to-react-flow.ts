@@ -1,19 +1,9 @@
-import { type Diagram, type Element, isGroupKind, isHighlighter } from '@chartsia/core/model';
+import { type Diagram, drawOrder, isGroupKind, isHighlighter } from '@chartsia/core/model';
 import { measureElement } from '@chartsia/core/shapes';
 import { Position } from '@xyflow/react';
 import { type RoutedFlowEdge } from '../edges';
 import { type ElementFlowNode } from '../nodes';
 import { frozenIds } from './locks';
-
-function depthOf(el: Element, byId: Map<string, Element>): number {
-  let depth = 0;
-  let parent = el.parentId ? byId.get(el.parentId) : undefined;
-  while (parent && depth < 64) {
-    depth++;
-    parent = parent.parentId ? byId.get(parent.parentId) : undefined;
-  }
-  return depth;
-}
 
 /**
  * Modelo → nodos y aristas de React Flow. El tipo de nodo es el `kind`; los grupos son nodos
@@ -23,10 +13,7 @@ function depthOf(el: Element, byId: Map<string, Element>): number {
 export function toReactFlow(diagram: Diagram): { nodes: ElementFlowNode[]; edges: RoutedFlowEdge[] } {
   const byId = new Map(diagram.elements.map((e) => [e.id, e]));
   const frozen = frozenIds(diagram);
-  // Grupos y marcadores van primero (al fondo); un grupo siempre antes que sus hijos.
-  const layer = (el: Element) => (isGroupKind(el.kind) ? 0 : isHighlighter(el) ? 1 : 2);
-  const ordered = [...diagram.elements].sort((a, b) => layer(a) - layer(b) || depthOf(a, byId) - depthOf(b, byId) || (a.id < b.id ? -1 : 1));
-  const nodes = ordered.map((element): ElementFlowNode => {
+  const nodes = drawOrder(diagram.elements).map((element): ElementFlowNode => {
     const size = element.layout?.width && element.layout.height ? { width: element.layout.width, height: element.layout.height } : measureElement(element);
     const parent = element.parentId ? byId.get(element.parentId) : undefined;
     const x = (element.layout?.x ?? 0) - (parent?.layout?.x ?? 0);
