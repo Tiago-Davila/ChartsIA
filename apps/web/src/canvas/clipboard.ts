@@ -61,7 +61,7 @@ export function pasteOperations(clip: Clipboard, diagram: Diagram, offset: numbe
   const relationIds = new Map(clip.relations.map((r) => [r.id, freeId(diagram, `${r.id}_copia`)]));
 
   const elements = clip.elements.map((el): Element => {
-    const { parentId, layout, ...rest } = el;
+    const { parentId, layout, locked: _locked, ...rest } = el;
     // Un hijo sin su grupo pegado conserva el padre solo si el grupo sigue en este diagrama.
     const newParent = parentId && (elementIds.get(parentId) ?? (sameDiagram ? parentId : undefined));
     const base = layout ?? { x: 0, y: 0 };

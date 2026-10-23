@@ -203,6 +203,7 @@ function ConnectedApp() {
           onCut={edits.cut}
           onPaste={edits.paste}
           onReorder={edits.reorder}
+          onToggleLock={edits.setLocked}
           onConnect={edits.onConnect}
           onDraw={edits.onDraw}
           onAddText={edits.addText}

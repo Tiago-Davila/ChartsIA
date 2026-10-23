@@ -18,7 +18,8 @@ export async function relayoutDiagram(previous: Diagram, next: Diagram): Promise
   const sizes = measureAll(next);
   const prevById = new Map(previous.elements.map((e) => [e.id, e]));
   const existing = new Set(next.elements.filter((e) => placed(e) && prevById.has(e.id)).map((e) => e.id));
-  const pinned = new Set(next.elements.filter((e) => e.layout?.pinned).map((e) => e.id));
+  const locked = new Set(next.elements.filter((e) => e.locked).map((e) => e.id));
+  const pinned = new Set(next.elements.filter((e) => e.layout?.pinned || e.locked).map((e) => e.id));
 
   const positions = new Map<string, Rect>();
   for (const el of next.elements) {
@@ -74,6 +75,6 @@ export async function relayoutDiagram(previous: Diagram, next: Diagram): Promise
   }
 
   const isNew = new Set(next.elements.filter((e) => !existing.has(e.id)).map((e) => e.id));
-  const { layouts, warnings } = arrange({ diagram: next, positions, sizes, pinned, isNew });
+  const { layouts, warnings } = arrange({ diagram: next, positions, sizes, pinned, locked, isNew });
   return { diagram: withGeometry(next, layouts), warnings };
 }

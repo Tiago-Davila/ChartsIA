@@ -43,6 +43,7 @@ export interface DiagramCanvasProps {
   onCut?: () => void;
   onPaste?: () => void;
   onReorder?: (to: StackOrderTarget) => void;
+  onToggleLock?: (ids: string[], locked: boolean) => void;
   onConnect?: OnConnect;
   onDraw?: (points: Point[], screenPoints: Point[], color: string, width: number, highlighter: boolean) => void;
   onAddText?: (screenPosition: { x: number; y: number }) => void;
@@ -99,7 +100,7 @@ function keepSelection<T extends Node | Edge>(prev: T[], next: T[]): T[] {
  * Lienzo infinito (React Flow): pan, zoom, minimapa y controles. El estado local permite
  * arrastrar con fluidez; cada actualización del hub lo reemplaza (el hub es la fuente de verdad).
  */
-export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incomingEdges, readOnly = false, onNodeDragStop, onDelete, onDuplicate, onCopy, onCut, onPaste, onReorder, onConnect, onDraw, onAddText, onAddFrame }: DiagramCanvasProps) {
+export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incomingEdges, readOnly = false, onNodeDragStop, onDelete, onDuplicate, onCopy, onCut, onPaste, onReorder, onToggleLock, onConnect, onDraw, onAddText, onAddFrame }: DiagramCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(incomingNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(incomingEdges);
   const { fitView, screenToFlowPosition, deleteElements } = useReactFlow();
@@ -327,6 +328,9 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     </button>
   );
 
+  const selectedIds = nodes.filter((n) => n.selected).map((n) => n.id);
+  const allLocked = nodes.filter((n) => n.selected).every((n) => (n.data as ElementNodeData).element.locked === true);
+
   // El orden de dibujo solo aplica a figuras, así que las acciones aparecen con nodos seleccionados.
   const reorderItems: ContextMenuItem[] = nodes.some((n) => n.selected)
     ? [
@@ -359,6 +363,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     ...(hasClipboard() ? [pasteItem] : []),
     { label: 'Duplicar', onSelect: () => onDuplicate?.() },
     ...reorderItems,
+    ...(selectedIds.length > 0 && onToggleLock ? [{ label: allLocked ? 'Desbloquear' : 'Bloquear', onSelect: () => onToggleLock(selectedIds, !allLocked) }] : []),
     { label: 'Copiar estilo', onSelect: copyStyle },
     ...(copiedStyle() ? [{ label: 'Pegar estilo', onSelect: pasteStyle }] : []),
     { label: 'Borrar', onSelect: deleteSelection },

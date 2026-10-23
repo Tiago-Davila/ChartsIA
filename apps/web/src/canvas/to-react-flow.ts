@@ -3,6 +3,7 @@ import { measureElement } from '@chartsia/core/shapes';
 import { Position } from '@xyflow/react';
 import { type RoutedFlowEdge } from '../edges';
 import { type ElementFlowNode } from '../nodes';
+import { frozenIds } from './locks';
 
 /**
  * Modelo → nodos y aristas de React Flow. El tipo de nodo es el `kind`; los grupos son nodos
@@ -11,6 +12,7 @@ import { type ElementFlowNode } from '../nodes';
  */
 export function toReactFlow(diagram: Diagram): { nodes: ElementFlowNode[]; edges: RoutedFlowEdge[] } {
   const byId = new Map(diagram.elements.map((e) => [e.id, e]));
+  const frozen = frozenIds(diagram);
   const nodes = drawOrder(diagram.elements).map((element): ElementFlowNode => {
     const size = element.layout?.width && element.layout.height ? { width: element.layout.width, height: element.layout.height } : measureElement(element);
     const parent = element.parentId ? byId.get(element.parentId) : undefined;
@@ -23,6 +25,8 @@ export function toReactFlow(diagram: Diagram): { nodes: ElementFlowNode[]; edges
       width: size.width,
       height: size.height,
       ...(parent ? { parentId: parent.id } : {}),
+      // Solo se marca el bloqueado: un `draggable: true` por nodo pisaría al `nodesDraggable` del lienzo (mano, lápiz, solo lectura).
+      ...(frozen.has(element.id) ? { draggable: false, deletable: false } : {}),
       ...(isGroupKind(element.kind) || isHighlighter(element) ? { zIndex: -1 } : {}),
       data: { element },
       handles: [

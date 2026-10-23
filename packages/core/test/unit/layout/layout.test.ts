@@ -160,6 +160,17 @@ describe('relayoutDiagram (incremental)', () => {
     for (const el of untouched) expect(layoutOf(out, el.id)).toEqual(el.layout);
   });
 
+  it('un elemento bloqueado se trata como fijado y no se guarda como pinned', async () => {
+    const prev = await layoutDiagram(library());
+    const { diagram: lockedDiagram } = await edit(prev, [{ op: 'update_element', id: 'Socio', changes: { locked: true } }]);
+    const { diagram } = await edit(lockedDiagram, [
+      { op: 'add_element', element: { id: 'Editorial', kind: 'class', name: 'Editorial', attributes: [], operations: [] } },
+      { op: 'add_relation', relation: { id: 'r8', kind: 'association', source: 'Libro', target: 'Editorial' } },
+    ]);
+    expect(layoutOf(diagram, 'Socio')).toEqual(layoutOf(prev, 'Socio'));
+    expect(overlappingPairs(diagram)).toEqual([]);
+  });
+
   it('un elemento que crece y pasa a solapar desplaza solo a lo necesario', async () => {
     const prev = await layoutDiagram(library());
     const many = Array.from({ length: 25 }, (_, i) => ({ name: `atributoMuyLargo${i}`, type: 'String', visibility: '-' }));

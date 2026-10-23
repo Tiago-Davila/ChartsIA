@@ -47,14 +47,15 @@ function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<Elemen
   const [writing, setWriting] = useState(false);
   // Slot del miembro recién agregado: cuando llega al diagrama se abre en edición.
   const [newSlot, setNewSlot] = useState<string>();
-  const showMemberControls = selected && !readOnly && memberKinds(element).length > 0;
+  const locked = element.locked === true;
+  const showMemberControls = selected && !readOnly && !locked && memberKinds(element).length > 0;
 
   // Un bloque recién creado con la herramienta Texto se abre en edición al llegar al lienzo.
   useEffect(() => {
     if (element.kind !== 'text' || diagramStore.getState().pendingTextEdit !== id) return;
     diagramStore.getState().setPendingTextEdit(undefined);
-    if (!readOnly) setWriting(true);
-  }, [element.kind, id, readOnly]);
+    if (!readOnly && !locked) setWriting(true);
+  }, [element.kind, id, locked, readOnly]);
 
   useEffect(() => {
     if (!newSlot) return;
@@ -66,18 +67,25 @@ function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<Elemen
 
   const onTextDoubleClick = useCallback(
     (p: TextPrimitive) => {
-      if (readOnly || !p.slot) return;
+      if (readOnly || locked || !p.slot) return;
       if (element.kind === 'text') setWriting(true);
       else setEditing(p);
     },
-    [element.kind, readOnly],
+    [element.kind, locked, readOnly],
   );
 
   return (
     <div className={`chartsia-node${selected ? ' is-selected' : ''}`} style={{ width: size.width, height: size.height }} data-element-id={id}>
       <CleanShape element={element} size={size} onTextDoubleClick={onTextDoubleClick} />
-      {selected && !readOnly && element.kind !== 'drawing' && element.kind !== 'text' ? (
+      {selected && !readOnly && !locked && element.kind !== 'drawing' && element.kind !== 'text' ? (
         <NodeResizer minWidth={minimum.width} minHeight={minimum.height} color="var(--accent)" onResizeEnd={(_, box) => resize(id, box)} />
+      ) : null}
+      {locked ? (
+        <span className="chartsia-node__lock" role="img" aria-label="Bloqueado">
+          <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
+            <path d="M4 7V5a4 4 0 0 1 8 0v2h1v8H3V7h1zm2 0h4V5a2 2 0 0 0-4 0v2z" fill="currentColor" />
+          </svg>
+        </span>
       ) : null}
       {showMemberControls ? (
         <MemberControls

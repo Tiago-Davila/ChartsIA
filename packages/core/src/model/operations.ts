@@ -49,6 +49,7 @@ export const ElementChangesSchema = z
     overlapping: z.boolean().nullable().optional(),
     values: z.array(z.string().min(1).max(200)).min(1).max(200).optional(),
     style: StyleSchema.nullable().optional().describe('Reemplaza el estilo completo; null lo elimina'),
+    locked: z.boolean().optional().describe('Bloquea (true) o desbloquea (false) el elemento en la app'),
   })
   .describe('Campos a cambiar, p. ej. {"name":"Usuario"}; null elimina un campo opcional');
 export type ElementChanges = z.infer<typeof ElementChangesSchema>;
