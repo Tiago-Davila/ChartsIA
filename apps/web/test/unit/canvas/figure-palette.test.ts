@@ -3,11 +3,32 @@ import { applyOperations } from '@chartsia/core/operations';
 import { measureElement } from '@chartsia/core/shapes';
 import { validateDiagram } from '@chartsia/core/validation';
 import { describe, expect, it } from 'vitest';
-import { centeredFreePoint, newPaletteEdit, newPaletteElements, PALETTE_ITEMS, paletteSections } from '../../../src/canvas/figure-palette';
+import { centeredFreePoint, newFrameElement, newPaletteEdit, newPaletteElements, PALETTE_ITEMS, paletteSections } from '../../../src/canvas/figure-palette';
 
 const vacio = (type: DiagramType) => ({ type, title: 'Prueba', elements: [], relations: [] });
 const claves = () => PALETTE_ITEMS.map((item) => item.key);
 const item = (key: string) => PALETTE_ITEMS.find((candidate) => candidate.key === key)!;
+
+describe('herramienta Marco', () => {
+  const caja = { x: 10.6, y: 20.2, width: 300.4, height: 150 };
+
+  it('crea el marco con el rectángulo arrastrado, id y nombre por defecto y posición redondeada', () => {
+    expect(newFrameElement(vacio('class'), caja)).toEqual({ id: 'Marco', name: 'Marco', kind: 'frame', layout: { x: 11, y: 20, width: 300, height: 150, resized: true } });
+  });
+
+  it('repite el marco sin chocar con ids existentes', () => {
+    const primero = newFrameElement(vacio('class'), caja);
+    const segundo = newFrameElement({ ...vacio('class'), elements: [primero] }, caja);
+    expect([segundo.id, segundo.name]).toEqual(['Marco2', 'Marco2']);
+  });
+
+  it('el marco se aplica como add_element válido para el núcleo, con su tamaño', () => {
+    const diagram = { id: 'dg_aaaaaaaaaaaa', ...vacio('class'), revision: 0, createdAt: '', updatedAt: '' };
+    const result = applyOperations(diagram, [{ op: 'add_element', element: newFrameElement(diagram, caja) }]);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.diagram.elements[0]!.layout).toMatchObject({ x: 11, y: 20, width: 300, height: 150, resized: true });
+  });
+});
 
 describe('barra de figuras', () => {
   it.each(DIAGRAM_TYPES)('cada figura se crea como un elemento válido para el núcleo en %s', (type) => {
@@ -19,10 +40,14 @@ describe('barra de figuras', () => {
   });
 
   it('ofrece todas las figuras, de clases, C4, ER, NoSQL y generales, sin importar el tipo de diagrama', () => {
-    expect(claves()).toEqual(expect.arrayContaining(['class', 'person', 'container', 'entity', 'table', 'collection', 'figure-circle', 'frame']));
+    expect(claves()).toEqual(expect.arrayContaining(['class', 'person', 'container', 'entity', 'table', 'collection', 'figure-circle']));
     // Las imágenes y los trazos tienen sus propios botones.
     expect(claves()).not.toContain('image');
     expect(claves()).not.toContain('drawing');
+  });
+
+  it('el marco es una herramienta de la barra de herramientas, no una figura de la barra lateral', () => {
+    expect(claves()).not.toContain('frame');
   });
 
   it('las claves son únicas', () => {
@@ -141,10 +166,10 @@ describe('barra de figuras', () => {
       expect(claveDe('ER')).toEqual(expect.arrayContaining(['entity', 'entity-weak', 'table', 'attribute-composite', 'value-list', 'relationship', 'specialization']));
     });
 
-    it('las figuras generales y los marcos van en su propia sección, separados de los tipos de diagrama', () => {
-      expect(claveDe('Figuras generales')).toEqual(expect.arrayContaining(['figure-circle', 'figure-equilateral-triangle', 'figure-arrow', 'frame']));
+    it('las figuras generales van en su propia sección, separadas de los tipos de diagrama', () => {
+      expect(claveDe('Figuras generales')).toEqual(expect.arrayContaining(['figure-circle', 'figure-equilateral-triangle', 'figure-arrow']));
       for (const s of secciones.filter((s) => s.title !== 'Figuras generales')) {
-        expect(s.items.some((i) => i.kind === 'figure' || i.kind === 'frame')).toBe(false);
+        expect(s.items.some((i) => i.kind === 'figure')).toBe(false);
       }
     });
 
