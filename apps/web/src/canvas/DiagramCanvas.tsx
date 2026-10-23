@@ -17,12 +17,13 @@ import {
   useReactFlow,
   useViewport,
 } from '@xyflow/react';
-import { type PointerEvent as ReactPointerEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { DRAWING_DEFAULT_COLOR, DRAWING_WIDTH_PX, HIGHLIGHTER_DEFAULT_COLOR, HIGHLIGHTER_OPACITY, HIGHLIGHTER_WIDTH_PX, type Point, type StyleLineWidth } from '@chartsia/core/model';
 import { edgeTypes } from '../edges';
 import { nodeTypes } from '../nodes';
 import { useDiagramEditActions } from '../nodes/edit-context';
 import { type ElementNodeData } from '../nodes/types';
+import { ContextMenu, type ContextMenuItem } from './ContextMenu';
 import { SelectionPanel } from './SelectionPanel';
 import { WidthPicker } from './WidthPicker';
 import { sampleStroke } from './drawing';
@@ -36,6 +37,7 @@ export interface DiagramCanvasProps {
   readOnly?: boolean;
   onNodeDragStop?: OnNodeDrag;
   onDelete?: (params: { nodes: Node[]; edges: Edge[] }) => void;
+  onDuplicate?: () => void;
   onConnect?: OnConnect;
   onDraw?: (points: Point[], screenPoints: Point[], color: string, width: number, highlighter: boolean) => void;
   onAddText?: (screenPosition: { x: number; y: number }) => void;
@@ -92,10 +94,13 @@ function keepSelection<T extends Node | Edge>(prev: T[], next: T[]): T[] {
  * Lienzo infinito (React Flow): pan, zoom, minimapa y controles. El estado local permite
  * arrastrar con fluidez; cada actualización del hub lo reemplaza (el hub es la fuente de verdad).
  */
-export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incomingEdges, readOnly = false, onNodeDragStop, onDelete, onConnect, onDraw, onAddText, onAddFrame }: DiagramCanvasProps) {
+export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incomingEdges, readOnly = false, onNodeDragStop, onDelete, onDuplicate, onConnect, onDraw, onAddText, onAddFrame }: DiagramCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(incomingNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(incomingEdges);
-  const { fitView, screenToFlowPosition } = useReactFlow();
+  const { fitView, screenToFlowPosition, deleteElements } = useReactFlow();
+  // Posición de pantalla del menú contextual abierto.
+  const [menu, setMenu] = useState<Point>();
+  const closeMenu = useCallback(() => setMenu(undefined), []);
   const { zoom } = useViewport();
   const initialized = useNodesInitialized();
   const canvas = useRef<HTMLDivElement>(null);
@@ -268,6 +273,36 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     clearFrame();
   }, [clearFrame]);
 
+  // Deja seleccionado solo el nodo o la flecha indicados.
+  const selectOnly = useCallback((nodeId?: string, edgeId?: string) => {
+    setNodes((prev) => prev.map((n) => ({ ...n, selected: n.id === nodeId })));
+    setEdges((prev) => prev.map((e) => ({ ...e, selected: e.id === edgeId })));
+  }, [setNodes, setEdges]);
+
+  // Clic derecho sobre algo no seleccionado lo selecciona solo; dentro de la selección, el menú actúa sobre todas.
+  const onNodeContextMenu = useCallback((event: ReactMouseEvent, node: Node) => {
+    if (readOnly) return;
+    event.preventDefault();
+    if (!node.selected) selectOnly(node.id);
+    setMenu({ x: event.clientX, y: event.clientY });
+  }, [readOnly, selectOnly]);
+
+  const onEdgeContextMenu = useCallback((event: ReactMouseEvent, edge: Edge) => {
+    if (readOnly) return;
+    event.preventDefault();
+    if (!edge.selected) selectOnly(undefined, edge.id);
+    setMenu({ x: event.clientX, y: event.clientY });
+  }, [readOnly, selectOnly]);
+
+  const onSelectionContextMenu = useCallback((event: ReactMouseEvent) => {
+    if (readOnly) return;
+    event.preventDefault();
+    setMenu({ x: event.clientX, y: event.clientY });
+  }, [readOnly]);
+
+  // Borra lo seleccionado igual que la tecla Supr.
+  const deleteSelection = () => void deleteElements({ nodes: nodes.filter((n) => n.selected), edges: edges.filter((e) => e.selected) });
+
   // Botón de la barra: al pulsar la herramienta activa vuelve a la selección.
   const toolButton = (value: CanvasTool, label: string) => (
     <button type="button" className={`button${tool === value ? ' button--primary' : ''}`} aria-pressed={tool === value} onClick={() => setTool((active) => (active === value ? 'select' : value))}>
@@ -275,73 +310,85 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     </button>
   );
 
-  return (
-    <div
-      ref={canvas}
-      className={`diagram-canvas${drawingMode || frameMode ? ' is-drawing' : ''}${bucketMode ? ' is-painting' : ''}${textMode ? ' is-placing' : ''}${handMode ? ' is-hand' : ''}`}
-      onPointerDownCapture={startDrawing}
-      onPointerMoveCapture={moveDrawing}
-      onPointerUpCapture={finishDrawing}
-      onPointerCancelCapture={cancelDrawing}
-      onLostPointerCapture={loseDrawing}
-    >
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onNodeDragStop={onNodeDragStop}
-        onDelete={onDelete}
-        nodesDraggable={!readOnly && !drawingMode && !bucketMode && !handMode && !frameMode}
-        onNodeClick={paintNode}
-        onConnect={onConnect}
-        onEdgeDoubleClick={(_, edge) => !readOnly && setEditingEdge(edge.id)}
-        onSelectionChange={onSelectionChange}
-        nodesConnectable={!readOnly && !drawingMode && !bucketMode && !handMode && !frameMode}
-        connectionMode={ConnectionMode.Loose}
-        elementsSelectable={!bucketMode && !handMode}
-        selectionOnDrag={!drawingMode && !bucketMode && !handMode && !frameMode}
-        selectionMode={SelectionMode.Partial}
-        panOnScroll
-        panOnDrag={handMode}
-        panActivationKeyCode="Space"
-        deleteKeyCode={readOnly ? null : ['Delete', 'Backspace']}
-        minZoom={0.05}
-        maxZoom={4}
-        proOptions={PRO_OPTIONS}
-      >
-        <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#d5d9e0" />
-        <MiniMap pannable zoomable nodeColor={nodeColor} nodeStrokeColor="#9aa5b1" style={MINIMAP_STYLE} />
-        <Controls showInteractive={false} />
-        {readOnly ? null : <SelectionPanel nodes={nodes} edges={edges} editingEdge={editingEdge} onEditEdge={setEditingEdge} />}
-        {readOnly ? null : (
-          <Panel position="top-left" className="drawing-tool nodrag nopan">
-            {toolButton('select', 'Selección')}
-            {toolButton('hand', 'Mano')}
-            {toolButton('pen', 'Lápiz')}
-            {toolButton('highlighter', 'Marcador')}
-            {drawingMode ? (
-              <input type="color" aria-label={highlighter ? 'Color del marcador' : 'Color del lápiz'} value={drawingColor} onChange={(event) => setColors((current) => ({ ...current, [tool]: event.target.value }))} />
-            ) : null}
-            {drawingMode ? (
-              <WidthPicker label={highlighter ? 'Grosor del marcador' : 'Grosor del lápiz'} value={widths[tool]} onPick={(width) => setWidths((current) => ({ ...current, [tool]: width }))} />
-            ) : null}
-            {toolButton('bucket', 'Balde')}
-            {bucketMode ? <input type="color" aria-label="Color del balde" value={bucketColor} onChange={(event) => setColors((current) => ({ ...current, bucket: event.target.value }))} /> : null}
-            {toolButton('text', 'Texto')}
-            {toolButton('frame', 'Marco')}
-          </Panel>
-        )}
-      </ReactFlow>
-      {preview.length > 1 ? (
-        <svg className="diagram-canvas__preview" aria-hidden="true">
-          <polyline points={preview.map((p) => `${p.x},${p.y}`).join(' ')} fill="none" stroke={drawingColor} strokeOpacity={highlighter ? HIGHLIGHTER_OPACITY : undefined} strokeWidth={drawingWidth * zoom} strokeLinecap="round" strokeLinejoin="round" />
+  const menuItems: ContextMenuItem[] = [
+    { label: 'Duplicar', onSelect: () => onDuplicate?.() },
+    { label: 'Borrar', onSelect: deleteSelection },
+  ];
 
-        </svg>
-      ) : null}
-      {framePreviewBox ? <div className="diagram-canvas__frame" style={{ left: framePreviewBox.x, top: framePreviewBox.y, width: framePreviewBox.width, height: framePreviewBox.height }} /> : null}
-    </div>
+  return (
+    <>
+      <div
+        ref={canvas}
+        className={`diagram-canvas${drawingMode || frameMode ? ' is-drawing' : ''}${bucketMode ? ' is-painting' : ''}${textMode ? ' is-placing' : ''}${handMode ? ' is-hand' : ''}`}
+        onPointerDownCapture={startDrawing}
+        onPointerMoveCapture={moveDrawing}
+        onPointerUpCapture={finishDrawing}
+        onPointerCancelCapture={cancelDrawing}
+        onLostPointerCapture={loseDrawing}
+      >
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onNodeDragStop={onNodeDragStop}
+          onDelete={onDelete}
+          onNodeContextMenu={onNodeContextMenu}
+          onEdgeContextMenu={onEdgeContextMenu}
+          onSelectionContextMenu={onSelectionContextMenu}
+          nodesDraggable={!readOnly && !drawingMode && !bucketMode && !handMode && !frameMode}
+          onNodeClick={paintNode}
+          onConnect={onConnect}
+          onEdgeDoubleClick={(_, edge) => !readOnly && setEditingEdge(edge.id)}
+          onSelectionChange={onSelectionChange}
+          nodesConnectable={!readOnly && !drawingMode && !bucketMode && !handMode && !frameMode}
+          connectionMode={ConnectionMode.Loose}
+          elementsSelectable={!bucketMode && !handMode}
+          selectionOnDrag={!drawingMode && !bucketMode && !handMode && !frameMode}
+          selectionMode={SelectionMode.Partial}
+          panOnScroll
+          panOnDrag={handMode}
+          panActivationKeyCode="Space"
+          deleteKeyCode={readOnly ? null : ['Delete', 'Backspace']}
+          minZoom={0.05}
+          maxZoom={4}
+          proOptions={PRO_OPTIONS}
+        >
+          <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#d5d9e0" />
+          <MiniMap pannable zoomable nodeColor={nodeColor} nodeStrokeColor="#9aa5b1" style={MINIMAP_STYLE} />
+          <Controls showInteractive={false} />
+          {readOnly ? null : <SelectionPanel nodes={nodes} edges={edges} editingEdge={editingEdge} onEditEdge={setEditingEdge} />}
+          {readOnly ? null : (
+            <Panel position="top-left" className="drawing-tool nodrag nopan">
+              {toolButton('select', 'Selección')}
+              {toolButton('hand', 'Mano')}
+              {toolButton('pen', 'Lápiz')}
+              {toolButton('highlighter', 'Marcador')}
+              {drawingMode ? (
+                <input type="color" aria-label={highlighter ? 'Color del marcador' : 'Color del lápiz'} value={drawingColor} onChange={(event) => setColors((current) => ({ ...current, [tool]: event.target.value }))} />
+              ) : null}
+              {drawingMode ? (
+                <WidthPicker label={highlighter ? 'Grosor del marcador' : 'Grosor del lápiz'} value={widths[tool]} onPick={(width) => setWidths((current) => ({ ...current, [tool]: width }))} />
+              ) : null}
+              {toolButton('bucket', 'Balde')}
+              {bucketMode ? <input type="color" aria-label="Color del balde" value={bucketColor} onChange={(event) => setColors((current) => ({ ...current, bucket: event.target.value }))} /> : null}
+              {toolButton('text', 'Texto')}
+              {toolButton('frame', 'Marco')}
+            </Panel>
+          )}
+        </ReactFlow>
+        {preview.length > 1 ? (
+          <svg className="diagram-canvas__preview" aria-hidden="true">
+            <polyline points={preview.map((p) => `${p.x},${p.y}`).join(' ')} fill="none" stroke={drawingColor} strokeOpacity={highlighter ? HIGHLIGHTER_OPACITY : undefined} strokeWidth={drawingWidth * zoom} strokeLinecap="round" strokeLinejoin="round" />
+
+          </svg>
+        ) : null}
+        {framePreviewBox ? <div className="diagram-canvas__frame" style={{ left: framePreviewBox.x, top: framePreviewBox.y, width: framePreviewBox.width, height: framePreviewBox.height }} /> : null}
+      </div>
+      {/* Fuera del lienzo: sus manejadores de puntero no deben capturar los clics del menú. */}
+      {menu ? <ContextMenu x={menu.x} y={menu.y} items={menuItems} onClose={closeMenu} /> : null}
+    </>
   );
 }

@@ -1,4 +1,4 @@
-import { DRAWING_MAX_COORDINATE, DRAWING_MAX_POINTS, type Diagram, type Element, isGroupKind, type Operation, type Point, type RelationChanges } from '@chartsia/core/model';
+import { DRAWING_MAX_COORDINATE, DRAWING_MAX_POINTS, type Diagram, type Element, isGroupKind, type Operation, type Point, type Relation, type RelationChanges } from '@chartsia/core/model';
 import { type Connection, type Edge, type Node, type OnNodeDrag, useReactFlow } from '@xyflow/react';
 import { useCallback, useMemo } from 'react';
 import { type DiagramEditActions } from '../nodes/edit-context';
@@ -31,7 +31,7 @@ function depth(id: string, byId: Map<string, Element>): number {
  * lienzo vuelve al último estado confirmado.
  */
 export function useDiagramEdits(api: ApiClient) {
-  const { getInternalNode, getNodes, screenToFlowPosition } = useReactFlow();
+  const { getEdges, getInternalNode, getNodes, screenToFlowPosition } = useReactFlow();
 
   // Ejecuta una escritura en el hub y muestra sus errores si la rechaza.
   const write = useCallback(
@@ -341,11 +341,12 @@ export function useDiagramEdits(api: ApiClient) {
     [getInternalNode, getNodes],
   );
 
-  /** Ctrl+D: copia los elementos seleccionados (no los grupos) desplazados 30 px. */
+  /** Ctrl+D y menú: copia los elementos seleccionados (no los grupos) desplazados 30 px, y las flechas seleccionadas entre sus copias. */
   const duplicate = useCallback(() => {
     const diagram = diagramStore.getState().diagram;
     if (!diagram) return;
-    const draft = { elements: [...diagram.elements], relations: diagram.relations };
+    const draft = { elements: [...diagram.elements], relations: [...diagram.relations] };
+    const copies = new Map<string, string>();
     const ops: Operation[] = [];
     for (const box of selectedBoxes()) {
       const el = diagram.elements.find((e) => e.id === box.id);
@@ -353,10 +354,20 @@ export function useDiagramEdits(api: ApiClient) {
       const { layout: _layout, ...rest } = el;
       const copy = { ...rest, id: freeId(draft, `${el.id}_copia`), layout: { x: Math.round(box.x + 30), y: Math.round(box.y + 30) } } as Element;
       draft.elements.push(copy);
+      copies.set(el.id, copy.id);
       ops.push({ op: 'add_element', element: copy });
     }
+    // Una flecha copiada apunta a la copia de cada extremo, o al original si ese extremo no se copió.
+    for (const edge of getEdges().filter((e) => e.selected)) {
+      const relation = diagram.relations.find((r) => r.id === edge.id);
+      if (!relation) continue;
+      const { waypoints: _waypoints, ...rest } = relation;
+      const copy: Relation = { ...rest, id: freeId(draft, `${relation.id}_copia`), source: copies.get(relation.source) ?? relation.source, target: copies.get(relation.target) ?? relation.target };
+      draft.relations.push(copy);
+      ops.push({ op: 'add_relation', relation: copy });
+    }
     void send(ops);
-  }, [selectedBoxes, send]);
+  }, [getEdges, selectedBoxes, send]);
 
   /** Alinea o distribuye los elementos seleccionados. */
   const align = useCallback(
