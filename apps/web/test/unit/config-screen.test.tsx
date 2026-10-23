@@ -22,7 +22,26 @@ describe('ConfigScreen', () => {
     expect(screen.getByText(`${origin}/mcp`)).toBeInTheDocument();
     expect(screen.getByText('Conectado al hub')).toBeInTheDocument();
     for (const agent of AGENTS) expect(screen.getByRole('article', { name: agent.name })).toBeInTheDocument();
-    expect(screen.getByText(`claude mcp add --transport http chartsia ${origin}/mcp`)).toBeInTheDocument();
+    expect(screen.getByText(`claude mcp add --transport http --scope user chartsia ${origin}/mcp`)).toBeInTheDocument();
+  });
+
+  it('el comando de Claude Code es de usuario y añade el token fuera de loopback', () => {
+    const claude = AGENTS.find((a) => a.id === 'claude-code')!;
+    expect(claude.snippet(`${origin}/mcp`)).toBe(`claude mcp add --transport http --scope user chartsia ${origin}/mcp`);
+    expect(claude.snippet('https://hub.example.com/mcp')).toContain('--scope user');
+    expect(claude.snippet('https://hub.example.com/mcp')).toContain('Authorization: Bearer <CHARTSIA_TOKEN>');
+  });
+
+  it('solo la Responses API, que no tiene configuración global, lo explica en su ayuda', () => {
+    const sinGlobal = AGENTS.filter((a) => /no tiene configuración global/i.test(a.help));
+    expect(sinGlobal.map((a) => a.id)).toEqual(['openai']);
+  });
+
+  it('muestra en la tarjeta la ayuda de Claude Desktop con su archivo de configuración', () => {
+    renderScreen();
+    const card = screen.getByRole('article', { name: 'Claude Desktop (stdio)' });
+    expect(card).toHaveTextContent('claude_desktop_config.json');
+    expect(JSON.parse(AGENTS.find((a) => a.id === 'claude-desktop')!.snippet(`${origin}/mcp`)).mcpServers.chartsia.command).toBe('node');
   });
 
   it('los snippets de OpenCode son JSON válido con la URL del hub', () => {
@@ -53,7 +72,7 @@ describe('ConfigScreen', () => {
     const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
     renderScreen();
     await user.click(screen.getByRole('button', { name: 'Copiar configuración de Claude Code (HTTP)' }));
-    expect(writeText).toHaveBeenCalledWith(`claude mcp add --transport http chartsia ${origin}/mcp`);
+    expect(writeText).toHaveBeenCalledWith(`claude mcp add --transport http --scope user chartsia ${origin}/mcp`);
     expect(await screen.findByText('Copiado')).toBeInTheDocument();
   });
 
