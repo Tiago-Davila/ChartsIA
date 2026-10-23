@@ -13,6 +13,7 @@ import { type StyleUpdate } from './style-edits';
 import { simplifyStroke } from './drawing';
 import { newTextBlock } from './text-block';
 import { framePadding } from '@chartsia/core/shapes';
+import { unlockedOperations } from './locks';
 
 function depth(id: string, byId: Map<string, Element>): number {
   let d = 0;
@@ -54,10 +55,13 @@ export function useDiagramEdits(api: ApiClient) {
     [api],
   );
 
+  /** Envía un lote al hub sin las operaciones que tocan un elemento bloqueado. */
   const send = useCallback(
     async (operations: Operation[]) => {
-      if (operations.length === 0) return true;
-      return write((diagram) => api.applyOperations(diagram.id, { baseRevision: diagram.revision, operations }));
+      const current = diagramStore.getState().diagram;
+      const allowed = current ? unlockedOperations(current, operations) : operations;
+      if (allowed.length === 0) return true;
+      return write((diagram) => api.applyOperations(diagram.id, { baseRevision: diagram.revision, operations: allowed }));
     },
     [api, write],
   );
@@ -351,7 +355,7 @@ export function useDiagramEdits(api: ApiClient) {
     for (const box of selectedBoxes()) {
       const el = diagram.elements.find((e) => e.id === box.id);
       if (!el || isGroupKind(el.kind)) continue;
-      const { layout: _layout, ...rest } = el;
+      const { layout: _layout, locked: _locked, ...rest } = el;
       const copy = { ...rest, id: freeId(draft, `${el.id}_copia`), layout: { x: Math.round(box.x + 30), y: Math.round(box.y + 30) } } as Element;
       draft.elements.push(copy);
       copies.set(el.id, copy.id);
@@ -373,6 +377,12 @@ export function useDiagramEdits(api: ApiClient) {
   const align = useCallback(
     (mode: AlignMode) => void send(alignBoxes(selectedBoxes(), mode).map((m) => ({ op: 'move_element', ...m }))),
     [selectedBoxes, send],
+  );
+
+  /** Bloquea o desbloquea los elementos indicados en un solo lote (un paso de Ctrl+Z). */
+  const setLocked = useCallback(
+    (ids: string[], locked: boolean) => void send(ids.map((id): Operation => ({ op: 'update_element', id, changes: { locked } }))),
+    [send],
   );
 
   const rename = useCallback((title: string) => void send([{ op: 'set_title', title }]), [send]);
@@ -449,5 +459,5 @@ export function useDiagramEdits(api: ApiClient) {
     [editText, addMember, removeMember, resize, updateRelation, updateStyles, leaveGroup, ungroup, groupInFrame],
   );
 
-  return { onNodeDragStop, onDelete, onConnect, onDraw: addDrawing, editText, editActions, history, duplicate, align, rename, insertImages, addFigure, addFigureAtCenter, addText, addFrame };
+  return { onNodeDragStop, onDelete, onConnect, onDraw: addDrawing, editText, editActions, history, duplicate, align, setLocked, rename, insertImages, addFigure, addFigureAtCenter, addText, addFrame };
 }

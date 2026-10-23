@@ -496,6 +496,19 @@ button:disabled,
 .chartsia-node text[data-slot] {
   cursor: text;
 }
+/* Candado de un elemento bloqueado: esquina superior derecha, sin capturar el puntero. */
+.chartsia-node__lock {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  display: flex;
+  padding: 3px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--accent);
+  pointer-events: none;
+}
 /* Botones para agregar y quitar miembros: viven fuera del SVG de la forma. */
 .member-add {
   position: absolute;

@@ -3,6 +3,7 @@ import { measureElement } from '@chartsia/core/shapes';
 import { Position } from '@xyflow/react';
 import { type RoutedFlowEdge } from '../edges';
 import { type ElementFlowNode } from '../nodes';
+import { frozenIds } from './locks';
 
 function depthOf(el: Element, byId: Map<string, Element>): number {
   let depth = 0;
@@ -21,6 +22,7 @@ function depthOf(el: Element, byId: Map<string, Element>): number {
  */
 export function toReactFlow(diagram: Diagram): { nodes: ElementFlowNode[]; edges: RoutedFlowEdge[] } {
   const byId = new Map(diagram.elements.map((e) => [e.id, e]));
+  const frozen = frozenIds(diagram);
   // Grupos y marcadores van primero (al fondo); un grupo siempre antes que sus hijos.
   const layer = (el: Element) => (isGroupKind(el.kind) ? 0 : isHighlighter(el) ? 1 : 2);
   const ordered = [...diagram.elements].sort((a, b) => layer(a) - layer(b) || depthOf(a, byId) - depthOf(b, byId) || (a.id < b.id ? -1 : 1));
@@ -36,6 +38,8 @@ export function toReactFlow(diagram: Diagram): { nodes: ElementFlowNode[]; edges
       width: size.width,
       height: size.height,
       ...(parent ? { parentId: parent.id } : {}),
+      draggable: !frozen.has(element.id),
+      deletable: !frozen.has(element.id),
       ...(isGroupKind(element.kind) || isHighlighter(element) ? { zIndex: -1 } : {}),
       data: { element },
       handles: [

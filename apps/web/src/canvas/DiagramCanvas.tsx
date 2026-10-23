@@ -38,6 +38,7 @@ export interface DiagramCanvasProps {
   onNodeDragStop?: OnNodeDrag;
   onDelete?: (params: { nodes: Node[]; edges: Edge[] }) => void;
   onDuplicate?: () => void;
+  onToggleLock?: (ids: string[], locked: boolean) => void;
   onConnect?: OnConnect;
   onDraw?: (points: Point[], screenPoints: Point[], color: string, width: number, highlighter: boolean) => void;
   onAddText?: (screenPosition: { x: number; y: number }) => void;
@@ -94,7 +95,7 @@ function keepSelection<T extends Node | Edge>(prev: T[], next: T[]): T[] {
  * Lienzo infinito (React Flow): pan, zoom, minimapa y controles. El estado local permite
  * arrastrar con fluidez; cada actualización del hub lo reemplaza (el hub es la fuente de verdad).
  */
-export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incomingEdges, readOnly = false, onNodeDragStop, onDelete, onDuplicate, onConnect, onDraw, onAddText, onAddFrame }: DiagramCanvasProps) {
+export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incomingEdges, readOnly = false, onNodeDragStop, onDelete, onDuplicate, onToggleLock, onConnect, onDraw, onAddText, onAddFrame }: DiagramCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(incomingNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(incomingEdges);
   const { fitView, screenToFlowPosition, deleteElements } = useReactFlow();
@@ -310,8 +311,11 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     </button>
   );
 
+  const selectedIds = nodes.filter((n) => n.selected).map((n) => n.id);
+  const allLocked = nodes.filter((n) => n.selected).every((n) => (n.data as ElementNodeData).element.locked === true);
   const menuItems: ContextMenuItem[] = [
     { label: 'Duplicar', onSelect: () => onDuplicate?.() },
+    ...(selectedIds.length > 0 && onToggleLock ? [{ label: allLocked ? 'Desbloquear' : 'Bloquear', onSelect: () => onToggleLock(selectedIds, !allLocked) }] : []),
     { label: 'Borrar', onSelect: deleteSelection },
   ];
 
