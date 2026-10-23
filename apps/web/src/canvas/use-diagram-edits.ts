@@ -1,4 +1,4 @@
-import { DRAWING_MAX_COORDINATE, DRAWING_MAX_POINTS, type Diagram, type Element, isGroupKind, type Operation, type Point, type Relation, type RelationChanges } from '@chartsia/core/model';
+import { DRAWING_MAX_COORDINATE, DRAWING_MAX_POINTS, type Diagram, type Element, isGroupKind, type Operation, type Point, type Relation, type RelationChanges, type StackOrderTarget } from '@chartsia/core/model';
 import { type Connection, type Edge, type Node, type OnNodeDrag, useReactFlow } from '@xyflow/react';
 import { useCallback, useMemo } from 'react';
 import { type DiagramEditActions } from '../nodes/edit-context';
@@ -369,6 +369,19 @@ export function useDiagramEdits(api: ApiClient) {
     void send(ops);
   }, [getEdges, selectedBoxes, send]);
 
+  /** Cambia el orden de dibujo de los nodos seleccionados en un solo lote, recorridos en el sentido que conserva su orden relativo. */
+  const reorder = useCallback(
+    (to: StackOrderTarget) => {
+      const diagram = diagramStore.getState().diagram;
+      if (!diagram) return;
+      const selected = new Set(getNodes().filter((n) => n.selected).map((n) => n.id));
+      const ids = diagram.elements.map((e) => e.id).filter((id) => selected.has(id));
+      const ordered = to === 'front' || to === 'backward' ? ids : ids.reverse();
+      void send(ordered.map((id): Operation => ({ op: 'reorder_element', id, to })));
+    },
+    [getNodes, send],
+  );
+
   /** Alinea o distribuye los elementos seleccionados. */
   const align = useCallback(
     (mode: AlignMode) => void send(alignBoxes(selectedBoxes(), mode).map((m) => ({ op: 'move_element', ...m }))),
@@ -449,5 +462,5 @@ export function useDiagramEdits(api: ApiClient) {
     [editText, addMember, removeMember, resize, updateRelation, updateStyles, leaveGroup, ungroup, groupInFrame],
   );
 
-  return { onNodeDragStop, onDelete, onConnect, onDraw: addDrawing, editText, editActions, history, duplicate, align, rename, insertImages, addFigure, addFigureAtCenter, addText, addFrame };
+  return { onNodeDragStop, onDelete, onConnect, onDraw: addDrawing, editText, editActions, history, duplicate, reorder, align, rename, insertImages, addFigure, addFigureAtCenter, addText, addFrame };
 }

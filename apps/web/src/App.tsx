@@ -199,6 +199,7 @@ function ConnectedApp() {
           onNodeDragStop={edits.onNodeDragStop}
           onDelete={edits.onDelete}
           onDuplicate={edits.duplicate}
+          onReorder={edits.reorder}
           onConnect={edits.onConnect}
           onDraw={edits.onDraw}
           onAddText={edits.addText}
