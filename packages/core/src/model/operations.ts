@@ -2,13 +2,14 @@ import { z } from 'zod';
 import { ARROWHEADS, BOUNDARY_TYPES, CARDINALITIES, CONTAINER_VARIANTS, FIGURE_SHAPES, MAX_OPERATIONS_PER_BATCH, NAVIGABILITIES, RELATION_KINDS, SIDES } from './enums.js';
 import { AttributeSchema, MethodSchema } from './class-elements.js';
 import { ColumnSchema } from './er-elements.js';
-import { DescriptionSchema, ElementIdSchema, LayoutSchema, NameSchema, PointSchema } from './common.js';
+import { DescriptionSchema, ElementIdSchema, LayoutSchema, PointSchema } from './common.js';
 import { ElementSchema, TitleSchema } from './diagram.js';
 import { DrawingPointsSchema, DRAWING_MAX_STROKE_WIDTH, DRAWING_MIN_STROKE_WIDTH } from './drawing-elements.js';
 import { MultiplicitySchema, RelationSchema } from './relation.js';
 import { StyleSchema } from './style.js';
 import { ImageDataUrlSchema } from './image-elements.js';
 import { NoSqlFieldsSchema } from './nosql-elements.js';
+import { TEXT_BLOCK_MAX_LENGTH } from './text-elements.js';
 
 /**
  * Cambios parciales de un elemento: unión de los campos editables de todos los `kind`.
@@ -17,7 +18,8 @@ import { NoSqlFieldsSchema } from './nosql-elements.js';
  */
 export const ElementChangesSchema = z
   .strictObject({
-    name: NameSchema.optional(),
+    // Un bloque de texto admite un markdown más largo; el resultado se valida contra el kind existente.
+    name: z.string().min(1).max(TEXT_BLOCK_MAX_LENGTH).optional(),
     description: DescriptionSchema.nullable().optional(),
     parentId: ElementIdSchema.nullable().optional(),
     abstract: z.boolean().nullable().optional(),

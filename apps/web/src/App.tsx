@@ -169,6 +169,7 @@ function ConnectedApp() {
           onDelete={edits.onDelete}
           onConnect={edits.onConnect}
           onDraw={edits.onDraw}
+          onAddText={edits.addText}
           onAlign={edits.align}
           changedIds={changedIds}
           onOpenLatest={onOpenLatest}

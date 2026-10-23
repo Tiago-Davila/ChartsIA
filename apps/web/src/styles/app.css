@@ -51,6 +51,7 @@
 }
 .diagram-canvas.is-drawing .react-flow__pane { cursor: crosshair; }
 .diagram-canvas.is-painting .react-flow__node { cursor: copy; }
+.diagram-canvas.is-placing .react-flow__pane { cursor: text; }
 .diagram-canvas.is-hand .react-flow__pane,
 .diagram-canvas.is-hand .react-flow__node { cursor: grab; }
 .diagram-canvas.is-hand:active .react-flow__pane,
@@ -113,8 +114,8 @@
 .figure-sidebar__item:hover { border-color: var(--accent); }
 /* En columna, la barra no se extiende sobre la barra de flechas de arriba. */
 .drawing-tool {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, auto);
   align-items: stretch;
   gap: 6px;
   padding: 4px;
@@ -599,6 +600,26 @@ button:disabled,
 }
 .chartsia-edge.is-selected path:first-child {
   stroke: var(--accent);
+}
+/* Editor multilínea de un bloque de texto: ocupa el bloque y muestra el markdown tal cual. */
+.text-block-editor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  box-sizing: border-box;
+  min-width: 160px;
+  min-height: 48px;
+  padding: 8px;
+  font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text);
+  background: #fff;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  outline: none;
+  resize: none;
 }
 .inline-edit {
   position: absolute;

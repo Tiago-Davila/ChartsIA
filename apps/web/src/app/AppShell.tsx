@@ -48,6 +48,7 @@ export interface AppShellProps {
   onDelete?: DiagramCanvasProps['onDelete'];
   onConnect?: DiagramCanvasProps['onConnect'];
   onDraw?: (points: Point[], screenPoints: Point[], color: string, width: number, highlighter: boolean) => void;
+  onAddText?(screenPosition: { x: number; y: number }): void;
   onAlign?(mode: AlignMode): void;
   changedIds?: string[];
   onOpenLatest?(): Promise<boolean>;
@@ -135,6 +136,7 @@ export function AppShell(props: AppShellProps) {
                 onDelete={props.onDelete}
                 onConnect={props.onConnect}
                 onDraw={props.onDraw}
+                onAddText={props.onAddText}
               />
               <C4Legend diagram={diagram} />
             </div>

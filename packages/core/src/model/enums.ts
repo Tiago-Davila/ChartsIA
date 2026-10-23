@@ -27,10 +27,14 @@ export type FrameElementKind = (typeof FRAME_ELEMENT_KINDS)[number];
 export const DRAWING_ELEMENT_KINDS = ['drawing'] as const;
 export type DrawingElementKind = (typeof DRAWING_ELEMENT_KINDS)[number];
 
+/** Bloques de texto con formato liviano y código resaltado: válidos en todos los tipos de diagrama. */
+export const TEXT_ELEMENT_KINDS = ['text'] as const;
+export type TextElementKind = (typeof TEXT_ELEMENT_KINDS)[number];
+
 export const FIGURE_SHAPES = ['circle', 'square', 'rectangle', 'triangle', 'isosceles-triangle', 'equilateral-triangle', 'scalene-triangle', 'right-triangle', 'hexagon', 'cloud', 'diamond', 'parallelogram', 'oval', 'pentagon', 'heptagon', 'octagon', 'arrow', 'double-arrow', 'arrow-right', 'arrow-left', 'arrow-up', 'arrow-down'] as const;
 export type FigureShape = (typeof FIGURE_SHAPES)[number];
 
-export type ElementKind = ClassElementKind | C4ElementKind | ErElementKind | NoSqlElementKind | FigureElementKind | DrawingElementKind | ImageElementKind | FrameElementKind;
+export type ElementKind = ClassElementKind | C4ElementKind | ErElementKind | NoSqlElementKind | FigureElementKind | DrawingElementKind | ImageElementKind | FrameElementKind | TextElementKind;
 
 /** Elementos que agrupan a otros mediante `parentId`. */
 export const GROUP_KINDS = ['package', 'boundary', 'frame'] as const satisfies readonly ElementKind[];

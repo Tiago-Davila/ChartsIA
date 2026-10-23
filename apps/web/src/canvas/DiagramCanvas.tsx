@@ -37,6 +37,7 @@ export interface DiagramCanvasProps {
   onDelete?: (params: { nodes: Node[]; edges: Edge[] }) => void;
   onConnect?: OnConnect;
   onDraw?: (points: Point[], screenPoints: Point[], color: string, width: number, highlighter: boolean) => void;
+  onAddText?: (screenPosition: { x: number; y: number }) => void;
 }
 
 export const FIT_VIEW_OPTIONS = { padding: 0.15, maxZoom: 1.25 };
@@ -47,7 +48,7 @@ const MAX_CAPTURE_POINTS = 2048;
 const BUCKET_DEFAULT_COLOR = PALETTE[3].value;
 
 /** Herramienta activa de la barra. `select` es la de por defecto y apaga a las demás. */
-type CanvasTool = 'select' | 'hand' | 'pen' | 'highlighter' | 'bucket';
+type CanvasTool = 'select' | 'hand' | 'pen' | 'highlighter' | 'bucket' | 'text';
 /** Herramientas con color propio elegido en la barra. */
 type ColoredTool = 'pen' | 'highlighter' | 'bucket';
 
@@ -71,7 +72,7 @@ function keepSelection<T extends Node | Edge>(prev: T[], next: T[]): T[] {
  * Lienzo infinito (React Flow): pan, zoom, minimapa y controles. El estado local permite
  * arrastrar con fluidez; cada actualización del hub lo reemplaza (el hub es la fuente de verdad).
  */
-export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incomingEdges, readOnly = false, onNodeDragStop, onDelete, onConnect, onDraw }: DiagramCanvasProps) {
+export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incomingEdges, readOnly = false, onNodeDragStop, onDelete, onConnect, onDraw, onAddText }: DiagramCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(incomingNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(incomingEdges);
   const { fitView, screenToFlowPosition } = useReactFlow();
@@ -87,6 +88,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   const highlighter = tool === 'highlighter';
   const drawingMode = tool === 'pen' || highlighter;
   const bucketMode = tool === 'bucket';
+  const textMode = tool === 'text';
   // Con la mano, arrastrar desplaza el lienzo aunque sea sobre una figura.
   const handMode = tool === 'hand';
   const drawingColor = highlighter ? colors.highlighter : colors.pen;
@@ -147,7 +149,16 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   }, [bucketColor, bucketMode, readOnly, updateStyles]);
 
   const startDrawing = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
-    if (!drawingMode || readOnly || event.button !== 0 || !(event.target instanceof Element) || event.target.closest('.react-flow__panel')) return;
+    if (readOnly || event.button !== 0 || !(event.target instanceof Element) || event.target.closest('.react-flow__panel')) return;
+    // Con la herramienta Texto, el clic crea el bloque en ese punto y la herramienta vuelve a la selección.
+    if (textMode) {
+      event.preventDefault();
+      event.stopPropagation();
+      onAddText?.({ x: event.clientX, y: event.clientY });
+      setTool('select');
+      return;
+    }
+    if (!drawingMode) return;
     event.preventDefault();
     event.stopPropagation();
     activePointer.current = event.pointerId;
@@ -155,7 +166,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     strokePoints.current = [];
     screenPoints.current = [];
     addSample(event, true);
-  }, [addSample, drawingMode, readOnly]);
+  }, [addSample, drawingMode, onAddText, readOnly, textMode]);
 
   const moveDrawing = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     if (activePointer.current !== event.pointerId) return;
@@ -206,7 +217,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   return (
     <div
       ref={canvas}
-      className={`diagram-canvas${drawingMode ? ' is-drawing' : ''}${bucketMode ? ' is-painting' : ''}${handMode ? ' is-hand' : ''}`}
+      className={`diagram-canvas${drawingMode ? ' is-drawing' : ''}${bucketMode ? ' is-painting' : ''}${textMode ? ' is-placing' : ''}${handMode ? ' is-hand' : ''}`}
       onPointerDownCapture={startDrawing}
       onPointerMoveCapture={moveDrawing}
       onPointerUpCapture={finishDrawing}
@@ -258,6 +269,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
             ) : null}
             {toolButton('bucket', 'Balde')}
             {bucketMode ? <input type="color" aria-label="Color del balde" value={bucketColor} onChange={(event) => setColors((current) => ({ ...current, bucket: event.target.value }))} /> : null}
+            {toolButton('text', 'Texto')}
           </Panel>
         )}
       </ReactFlow>

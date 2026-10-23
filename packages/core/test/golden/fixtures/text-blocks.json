@@ -1,0 +1,45 @@
+{
+  "type": "er",
+  "title": "Bloques de texto",
+  "elements": [
+    {
+      "id": "notas",
+      "kind": "text",
+      "name": "# Notas <de> diseño\n\nUn párrafo con **negrita**, *cursiva* y un texto largo que tiene que partirse en varias líneas para caber en el ancho del bloque de texto.\nSegunda línea del mismo párrafo.\n\n## Pasos\n- Crear el modelo\n- Validar **antes** de exportar\n\n### Orden\n1. Primero\n2. Segundo & último",
+      "layout": { "x": 60, "y": 60 }
+    },
+    {
+      "id": "codigo",
+      "kind": "text",
+      "name": "Ejemplo:\n```ts\n// Saluda al usuario\nconst saludo = \"hola\" + 42;\nexport function saluda(nombre: string): string {\n  return `Hola ${nombre}`;\n}\n```",
+      "layout": { "x": 60, "y": 360 }
+    },
+    {
+      "id": "python",
+      "kind": "text",
+      "name": "```py\nclass Pedido:\n    total = 3.5  # monto\n    def pagar(self):\n        return None\n```",
+      "layout": { "x": 520, "y": 360 }
+    },
+    {
+      "id": "sql",
+      "kind": "text",
+      "name": "```sql\nSELECT id, total FROM pedidos WHERE total > 10 -- solo grandes\n```\n```json\n{ \"ok\": true, \"n\": 1 }\n```\n```\nsin lenguaje 'texto'\n```",
+      "layout": { "x": 520, "y": 620 }
+    },
+    {
+      "id": "marco",
+      "kind": "frame",
+      "name": "Marco con texto",
+      "layout": { "x": 60, "y": 760, "width": 360, "height": 160 }
+    },
+    {
+      "id": "dentro",
+      "kind": "text",
+      "name": "## Dentro del marco",
+      "parentId": "marco",
+      "style": { "fontColor": "#7c2d12", "fillColor": "#fff7ed", "borderColor": "#fb923c" },
+      "layout": { "x": 90, "y": 800 }
+    }
+  ],
+  "relations": []
+}
