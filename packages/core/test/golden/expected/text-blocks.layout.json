@@ -8,7 +8,7 @@
       "layout": {
         "x": 60,
         "y": 60,
-        "width": 350,
+        "width": 360,
         "height": 315,
         "pinned": true
       },
@@ -56,7 +56,7 @@
       "layout": {
         "x": 60,
         "y": 760,
-        "width": 263,
+        "width": 251,
         "height": 107,
         "pinned": true
       },
@@ -69,7 +69,7 @@
       "layout": {
         "x": 90,
         "y": 802,
-        "width": 213,
+        "width": 201,
         "height": 45,
         "pinned": true
       },

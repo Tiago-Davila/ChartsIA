@@ -62,6 +62,11 @@ const CODE_SCALE = 0.9;
 /** Colores del resaltado de sintaxis; el texto sin clase usa el color del bloque. */
 export const TOKEN_COLORS: Record<TokenKind, string | undefined> = { plain: undefined, keyword: '#7c3aed', string: '#0f7b3c', number: '#b45309', comment: '#6b7280' };
 
+/** Medida del texto normal con la tabla de Inter, la fuente con la que la app y el SVG lo dibujan. */
+function proseStyle(base: Base, bold?: boolean): TextStyle {
+  return { size: base.size, bold, font: 'clean', fontFamily: base.fontFamily };
+}
+
 /** Parte los tramos en líneas de como máximo `maxWidth`: corta por palabras y cada palabra conserva su negrita y cursiva. */
 function wrapRuns(runs: Run[], base: Base, maxWidth: number, bold = false): Piece[][] {
   const lines: Piece[][] = [];
@@ -74,9 +79,9 @@ function wrapRuns(runs: Run[], base: Base, maxWidth: number, bold = false): Piec
     width = 0;
     space = false;
   };
-  const spaceWidth = measureText(' ', { size: base.size, fontFamily: base.fontFamily });
+  const spaceWidth = measureText(' ', proseStyle(base));
   for (const run of runs) {
-    const style: TextStyle = { size: base.size, bold: bold || run.bold, fontFamily: base.fontFamily };
+    const style = proseStyle(base, bold || run.bold);
     for (const token of run.text.match(/\S+|\s+/g) ?? []) {
       if (/^\s/.test(token)) {
         space = line.length > 0;
@@ -87,9 +92,17 @@ function wrapRuns(runs: Run[], base: Base, maxWidth: number, bold = false): Piec
         const partWidth = measureText(part, style);
         const gap = line.length > 0 && space ? spaceWidth : 0;
         if (line.length > 0 && (index > 0 || width + gap + partWidth > maxWidth)) flush();
-        const x = line.length > 0 ? width + (space ? spaceWidth : 0) : 0;
-        line.push({ text: part, x, width: partWidth, color: base.color, bold: style.bold, italic: run.italic, fontFamily: base.fontFamily });
-        width = x + partWidth;
+        const last = line[line.length - 1];
+        if (last && last.bold === style.bold && last.italic === run.italic && last.fontFamily === base.fontFamily) {
+          // Mismo estilo que el trozo anterior: se dibuja junto, así el texto no se separa palabra a palabra.
+          last.text += `${space ? ' ' : ''}${part}`;
+          last.width = measureText(last.text, style);
+          width = last.x + last.width;
+        } else {
+          const x = line.length > 0 ? width + (space ? spaceWidth : 0) : 0;
+          line.push({ text: part, x, width: partWidth, color: base.color, bold: style.bold, italic: run.italic, fontFamily: base.fontFamily });
+          width = x + partWidth;
+        }
         space = false;
       });
     }
@@ -130,11 +143,11 @@ function layoutTextBlock(el: TextElement): Layout {
       }
     } else if (block.type === 'list') {
       // Con números, la sangría cabe el marcador más ancho de la lista.
-      const indent = block.ordered ? Math.max(LIST_INDENT, measureText(`${block.items.length}.`, body) + 8) : LIST_INDENT;
+      const indent = block.ordered ? Math.max(LIST_INDENT, measureText(`${block.items.length}.`, proseStyle(body)) + 8) : LIST_INDENT;
       block.items.forEach((item, n) => {
         const marker = block.ordered ? `${n + 1}.` : '•';
         wrapRuns(item, body, WRAP - indent).forEach((line, k) => {
-          const markerPiece: Piece[] = k === 0 ? [{ text: marker, x: PADDING, width: measureText(marker, body), color }] : [];
+          const markerPiece: Piece[] = k === 0 ? [{ text: marker, x: PADDING, width: measureText(marker, proseStyle(body)), color }] : [];
           addRow(y, body.size, [...markerPiece, ...shift(line, PADDING + indent)]);
           y += lineHeight(body.size);
         });
@@ -143,7 +156,8 @@ function layoutTextBlock(el: TextElement): Layout {
       const size = Math.round(font.size * CODE_SCALE);
       const step = lineHeight(size);
       if (block.language) {
-        addRow(y, CODE_CAPTION_SIZE, [{ text: block.language, x: PADDING, width: measureText(block.language, { size: CODE_CAPTION_SIZE }), color: COLORS.muted }]);
+        const captionWidth = measureText(block.language, { size: CODE_CAPTION_SIZE, font: 'clean' });
+        addRow(y, CODE_CAPTION_SIZE, [{ text: block.language, x: PADDING, width: captionWidth, color: COLORS.muted }]);
         y += lineHeight(CODE_CAPTION_SIZE);
       }
       const top = y;
@@ -205,6 +219,7 @@ export const textBlockShape: ShapeDefinition<TextElement> = {
           ...(piece.bold ? { bold: true } : {}),
           ...(piece.italic ? { italic: true } : {}),
           ...(piece.fontFamily ? { fontFamily: piece.fontFamily } : {}),
+          length: piece.width,
           slot: 'name',
         });
       }

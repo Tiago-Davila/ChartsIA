@@ -49,6 +49,6 @@ export function textBlockHtml(markdown: string): string {
 /** Bloque de texto como una celda draw.io con etiqueta HTML; su tamaño es el del núcleo. */
 export function textBlockCells(el: Element, parent: string, geo: { x: number; y: number; width: number; height: number }): DrawioCell[] | undefined {
   if (el.kind !== 'text') return undefined;
-  const base = 'text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;strokeColor=none;fillColor=none;';
+  const base = `text;html=1;whiteSpace=wrap;align=left;verticalAlign=top;strokeColor=none;fillColor=none;fontSize=${FONT.name};`;
   return [{ id: el.id, parent, value: textBlockHtml(el.name), vertex: true, geometry: geo, style: drawioFont(drawioBox(base, el.style), el.style, FONT.name) }];
 }
