@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ARROWHEADS, BOUNDARY_TYPES, CARDINALITIES, CONTAINER_VARIANTS, FIGURE_SHAPES, MAX_OPERATIONS_PER_BATCH, NAVIGABILITIES, RELATION_KINDS, SIDES } from './enums.js';
+import { ARROWHEADS, BOUNDARY_TYPES, CARDINALITIES, CONTAINER_VARIANTS, FIGURE_SHAPES, MAX_OPERATIONS_PER_BATCH, NAVIGABILITIES, RELATION_KINDS, SIDES, STACK_ORDER_TARGETS } from './enums.js';
 import { AttributeSchema, MethodSchema } from './class-elements.js';
 import { ColumnSchema } from './er-elements.js';
 import { DescriptionSchema, ElementIdSchema, LayoutSchema, PointSchema } from './common.js';
@@ -49,6 +49,7 @@ export const ElementChangesSchema = z
     overlapping: z.boolean().nullable().optional(),
     values: z.array(z.string().min(1).max(200)).min(1).max(200).optional(),
     style: StyleSchema.nullable().optional().describe('Reemplaza el estilo completo; null lo elimina'),
+    locked: z.boolean().optional().describe('Bloquea (true) o desbloquea (false) el elemento en la app'),
   })
   .describe('Campos a cambiar, p. ej. {"name":"Usuario"}; null elimina un campo opcional');
 export type ElementChanges = z.infer<typeof ElementChangesSchema>;
@@ -103,6 +104,11 @@ export const OperationSchema = z.discriminatedUnion('op', [
     id: ElementIdSchema,
     width: z.number().positive().max(5000),
     height: z.number().positive().max(5000),
+  }),
+  z.strictObject({
+    op: z.literal('reorder_element'),
+    id: ElementIdSchema,
+    to: z.enum(STACK_ORDER_TARGETS).describe('Orden de dibujo: front al frente, back al fondo, forward un nivel adelante, backward un nivel atrás'),
   }),
   z.strictObject({ op: z.literal('set_title'), title: TitleSchema }),
 ]);

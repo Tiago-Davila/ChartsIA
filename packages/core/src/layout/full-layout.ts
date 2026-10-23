@@ -21,6 +21,7 @@ export async function layoutDiagram(diagram: Diagram): Promise<Diagram> {
       positions.set(el.id, { ...r, x: el.layout.x, y: el.layout.y });
     } else positions.set(el.id, r);
   }
+  for (const el of diagram.elements) if (el.locked) pinned.add(el.id);
   // Un grupo fijado arrastra a sus hijos colocados por ELK.
   for (const el of diagram.elements) {
     if (!pinned.has(el.id)) continue;
@@ -37,7 +38,8 @@ export async function layoutDiagram(diagram: Diagram): Promise<Diagram> {
       stack.push(...diagram.elements.filter((c) => c.parentId === child.id));
     }
   }
-  const { layouts } = arrange({ diagram, positions, sizes, pinned });
+  const locked = new Set(diagram.elements.filter((e) => e.locked).map((e) => e.id));
+  const { layouts } = arrange({ diagram, positions, sizes, pinned, locked });
   return withGeometry(diagram, layouts);
 }
 

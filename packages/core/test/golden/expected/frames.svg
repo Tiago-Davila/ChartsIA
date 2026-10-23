@@ -4,9 +4,9 @@
 <g font-family="Inter, &apos;Helvetica Neue&apos;, Arial, sans-serif">
 <g data-id="externo" transform="translate(100 80)"><rect x="0" y="0" width="610" height="380" rx="8" fill="none" stroke="#8492a6" stroke-width="1.5" stroke-dasharray="6 4"/><text x="20" y="27" font-size="14" fill="#52606d" font-weight="bold">Marco exterior</text></g>
 <g data-id="interno" transform="translate(130 140)"><rect x="0" y="0" width="560" height="300" rx="8" fill="none" stroke="#8492a6" stroke-width="1.5" stroke-dasharray="6 4"/><text x="20" y="27" font-size="14" fill="#52606d" font-weight="bold">Marco interior</text></g>
-<g data-id="Nota" transform="translate(120 150)"><rect x="0" y="0" width="120" height="60" fill="#fffef5" stroke="#1f2933" stroke-width="1.5"/><text x="60" y="35" font-size="14" fill="#1f2933" text-anchor="middle">Nota</text></g>
-<g data-id="Logo" transform="translate(350 200)"><image href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAYAAAD0In+KAAAAEUlEQVR4nGM4H2zxX6NsxX8AE2IEn6hGtYAAAAAASUVORK5CYII=" x="0" y="0" width="320" height="220" preserveAspectRatio="xMidYMid meet"/></g>
 <g data-id="Pedido" transform="translate(160 200)"><rect x="0" y="0" width="140" height="52" fill="#fffef5" stroke="#1f2933" stroke-width="1.5"/><rect x="0" y="0" width="140" height="32" fill="#fff6d6" stroke="#1f2933" stroke-width="1.5"/><text x="70" y="20.4" font-size="14" fill="#1f2933" text-anchor="middle" font-weight="bold">Pedido</text><line x1="0" y1="32" x2="140" y2="32" fill="none" stroke="#1f2933" stroke-width="1"/><line x1="0" y1="42" x2="140" y2="42" fill="none" stroke="#1f2933" stroke-width="1"/></g>
+<g data-id="Nota" transform="translate(120 150)"><rect x="0" y="0" width="120" height="60" fill="#fffef5" stroke="#1f2933" stroke-width="1.5"/><text x="60" y="35" font-size="14" fill="#1f2933" text-anchor="middle">Nota</text></g>
 <g data-id="Trazo" transform="translate(300 200)"><path d="M 0 0 L 24 14" fill="none" stroke="#b42318" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g data-id="Logo" transform="translate(350 200)"><image href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAYAAAD0In+KAAAAEUlEQVR4nGM4H2zxX6NsxX8AE2IEn6hGtYAAAAAASUVORK5CYII=" x="0" y="0" width="320" height="220" preserveAspectRatio="xMidYMid meet"/></g>
 </g>
 </svg>

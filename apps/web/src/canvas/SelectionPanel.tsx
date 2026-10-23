@@ -34,7 +34,7 @@ function GroupActions({ node }: { node: Node }) {
 }
 
 /** Objetivos del panel de estilo: los elementos y flechas seleccionados. */
-function styleTargets(nodes: Node[], edges: Edge[]): StyleTarget[] {
+export function styleTargets(nodes: Node[], edges: Edge[]): StyleTarget[] {
   return [
     ...nodes
       .filter((n) => (n.data as ElementNodeData).element.kind !== 'drawing')
@@ -50,7 +50,7 @@ function styleTargets(nodes: Node[], edges: Edge[]): StyleTarget[] {
 }
 
 /** Trazos del lápiz seleccionados: el panel de estilo solo les cambia el grosor. */
-function drawingTargets(nodes: Node[]): DrawingTarget[] {
+export function drawingTargets(nodes: Node[]): DrawingTarget[] {
   return nodes.flatMap((n) => {
     const { element } = n.data as ElementNodeData;
     return element.kind === 'drawing' ? [{ id: element.id, strokeWidth: element.strokeWidth, highlighter: element.highlighter }] : [];

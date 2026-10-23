@@ -496,6 +496,19 @@ button:disabled,
 .chartsia-node text[data-slot] {
   cursor: text;
 }
+/* Candado de un elemento bloqueado: esquina superior derecha, sin capturar el puntero. */
+.chartsia-node__lock {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  display: flex;
+  padding: 3px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--accent);
+  pointer-events: none;
+}
 /* Botones para agregar y quitar miembros: viven fuera del SVG de la forma. */
 .member-add {
   position: absolute;
@@ -576,6 +589,32 @@ button:disabled,
 }
 .edge-toolbar .button {
   padding: 4px 8px;
+}
+/* Menú contextual del lienzo, en la posición del clic derecho. */
+.canvas-menu {
+  position: fixed;
+  z-index: 50;
+  min-width: 180px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.canvas-menu button {
+  width: 100%;
+  padding: 8px 10px;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+}
+.canvas-menu button:hover {
+  background: var(--surface-muted);
 }
 /* Panel de estilo del elemento o la flecha seleccionada. */
 .style-panel {

@@ -13,6 +13,8 @@ export interface ArrangeInput {
   /** Tamaño mínimo (natural) de cada elemento. */
   sizes: Map<string, Size>;
   pinned: Set<string>;
+  /** Bloqueados: se tratan como fijados, pero no se guardan como `pinned`. */
+  locked?: Set<string>;
   isNew?: Set<string>;
 }
 
@@ -20,7 +22,7 @@ export interface ArrangeInput {
  * Resuelve solapes nivel a nivel (hermanos con el mismo padre), de abajo arriba, y ajusta
  * cada grupo para que contenga a sus hijos. Mover un grupo desplaza a sus descendientes.
  */
-export function arrange({ diagram, positions, sizes, pinned, isNew }: ArrangeInput): { layouts: Map<string, Layout>; warnings: string[] } {
+export function arrange({ diagram, positions, sizes, pinned, locked, isNew }: ArrangeInput): { layouts: Map<string, Layout>; warnings: string[] } {
   const rects = new Map([...positions].map(([id, r]) => [id, { ...r }]));
   const children = new Map<string | undefined, Element[]>();
   const ids = new Set(diagram.elements.map((e) => e.id));
@@ -105,7 +107,7 @@ export function arrange({ diagram, positions, sizes, pinned, isNew }: ArrangeInp
 
   const layouts = new Map<string, Layout>();
   for (const [id, r] of rects) {
-    layouts.set(id, { x: r2(r.x), y: r2(r.y), width: r2(r.width), height: r2(r.height), pinned: pinned.has(id) });
+    layouts.set(id, { x: r2(r.x), y: r2(r.y), width: r2(r.width), height: r2(r.height), pinned: pinned.has(id) && !locked?.has(id) });
   }
   return { layouts, warnings };
 }

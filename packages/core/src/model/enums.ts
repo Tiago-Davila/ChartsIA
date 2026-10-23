@@ -39,6 +39,10 @@ export type ElementKind = ClassElementKind | C4ElementKind | ErElementKind | NoS
 /** Elementos que agrupan a otros mediante `parentId`. */
 export const GROUP_KINDS = ['package', 'boundary', 'frame'] as const satisfies readonly ElementKind[];
 
+/** Destinos de `reorder_element`: al frente, al fondo, un nivel adelante o un nivel atrás. */
+export const STACK_ORDER_TARGETS = ['front', 'back', 'forward', 'backward'] as const;
+export type StackOrderTarget = (typeof STACK_ORDER_TARGETS)[number];
+
 export const UML_RELATION_KINDS = [
   'association',
   'aggregation',

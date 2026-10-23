@@ -177,6 +177,18 @@ describe('applyOperations', () => {
     if (!res.ok) expect(res.errors[0]).toMatchObject({ code: 'FIELD_NOT_ALLOWED', path: '/operations/0/changes/technology' });
   });
 
+  it('update_element bloquea y desbloquea un elemento; locked debe ser booleano', () => {
+    const locked = apply([{ op: 'update_element', id: 'Libro', changes: { locked: true } }]);
+    expect(locked.ok && locked.diagram.elements.find((e) => e.id === 'Libro')?.locked).toBe(true);
+    const unlocked = apply([
+      { op: 'update_element', id: 'Libro', changes: { locked: true } },
+      { op: 'update_element', id: 'Libro', changes: { locked: false } },
+    ]);
+    expect(unlocked.ok && unlocked.diagram.elements.find((e) => e.id === 'Libro')?.locked).toBe(false);
+    const bad = apply([{ op: 'update_element', id: 'Libro', changes: { locked: 'si' } }]);
+    expect(!bad.ok && codes(bad.errors)).toContain('SCHEMA_VIOLATION');
+  });
+
   it('resize_element fija el elemento, guarda el tamaño y lo marca como redimensionado', () => {
     const res = apply([{ op: 'resize_element', id: 'Socio', width: 300, height: 120 }]);
     expect(res.ok && res.diagram.elements.find((e) => e.id === 'Socio')?.layout).toEqual({ x: 10, y: 20, width: 300, height: 120, pinned: true, resized: true });

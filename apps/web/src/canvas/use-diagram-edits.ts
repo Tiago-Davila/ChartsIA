@@ -1,4 +1,4 @@
-import { DRAWING_MAX_COORDINATE, DRAWING_MAX_POINTS, type Diagram, type Element, isGroupKind, type Operation, type Point, type RelationChanges } from '@chartsia/core/model';
+import { DRAWING_MAX_COORDINATE, DRAWING_MAX_POINTS, type Diagram, type Element, isGroupKind, type Operation, type Point, type Relation, type RelationChanges, type StackOrderTarget } from '@chartsia/core/model';
 import { type Connection, type Edge, type Node, type OnNodeDrag, useReactFlow } from '@xyflow/react';
 import { useCallback, useMemo } from 'react';
 import { type DiagramEditActions } from '../nodes/edit-context';
@@ -11,8 +11,10 @@ import { readImageFile } from './image-import';
 import { changesForAddMember, changesForRemoveMember, changesForSlot, type MemberKind } from './slot-edits';
 import { type StyleUpdate } from './style-edits';
 import { simplifyStroke } from './drawing';
+import { copyElements, getClipboard, PASTE_STEP, pasteOperations } from './clipboard';
 import { newTextBlock } from './text-block';
 import { framePadding } from '@chartsia/core/shapes';
+import { unlockedOperations } from './locks';
 
 function depth(id: string, byId: Map<string, Element>): number {
   let d = 0;
@@ -31,7 +33,7 @@ function depth(id: string, byId: Map<string, Element>): number {
  * lienzo vuelve al último estado confirmado.
  */
 export function useDiagramEdits(api: ApiClient) {
-  const { getInternalNode, getNodes, screenToFlowPosition } = useReactFlow();
+  const { getEdges, getInternalNode, getNodes, screenToFlowPosition } = useReactFlow();
 
   // Ejecuta una escritura en el hub y muestra sus errores si la rechaza.
   const write = useCallback(
@@ -54,10 +56,13 @@ export function useDiagramEdits(api: ApiClient) {
     [api],
   );
 
+  /** Envía un lote al hub sin las operaciones que tocan un elemento bloqueado. */
   const send = useCallback(
     async (operations: Operation[]) => {
-      if (operations.length === 0) return true;
-      return write((diagram) => api.applyOperations(diagram.id, { baseRevision: diagram.revision, operations }));
+      const current = diagramStore.getState().diagram;
+      const allowed = current ? unlockedOperations(current, operations) : operations;
+      if (allowed.length === 0) return true;
+      return write((diagram) => api.applyOperations(diagram.id, { baseRevision: diagram.revision, operations: allowed }));
     },
     [api, write],
   );
@@ -341,27 +346,79 @@ export function useDiagramEdits(api: ApiClient) {
     [getInternalNode, getNodes],
   );
 
-  /** Ctrl+D: copia los elementos seleccionados (no los grupos) desplazados 30 px. */
+  /** Ctrl+D y menú: copia los elementos seleccionados (no los grupos) desplazados 30 px, y las flechas seleccionadas entre sus copias. */
   const duplicate = useCallback(() => {
     const diagram = diagramStore.getState().diagram;
     if (!diagram) return;
-    const draft = { elements: [...diagram.elements], relations: diagram.relations };
+    const draft = { elements: [...diagram.elements], relations: [...diagram.relations] };
+    const copies = new Map<string, string>();
     const ops: Operation[] = [];
     for (const box of selectedBoxes()) {
       const el = diagram.elements.find((e) => e.id === box.id);
       if (!el || isGroupKind(el.kind)) continue;
-      const { layout: _layout, ...rest } = el;
+      const { layout: _layout, locked: _locked, ...rest } = el;
       const copy = { ...rest, id: freeId(draft, `${el.id}_copia`), layout: { x: Math.round(box.x + 30), y: Math.round(box.y + 30) } } as Element;
       draft.elements.push(copy);
+      copies.set(el.id, copy.id);
       ops.push({ op: 'add_element', element: copy });
     }
+    // Una flecha copiada apunta a la copia de cada extremo, o al original si ese extremo no se copió.
+    for (const edge of getEdges().filter((e) => e.selected)) {
+      const relation = diagram.relations.find((r) => r.id === edge.id);
+      if (!relation) continue;
+      const { waypoints: _waypoints, ...rest } = relation;
+      const copy: Relation = { ...rest, id: freeId(draft, `${relation.id}_copia`), source: copies.get(relation.source) ?? relation.source, target: copies.get(relation.target) ?? relation.target };
+      draft.relations.push(copy);
+      ops.push({ op: 'add_relation', relation: copy });
+    }
     void send(ops);
-  }, [selectedBoxes, send]);
+  }, [getEdges, selectedBoxes, send]);
+
+  /** Ctrl+C y menú: copia la selección en el portapapeles en memoria. */
+  const copy = useCallback(() => {
+    const diagram = diagramStore.getState().diagram;
+    if (diagram) copyElements(diagram, getNodes().filter((n) => n.selected).map((n) => n.id));
+  }, [getNodes]);
+
+  /** Ctrl+X y menú: copia la selección y la borra en un solo lote, un paso de Ctrl+Z. */
+  const cut = useCallback(() => {
+    const diagram = diagramStore.getState().diagram;
+    const nodes = getNodes().filter((n) => n.selected);
+    if (diagram && copyElements(diagram, nodes.map((n) => n.id))) onDelete({ nodes, edges: getEdges().filter((e) => e.selected) });
+  }, [getEdges, getNodes, onDelete]);
+
+  /** Ctrl+V y menú: pega el portapapeles; en el mismo diagrama cada pegado se corre 30 px. */
+  const paste = useCallback(() => {
+    const diagram = diagramStore.getState().diagram;
+    const clip = getClipboard();
+    if (!diagram || !clip) return;
+    const offset = clip.diagramId === diagram.id ? PASTE_STEP * ++clip.pastes : 0;
+    void send(pasteOperations(clip, diagram, offset));
+  }, [send]);
+
+  /** Cambia el orden de dibujo de los nodos seleccionados en un solo lote, recorridos en el sentido que conserva su orden relativo. */
+  const reorder = useCallback(
+    (to: StackOrderTarget) => {
+      const diagram = diagramStore.getState().diagram;
+      if (!diagram) return;
+      const selected = new Set(getNodes().filter((n) => n.selected).map((n) => n.id));
+      const ids = diagram.elements.map((e) => e.id).filter((id) => selected.has(id));
+      const ordered = to === 'front' || to === 'backward' ? ids : ids.reverse();
+      void send(ordered.map((id): Operation => ({ op: 'reorder_element', id, to })));
+    },
+    [getNodes, send],
+  );
 
   /** Alinea o distribuye los elementos seleccionados. */
   const align = useCallback(
     (mode: AlignMode) => void send(alignBoxes(selectedBoxes(), mode).map((m) => ({ op: 'move_element', ...m }))),
     [selectedBoxes, send],
+  );
+
+  /** Bloquea o desbloquea los elementos indicados en un solo lote (un paso de Ctrl+Z). */
+  const setLocked = useCallback(
+    (ids: string[], locked: boolean) => void send(ids.map((id): Operation => ({ op: 'update_element', id, changes: { locked } }))),
+    [send],
   );
 
   const rename = useCallback((title: string) => void send([{ op: 'set_title', title }]), [send]);
@@ -438,5 +495,5 @@ export function useDiagramEdits(api: ApiClient) {
     [editText, addMember, removeMember, resize, updateRelation, updateStyles, leaveGroup, ungroup, groupInFrame],
   );
 
-  return { onNodeDragStop, onDelete, onConnect, onDraw: addDrawing, editText, editActions, history, duplicate, align, rename, insertImages, addFigure, addFigureAtCenter, addText, addFrame };
+  return { onNodeDragStop, onDelete, onConnect, onDraw: addDrawing, editText, editActions, history, duplicate, copy, cut, paste, reorder, align, setLocked, rename, insertImages, addFigure, addFigureAtCenter, addText, addFrame };
 }

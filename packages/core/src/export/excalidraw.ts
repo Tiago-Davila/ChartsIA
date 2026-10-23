@@ -1,7 +1,8 @@
 import { type Point } from '../model/common.js';
 import { type Diagram, type Element } from '../model/diagram.js';
-import { isHighlighter, HIGHLIGHTER_OPACITY } from '../model/drawing-elements.js';
-import { C4_ELEMENT_KINDS, type Cardinality, ER_ELEMENT_KINDS, isGroupKind } from '../model/enums.js';
+import { drawOrder } from '../model/draw-order.js';
+import { HIGHLIGHTER_OPACITY } from '../model/drawing-elements.js';
+import { C4_ELEMENT_KINDS, type Cardinality, ER_ELEMENT_KINDS } from '../model/enums.js';
 import { type Relation } from '../model/relation.js';
 import { hashSeed } from '../render/hash.js';
 import { edgeLabelLines, totalLine } from '../render/edges.js';
@@ -435,17 +436,6 @@ function addArrow(b: Builder, rel: Relation, byId: Map<string, Json>): void {
 export function exportExcalidraw(diagram: Diagram): string {
   const b = new Builder(diagram);
   const byId = new Map(diagram.elements.map((el) => [el.id, el]));
-  const depth = (element: Element) => {
-    let result = 0;
-    let parent = element.parentId ? byId.get(element.parentId) : undefined;
-    const visited = new Set<string>();
-    while (parent && !visited.has(parent.id)) {
-      visited.add(parent.id);
-      result++;
-      parent = parent.parentId ? byId.get(parent.parentId) : undefined;
-    }
-    return result;
-  };
   const frameGroupIds = (element: Element) => {
     const frames: string[] = [];
     let current: Element | undefined = element;
@@ -457,15 +447,7 @@ export function exportExcalidraw(diagram: Diagram): string {
     }
     return frames;
   };
-  // Grupos al fondo, luego los marcadores y encima el resto de elementos.
-  const layer = (element: Element) => (isGroupKind(element.kind) ? 0 : isHighlighter(element) ? 1 : 2);
-  const groupsFirst = [...diagram.elements].sort((a, c) => layer(a) - layer(c) || (a.id < c.id ? -1 : 1));
-  if (diagram.elements.some((element) => element.kind === 'frame')) {
-    const orderedGroups = groupsFirst.filter((element) => isGroupKind(element.kind)).sort((a, c) => depth(a) - depth(c) || (a.id < c.id ? -1 : 1));
-    let nextGroup = 0;
-    for (let i = 0; i < groupsFirst.length; i++) if (isGroupKind(groupsFirst[i]!.kind)) groupsFirst[i] = orderedGroups[nextGroup++]!;
-  }
-  for (const el of groupsFirst) {
+  for (const el of drawOrder(diagram.elements)) {
     const l = el.layout;
     if (!l || l.width === undefined || l.height === undefined) continue;
     const box = { x: l.x, y: l.y, width: l.width, height: l.height };
