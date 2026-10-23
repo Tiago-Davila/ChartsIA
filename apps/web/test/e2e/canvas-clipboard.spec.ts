@@ -61,13 +61,13 @@ test.describe('copiar, cortar y pegar', () => {
     const menu = page.getByRole('menu');
 
     await page.locator('[data-element-id="Autor"]').click({ button: 'right', position: { x: 20, y: 8 } });
-    await expect(menu.getByRole('menuitem', { name: 'Copiar' })).toBeVisible();
+    await expect(menu.getByRole('menuitem', { name: 'Copiar', exact: true })).toBeVisible();
     await expect(menu.getByRole('menuitem', { name: 'Cortar' })).toBeVisible();
-    await expect(menu.getByRole('menuitem', { name: 'Pegar' })).toHaveCount(0);
-    await menu.getByRole('menuitem', { name: 'Copiar' }).click();
+    await expect(menu.getByRole('menuitem', { name: 'Pegar', exact: true })).toHaveCount(0);
+    await menu.getByRole('menuitem', { name: 'Copiar', exact: true }).click();
 
     await page.locator('[data-element-id="Autor"]').click({ button: 'right', position: { x: 20, y: 8 } });
-    await menu.getByRole('menuitem', { name: 'Pegar' }).click();
+    await menu.getByRole('menuitem', { name: 'Pegar', exact: true }).click();
     await expect.poll(async () => (await agent.layout(id)).elements.map((e) => e.id)).toContain('Autor_copia');
   });
 });
