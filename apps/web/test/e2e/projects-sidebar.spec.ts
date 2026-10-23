@@ -40,9 +40,12 @@ test.describe('barra lateral con proyectos', () => {
     await page.keyboard.press('Escape');
     await expect(menu).toHaveAttribute('aria-expanded', 'false');
 
-    page.once('dialog', (dialog) => void dialog.accept('Proyecto nuevo'));
     await menu.click();
     await page.getByRole('menuitem', { name: 'Nuevo proyecto…' }).click();
+    const ventana = page.getByRole('dialog', { name: 'Nuevo proyecto' });
+    await ventana.getByLabel('Nombre').fill('Proyecto nuevo');
+    await ventana.getByRole('button', { name: 'Crear' }).click();
+    await expect(ventana).toHaveCount(0);
     const seccion = lista.locator('li.diagram-list__section', { hasText: 'Proyecto nuevo' });
     await expect(seccion.locator('.diagram-list__item', { hasText: 'Para mover' })).toBeVisible();
 
@@ -53,5 +56,34 @@ test.describe('barra lateral con proyectos', () => {
     await page.getByRole('menuitem', { name: 'Quitar del proyecto' }).click();
     const sinProyecto = lista.locator('li.diagram-list__section', { hasText: 'Sin proyecto' });
     await expect(sinProyecto.locator('.diagram-list__item', { hasText: 'Para mover' })).toBeVisible();
+  });
+
+  test('la ventana de nombre: Escape y Cancelar no crean, un nombre vacío no se acepta y Enter sí', async ({ page, agent }) => {
+    await agent.create({ ...library, title: 'Con ventana' });
+    await page.goto('/');
+    const lista = page.getByRole('navigation', { name: 'Diagramas' });
+    const abrirVentana = async () => {
+      await lista.getByRole('button', { name: 'Opciones de Con ventana' }).click();
+      await page.getByRole('menuitem', { name: 'Nuevo proyecto…' }).click();
+      return page.getByRole('dialog', { name: 'Nuevo proyecto' });
+    };
+
+    let ventana = await abrirVentana();
+    await ventana.getByLabel('Nombre').fill('Descartado');
+    await page.keyboard.press('Escape');
+    await expect(ventana).toHaveCount(0);
+
+    ventana = await abrirVentana();
+    await ventana.getByRole('button', { name: 'Cancelar' }).click();
+    await expect(ventana).toHaveCount(0);
+    await expect(lista.getByText('Descartado')).toHaveCount(0);
+
+    ventana = await abrirVentana();
+    await expect(ventana.getByRole('button', { name: 'Crear' })).toBeDisabled();
+    await ventana.getByLabel('Nombre').fill('   ');
+    await expect(ventana.getByRole('button', { name: 'Crear' })).toBeDisabled();
+    await ventana.getByLabel('Nombre').fill('Por Enter');
+    await ventana.getByLabel('Nombre').press('Enter');
+    await expect(lista.locator('li.diagram-list__section', { hasText: 'Por Enter' })).toBeVisible();
   });
 });
