@@ -23,6 +23,8 @@ const base: AppShellProps = {
   onImportMermaid: vi.fn(),
   onMoveDiagram: vi.fn(),
   onNewProject: vi.fn(),
+  onRenameProject: vi.fn(),
+  onDeleteProject: vi.fn(),
   onRenameDiagram: vi.fn(),
   onDeleteDiagram: vi.fn(),
   onExport: vi.fn(),
@@ -120,6 +122,24 @@ describe('AppShell', () => {
     await userEvent.type(campo, ' Otro {Enter}');
     expect(onRenameDiagram).toHaveBeenCalledWith('dg_aaaaaaaaaaaa', 'Otro');
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('"Renombrar…" del menú de un proyecto abre la ventana con su nombre y solo llama al hub si cambia', async () => {
+    const onRenameProject = vi.fn();
+    const projects = [{ id: 'pr_aaaaaaaaaaaa', name: 'Tienda', createdAt: '2026-10-01T10:00:00.000Z' }];
+    renderShell({ onRenameProject, projects, diagrams: [{ ...base.diagrams[0]!, projectId: 'pr_aaaaaaaaaaaa' }] });
+    const abrir = async () => {
+      await userEvent.click(screen.getByRole('button', { name: 'Opciones del proyecto Tienda' }));
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Renombrar…' }));
+      return within(screen.getByRole('dialog', { name: 'Renombrar proyecto' })).getByLabelText('Nombre');
+    };
+    expect(await abrir()).toHaveValue('Tienda');
+    await userEvent.keyboard('{Enter}');
+    expect(onRenameProject).not.toHaveBeenCalled();
+    const campo = await abrir();
+    await userEvent.clear(campo);
+    await userEvent.type(campo, ' Comercio {Enter}');
+    expect(onRenameProject).toHaveBeenCalledWith('pr_aaaaaaaaaaaa', 'Comercio');
   });
 
   it('"Eliminar…" pide confirmación: Cancelar no borra y Eliminar sí', async () => {
