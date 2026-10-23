@@ -46,13 +46,13 @@ describe('bloqueos en la app', () => {
     expect(unlockedOperations(diagram, ops)).toEqual(ops);
   });
 
-  it('toReactFlow no permite arrastrar ni borrar el bloqueado ni su grupo', () => {
+  it('toReactFlow no permite arrastrar ni borrar el bloqueado ni su grupo, y al resto lo deja en manos del lienzo', () => {
     const { nodes } = toReactFlow(diagram);
     const flags = Object.fromEntries(nodes.map((n) => [n.id, { draggable: n.draggable, deletable: n.deletable }]));
     expect(flags).toEqual({
       F: { draggable: false, deletable: false },
       A: { draggable: false, deletable: false },
-      B: { draggable: true, deletable: true },
+      B: { draggable: undefined, deletable: undefined },
     });
   });
 });

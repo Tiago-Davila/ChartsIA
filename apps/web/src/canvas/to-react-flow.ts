@@ -25,8 +25,8 @@ export function toReactFlow(diagram: Diagram): { nodes: ElementFlowNode[]; edges
       width: size.width,
       height: size.height,
       ...(parent ? { parentId: parent.id } : {}),
-      draggable: !frozen.has(element.id),
-      deletable: !frozen.has(element.id),
+      // Solo se marca el bloqueado: un `draggable: true` por nodo pisaría al `nodesDraggable` del lienzo (mano, lápiz, solo lectura).
+      ...(frozen.has(element.id) ? { draggable: false, deletable: false } : {}),
       ...(isGroupKind(element.kind) || isHighlighter(element) ? { zIndex: -1 } : {}),
       data: { element },
       handles: [
