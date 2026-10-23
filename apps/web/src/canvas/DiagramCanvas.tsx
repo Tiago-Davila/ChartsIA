@@ -24,12 +24,12 @@ import { nodeTypes } from '../nodes';
 import { useDiagramEditActions } from '../nodes/edit-context';
 import { type ElementNodeData } from '../nodes/types';
 import { ContextMenu, type ContextMenuItem } from './ContextMenu';
-import { SelectionPanel } from './SelectionPanel';
+import { drawingTargets, SelectionPanel, styleTargets } from './SelectionPanel';
 import { WidthPicker } from './WidthPicker';
 import { sampleStroke } from './drawing';
 import { type FrameBox } from './figure-palette';
 import { hasClipboard } from './clipboard';
-import { fieldUpdates, PALETTE } from './style-edits';
+import { copiedStyle, copyStyleOf, fieldUpdates, PALETTE, pasteUpdates } from './style-edits';
 
 export interface DiagramCanvasProps {
   diagramId: string;
@@ -105,6 +105,8 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   // Posición de pantalla del menú contextual abierto.
   const [menu, setMenu] = useState<Point>();
   const closeMenu = useCallback(() => setMenu(undefined), []);
+  // Elemento o flecha sobre el que se abrió el menú, para "Copiar estilo".
+  const menuTarget = useRef<{ id: string; relation: boolean }>(undefined);
   const { zoom } = useViewport();
   const initialized = useNodesInitialized();
   const canvas = useRef<HTMLDivElement>(null);
@@ -288,6 +290,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     if (readOnly) return;
     event.preventDefault();
     if (!node.selected) selectOnly(node.id);
+    menuTarget.current = { id: node.id, relation: false };
     setMenu({ x: event.clientX, y: event.clientY });
   }, [readOnly, selectOnly]);
 
@@ -295,12 +298,14 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     if (readOnly) return;
     event.preventDefault();
     if (!edge.selected) selectOnly(undefined, edge.id);
+    menuTarget.current = { id: edge.id, relation: true };
     setMenu({ x: event.clientX, y: event.clientY });
   }, [readOnly, selectOnly]);
 
   const onSelectionContextMenu = useCallback((event: ReactMouseEvent) => {
     if (readOnly) return;
     event.preventDefault();
+    menuTarget.current = undefined;
     setMenu({ x: event.clientX, y: event.clientY });
   }, [readOnly]);
 
@@ -314,12 +319,28 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     </button>
   );
 
+  // Estilo del elemento o flecha del clic derecho, o del primero seleccionado, para pegarlo luego.
+  const copyStyle = () => {
+    const targets = styleTargets(nodes.filter((n) => n.selected), edges.filter((e) => e.selected));
+    const clicked = menuTarget.current;
+    const source = targets.find((t) => t.id === clicked?.id && t.relation === clicked?.relation) ?? targets[0];
+    if (source) copyStyleOf(source);
+  };
+
+  // Aplica el estilo copiado a toda la selección en un solo lote.
+  const pasteStyle = () => {
+    const style = copiedStyle();
+    if (style) updateStyles(pasteUpdates(styleTargets(nodes.filter((n) => n.selected), edges.filter((e) => e.selected)), drawingTargets(nodes.filter((n) => n.selected)), style));
+  };
+
   const menuItems: ContextMenuItem[] = [
     { label: 'Copiar', onSelect: () => onCopy?.() },
     { label: 'Cortar', onSelect: () => onCut?.() },
     // Pegar solo aparece con algo copiado.
     ...(hasClipboard() ? [{ label: 'Pegar', onSelect: () => onPaste?.() }] : []),
     { label: 'Duplicar', onSelect: () => onDuplicate?.() },
+    { label: 'Copiar estilo', onSelect: copyStyle },
+    ...(copiedStyle() ? [{ label: 'Pegar estilo', onSelect: pasteStyle }] : []),
     { label: 'Borrar', onSelect: deleteSelection },
   ];
 

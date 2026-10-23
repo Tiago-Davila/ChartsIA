@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { commonValue, commonWidth, fieldUpdates, parseFontSize, resetUpdates, type StyleTarget, widthUpdates, withField } from '../../../src/canvas/style-edits';
+import { commonValue, commonWidth, copiedStyle, copyStyleOf, fieldUpdates, parseFontSize, pasteUpdates, resetUpdates, type StyleTarget, widthUpdates, withField } from '../../../src/canvas/style-edits';
 
 const clase = (id: string, style?: StyleTarget['style']): StyleTarget => ({ id, relation: false, style });
 
@@ -72,5 +72,32 @@ describe('parseFontSize', () => {
     expect(parseFontSize('99')).toBe(48);
     expect(parseFontSize('')).toBeUndefined();
     expect(parseFontSize('abc')).toBeUndefined();
+  });
+});
+
+describe('copiar y pegar estilo', () => {
+  it('copia el estilo del objetivo; sin estilo guarda uno vacío', () => {
+    copyStyleOf(clase('A', { fillColor: '#dc2626', lineWidth: 'thick' }));
+    expect(copiedStyle()).toEqual({ fillColor: '#dc2626', lineWidth: 'thick' });
+    copyStyleOf(clase('B'));
+    expect(copiedStyle()).toEqual({});
+  });
+
+  it('pega el estilo completo en cada objetivo, elementos y flechas, en la misma lista de cambios', () => {
+    const style = { fillColor: '#dc2626', fontSize: 14 };
+    expect(pasteUpdates([clase('A', { borderColor: '#000000' }), { id: 'r1', relation: true }], [], style)).toEqual([
+      { id: 'A', relation: false, style },
+      { id: 'r1', relation: true, style },
+    ]);
+  });
+
+  it('un estilo vacío borra el estilo de los objetivos', () => {
+    expect(pasteUpdates([clase('A', { fontSize: 20 })], [], {})).toEqual([{ id: 'A', relation: false, style: null }]);
+  });
+
+  it('de los trazos solo toma el grosor, si el estilo copiado lo tiene', () => {
+    const drawings = [{ id: 'T', strokeWidth: 1.5 }];
+    expect(pasteUpdates([], drawings, { fillColor: '#dc2626', lineWidth: 'thick' })).toEqual([{ id: 'T', relation: false, strokeWidth: 5 }]);
+    expect(pasteUpdates([], drawings, { fillColor: '#dc2626' })).toEqual([]);
   });
 });
