@@ -208,6 +208,20 @@
 .diagram-list__section-title:hover {
   background: var(--surface-muted);
 }
+.diagram-list__section-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.diagram-list__section-head .diagram-list__section-title {
+  flex: 1;
+  min-width: 0;
+}
+.diagram-list__section-head .diagram-list__menu-button {
+  position: static;
+  flex: none;
+  line-height: 20px;
+}
 .diagram-list__count {
   margin-left: auto;
 }
