@@ -37,6 +37,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const port = intFromEnv(env, 'CHARTSIA_PORT', 3333);
   const host = env.CHARTSIA_HOST || '127.0.0.1';
   const urlHost = host === '0.0.0.0' || host === '::' ? '127.0.0.1' : host;
+  // En loopback la dirección usa el nombre de la app: `*.localhost` resuelve a loopback sin tocar /etc/hosts.
+  const publicHost = isLoopback(urlHost) ? 'chartsia.localhost' : urlHost;
   return {
     port,
     host,
@@ -44,7 +46,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     dataDir: env.CHARTSIA_DATA_DIR || join(homedir(), '.chartsia', 'diagrams'),
     maxElements: intFromEnv(env, 'CHARTSIA_MAX_ELEMENTS', 500),
     maxRequestBytes: intFromEnv(env, 'CHARTSIA_MAX_REQUEST_BYTES', 8 * 1024 * 1024),
-    publicUrl: (env.CHARTSIA_PUBLIC_URL || `http://${urlHost}:${port}`).replace(/\/+$/, ''),
+    publicUrl: (env.CHARTSIA_PUBLIC_URL || `http://${publicHost}:${port}`).replace(/\/+$/, ''),
     webOrigin: env.CHARTSIA_WEB_ORIGIN || 'http://127.0.0.1:5173',
     webDistDir: env.CHARTSIA_WEB_DIST || undefined,
     authRequired: !isLoopback(host),

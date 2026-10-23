@@ -1,3 +1,4 @@
+import { direccionDe } from './support/rutas';
 import { library, overlaps } from './support/fake-agent';
 import { expect, test } from './support/fixtures';
 
@@ -9,7 +10,7 @@ test.describe('US1 · escenarios 1–2: diagrama de clases vía agente', () => {
     const id = await agent.create(library);
     await expect(page.getByText('Préstamo', { exact: true })).toBeVisible();
     expect(Date.now() - start).toBeLessThan(2000);
-    await expect(page).toHaveURL(new RegExp(`/d/${id}$`));
+    await expect(page).toHaveURL(direccionDe(id));
 
     // Compartimentos y visibilidad visibles.
     await expect(page.getByText('- isbn: String')).toBeVisible();

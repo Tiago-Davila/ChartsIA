@@ -8,8 +8,13 @@ describe('config', () => {
     expect(config.host).toBe('127.0.0.1');
     expect(config.maxElements).toBe(500);
     expect(config.maxRequestBytes).toBe(8 * 1024 * 1024);
-    expect(config.publicUrl).toBe('http://127.0.0.1:3333');
+    expect(config.publicUrl).toBe('http://chartsia.localhost:3333');
     expect(config.authRequired).toBe(false);
+  });
+
+  it('usa el host configurado en la dirección de la app, salvo en loopback', () => {
+    expect(loadConfig({ CHARTSIA_HOST: '192.168.1.10' }).publicUrl).toBe('http://192.168.1.10:3333');
+    expect(loadConfig({ CHARTSIA_HOST: '0.0.0.0', CHARTSIA_PORT: '4000' }).publicUrl).toBe('http://chartsia.localhost:4000');
   });
 
   it('exige token fuera de loopback', () => {

@@ -17,7 +17,7 @@ test.describe('nuevo diagrama desde la app', () => {
     const nuevo = lista.getByRole('button', { name: /^Mi diagrama nuevo/ });
     await expect(nuevo).toHaveAttribute('aria-current', 'page');
     await expect(nuevo).toContainText('Entidad-relación');
-    await expect(page).toHaveURL(/\/d\/dg_/);
+    await expect(page).toHaveURL(/\/d\/[a-z0-9-]+-[a-z2-7]{12}$/);
     expect(page.url()).not.toContain(existente);
 
     await page.reload();

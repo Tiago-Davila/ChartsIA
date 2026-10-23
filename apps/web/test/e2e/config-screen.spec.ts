@@ -1,3 +1,4 @@
+import { direccionDe } from './support/rutas';
 import { FakeAgent, library } from './support/fake-agent';
 import { expect, test } from './support/fixtures';
 
@@ -14,7 +15,7 @@ test.describe('pantalla de configuración', () => {
     await expect(page.getByRole('article', { name: 'Claude Code (HTTP)' })).toBeVisible();
 
     await page.getByRole('button', { name: '← Volver al lienzo' }).click();
-    await expect(page).toHaveURL(new RegExp(`/d/${id}$`));
+    await expect(page).toHaveURL(direccionDe(id));
     await expect(page.locator('.react-flow')).toBeVisible();
   });
 });

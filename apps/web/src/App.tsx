@@ -1,7 +1,7 @@
 import { type ExportFormat } from '@chartsia/core/export';
 import { type DiagramType } from '@chartsia/core/model';
 import { ReactFlowProvider } from '@xyflow/react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { AppShell } from './app/AppShell';
 import { ErrorToast } from './app/ErrorToast';
 import { diagramPath, navigate, useRoute } from './app/routes';
@@ -15,9 +15,9 @@ import { setToken } from './state/auth-token';
 import { api } from './state/clients';
 import { diagramStore, useDiagramStore } from './state/diagram-store';
 import { downloadBlob } from './state/download';
-import { forgetDiagram, useHubSync } from './state/use-hub-sync';
+import { forgetDiagram, pathDeDiagrama, useHubSync } from './state/use-hub-sync';
 
-const openDiagram = (diagramId: string) => navigate(diagramPath(diagramId));
+const openDiagram = (diagramId: string) => navigate(pathDeDiagrama(diagramId));
 
 /** Muestra el error del hub en el aviso; si no hay respuesta del hub, un mensaje genérico. */
 function reportError(error: unknown) {
@@ -43,6 +43,13 @@ function ConnectedApp() {
   const edits = useDiagramEdits(api);
   const shortcuts = useMemo(() => ({ history: edits.history, duplicate: edits.duplicate, copy: edits.copy, cut: edits.cut, paste: edits.paste }), [edits.history, edits.duplicate, edits.copy, edits.cut, edits.paste]);
   useShortcuts(shortcuts, diagram !== undefined);
+
+  // Pestaña: "<diagrama> · ChartsIA" con el diagrama abierto; "ChartsIA" en la lista y en la configuración.
+  const routeId = route.name === 'diagram' ? route.diagramId : null;
+  const tituloPestana = diagram && diagram.id === routeId ? diagram.title : undefined;
+  useEffect(() => {
+    document.title = tituloPestana ? `${tituloPestana} · ChartsIA` : 'ChartsIA';
+  }, [tituloPestana]);
 
   // `viewVersion` fuerza a rehacer los nodos y descartar cambios optimistas rechazados.
   const flow = useMemo(() => (diagram ? toReactFlow(diagram) : { nodes: [], edges: [] }), [diagram, viewVersion]);
@@ -181,7 +188,7 @@ function ConnectedApp() {
           origin={window.location.origin}
           configOpen={route.name === 'config'}
           onConfig={() => navigate('/config')}
-          onCloseConfig={() => navigate(diagram ? diagramPath(diagram.id) : '/')}
+          onCloseConfig={() => navigate(diagram ? diagramPath(diagram.id, diagram.title) : '/')}
           onOpen={openDiagram}
           onCreateDiagram={onCreateDiagram}
           onImportMermaid={onImportMermaid}

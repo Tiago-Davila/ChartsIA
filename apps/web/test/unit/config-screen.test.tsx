@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { AGENTS, promptInstalacion } from '../../src/app/agents';
+import { AGENTS, mcpUrlParaAgentes, promptInstalacion } from '../../src/app/agents';
 import { ConfigScreen } from '../../src/app/ConfigScreen';
 import { type ConnectedAgent } from '../../src/state/api-client';
 import { clearToken, setToken } from '../../src/state/auth-token';
@@ -30,6 +30,12 @@ describe('ConfigScreen', () => {
     expect(claude.snippet(`${origin}/mcp`)).toBe(`claude mcp add --transport http --scope user chartsia ${origin}/mcp`);
     expect(claude.snippet('https://hub.example.com/mcp')).toContain('--scope user');
     expect(claude.snippet('https://hub.example.com/mcp')).toContain('Authorization: Bearer <CHARTSIA_TOKEN>');
+  });
+
+  it('la URL del MCP para los agentes cambia *.localhost por 127.0.0.1, que resuelven fuera del navegador', () => {
+    expect(mcpUrlParaAgentes('http://chartsia.localhost:3333')).toBe('http://127.0.0.1:3333/mcp');
+    expect(mcpUrlParaAgentes('http://127.0.0.1:5173')).toBe('http://127.0.0.1:5173/mcp');
+    expect(mcpUrlParaAgentes('https://hub.example.com')).toBe('https://hub.example.com/mcp');
   });
 
   it('los agentes stdio lanzan el puente con node y su ruta absoluta, no con pnpm exec (#251)', () => {
