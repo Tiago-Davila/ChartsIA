@@ -24,6 +24,7 @@ const base: AppShellProps = {
   onMoveDiagram: vi.fn(),
   onNewProject: vi.fn(),
   onRenameDiagram: vi.fn(),
+  onDeleteDiagram: vi.fn(),
   onExport: vi.fn(),
 };
 
@@ -118,6 +119,26 @@ describe('AppShell', () => {
     await userEvent.clear(campo);
     await userEvent.type(campo, ' Otro {Enter}');
     expect(onRenameDiagram).toHaveBeenCalledWith('dg_aaaaaaaaaaaa', 'Otro');
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('"Eliminar…" pide confirmación: Cancelar no borra y Eliminar sí', async () => {
+    const onDeleteDiagram = vi.fn();
+    renderShell({ onDeleteDiagram });
+    const abrir = async () => {
+      await userEvent.click(screen.getByRole('button', { name: 'Opciones de Biblioteca' }));
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Eliminar…' }));
+      return screen.getByRole('dialog', { name: 'Eliminar diagrama' });
+    };
+    let ventana = await abrir();
+    expect(within(ventana).getByText(/¿Eliminar «Biblioteca»\?/)).toBeInTheDocument();
+    await userEvent.click(within(ventana).getByRole('button', { name: 'Cancelar' }));
+    expect(onDeleteDiagram).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog')).toBeNull();
+
+    ventana = await abrir();
+    await userEvent.click(within(ventana).getByRole('button', { name: 'Eliminar' }));
+    expect(onDeleteDiagram).toHaveBeenCalledExactlyOnceWith('dg_aaaaaaaaaaaa');
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
