@@ -23,6 +23,7 @@ const base: AppShellProps = {
   onImportMermaid: vi.fn(),
   onMoveDiagram: vi.fn(),
   onNewProject: vi.fn(),
+  onDeleteProject: vi.fn(),
   onRenameDiagram: vi.fn(),
   onExport: vi.fn(),
 };

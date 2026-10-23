@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { type DiagramType } from '@chartsia/core/model';
 import { type Project } from '../state/api-client';
+import { DeleteProjectDialog } from './DeleteProjectDialog';
 import { DIAGRAM_TYPE_LABELS, formatDate } from './labels';
 import { NameDialog } from './NameDialog';
 
@@ -25,6 +26,8 @@ export interface DiagramListProps {
   onNewProject(diagramId: string, name: string): void;
   /** Cambia el título del diagrama sin abrirlo. */
   onRename(diagramId: string, title: string): void;
+  /** Elimina el proyecto; sus diagramas pasan a "Sin proyecto". */
+  onDeleteProject(projectId: string): void;
 }
 
 /** Quita mayúsculas y acentos para comparar títulos. */
@@ -57,11 +60,14 @@ export function agruparPorProyecto(diagramas: DiagramListItem[], proyectos: Proj
   return busqueda.trim() ? secciones.filter((s) => s.diagramas.length > 0) : secciones;
 }
 
-/** Ventana abierta desde el menú ⋯: nombre de un proyecto nuevo o título de un diagrama. */
-type Dialogo = { tipo: 'proyecto'; diagramId: string } | { tipo: 'titulo'; diagrama: DiagramListItem };
+/** Ventana abierta desde un menú ⋯: nombre de un proyecto nuevo, título de un diagrama o confirmación para eliminar un proyecto. */
+type Dialogo =
+  | { tipo: 'proyecto'; diagramId: string }
+  | { tipo: 'titulo'; diagrama: DiagramListItem }
+  | { tipo: 'eliminarProyecto'; proyectoId: string; nombre: string };
 
 /** Barra lateral con los diagramas agrupados por proyecto (FR-025); el activo de los agentes va marcado. */
-export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId, onOpen, onMove, onNewProject, onRename }: DiagramListProps) {
+export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId, onOpen, onMove, onNewProject, onRename, onDeleteProject }: DiagramListProps) {
   const [busqueda, setBusqueda] = useState('');
   const [plegadas, setPlegadas] = useState<ReadonlySet<string>>(new Set());
   const [menuAbierto, setMenuAbierto] = useState<string | null>(null);
@@ -158,6 +164,38 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
     );
   };
 
+  // Menú ⋯ de la cabecera de un proyecto; hoy solo permite eliminarlo.
+  const menuProyecto = (proyectoId: string, nombre: string) => (
+    <div className="diagram-list__menu-wrap">
+      <button
+        type="button"
+        className="diagram-list__menu-button"
+        aria-label="Opciones del proyecto"
+        aria-haspopup="menu"
+        aria-expanded={menuAbierto === proyectoId}
+        onClick={() => setMenuAbierto(menuAbierto === proyectoId ? null : proyectoId)}
+      >
+        ⋯
+      </button>
+      {menuAbierto === proyectoId ? (
+        <ul role="menu" className="diagram-list__menu">
+          <li role="none">
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setMenuAbierto(null);
+                setDialogo({ tipo: 'eliminarProyecto', proyectoId, nombre });
+              }}
+            >
+              Eliminar proyecto…
+            </button>
+          </li>
+        </ul>
+      ) : null}
+    </div>
+  );
+
   return (
     <nav className="diagram-list" aria-label="Diagramas">
       <h2 className="diagram-list__title">Diagramas</h2>
@@ -183,15 +221,29 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
             const abierta = busqueda.trim() !== '' || !plegadas.has(clave);
             return (
               <li key={clave} className="diagram-list__section">
-                <button type="button" className="diagram-list__section-title" aria-expanded={abierta} onClick={() => alternar(clave)}>
-                  <span aria-hidden>{abierta ? '▾' : '▸'}</span> {s.nombre} <span className="diagram-list__count">{s.diagramas.length}</span>
-                </button>
+                <div className="diagram-list__section-head">
+                  <button type="button" className="diagram-list__section-title" aria-expanded={abierta} onClick={() => alternar(clave)}>
+                    <span aria-hidden>{abierta ? '▾' : '▸'}</span> {s.nombre} <span className="diagram-list__count">{s.diagramas.length}</span>
+                  </button>
+                  {s.id !== null ? menuProyecto(s.id, s.nombre) : null}
+                </div>
                 {abierta ? <ul>{s.diagramas.map(renderItem)}</ul> : null}
               </li>
             );
           })}
         </ul>
       )}
+      {dialogo?.tipo === 'eliminarProyecto' ? (
+        <DeleteProjectDialog
+          nombre={dialogo.nombre}
+          diagramas={diagrams.filter((d) => d.projectId === dialogo.proyectoId).length}
+          onCerrar={cerrarDialogo}
+          onConfirmar={() => {
+            onDeleteProject(dialogo.proyectoId);
+            cerrarDialogo();
+          }}
+        />
+      ) : null}
       {dialogo?.tipo === 'proyecto' ? (
         <NameDialog
           titulo="Nuevo proyecto"

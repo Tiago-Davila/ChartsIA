@@ -208,6 +208,16 @@
 .diagram-list__section-title:hover {
   background: var(--surface-muted);
 }
+/* La cabecera de un proyecto tiene el título y el menú ⋯; el título deja lugar al botón. */
+.diagram-list__section-head {
+  position: relative;
+}
+.diagram-list__section-head .diagram-list__section-title {
+  padding-right: 36px;
+}
+.diagram-list__section-head .diagram-list__menu-button {
+  top: 2px;
+}
 .diagram-list__count {
   margin-left: auto;
 }
@@ -378,6 +388,14 @@
 .button--primary:hover {
   background: #0d5aa5;
 }
+.button--danger {
+  color: #fff;
+  background: var(--danger);
+  border-color: var(--danger);
+}
+.button--danger:hover {
+  filter: brightness(0.92);
+}
 button:disabled,
 .is-disabled {
   opacity: 0.5;
@@ -439,6 +457,10 @@ button:disabled,
 .modal__form {
   display: grid;
   gap: 12px;
+}
+.modal__text {
+  margin: 0 0 16px;
+  font-size: 14px;
 }
 .modal__field {
   display: grid;
