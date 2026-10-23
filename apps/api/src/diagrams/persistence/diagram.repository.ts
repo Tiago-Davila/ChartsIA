@@ -14,6 +14,8 @@ export interface DiagramSummary {
 export interface DiagramRepository {
   get(id: string): Promise<Diagram | undefined>;
   save(diagram: Diagram): Promise<void>;
+  /** Borra el diagrama; si era el activo, no queda ninguno activo. */
+  delete(id: string): Promise<void>;
   /** Resúmenes ordenados por `updatedAt` descendente. */
   list(): Promise<DiagramSummary[]>;
   getActiveId(): Promise<string | null>;
