@@ -70,7 +70,7 @@ export const AGENTS: Agent[] = [
   {
     id: 'opencode-local',
     name: 'OpenCode (stdio)',
-    help: 'Puente stdio hacia el hub (debe estar corriendo). Para todos tus proyectos, añádelo a ~/.config/opencode/opencode.json; "cwd" debe apuntar al repo de ChartsIA porque el comando usa pnpm. Fuera de loopback sustituye <CHARTSIA_TOKEN> y no lo subas al repositorio.',
+    help: 'Puente stdio hacia el hub (debe estar corriendo). Para todos tus proyectos, añádelo a ~/.config/opencode/opencode.json; sustituye <RUTA_AL_REPO_CHARTSIA> (antes ejecuta "pnpm build"). Fuera de loopback sustituye <CHARTSIA_TOKEN> y no lo subas al repositorio.',
     snippet: (mcpUrl) =>
       JSON.stringify(
         {
@@ -78,8 +78,7 @@ export const AGENTS: Agent[] = [
           mcp: {
             chartsia: {
               type: 'local',
-              command: ['pnpm', '--filter', '@chartsia/api', 'exec', 'chartsia-mcp'],
-              cwd: '<RUTA_AL_REPO_CHARTSIA>',
+              command: ['node', '<RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js'],
               environment: { CHARTSIA_URL: mcpUrl, ...(esLoopback(mcpUrl) ? {} : { CHARTSIA_TOKEN: '<CHARTSIA_TOKEN>' }) },
             },
           },

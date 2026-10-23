@@ -32,6 +32,14 @@ describe('ConfigScreen', () => {
     expect(claude.snippet('https://hub.example.com/mcp')).toContain('Authorization: Bearer <CHARTSIA_TOKEN>');
   });
 
+  it('los agentes stdio lanzan el puente con node y su ruta absoluta, no con pnpm exec (#251)', () => {
+    const mcpUrl = `${origin}/mcp`;
+    for (const agent of AGENTS) expect(agent.snippet(mcpUrl)).not.toContain('chartsia-mcp');
+    for (const id of ['claude-desktop', 'opencode-local']) {
+      expect(AGENTS.find((a) => a.id === id)!.snippet(mcpUrl)).toContain('<RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js');
+    }
+  });
+
   it('solo la Responses API, que no tiene configuración global, lo explica en su ayuda', () => {
     const sinGlobal = AGENTS.filter((a) => /no tiene configuración global/i.test(a.help));
     expect(sinGlobal.map((a) => a.id)).toEqual(['openai']);
