@@ -24,9 +24,12 @@ test.describe('título editable', () => {
     const lista = page.getByRole('navigation', { name: 'Diagramas' });
     const url = page.url();
 
-    page.once('dialog', (dialog) => void dialog.accept('Ya renombrado'));
     await lista.getByRole('button', { name: 'Opciones de Para renombrar' }).click();
     await page.getByRole('menuitem', { name: 'Renombrar…' }).click();
+    const ventana = page.getByRole('dialog', { name: 'Renombrar diagrama' });
+    await expect(ventana.getByLabel('Nombre')).toHaveValue('Para renombrar');
+    await ventana.getByLabel('Nombre').fill('Ya renombrado');
+    await ventana.getByRole('button', { name: 'Renombrar' }).click();
 
     await expect(lista.getByText('Ya renombrado')).toBeVisible();
     await expect(lista.getByText('Para renombrar')).toHaveCount(0);

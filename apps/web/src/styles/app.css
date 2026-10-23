@@ -414,6 +414,52 @@ button:disabled,
   background: var(--surface-muted);
 }
 
+/* Ventana modal y ventana de nombre */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(16 24 40 / 35%);
+}
+.modal {
+  width: min(360px, 100%);
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.modal__title {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+.modal__form {
+  display: grid;
+  gap: 12px;
+}
+.modal__field {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.modal__field input {
+  padding: 6px 8px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 /* Lienzo y nodos */
 .chartsia-node {
   position: relative;

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { type DiagramType } from '@chartsia/core/model';
 import { type Project } from '../state/api-client';
 import { DIAGRAM_TYPE_LABELS, formatDate } from './labels';
+import { NameDialog } from './NameDialog';
 
 export interface DiagramListItem {
   diagramId: string;
@@ -56,11 +57,15 @@ export function agruparPorProyecto(diagramas: DiagramListItem[], proyectos: Proj
   return busqueda.trim() ? secciones.filter((s) => s.diagramas.length > 0) : secciones;
 }
 
+/** Ventana abierta desde el menú ⋯: nombre de un proyecto nuevo o título de un diagrama. */
+type Dialogo = { tipo: 'proyecto'; diagramId: string } | { tipo: 'titulo'; diagrama: DiagramListItem };
+
 /** Barra lateral con los diagramas agrupados por proyecto (FR-025); el activo de los agentes va marcado. */
 export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId, onOpen, onMove, onNewProject, onRename }: DiagramListProps) {
   const [busqueda, setBusqueda] = useState('');
   const [plegadas, setPlegadas] = useState<ReadonlySet<string>>(new Set());
   const [menuAbierto, setMenuAbierto] = useState<string | null>(null);
+  const [dialogo, setDialogo] = useState<Dialogo | null>(null);
   const visibles = filtrarDiagramas(diagrams, busqueda);
   const secciones = agruparPorProyecto(diagrams, projects, busqueda);
 
@@ -77,17 +82,7 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
     };
   }, [menuAbierto]);
 
-  // Pide el nombre del proyecto nuevo; un nombre vacío o cancelado no llama al hub.
-  const pedirProyecto = (diagramId: string) => {
-    const nombre = window.prompt('Nombre del proyecto nuevo')?.trim();
-    if (nombre) onNewProject(diagramId, nombre);
-  };
-
-  // Pide el título nuevo (máximo 120); uno vacío, igual al actual o cancelado no llama al hub.
-  const pedirTitulo = (d: DiagramListItem) => {
-    const titulo = window.prompt('Nuevo título del diagrama', d.title)?.trim().slice(0, 120);
-    if (titulo && titulo !== d.title) onRename(d.diagramId, titulo);
-  };
+  const cerrarDialogo = () => setDialogo(null);
 
   const alternar = (clave: string) =>
     setPlegadas((actuales) => {
@@ -131,7 +126,7 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
         {menuAbierto === d.diagramId ? (
           <ul role="menu" className="diagram-list__menu">
             <li role="none">
-              <button type="button" role="menuitem" onClick={() => elegir(() => pedirTitulo(d))}>
+              <button type="button" role="menuitem" onClick={() => elegir(() => setDialogo({ tipo: 'titulo', diagrama: d }))}>
                 Renombrar…
               </button>
             </li>
@@ -145,7 +140,7 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
                 </li>
               ))}
             <li role="none">
-              <button type="button" role="menuitem" onClick={() => elegir(() => pedirProyecto(d.diagramId))}>
+              <button type="button" role="menuitem" onClick={() => elegir(() => setDialogo({ tipo: 'proyecto', diagramId: d.diagramId }))}>
                 Nuevo proyecto…
               </button>
             </li>
@@ -197,6 +192,31 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
           })}
         </ul>
       )}
+      {dialogo?.tipo === 'proyecto' ? (
+        <NameDialog
+          titulo="Nuevo proyecto"
+          textoConfirmar="Crear"
+          onCerrar={cerrarDialogo}
+          onConfirmar={(nombre) => {
+            onNewProject(dialogo.diagramId, nombre);
+            cerrarDialogo();
+          }}
+        />
+      ) : null}
+      {dialogo?.tipo === 'titulo' ? (
+        <NameDialog
+          titulo="Renombrar diagrama"
+          textoConfirmar="Renombrar"
+          valorInicial={dialogo.diagrama.title}
+          maxLength={120}
+          onCerrar={cerrarDialogo}
+          onConfirmar={(titulo) => {
+            // Un título igual al actual no llama al hub.
+            if (titulo !== dialogo.diagrama.title) onRename(dialogo.diagrama.diagramId, titulo);
+            cerrarDialogo();
+          }}
+        />
+      ) : null}
     </nav>
   );
 }
