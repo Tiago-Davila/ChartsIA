@@ -1,7 +1,7 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { AGENTS } from '../../src/app/agents';
+import { AGENTS, promptInstalacion } from '../../src/app/agents';
 import { ConfigScreen } from '../../src/app/ConfigScreen';
 import { type ConnectedAgent } from '../../src/state/api-client';
 import { clearToken, setToken } from '../../src/state/auth-token';
@@ -74,6 +74,33 @@ describe('ConfigScreen', () => {
     await user.click(screen.getByRole('button', { name: 'Copiar configuración de Claude Code (HTTP)' }));
     expect(writeText).toHaveBeenCalledWith(`claude mcp add --transport http --scope user chartsia ${origin}/mcp`);
     expect(await screen.findByText('Copiado')).toBeInTheDocument();
+  });
+
+  it('todos los agentes tienen prompt de instalación con la URL del MCP', () => {
+    for (const agent of AGENTS) {
+      const prompt = promptInstalacion(agent, `${origin}/mcp`);
+      expect(prompt.trim()).not.toBe('');
+      expect(prompt).toContain(`${origin}/mcp`);
+      expect(prompt).toContain('create_diagram');
+    }
+  });
+
+  it('cada tarjeta muestra el botón de copiar comando y el de copiar prompt', () => {
+    renderScreen();
+    for (const agent of AGENTS) {
+      const card = screen.getByRole('article', { name: agent.name });
+      expect(within(card).getByRole('button', { name: `Copiar configuración de ${agent.name}` })).toBeInTheDocument();
+      expect(within(card).getByRole('button', { name: `Copiar prompt de ${agent.name}` })).toBeInTheDocument();
+    }
+  });
+
+  it('copia el prompt de la tarjeta', async () => {
+    const user = userEvent.setup();
+    const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
+    renderScreen();
+    const claude = AGENTS.find((a) => a.id === 'claude-code')!;
+    await user.click(screen.getByRole('button', { name: `Copiar prompt de ${claude.name}` }));
+    expect(writeText).toHaveBeenCalledWith(promptInstalacion(claude, `${origin}/mcp`));
   });
 
   it('avisa si no se puede copiar', async () => {

@@ -89,3 +89,23 @@ export const AGENTS: Agent[] = [
       ),
   },
 ];
+
+/** Prompt para pegar en el propio agente: le indica cómo conectarse al hub con el mismo snippet de la tarjeta. */
+export function promptInstalacion(agent: Agent, mcpUrl: string): string {
+  const snippet = agent.snippet(mcpUrl);
+  if (agent.id === 'openai') {
+    return [
+      'Estoy escribiendo código que llama a la API de Respuestas de OpenAI. Añade a cada petición ChartsIA, el servidor MCP que dibuja diagramas UML y C4, con esta herramienta en el array "tools":',
+      snippet,
+      `La URL del hub es ${mcpUrl}. El hub debe ser accesible desde internet. Si necesitas el token CHARTSIA_TOKEN, pídemelo; no lo inventes.`,
+      'Al terminar, haz una llamada de prueba que liste las herramientas y comprueba que aparece create_diagram.',
+    ].join('\n\n');
+  }
+  return [
+    'Conéctate al servidor MCP de ChartsIA, que dibuja diagramas UML y C4.',
+    `Añádelo a tu configuración global o de usuario, para que esté disponible en todas mis carpetas, con el nombre chartsia y la URL ${mcpUrl}. Usa esta referencia:`,
+    snippet,
+    'Si necesitas un dato que no tienes, como el token CHARTSIA_TOKEN o la ruta del repositorio, pídemelo; no lo inventes. Si no puedes editar tu configuración tú mismo, o hace falta reiniciar, dime qué debo hacer.',
+    'Al terminar, verifica la conexión listando tus herramientas MCP y comprueba que aparece create_diagram. Si falla, dime el error.',
+  ].join('\n\n');
+}

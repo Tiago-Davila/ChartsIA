@@ -51,6 +51,8 @@ La app y la herramienta MCP `import_mermaid` importan `classDiagram` y `classDia
 
 ## Conectar agentes
 
+La pantalla `/config` de la app muestra, junto al comando de cada agente, un prompt de instalación para pegarlo en el propio agente, que se conecta solo al hub.
+
 - **Claude Code (HTTP)**: `--scope user` la deja disponible en todas las carpetas (se guarda en `~/.claude.json`):
   `claude mcp add --transport http --scope user chartsia http://127.0.0.1:3333/mcp`
   Sin `--scope user` queda solo en la carpeta donde se ejecuta (`local`). Fuera de loopback añade
