@@ -134,7 +134,6 @@ export function AppShell(props: AppShellProps) {
               changedIds={props.changedIds}
               onOpenLatest={props.onOpenLatest}
               onChangedFitted={props.onChangedFitted}
-              onInsertImages={(files) => props.onImportImages?.(files, center())}
             />
             <div className="app-shell__canvas" ref={canvas} onDragOver={onDragOver} onDrop={onDrop}>
               <DiagramCanvas

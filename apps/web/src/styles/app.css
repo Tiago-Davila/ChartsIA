@@ -104,9 +104,9 @@
 }
 .figure-sidebar__items {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 8px;
-  padding: 4px 12px 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 4px 10px 12px;
 }
 .figure-sidebar__item {
   padding: 10px 6px;
@@ -120,10 +120,9 @@
   border-radius: 6px;
 }
 .figure-sidebar__item:hover { border-color: var(--accent); }
-/* En columna, la barra no se extiende sobre la barra de flechas de arriba. */
+/* Barra de herramientas en una fila arriba al centro. */
 .drawing-tool {
-  display: grid;
-  grid-template-columns: repeat(2, auto);
+  display: flex;
   align-items: stretch;
   gap: 6px;
   padding: 4px;
@@ -385,12 +384,12 @@
   background: var(--surface-muted);
 }
 .button--primary {
-  color: #fff;
+  color: var(--on-accent);
   background: var(--accent);
   border-color: var(--accent);
 }
 .button--primary:hover {
-  background: #0d5aa5;
+  background: var(--accent-hover);
 }
 .button--danger {
   color: #fff;
@@ -444,7 +443,7 @@ button:disabled,
   display: grid;
   place-items: center;
   padding: 16px;
-  background: rgb(16 24 40 / 35%);
+  background: var(--overlay);
 }
 .modal {
   width: min(360px, 100%);
@@ -524,9 +523,9 @@ button:disabled,
   font: inherit;
   font-size: 12px;
   line-height: 1;
-  color: var(--accent);
+  color: var(--text);
   cursor: pointer;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--accent);
   border-radius: 4px;
 }
@@ -543,18 +542,18 @@ button:disabled,
 }
 .member-add__button:hover,
 .member-remove:hover {
-  color: #fff;
+  color: var(--on-accent);
   background: var(--accent);
 }
 .chartsia-node.is-selected svg {
-  filter: drop-shadow(0 0 0.5px var(--accent)) drop-shadow(0 0 3px rgb(17 104 189 / 45%));
+  filter: drop-shadow(0 0 0.5px var(--accent)) drop-shadow(0 0 3px var(--accent-ring));
 }
 /* Puntos para conectar arrastrando: solo visibles al pasar por encima del nodo. */
 .chartsia-node .chartsia-handle {
   width: 10px;
   height: 10px;
   background: var(--accent);
-  border: 2px solid #fff;
+  border: 2px solid var(--surface);
   opacity: 0;
 }
 .chartsia-node:hover .chartsia-handle.connectable {
@@ -565,6 +564,15 @@ button:disabled,
 }
 
 /* Barra y tiradores de la flecha seleccionada. */
+/* Los paneles de arriba bajan para no taparse con la barra de herramientas. */
+.edge-toolbar,
+.style-panel {
+  margin-top: 64px;
+}
+/* Con la barra de la flecha visible, el panel de estilo baja una fila más. */
+.react-flow:has(.edge-toolbar) .style-panel {
+  margin-top: 112px;
+}
 .edge-toolbar {
   display: flex;
   gap: 4px;
@@ -700,11 +708,19 @@ button:disabled,
   z-index: 19;
   width: 10px;
   height: 10px;
-  background: #fff;
+  background: var(--surface);
   border: 2px solid var(--accent);
   border-radius: 50%;
   cursor: move;
   pointer-events: all;
+}
+/* En oscuro se invierte el diagrama entero (las imágenes se vuelven a invertir para verse igual). */
+.react-flow__viewport {
+  filter: var(--diagram-filter);
+}
+/* Los controles de edición dentro del diagrama se vuelven a invertir para usar los colores del tema. */
+.react-flow__viewport :is(image, .member-add__button, .member-remove, .edge-handle, .chartsia-handle, .text-block-editor, .inline-edit, .type-suggestions, .edge-form) {
+  filter: var(--diagram-filter);
 }
 .react-flow__node {
   /* Las formas ya dibujan su propio borde y fondo. */
@@ -734,7 +750,7 @@ button:disabled,
   font-size: 13px;
   line-height: 1.45;
   color: var(--text);
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--accent);
   border-radius: 4px;
   outline: none;
@@ -746,7 +762,7 @@ button:disabled,
   padding: 0 4px;
   font-family: inherit;
   color: var(--text);
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--accent);
   border-radius: 4px;
   outline: none;
@@ -774,7 +790,7 @@ button:disabled,
 }
 .type-suggestions li.is-active,
 .type-suggestions li:hover {
-  color: #fff;
+  color: var(--on-accent);
   background: var(--accent);
 }
 
@@ -936,6 +952,7 @@ button:disabled,
 
 /* Configuración */
 .sidebar-config { margin: 8px 16px; align-self: flex-start; }
+.theme-toggle { display: inline-flex; gap: 6px; align-items: center; }
 .config { max-width: 640px; margin: 0 auto; padding: 24px; overflow-y: auto; }
 .config code { display: block; margin: 6px 0; padding: 8px 10px; overflow-x: auto; white-space: nowrap; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
 .config__card { margin-bottom: 16px; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; }

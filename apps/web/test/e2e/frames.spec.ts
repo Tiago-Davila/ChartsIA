@@ -19,8 +19,9 @@ test.describe('marcos', () => {
     };
     const beforeGroup = await positions();
 
-    await page.locator('[data-element-id="Primera"]').click({ position: { x: 20, y: 8 } });
-    await page.locator('[data-element-id="Segunda"]').click({ position: { x: 20, y: 8 }, modifiers: ['Control'] });
+    // Primero la de la derecha: al seleccionar aparece el panel de estilo, que puede taparla.
+    await page.locator('[data-element-id="Segunda"]').click({ position: { x: 20, y: 8 } });
+    await page.locator('[data-element-id="Primera"]').click({ position: { x: 20, y: 8 }, modifiers: ['Control'] });
     await expect(page.locator('.react-flow__node.selected')).toHaveCount(2);
     await expect(page.locator('[data-testid="edge-r1"]')).toBeAttached();
     await page.getByRole('button', { name: 'Agrupar en marco' }).click();

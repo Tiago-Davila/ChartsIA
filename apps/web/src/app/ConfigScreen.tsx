@@ -4,6 +4,7 @@ import { getToken } from '../state/auth-token';
 import { AGENTS, mcpUrlParaAgentes, promptInstalacion, type Agent } from './agents';
 import { ConnectionStatus, type ConnectionState } from './ConnectionStatus';
 import { formatDate } from './labels';
+import { ThemeToggle } from './ThemeToggle';
 
 /** Copia el texto y avisa si el navegador lo impide. */
 function CopyButton({ text, label }: { text: string; label: string }) {
@@ -80,6 +81,8 @@ export function ConfigScreen({ origin, agents, connection, onBack }: { origin: s
     <section className="config" aria-labelledby="config-title">
       <button type="button" className="button" onClick={onBack}>← Volver al lienzo</button>
       <h2 id="config-title">Configuración</h2>
+      <h3>Tema</h3>
+      <ThemeToggle />
       <h3>URL del MCP</h3>
       <code>{mcpUrl}</code>
       <CopyButton text={mcpUrl} label="Copiar URL del MCP" />
