@@ -43,6 +43,17 @@ describe('API REST de proyectos', () => {
     expect(after.diagrams[0].projectId).toBeUndefined();
   });
 
+  it('renombrar valida el nombre igual que crear y no cambia el anterior', async () => {
+    const project = await body(await json('/api/projects', 'POST', { name: 'Original' }));
+    const vacio = await json(`/api/projects/${project.id}`, 'PATCH', { name: '   ' });
+    expect(vacio.status).toBe(422);
+    expect((await body(vacio)).errors[0]).toMatchObject({ code: 'SCHEMA_VIOLATION', path: '/name' });
+    expect((await json(`/api/projects/${project.id}`, 'PATCH', { name: 'x'.repeat(101) })).status).toBe(422);
+    expect((await json(`/api/projects/${project.id}`, 'PATCH', {})).status).toBe(422);
+    const listed = (await body(await json('/api/projects'))).projects.find((p: { id: string }) => p.id === project.id);
+    expect(listed.name).toBe('Original');
+  });
+
   it('errores con code/message/hint', async () => {
     const empty = await json('/api/projects', 'POST', { name: '  ' });
     expect(empty.status).toBe(422);

@@ -23,6 +23,8 @@ export interface DiagramListProps {
   onMove(diagramId: string, projectId: string | null): void;
   /** Crea un proyecto con ese nombre y mueve el diagrama a él. */
   onNewProject(diagramId: string, name: string): void;
+  /** Cambia el nombre de un proyecto desde su menú ⋯. */
+  onRenameProject(projectId: string, name: string): void;
   /** Cambia el título del diagrama sin abrirlo. */
   onRename(diagramId: string, title: string): void;
 }
@@ -57,11 +59,14 @@ export function agruparPorProyecto(diagramas: DiagramListItem[], proyectos: Proj
   return busqueda.trim() ? secciones.filter((s) => s.diagramas.length > 0) : secciones;
 }
 
-/** Ventana abierta desde el menú ⋯: nombre de un proyecto nuevo o título de un diagrama. */
-type Dialogo = { tipo: 'proyecto'; diagramId: string } | { tipo: 'titulo'; diagrama: DiagramListItem };
+/** Ventana abierta desde un menú ⋯: nombre de un proyecto nuevo, nombre de un proyecto o título de un diagrama. */
+type Dialogo =
+  | { tipo: 'proyecto'; diagramId: string }
+  | { tipo: 'renombrar-proyecto'; projectId: string; nombre: string }
+  | { tipo: 'titulo'; diagrama: DiagramListItem };
 
 /** Barra lateral con los diagramas agrupados por proyecto (FR-025); el activo de los agentes va marcado. */
-export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId, onOpen, onMove, onNewProject, onRename }: DiagramListProps) {
+export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId, onOpen, onMove, onNewProject, onRenameProject, onRename }: DiagramListProps) {
   const [busqueda, setBusqueda] = useState('');
   const [plegadas, setPlegadas] = useState<ReadonlySet<string>>(new Set());
   const [menuAbierto, setMenuAbierto] = useState<string | null>(null);
@@ -84,6 +89,12 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
 
   const cerrarDialogo = () => setDialogo(null);
 
+  // Cierra el menú y ejecuta la opción elegida.
+  const elegir = (accion: () => void) => {
+    setMenuAbierto(null);
+    accion();
+  };
+
   const alternar = (clave: string) =>
     setPlegadas((actuales) => {
       const nuevas = new Set(actuales);
@@ -92,10 +103,6 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
     });
 
   const renderItem = (d: DiagramListItem) => {
-    const elegir = (accion: () => void) => {
-      setMenuAbierto(null);
-      accion();
-    };
     const tieneProyecto = d.projectId !== undefined && projects.some((p) => p.id === d.projectId);
     return (
     <li key={d.diagramId} className="diagram-list__row">
@@ -181,11 +188,39 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
             const clave = s.id ?? 'sin-proyecto';
             // Buscando, las secciones se muestran abiertas para no esconder resultados.
             const abierta = busqueda.trim() !== '' || !plegadas.has(clave);
+            // "Sin proyecto" no tiene nombre que cambiar, así que no lleva menú.
+            const projectId = s.id;
+            const claveMenu = `proyecto:${clave}`;
             return (
               <li key={clave} className="diagram-list__section">
-                <button type="button" className="diagram-list__section-title" aria-expanded={abierta} onClick={() => alternar(clave)}>
-                  <span aria-hidden>{abierta ? '▾' : '▸'}</span> {s.nombre} <span className="diagram-list__count">{s.diagramas.length}</span>
-                </button>
+                <div className="diagram-list__section-head">
+                  <button type="button" className="diagram-list__section-title" aria-expanded={abierta} onClick={() => alternar(clave)}>
+                    <span aria-hidden>{abierta ? '▾' : '▸'}</span> {s.nombre} <span className="diagram-list__count">{s.diagramas.length}</span>
+                  </button>
+                  {projectId !== null ? (
+                    <div className="diagram-list__menu-wrap">
+                      <button
+                        type="button"
+                        className="diagram-list__menu-button"
+                        aria-label={`Opciones del proyecto ${s.nombre}`}
+                        aria-haspopup="menu"
+                        aria-expanded={menuAbierto === claveMenu}
+                        onClick={() => setMenuAbierto(menuAbierto === claveMenu ? null : claveMenu)}
+                      >
+                        ⋯
+                      </button>
+                      {menuAbierto === claveMenu ? (
+                        <ul role="menu" className="diagram-list__menu">
+                          <li role="none">
+                            <button type="button" role="menuitem" onClick={() => elegir(() => setDialogo({ tipo: 'renombrar-proyecto', projectId, nombre: s.nombre }))}>
+                              Renombrar…
+                            </button>
+                          </li>
+                        </ul>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
                 {abierta ? <ul>{s.diagramas.map(renderItem)}</ul> : null}
               </li>
             );
@@ -199,6 +234,20 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
           onCerrar={cerrarDialogo}
           onConfirmar={(nombre) => {
             onNewProject(dialogo.diagramId, nombre);
+            cerrarDialogo();
+          }}
+        />
+      ) : null}
+      {dialogo?.tipo === 'renombrar-proyecto' ? (
+        <NameDialog
+          titulo="Renombrar proyecto"
+          textoConfirmar="Renombrar"
+          valorInicial={dialogo.nombre}
+          maxLength={100}
+          onCerrar={cerrarDialogo}
+          onConfirmar={(nombre) => {
+            // Un nombre igual al actual no llama al hub.
+            if (nombre !== dialogo.nombre) onRenameProject(dialogo.projectId, nombre);
             cerrarDialogo();
           }}
         />

@@ -13,7 +13,7 @@ test.describe('barra lateral con proyectos', () => {
     const proyecto = (await creado.json()) as { id: string };
     await request.put(`/api/diagrams/${enProyecto}/project`, { data: { projectId: proyecto.id } });
 
-    const titulo = lista.getByRole('button', { name: /Mi proyecto/ });
+    const titulo = lista.locator('.diagram-list__section-title', { hasText: 'Mi proyecto' });
     const seccion = lista.locator('li.diagram-list__section', { hasText: 'Mi proyecto' });
     await expect(seccion.locator('.diagram-list__item', { hasText: 'Dentro del proyecto' })).toBeVisible();
     const sinProyecto = lista.locator('li.diagram-list__section', { hasText: 'Sin proyecto' });
@@ -56,6 +56,31 @@ test.describe('barra lateral con proyectos', () => {
     await page.getByRole('menuitem', { name: 'Quitar del proyecto' }).click();
     const sinProyecto = lista.locator('li.diagram-list__section', { hasText: 'Sin proyecto' });
     await expect(sinProyecto.locator('.diagram-list__item', { hasText: 'Para mover' })).toBeVisible();
+  });
+
+  test('el menú del proyecto lo renombra en la lista y persiste al recargar', async ({ page, agent, request }) => {
+    const enProyecto = await agent.create({ ...library, title: 'Dentro' });
+    const creado = await request.post('/api/projects', { data: { name: 'Nombre viejo' } });
+    const proyecto = (await creado.json()) as { id: string };
+    await request.put(`/api/diagrams/${enProyecto}/project`, { data: { projectId: proyecto.id } });
+    await page.goto('/');
+    const lista = page.getByRole('navigation', { name: 'Diagramas' });
+    await lista.getByRole('button', { name: 'Opciones del proyecto Nombre viejo' }).click();
+    await page.getByRole('menuitem', { name: 'Renombrar…' }).click();
+    const ventana = page.getByRole('dialog', { name: 'Renombrar proyecto' });
+    await expect(ventana.getByLabel('Nombre')).toHaveValue('Nombre viejo');
+    await ventana.getByLabel('Nombre').fill('Nombre nuevo');
+    await ventana.getByLabel('Nombre').press('Enter');
+    await expect(ventana).toHaveCount(0);
+
+    const renombrado = lista.locator('li.diagram-list__section', { hasText: 'Nombre nuevo' });
+    await expect(renombrado.locator('.diagram-list__item', { hasText: 'Dentro' })).toBeVisible();
+    await expect(lista.getByText('Nombre viejo')).toHaveCount(0);
+
+    await page.reload();
+    await expect(lista.locator('li.diagram-list__section', { hasText: 'Nombre nuevo' }).locator('.diagram-list__item', { hasText: 'Dentro' })).toBeVisible();
+    const { projects } = (await (await request.get('/api/projects')).json()) as { projects: { id: string; name: string }[] };
+    expect(projects.find((p) => p.id === proyecto.id)?.name).toBe('Nombre nuevo');
   });
 
   test('la ventana de nombre: Escape y Cancelar no crean, un nombre vacío no se acepta y Enter sí', async ({ page, agent }) => {
