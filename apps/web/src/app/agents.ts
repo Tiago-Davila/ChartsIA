@@ -1,13 +1,6 @@
 export interface Agent {
   id: string;
   name: string;
-  /** Iniciales del recuadro del logo mientras no haya una imagen. */
-  monogram: string;
-  /**
-   * Logo oficial para el tema claro y el oscuro (rutas en `public/`); sin él se muestran las iniciales.
-   * Solo se usan logos cuya marca permite mostrarlos sin pedir permiso.
-   */
-  logo?: { light: string; dark: string };
   /** Tipo de cliente que se muestra bajo el nombre. */
   category: string;
   /** Una frase para la tarjeta de la integración. */
@@ -36,7 +29,6 @@ export const AGENTS: Agent[] = [
   {
     id: 'claude-code',
     name: 'Claude Code (HTTP)',
-    monogram: 'CC',
     category: 'Terminal',
     summary: 'Agente de terminal: un comando y queda disponible en todas tus carpetas.',
     clients: ['claude-code'],
@@ -46,7 +38,6 @@ export const AGENTS: Agent[] = [
   {
     id: 'claude-desktop',
     name: 'Claude Desktop (stdio)',
-    monogram: 'CD',
     category: 'Escritorio',
     summary: 'La app de escritorio, a través del puente stdio hacia el hub.',
     clients: ['claude-ai'],
@@ -69,7 +60,6 @@ export const AGENTS: Agent[] = [
   {
     id: 'codex',
     name: 'Codex CLI',
-    monogram: 'CX',
     category: 'Terminal',
     summary: 'Agente de terminal de OpenAI: un comando y queda disponible en todas tus carpetas.',
     clients: ['codex-mcp-client'],
@@ -79,7 +69,6 @@ export const AGENTS: Agent[] = [
   {
     id: 'grok-build',
     name: 'Grok Build',
-    monogram: 'GB',
     category: 'Terminal',
     summary: 'Agente de terminal de xAI: un comando y queda disponible en todas tus carpetas.',
     clients: [],
@@ -89,8 +78,6 @@ export const AGENTS: Agent[] = [
   {
     id: 'opencode-remote',
     name: 'OpenCode (HTTP)',
-    monogram: 'OC',
-    logo: { light: '/logos/opencode-light.svg', dark: '/logos/opencode-dark.svg' },
     category: 'Terminal',
     summary: 'Por HTTP desde tu opencode.json global o del proyecto.',
     clients: ['opencode'],
@@ -108,8 +95,6 @@ export const AGENTS: Agent[] = [
   {
     id: 'opencode-local',
     name: 'OpenCode (stdio)',
-    monogram: 'OC',
-    logo: { light: '/logos/opencode-light.svg', dark: '/logos/opencode-dark.svg' },
     category: 'Terminal',
     summary: 'Puente stdio local, lanzado por OpenCode con node.',
     clients: ['opencode'],

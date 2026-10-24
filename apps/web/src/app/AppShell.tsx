@@ -68,6 +68,8 @@ export interface AppShellProps {
   changedIds?: string[];
   onOpenLatest?(): Promise<boolean>;
   onChangedFitted?(): void;
+  /** Abre la ventana de diagrama en blanco al montarse. */
+  startBlank?: boolean;
   /** Avisos superpuestos (errores de validación, etc.). */
   overlay?: ReactNode;
 }
@@ -216,7 +218,7 @@ export function AppShell(props: AppShellProps) {
         </div>
         {sidebarHidden ? null : (
           <div className="app-shell__sidebar-scroll">
-            <NewDiagram projects={props.projects} onCreate={props.onCreateDiagram} onImportMermaid={props.onImportMermaid} />
+            <NewDiagram projects={props.projects} onCreate={props.onCreateDiagram} onImportMermaid={props.onImportMermaid} openBlank={props.startBlank} />
             <DiagramList diagrams={props.diagrams} projects={props.projects} activeDiagramId={props.activeDiagramId} openDiagramId={diagram?.id ?? null} onOpen={props.onOpen} onMove={props.onMoveDiagram} onNewProject={props.onNewProject} onRenameProject={props.onRenameProject} onDeleteProject={props.onDeleteProject} onRename={props.onRenameDiagram} onDelete={props.onDeleteDiagram} />
           </div>
         )}

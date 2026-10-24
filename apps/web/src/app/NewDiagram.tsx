@@ -11,6 +11,8 @@ export interface NewDiagramProps {
   /** Crea un diagrama vacío; `projectId` es `undefined` si va sin proyecto. */
   onCreate(type: DiagramType, title: string, projectId?: string): void;
   onImportMermaid(source: string, title?: string, projectId?: string): Promise<string[] | null>;
+  /** Abre la ventana de diagrama en blanco al montarse, como al pulsar "Empezar" en la pantalla inicial. */
+  openBlank?: boolean;
 }
 
 const TIPOS = Object.entries(DIAGRAM_TYPE_LABELS) as [DiagramType, string][];
@@ -23,8 +25,8 @@ const OPCIONES = [
 ];
 
 /** Botón "+ Nuevo" con un menú que abre, en una ventana, el formulario de diagrama en blanco o el de importar Mermaid. */
-export function NewDiagram({ projects, onCreate, onImportMermaid }: NewDiagramProps) {
-  const [abierto, setAbierto] = useState(false);
+export function NewDiagram({ projects, onCreate, onImportMermaid, openBlank = false }: NewDiagramProps) {
+  const [abierto, setAbierto] = useState(openBlank);
   const [importando, setImportando] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [avisosImportacion, setAvisosImportacion] = useState<string[]>([]);

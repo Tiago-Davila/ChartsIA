@@ -63,13 +63,11 @@ describe('ConfigScreen', () => {
     expect(within(habilitados).queryByRole('button', { name: 'Conectado' })).toBeNull();
   });
 
-  it('OpenCode lleva su logo oficial en las dos versiones del tema; el resto, sus iniciales', () => {
+  it('las tarjetas no llevan logo ni iniciales', () => {
     renderScreen();
-    const opencode = screen.getByRole('article', { name: 'OpenCode (HTTP)' });
-    expect(Array.from(opencode.querySelectorAll('img')).map((i) => i.getAttribute('src'))).toEqual(['/logos/opencode-light.svg', '/logos/opencode-dark.svg']);
-    const claude = screen.getByRole('article', { name: 'Claude Code (HTTP)' });
-    expect(claude.querySelector('img')).toBeNull();
-    expect(claude).toHaveTextContent('CC');
+    for (const article of screen.getAllByRole('article')) {
+      expect(article.querySelector('img, .integration__logo')).toBeNull();
+    }
   });
 
   it('Codex CLI y Grok Build se conectan con su propio comando mcp add', () => {
