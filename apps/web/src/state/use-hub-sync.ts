@@ -106,10 +106,13 @@ export function useHubSync(api: ApiClient, route: Route): { live: React.RefObjec
     if (routeId && idCargado === routeId) navigate(diagramPath(routeId, tituloCargado), { replace: true });
   }, [routeId, idCargado, tituloCargado]);
 
-  // En "/" se abre el diagrama activo, si lo hay.
+  // En "/" se abre el diagrama activo o, si no hay, el más reciente; sin diagramas queda la pantalla inicial.
+  const masReciente = useDiagramStore((s) => (s.listLoaded && s.diagrams.length > 0 ? s.diagrams.reduce((a, b) => (b.updatedAt > a.updatedAt ? b : a)).diagramId : undefined));
   useEffect(() => {
-    if (route.name === 'home' && activeDiagramId) navigate(pathDeDiagrama(activeDiagramId), { replace: true });
-  }, [route.name, activeDiagramId]);
+    if (route.name !== 'home') return;
+    const destino = activeDiagramId ?? masReciente;
+    if (destino) navigate(pathDeDiagrama(destino), { replace: true });
+  }, [route.name, activeDiagramId, masReciente]);
 
   // Diagrama abierto → cargarlo, suscribirse y marcarlo activo para los agentes.
   useEffect(() => {

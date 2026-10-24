@@ -45,3 +45,47 @@ export function FileIcon() {
 export function CodeIcon() {
   return <Icon><path d="m8 7-5 5 5 5M16 7l5 5-5 5" /></Icon>;
 }
+
+/** Panel lateral, para el botón "Vista" que oculta o muestra la barra. */
+export function SidebarIcon() {
+  return <Icon><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16" /></Icon>;
+}
+
+/** Flecha para volver atrás. */
+export function ArrowLeftIcon() {
+  return <Icon><path d="M19 12H5M11 6l-6 6 6 6" /></Icon>;
+}
+
+/** Controles deslizantes de la configuración general. */
+export function SlidersIcon() {
+  return <Icon><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" /><circle cx="16" cy="6" r="2" /><circle cx="10" cy="12" r="2" /><circle cx="18" cy="18" r="2" /></Icon>;
+}
+
+/** Enchufe de las conexiones MCP. */
+export function PlugIcon() {
+  return <Icon><path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4" /></Icon>;
+}
+
+/** Tilde de "Conectado". */
+export function CheckIcon() {
+  return <Icon><path d="m5 12 5 5 9-10" /></Icon>;
+}
+
+/** Dos hojas superpuestas: copiar al portapapeles. */
+export function CopyIcon() {
+  return <Icon><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" /></Icon>;
+}
+
+/** Tecla Enter, para el botón "Empezar". */
+export function EnterIcon() {
+  return <Icon><path d="M20 5v7a3 3 0 0 1-3 3H5M9 11l-4 4 4 4" /></Icon>;
+}
+
+/** Marca de GitHub (Octicons de Primer, licencia MIT), solo para enlazar al repositorio. */
+export function GitHubIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" focusable="false">
+      <path d="M6.766 11.328c-2.063-.25-3.516-1.734-3.516-3.656 0-.781.281-1.625.75-2.188-.203-.515-.172-1.609.063-2.062.625-.078 1.468.25 1.968.703.594-.187 1.219-.281 1.985-.281.765 0 1.39.094 1.953.265.484-.437 1.344-.765 1.969-.687.218.422.25 1.515.046 2.047.5.593.766 1.39.766 2.203 0 1.922-1.453 3.375-3.547 3.64.531.344.89 1.094.89 1.954v1.625c0 .468.391.734.86.547C13.781 14.359 16 11.53 16 8.03 16 3.61 12.406 0 7.984 0 3.563 0 0 3.61 0 8.031a7.88 7.88 0 0 0 5.172 7.422c.422.156.828-.125.828-.547v-1.25c-.219.094-.5.156-.75.156-1.031 0-1.64-.562-2.078-1.609-.172-.422-.36-.672-.719-.719-.187-.015-.25-.093-.25-.187 0-.188.313-.328.625-.328.453 0 .844.281 1.25.86.313.452.64.655 1.031.655s.641-.14 1-.5c.266-.265.47-.5.657-.656" />
+    </svg>
+  );
+}

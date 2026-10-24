@@ -1,3 +1,4 @@
+import { direccionDe } from './support/rutas';
 import { library } from './support/fake-agent';
 import { expect, test } from './support/fixtures';
 
@@ -30,9 +31,9 @@ test.describe('eliminar un diagrama desde la lista', () => {
     expect((await request.get(`/api/diagrams/${id}`)).status()).toBe(404);
   });
 
-  test('borrar el diagrama abierto vuelve a la lista (la app pasa a "/")', async ({ page, agent }) => {
+  test('borrar el diagrama abierto pasa al más reciente de los que quedan', async ({ page, agent }) => {
     const abierto = await agent.create({ ...library, title: 'Abierto' });
-    await agent.create({ ...library, title: 'Otro' });
+    const otro = await agent.create({ ...library, title: 'Otro' });
     await page.goto(`/d/${abierto}`);
     await expect(page.getByRole('heading', { name: /Abierto/ })).toBeVisible();
 
@@ -43,10 +44,10 @@ test.describe('eliminar un diagrama desde la lista', () => {
 
     await expect(page.getByRole('heading', { name: /Abierto/ })).toHaveCount(0);
     await expect(lista.getByText('Abierto')).toHaveCount(0);
-    await expect.poll(() => new URL(page.url()).pathname).toBe('/');
+    await expect(page).toHaveURL(direccionDe(otro));
   });
 
-  test('un agente que borra por MCP el diagrama abierto hace que la app vuelva a la lista', async ({ page, agent }) => {
+  test('un agente que borra por MCP el diagrama abierto hace que la app lo deje', async ({ page, agent }) => {
     const id = await agent.create({ ...library, title: 'Borrado por el agente' });
     await page.goto(`/d/${id}`);
     await expect(page.getByRole('heading', { name: /Borrado por el agente/ })).toBeVisible();
@@ -56,6 +57,6 @@ test.describe('eliminar un diagrama desde la lista', () => {
 
     await expect(page.getByRole('heading', { name: /Borrado por el agente/ })).toHaveCount(0);
     await expect(page.getByRole('navigation', { name: 'Diagramas' }).getByText('Borrado por el agente')).toHaveCount(0);
-    await expect.poll(() => new URL(page.url()).pathname).toBe('/');
+    await expect.poll(() => new URL(page.url()).pathname).not.toContain(id.replace(/^dg_/, ''));
   });
 });

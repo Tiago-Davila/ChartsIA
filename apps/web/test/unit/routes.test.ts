@@ -9,7 +9,8 @@ describe('rutas', () => {
     ['/d/biblioteca-abcdefghijkl', { name: 'diagram', diagramId: 'dg_abcdefghijkl' }],
     ['/d/diagrama-de-clases-pedidos-abcdefghijkl/', { name: 'diagram', diagramId: 'dg_abcdefghijkl' }],
     ['/d/sin-id-valido', { name: 'diagram', diagramId: 'sin-id-valido' }],
-    ['/config', { name: 'config' }],
+    ['/config', { name: 'config', section: 'general' }],
+    ['/config/mcp', { name: 'config', section: 'mcp' }],
     ['/otra', { name: 'home' }],
   ])('%s', (path, route) => {
     expect(parseRoute(path)).toEqual(route);

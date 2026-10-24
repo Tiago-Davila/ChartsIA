@@ -4,32 +4,89 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AGENTS, mcpUrlParaAgentes, promptInstalacion } from '../../src/app/agents';
 import { ConfigScreen } from '../../src/app/ConfigScreen';
 import { type ConnectedAgent } from '../../src/state/api-client';
-import { clearToken, setToken } from '../../src/state/auth-token';
 
 const origin = 'http://127.0.0.1:3333';
 let agents: ConnectedAgent[] = [];
-const renderScreen = () => render(<ConfigScreen origin={origin} agents={agents} connection="connected" onBack={vi.fn()} />);
+const renderScreen = (section: 'general' | 'mcp' = 'mcp', onSection = vi.fn()) =>
+  render(<ConfigScreen origin={origin} agents={agents} section={section} onSection={onSection} onBack={vi.fn()} />);
+
+/** Abre la ventana de conexión de un agente desde su tarjeta. */
+const abrir = async (nombre: string) => {
+  await userEvent.click(within(screen.getByRole('article', { name: nombre })).getByRole('button'));
+  return screen.getByRole('dialog', { name: `Conectar ${nombre}` });
+};
 
 describe('ConfigScreen', () => {
   afterEach(() => {
     agents = [];
-    clearToken();
     vi.restoreAllMocks();
   });
 
-  it('muestra la URL del MCP, el estado del hub y una tarjeta por agente', () => {
-    renderScreen();
-    expect(screen.getByText(`${origin}/mcp`)).toBeInTheDocument();
-    expect(screen.getByText('Conectado al hub')).toBeInTheDocument();
-    for (const agent of AGENTS) expect(screen.getByRole('article', { name: agent.name })).toBeInTheDocument();
-    expect(screen.getByText(`claude mcp add --transport http --scope user chartsia ${origin}/mcp`)).toBeInTheDocument();
+  it('tiene su propia barra con General y Conexiones MCP, y General por ahora está vacía', async () => {
+    const onSection = vi.fn();
+    renderScreen('general', onSection);
+    const secciones = screen.getByRole('list', { name: 'Secciones' });
+    expect(within(secciones).getByRole('button', { name: 'General' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('region', { name: 'General' })).toBeInTheDocument();
+    expect(screen.queryByText(`${origin}/mcp`)).toBeNull();
+    expect(screen.queryByRole('article')).toBeNull();
+    await userEvent.click(within(secciones).getByRole('button', { name: 'Conexiones MCP' }));
+    expect(onSection).toHaveBeenCalledWith('mcp');
   });
 
-  it('el comando de Claude Code es de usuario y añade el token fuera de loopback', () => {
+  it('muestra solo las tarjetas de los agentes, sin la URL del MCP ni el estado del hub', async () => {
+    renderScreen();
+    expect(screen.getByRole('region', { name: 'Conexiones MCP' })).toBeInTheDocument();
+    expect(screen.queryByText(`${origin}/mcp`)).toBeNull();
+    expect(screen.queryByText('Conectado al hub')).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Conectados' })).toBeNull();
+    for (const agent of AGENTS) {
+      const card = screen.getByRole('article', { name: agent.name });
+      expect(card).toHaveTextContent(agent.summary);
+      expect(within(card).getByRole('button', { name: 'Conectar' })).toBeInTheDocument();
+    }
+    const ventana = await abrir('Claude Code (HTTP)');
+    expect(within(ventana).getByText(`claude mcp add --transport http --scope user chartsia ${origin}/mcp`)).toBeInTheDocument();
+    await userEvent.click(within(ventana).getByRole('button', { name: 'Cerrar' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('primero muestra los conectados y después los habilitados', () => {
+    agents = [{ id: 1, name: 'opencode', version: '1.0.0', lastCallAt: '2026-01-02T03:04:00.000Z' }];
+    renderScreen();
+    const conectados = screen.getByRole('region', { name: 'Conectados' });
+    const habilitados = screen.getByRole('region', { name: 'Habilitados' });
+    expect(conectados.compareDocumentPosition(habilitados) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(conectados).getAllByRole('article').map((a) => a.getAttribute('aria-label'))).toEqual(['OpenCode (HTTP)', 'OpenCode (stdio)']);
+    expect(within(conectados).getAllByRole('button', { name: 'Conectado' })).toHaveLength(2);
+    expect(within(habilitados).getByRole('article', { name: 'Claude Code (HTTP)' })).toBeInTheDocument();
+    expect(within(habilitados).queryByRole('button', { name: 'Conectado' })).toBeNull();
+  });
+
+  it('las tarjetas no llevan logo ni iniciales', () => {
+    renderScreen();
+    for (const article of screen.getAllByRole('article')) {
+      expect(article.querySelector('img, .integration__logo')).toBeNull();
+    }
+  });
+
+  it('Codex CLI y Grok Build se conectan con su propio comando mcp add', () => {
+    const snippet = (id: string) => AGENTS.find((a) => a.id === id)!.snippet(`${origin}/mcp`);
+    expect(snippet('codex')).toBe(`codex mcp add chartsia --url ${origin}/mcp`);
+    expect(snippet('grok-build')).toBe(`grok mcp add --transport http chartsia ${origin}/mcp`);
+  });
+
+  it('ningún agente usa token: todos corren en la misma máquina que el hub', () => {
+    for (const agent of AGENTS) {
+      const texto = [agent.help, agent.summary, agent.snippet('https://hub.example.com/mcp'), promptInstalacion(agent, `${origin}/mcp`)].join(' ');
+      expect(texto).not.toMatch(/token|Bearer|Authorization/i);
+      expect(agent.summary).not.toMatch(/remot/i);
+    }
+  });
+
+  it('el comando de Claude Code es de usuario', () => {
     const claude = AGENTS.find((a) => a.id === 'claude-code')!;
     expect(claude.snippet(`${origin}/mcp`)).toBe(`claude mcp add --transport http --scope user chartsia ${origin}/mcp`);
-    expect(claude.snippet('https://hub.example.com/mcp')).toContain('--scope user');
-    expect(claude.snippet('https://hub.example.com/mcp')).toContain('Authorization: Bearer <CHARTSIA_TOKEN>');
   });
 
   it('la URL del MCP para los agentes cambia *.localhost por 127.0.0.1, que resuelven fuera del navegador', () => {
@@ -46,15 +103,9 @@ describe('ConfigScreen', () => {
     }
   });
 
-  it('solo la Responses API, que no tiene configuración global, lo explica en su ayuda', () => {
-    const sinGlobal = AGENTS.filter((a) => /no tiene configuración global/i.test(a.help));
-    expect(sinGlobal.map((a) => a.id)).toEqual(['openai']);
-  });
-
-  it('muestra en la tarjeta la ayuda de Claude Desktop con su archivo de configuración', () => {
+  it('la ventana de Claude Desktop explica su archivo de configuración', async () => {
     renderScreen();
-    const card = screen.getByRole('article', { name: 'Claude Desktop (stdio)' });
-    expect(card).toHaveTextContent('claude_desktop_config.json');
+    expect(await abrir('Claude Desktop (stdio)')).toHaveTextContent('claude_desktop_config.json');
     expect(JSON.parse(AGENTS.find((a) => a.id === 'claude-desktop')!.snippet(`${origin}/mcp`)).mcpServers.chartsia.command).toBe('node');
   });
 
@@ -64,27 +115,14 @@ describe('ConfigScreen', () => {
       const config = snippet(id, `${origin}/mcp`);
       expect(config.$schema).toBe('https://opencode.ai/config.json');
       expect(JSON.stringify(config.mcp.chartsia)).toContain(`${origin}/mcp`);
-      expect(JSON.stringify(config)).not.toContain('Bearer');
     }
-    const remoto = snippet('opencode-remote', 'https://hub.example.com/mcp');
-    expect(remoto.mcp.chartsia.headers.Authorization).toBe('Bearer <CHARTSIA_TOKEN>');
-  });
-
-  it('lista los agentes conectados con su versión y su última llamada, o avisa si no hay', () => {
-    const { unmount } = renderScreen();
-    expect(screen.getByText('Ningún agente se ha conectado todavía.')).toBeInTheDocument();
-    unmount();
-    agents = [{ id: 1, name: '<b>claude-code</b>', version: '2.1.0', lastCallAt: '2026-01-02T03:04:00.000Z' }];
-    renderScreen();
-    const item = screen.getByRole('listitem');
-    expect(item).toHaveTextContent('<b>claude-code</b> v2.1.0 · última llamada');
-    expect(item.querySelector('b')).toBeNull();
   });
 
   it('copia el comando de la tarjeta', async () => {
     const user = userEvent.setup();
     const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
     renderScreen();
+    await abrir('Claude Code (HTTP)');
     await user.click(screen.getByRole('button', { name: 'Copiar configuración de Claude Code (HTTP)' }));
     expect(writeText).toHaveBeenCalledWith(`claude mcp add --transport http --scope user chartsia ${origin}/mcp`);
     expect(await screen.findByText('Copiado')).toBeInTheDocument();
@@ -99,12 +137,16 @@ describe('ConfigScreen', () => {
     }
   });
 
-  it('cada tarjeta muestra el botón de copiar comando y el de copiar prompt', () => {
+  it('en la ventana de cada tarjeta el botón de copiar va dentro del comando y dentro del prompt', async () => {
     renderScreen();
     for (const agent of AGENTS) {
-      const card = screen.getByRole('article', { name: agent.name });
-      expect(within(card).getByRole('button', { name: `Copiar configuración de ${agent.name}` })).toBeInTheDocument();
-      expect(within(card).getByRole('button', { name: `Copiar prompt de ${agent.name}` })).toBeInTheDocument();
+      const ventana = await abrir(agent.name);
+      const comando = within(ventana).getByRole('button', { name: `Copiar configuración de ${agent.name}` });
+      expect(comando.closest('.code-block')!.querySelector('code')!.textContent).toBe(agent.snippet(`${origin}/mcp`));
+      const prompt = within(ventana).getByRole('button', { name: `Copiar prompt de ${agent.name}` });
+      expect(prompt.closest('.code-block')).toHaveTextContent('create_diagram');
+      expect(within(ventana).queryByRole('button', { name: 'Copiar' })).toBeNull();
+      await userEvent.click(within(ventana).getByRole('button', { name: 'Cerrar' }));
     }
   });
 
@@ -113,6 +155,7 @@ describe('ConfigScreen', () => {
     const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
     renderScreen();
     const claude = AGENTS.find((a) => a.id === 'claude-code')!;
+    await abrir(claude.name);
     await user.click(screen.getByRole('button', { name: `Copiar prompt de ${claude.name}` }));
     expect(writeText).toHaveBeenCalledWith(promptInstalacion(claude, `${origin}/mcp`));
   });
@@ -121,18 +164,8 @@ describe('ConfigScreen', () => {
     const user = userEvent.setup();
     vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(new Error('denegado'));
     renderScreen();
-    await user.click(screen.getByRole('button', { name: 'Copiar URL del MCP' }));
+    await abrir('Claude Code (HTTP)');
+    await user.click(screen.getByRole('button', { name: 'Copiar configuración de Claude Code (HTTP)' }));
     expect(await screen.findByText(/No se pudo copiar/)).toBeInTheDocument();
-  });
-
-  it('sin token lo indica; con token lo enmascara y permite verlo', async () => {
-    const { unmount } = renderScreen();
-    expect(screen.getByText(/No hay token guardado/)).toBeInTheDocument();
-    unmount();
-    setToken('secreto-123');
-    renderScreen();
-    expect(screen.queryByText('secreto-123')).toBeNull();
-    await userEvent.click(screen.getByRole('button', { name: 'Ver token' }));
-    expect(screen.getByText('secreto-123')).toBeInTheDocument();
   });
 });
