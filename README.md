@@ -62,8 +62,7 @@ La pantalla `/config` de la app muestra, junto al comando de cada agente, un pro
 
 - **Claude Code (HTTP)**: `--scope user` la deja disponible en todas las carpetas (se guarda en `~/.claude.json`):
   `claude mcp add --transport http --scope user chartsia http://127.0.0.1:3333/mcp`
-  Sin `--scope user` queda solo en la carpeta donde se ejecuta (`local`). Fuera de loopback añade
-  `--header "Authorization: Bearer <CHARTSIA_TOKEN>"`.
+  Sin `--scope user` queda solo en la carpeta donde se ejecuta (`local`).
 - **Claude Desktop (stdio)**: es global por usuario. Añade a `claude_desktop_config.json`
   (macOS: `~/Library/Application Support/Claude/`; Windows: `%APPDATA%\Claude\`), tras `pnpm build`,
   un servidor con la ruta absoluta al puente y reinicia la app:
@@ -72,27 +71,27 @@ La pantalla `/config` de la app muestra, junto al comando de cada agente, un pro
     "args": ["<RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js"],
     "env": { "CHARTSIA_URL": "http://127.0.0.1:3333/mcp" } } } }
   ```
-  El hub debe estar corriendo. Fuera de loopback añade `"CHARTSIA_TOKEN": "<CHARTSIA_TOKEN>"` en `env`.
+  El hub debe estar corriendo.
+- **Codex CLI**: queda en `~/.codex/config.toml`, disponible en todas las carpetas:
+  `codex mcp add chartsia --url http://127.0.0.1:3333/mcp`
+- **Grok Build**: queda en `~/.grok/config.toml`, disponible en todas las carpetas:
+  `grok mcp add --transport http chartsia http://127.0.0.1:3333/mcp`
 - **OpenCode**: en `~/.config/opencode/opencode.json` (global, todos los proyectos) o en `opencode.json`
   del proyecto, bajo `mcp`; la pantalla de configuración de la app muestra estos JSON con la URL real.
   Esquema: `https://opencode.ai/config.json`.
-  - HTTP:
+  - HTTP (OpenCode llama `remote` a cualquier servidor HTTP, aunque corra en tu máquina):
     ```json
     { "mcp": { "chartsia": { "type": "remote", "url": "http://127.0.0.1:3333/mcp" } } }
     ```
-    Fuera de loopback añade `"headers": { "Authorization": "Bearer <CHARTSIA_TOKEN>" }`.
   - stdio (puente `chartsia-mcp`, tras `pnpm build`; el hub debe estar corriendo):
     ```json
     { "mcp": { "chartsia": { "type": "local",
       "command": ["node", "<RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js"],
       "environment": { "CHARTSIA_URL": "http://127.0.0.1:3333/mcp" } } } }
     ```
-    Fuera de loopback añade `"CHARTSIA_TOKEN": "<CHARTSIA_TOKEN>"` en `environment`.
-  - No subas el token real al repositorio: usa un `opencode.json` local o ignorado por git.
   - Comprueba la conexión con `opencode mcp list`.
-- **OpenAI Responses API**: no tiene configuración global; la herramienta va en el array `tools` de cada petición:
-  `{"type":"mcp","server_label":"chartsia","server_url":"https://<túnel>/mcp","authorization":"<CHARTSIA_TOKEN>"}`;
-  el hub debe ser accesible desde internet (p. ej. un túnel) con `CHARTSIA_HOST=0.0.0.0`.
+
+Los agentes corren en la misma máquina que el hub, así que ninguno necesita token.
 
 Herramientas: `create_diagram`, `apply_changes`, `get_diagram`, `list_diagrams`,
 `open_diagram`, `export_diagram`. Recursos: `chartsia://diagrams/{id}`,
@@ -111,7 +110,7 @@ para la pestaña. Si falta, la app pide el token.
 
 Los conectores de la interfaz de ChatGPT exigen OAuth o un servidor sin autenticación. ChartsIA
 usa token Bearer, así que la conexión directa desde la interfaz de ChatGPT queda fuera de
-alcance; usa la Responses API o los clientes de Claude.
+alcance; usa Codex CLI o los clientes de Claude.
 
 ## Desarrollo
 

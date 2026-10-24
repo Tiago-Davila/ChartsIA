@@ -72,17 +72,23 @@ describe('ConfigScreen', () => {
     expect(claude).toHaveTextContent('CC');
   });
 
-  it('xAI se conecta como herramienta MCP remota en cada petición', () => {
-    const xai = AGENTS.find((a) => a.id === 'xai')!;
-    expect(JSON.parse(xai.snippet(`${origin}/mcp`))).toEqual({ type: 'mcp', server_label: 'chartsia', server_url: `${origin}/mcp`, authorization: '<CHARTSIA_TOKEN>' });
-    expect(promptInstalacion(xai, `${origin}/mcp`)).toContain('xAI');
+  it('Codex CLI y Grok Build se conectan con su propio comando mcp add', () => {
+    const snippet = (id: string) => AGENTS.find((a) => a.id === id)!.snippet(`${origin}/mcp`);
+    expect(snippet('codex')).toBe(`codex mcp add chartsia --url ${origin}/mcp`);
+    expect(snippet('grok-build')).toBe(`grok mcp add --transport http chartsia ${origin}/mcp`);
   });
 
-  it('el comando de Claude Code es de usuario y añade el token fuera de loopback', () => {
+  it('ningún agente usa token: todos corren en la misma máquina que el hub', () => {
+    for (const agent of AGENTS) {
+      const texto = [agent.help, agent.summary, agent.snippet('https://hub.example.com/mcp'), promptInstalacion(agent, `${origin}/mcp`)].join(' ');
+      expect(texto).not.toMatch(/token|Bearer|Authorization/i);
+      expect(agent.summary).not.toMatch(/remot/i);
+    }
+  });
+
+  it('el comando de Claude Code es de usuario', () => {
     const claude = AGENTS.find((a) => a.id === 'claude-code')!;
     expect(claude.snippet(`${origin}/mcp`)).toBe(`claude mcp add --transport http --scope user chartsia ${origin}/mcp`);
-    expect(claude.snippet('https://hub.example.com/mcp')).toContain('--scope user');
-    expect(claude.snippet('https://hub.example.com/mcp')).toContain('Authorization: Bearer <CHARTSIA_TOKEN>');
   });
 
   it('la URL del MCP para los agentes cambia *.localhost por 127.0.0.1, que resuelven fuera del navegador', () => {
@@ -99,11 +105,6 @@ describe('ConfigScreen', () => {
     }
   });
 
-  it('solo las API de respuestas, que no tienen configuración global, lo explican en su ayuda', () => {
-    const sinGlobal = AGENTS.filter((a) => /no tiene configuración global/i.test(a.help));
-    expect(sinGlobal.map((a) => a.id)).toEqual(['openai', 'xai']);
-  });
-
   it('la ventana de Claude Desktop explica su archivo de configuración', async () => {
     renderScreen();
     expect(await abrir('Claude Desktop (stdio)')).toHaveTextContent('claude_desktop_config.json');
@@ -116,10 +117,7 @@ describe('ConfigScreen', () => {
       const config = snippet(id, `${origin}/mcp`);
       expect(config.$schema).toBe('https://opencode.ai/config.json');
       expect(JSON.stringify(config.mcp.chartsia)).toContain(`${origin}/mcp`);
-      expect(JSON.stringify(config)).not.toContain('Bearer');
     }
-    const remoto = snippet('opencode-remote', 'https://hub.example.com/mcp');
-    expect(remoto.mcp.chartsia.headers.Authorization).toBe('Bearer <CHARTSIA_TOKEN>');
   });
 
   it('copia el comando de la tarjeta', async () => {
