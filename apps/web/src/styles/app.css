@@ -35,12 +35,11 @@
   padding: 0 16px;
   border-bottom: 1px solid var(--border);
 }
-/* Lugar reservado para el logo: un cuadrado punteado hasta que exista el ícono. */
+/* Logo de ChartsIA en la cabecera de la barra. */
 .brand__logo {
   width: 28px;
   height: 28px;
-  border: 1.5px dashed var(--border);
-  border-radius: 8px;
+  border-radius: 7px;
 }
 
 /* Filas de navegación de la barra: Nuevo, Proyectos y Configuración. */

@@ -212,8 +212,7 @@ export function AppShell(props: AppShellProps) {
     <div className={clases} style={{ '--sidebar-width': sidebarHidden ? '52px' : `${sidebarWidth}px`, '--figures-width': `${figuresWidth}px` } as CSSProperties}>
       <aside className="app-shell__sidebar" id="barra-proyectos">
         <div className="brand">
-          {/* Lugar reservado para el logo de ChartsIA. */}
-          {sidebarHidden ? null : <span className="brand__logo" role="img" aria-label="ChartsIA" />}
+          {sidebarHidden ? null : <img className="brand__logo" src="/logo.svg" alt="ChartsIA" />}
           {vista}
         </div>
         {sidebarHidden ? null : (
