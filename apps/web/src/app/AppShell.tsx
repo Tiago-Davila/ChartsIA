@@ -1,7 +1,7 @@
 import { type ExportFormat } from '@chartsia/core/export';
 import { type Diagram, type DiagramType, type Point } from '@chartsia/core/model';
 import { type Edge, type Node } from '@xyflow/react';
-import { type ClipboardEvent, type DragEvent, type ReactNode, useRef } from 'react';
+import { type ClipboardEvent, type CSSProperties, type DragEvent, type ReactNode, useRef } from 'react';
 import { type ConnectedAgent, type Project } from '../state/api-client';
 import { type AlignMode } from '../canvas/align';
 import { DiagramCanvas, type DiagramCanvasProps } from '../canvas/DiagramCanvas';
@@ -9,10 +9,12 @@ import { FigureSidebar } from '../canvas/FigureSidebar';
 import { FIGURE_DRAG_TYPE, type FrameBox } from '../canvas/figure-palette';
 import { C4Legend } from '../legend/C4Legend';
 import { ConfigScreen } from './ConfigScreen';
-import { ConnectionStatus, type ConnectionState } from './ConnectionStatus';
+import { type ConnectionState, CONNECTION_LABELS } from './ConnectionStatus';
 import { DiagramList, type DiagramListItem } from './DiagramList';
 import { EmptyState } from './EmptyState';
+import { GearIcon } from './icons';
 import { NewDiagram } from './NewDiagram';
+import { ResizeHandle, usePanelWidth } from './ResizeHandle';
 import { Toolbar } from './Toolbar';
 
 export interface AppShellProps {
@@ -67,9 +69,15 @@ export interface AppShellProps {
   overlay?: ReactNode;
 }
 
+/** Anchos de las barras en píxeles: inicial, mínimo y máximo. */
+const SIDEBAR = { initial: 260, min: 200, max: 480 };
+const FIGURES = { initial: 208, min: 160, max: 420 };
+
 /** Composición de la app: barra lateral, toolbar, lienzo, leyenda y estado vacío. */
 export function AppShell(props: AppShellProps) {
   const { diagram } = props;
+  const [sidebarWidth, setSidebarWidth] = usePanelWidth('chartsia.sidebar-width', SIDEBAR.initial, SIDEBAR.min, SIDEBAR.max);
+  const [figuresWidth, setFiguresWidth] = usePanelWidth('chartsia.figures-width', FIGURES.initial, FIGURES.min, FIGURES.max);
   const canvas = useRef<HTMLDivElement>(null);
   const center = () => {
     const rect = canvas.current?.getBoundingClientRect();
@@ -107,17 +115,28 @@ export function AppShell(props: AppShellProps) {
   };
   const showFigures = !!diagram && !props.configOpen && !props.readOnly && !!props.onAddFigure;
   return (
-    <div className={`app-shell${showFigures ? ' app-shell--figures' : ''}`}>
+    <div className={`app-shell${showFigures ? ' app-shell--figures' : ''}`} style={{ '--sidebar-width': `${sidebarWidth}px`, '--figures-width': `${figuresWidth}px` } as CSSProperties}>
       <aside className="app-shell__sidebar">
         <div className="brand">
-          <span className="brand__mark" aria-hidden>◆</span> ChartsIA
+          {/* Lugar reservado para el logo de ChartsIA. */}
+          <span className="brand__logo" role="img" aria-label="ChartsIA" />
         </div>
-        <NewDiagram projects={props.projects} onCreate={props.onCreateDiagram} onImportMermaid={props.onImportMermaid} />
-        <DiagramList diagrams={props.diagrams} projects={props.projects} activeDiagramId={props.activeDiagramId} openDiagramId={diagram?.id ?? null} onOpen={props.onOpen} onMove={props.onMoveDiagram} onNewProject={props.onNewProject} onRenameProject={props.onRenameProject} onDeleteProject={props.onDeleteProject} onRename={props.onRenameDiagram} onDelete={props.onDeleteDiagram} />
-        <button type="button" className="button sidebar-config" aria-label="Configuración" aria-pressed={props.configOpen} onClick={props.onConfig}>
-          <span aria-hidden>⚙</span>
-        </button>
-        <ConnectionStatus state={props.connection} />
+        <div className="app-shell__sidebar-scroll">
+          <NewDiagram projects={props.projects} onCreate={props.onCreateDiagram} onImportMermaid={props.onImportMermaid} />
+          <DiagramList diagrams={props.diagrams} projects={props.projects} activeDiagramId={props.activeDiagramId} openDiagramId={diagram?.id ?? null} onOpen={props.onOpen} onMove={props.onMoveDiagram} onNewProject={props.onNewProject} onRenameProject={props.onRenameProject} onDeleteProject={props.onDeleteProject} onRename={props.onRenameDiagram} onDelete={props.onDeleteDiagram} />
+        </div>
+        <div className="sidebar-footer">
+          <button type="button" className="sidebar-nav__row sidebar-config" aria-pressed={props.configOpen} onClick={props.onConfig}>
+            Configuración
+            {props.connection !== 'connected' ? <span className={`sidebar-config__dot connection--${props.connection}`} aria-hidden title={CONNECTION_LABELS[props.connection]} /> : null}
+            <GearIcon />
+          </button>
+          {/* El estado de la conexión solo se anuncia; en pantalla queda el punto de aviso cuando falla. */}
+          <span className="sr-only" role="status" aria-live="polite">
+            {CONNECTION_LABELS[props.connection]}
+          </span>
+        </div>
+        <ResizeHandle label="Ancho de la barra de diagramas" edge="right" value={sidebarWidth} min={SIDEBAR.min} max={SIDEBAR.max} initial={SIDEBAR.initial} onChange={setSidebarWidth} />
       </aside>
       <main className="app-shell__main" onPaste={onPaste}>
         {props.configOpen ? (
@@ -164,7 +183,12 @@ export function AppShell(props: AppShellProps) {
         )}
         {props.overlay}
       </main>
-      {showFigures ? <FigureSidebar diagramType={diagram?.type} onAdd={(key) => props.onAddFigureAtCenter?.(key, center())} /> : null}
+      {showFigures ? (
+        <div className="app-shell__figures">
+          <ResizeHandle label="Ancho de la barra de figuras" edge="left" value={figuresWidth} min={FIGURES.min} max={FIGURES.max} initial={FIGURES.initial} onChange={setFiguresWidth} />
+          <FigureSidebar diagramType={diagram?.type} onAdd={(key) => props.onAddFigureAtCenter?.(key, center())} />
+        </div>
+      ) : null}
     </div>
   );
 }

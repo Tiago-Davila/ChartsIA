@@ -9,25 +9,205 @@
 }
 
 .app-shell__sidebar {
+  position: relative;
   display: flex;
   flex-direction: column;
+  min-width: 0;
   min-height: 0;
   background: var(--surface);
   border-right: 1px solid var(--border);
+}
+.app-shell__sidebar-scroll {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  padding: 8px;
+  overflow-y: auto;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 8px;
   height: var(--toolbar-height);
   padding: 0 16px;
-  font-weight: 700;
-  font-size: 16px;
   border-bottom: 1px solid var(--border);
 }
-.brand__mark {
-  color: var(--accent);
+/* Lugar reservado para el logo: un cuadrado punteado hasta que exista el ícono. */
+.brand__logo {
+  width: 28px;
+  height: 28px;
+  border: 1.5px dashed var(--border);
+  border-radius: 8px;
+}
+
+/* Filas de navegación de la barra: Nuevo, Proyectos y Configuración. */
+.sidebar-nav__row,
+.glide-menu__trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color 150ms ease, transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.sidebar-nav__row:hover,
+.glide-menu__trigger:hover,
+.glide-menu__trigger[aria-expanded='true'] {
+  background: var(--surface-muted);
+}
+.sidebar-nav__row:active,
+.glide-menu__trigger:active {
+  transform: scale(0.98);
+}
+.sidebar-nav__row:focus-visible,
+.glide-menu__trigger:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: -2px;
+}
+.sidebar-nav__row svg,
+.glide-menu__trigger svg {
+  flex: none;
+  color: var(--text-muted);
+}
+.sidebar-footer {
+  padding: 8px;
+  border-top: 1px solid var(--border);
+}
+.sidebar-config {
+  justify-content: space-between;
+}
+.sidebar-config[aria-pressed='true'] {
+  background: var(--accent-soft);
+}
+.sidebar-config__dot {
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+  border-radius: 50%;
+  background: var(--danger);
+}
+.sidebar-config__dot.connection--reconnecting {
+  background: var(--warn);
+}
+
+/* Tirador para cambiar el ancho de una barra. */
+.resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 10;
+  width: 8px;
+  cursor: col-resize;
+  touch-action: none;
+}
+.resize-handle--right { right: -4px; }
+.resize-handle--left { left: -4px; }
+.resize-handle::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 3px;
+  width: 2px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+.resize-handle:hover::after,
+.resize-handle:focus-visible::after,
+.resize-handle[data-dragging]::after {
+  opacity: 1;
+}
+.resize-handle:focus-visible { outline: none; }
+/* Mientras se arrastra, nada se selecciona y el cursor no cambia al pasar sobre otros elementos. */
+body.is-resizing {
+  cursor: col-resize;
+  user-select: none;
+}
+body.is-resizing * { cursor: col-resize !important; }
+.app-shell__figures {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.app-shell__figures .figure-sidebar {
+  flex: 1;
+}
+
+/* Menú de "+ Nuevo" (GlideSelect de React Bits) en los colores del tema. */
+.glide-menu {
+  --gm-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+}
+.glide-menu__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  display: grid;
+  gap: 1px;
+  width: 100%;
+  min-width: 200px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transform-origin: top left;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 180ms var(--gm-ease-out), transform 180ms var(--gm-ease-out);
+}
+.glide-menu__menu[data-state='open'] {
+  opacity: 1;
+  transform: none;
+}
+.glide-menu__pill {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  left: 4px;
+  height: 32px;
+  background: var(--surface-muted);
+  border-radius: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 220ms var(--gm-ease-out), opacity 150ms ease;
+}
+.glide-menu__item {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.glide-menu__item:focus-visible { outline: none; }
+.glide-menu__icon {
+  display: inline-flex;
+  color: var(--text-muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  .glide-menu__menu { transform: none !important; transition: opacity 180ms ease; }
+  .glide-menu__pill { transition: opacity 150ms ease; }
 }
 
 .app-shell__main {
@@ -321,13 +501,10 @@
 /* Lista de diagramas */
 .diagram-list {
   display: flex;
-  flex: 1;
   flex-direction: column;
-  min-height: 0;
-  padding: 12px 8px;
 }
 .diagram-list__search {
-  margin: 0 0 8px;
+  margin: 8px 0;
   padding: 6px 8px;
   color: inherit;
   background: var(--surface);
@@ -335,7 +512,7 @@
   border-radius: 6px;
 }
 .diagram-list__title {
-  margin: 0 8px 8px;
+  margin: 4px 10px 6px;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -343,16 +520,153 @@
   color: var(--text-muted);
 }
 .diagram-list ul {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
   list-style: none;
   margin: 0;
   padding: 0;
 }
-.diagram-list__section ul {
-  flex: none;
+.diagram-list__hint {
+  margin: 2px 10px 8px 36px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+/* Sección "Proyectos": se pliega con la misma transición que cada proyecto. */
+.diagram-list__projects,
+.project-tree__body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 300ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.diagram-list__projects[data-open],
+.project-tree__section[data-open] .project-tree__body {
+  grid-template-rows: 1fr;
+}
+.diagram-list__projects-fold,
+.project-tree__fold {
+  min-height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  transition: visibility 0s 300ms;
+}
+.diagram-list__projects[data-open] > .diagram-list__projects-fold,
+.project-tree__section[data-open] .project-tree__fold {
+  visibility: visible;
+  transition: visibility 0s;
+}
+
+/* Árbol de proyectos (BranchedMenu de React Bits) en los colores del tema. */
+.diagram-list .project-tree {
+  padding: 2px 0 4px 10px;
+}
+.project-tree__chevron {
+  display: inline-flex;
+  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.project-tree__section[data-open] .project-tree__chevron {
+  transform: rotate(90deg);
+}
+.project-tree__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.project-tree__tree {
+  position: relative;
+  box-sizing: border-box;
+  padding: 4px 0;
+}
+.project-tree__lines {
+  position: absolute;
+  top: 0;
+  left: 0;
   overflow: visible;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+.project-tree__section[data-open] .project-tree__lines {
+  opacity: 1;
+  transition: opacity 250ms ease 100ms;
+}
+.project-tree__base,
+.project-tree__reach {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.project-tree__base { stroke: var(--border); }
+.project-tree__reach {
+  stroke: var(--accent);
+  transition: stroke-dashoffset 400ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.project-tree__item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 32px;
+  padding: 0 8px 0 34px;
+  color: var(--text-muted);
+  font: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 200ms ease;
+}
+.project-tree__item:hover { color: var(--text); }
+.project-tree__item[aria-current='page'] {
+  color: var(--text);
+  font-weight: 600;
+}
+.project-tree__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  .diagram-list__projects,
+  .project-tree__body,
+  .project-tree__reach,
+  .project-tree__chevron { transition: none; }
+}
+
+/* Recientes (AnimatedList de React Bits): las filas entran con resorte y el resaltado se desliza. */
+.animated-list {
+  position: relative;
+}
+.animated-list__indicator {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 0;
+  background: var(--surface-muted);
+  border-radius: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+.animated-list > [data-row] {
+  z-index: 1;
+  animation: al-pop 620ms linear(0, 0.0603, 0.2033, 0.3821, 0.5633, 0.7258, 0.8584, 0.9574, 1.0242, 1.0634, 1.0809, 1.0828, 1.0747, 1.0613, 1.046, 1.0313, 1.0186, 1.0085, 1.0012, 0.9965, 0.994, 0.9931, 0.9933, 0.9941, 0.9953, 0.9966, 0.9978, 0.9988, 1) backwards;
+  animation-delay: min(calc(var(--i, 0) * 35ms), 420ms);
+}
+/* La fila con su menú ⋯ abierto queda encima de las siguientes para que el menú no quede tapado. */
+.animated-list > [data-row]:has([aria-expanded='true']) {
+  z-index: 2;
+}
+@keyframes al-pop {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0) scale(0.92);
+  }
+}
+@keyframes al-fade {
+  from { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animated-list > [data-row] { animation: al-fade 200ms ease backwards; }
 }
 .diagram-list__section-title {
   display: flex;
@@ -402,9 +716,6 @@
   background: none;
   border: 0;
   border-radius: 6px;
-}
-.diagram-list__item:hover {
-  background: var(--surface-muted);
 }
 .diagram-list__item.is-open {
   background: var(--accent-soft);
@@ -1115,7 +1426,6 @@ button:disabled,
 }
 
 /* Configuración */
-.sidebar-config { margin: 8px 16px; align-self: flex-start; }
 .theme-toggle { display: inline-flex; gap: 6px; align-items: center; }
 .config { max-width: 640px; margin: 0 auto; padding: 24px; overflow-y: auto; }
 .config code { display: block; margin: 6px 0; padding: 8px 10px; overflow-x: auto; white-space: nowrap; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }

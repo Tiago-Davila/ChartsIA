@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { type DiagramType } from '@chartsia/core/model';
 import { type Project } from '../state/api-client';
 import { DeleteProjectDialog } from './DeleteProjectDialog';
+import { AnimatedList } from './AnimatedList';
 import { ConfirmDialog } from './ConfirmDialog';
+import { FolderIcon } from './icons';
 import { DIAGRAM_TYPE_LABELS, formatDate } from './labels';
 import { NameDialog } from './NameDialog';
+import { ProjectTree, type ProjectTreeSection } from './ProjectTree';
 
 export interface DiagramListItem {
   diagramId: string;
@@ -73,10 +76,11 @@ type Dialogo =
   | { tipo: 'borrar'; diagrama: DiagramListItem }
   | { tipo: 'eliminarProyecto'; proyectoId: string; nombre: string };
 
-/** Barra lateral con los diagramas agrupados por proyecto (FR-025); el activo de los agentes va marcado. */
+/** Barra lateral estilo chat: "Proyectos" plegable con sus diagramas en árbol y "Recientes" con todos por fecha (FR-025); el activo de los agentes va marcado. */
 export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId, onOpen, onMove, onNewProject, onRenameProject, onRename, onDelete, onDeleteProject }: DiagramListProps) {
   const [busqueda, setBusqueda] = useState('');
   const [plegadas, setPlegadas] = useState<ReadonlySet<string>>(new Set());
+  const [proyectosAbiertos, setProyectosAbiertos] = useState(true);
   const [menuAbierto, setMenuAbierto] = useState<string | null>(null);
   const [dialogo, setDialogo] = useState<Dialogo | null>(null);
   const visibles = filtrarDiagramas(diagrams, busqueda);
@@ -110,10 +114,11 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
       return nuevas;
     });
 
-  const renderItem = (d: DiagramListItem) => {
+  const renderItem = (d: DiagramListItem, indice: number) => {
     const tieneProyecto = d.projectId !== undefined && projects.some((p) => p.id === d.projectId);
+    const proyecto = tieneProyecto ? projects.find((p) => p.id === d.projectId)?.name : undefined;
     return (
-    <li key={d.diagramId} className="diagram-list__row">
+    <li key={d.diagramId} className="diagram-list__row" data-row="" data-current={d.diagramId === openDiagramId ? '' : undefined} style={{ '--i': indice } as CSSProperties}>
       <button
         type="button"
         className={`diagram-list__item${d.diagramId === openDiagramId ? ' is-open' : ''}`}
@@ -123,7 +128,7 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
       >
         <span className="diagram-list__name">{d.title}</span>
         <span className="diagram-list__meta">
-          {DIAGRAM_TYPE_LABELS[d.type]} · {formatDate(d.updatedAt)}
+          {proyecto ? `${proyecto} · ` : ''}{DIAGRAM_TYPE_LABELS[d.type]} · {formatDate(d.updatedAt)}
         </span>
         {d.diagramId === activeDiagramId ? <span className="badge">Activo</span> : null}
       </button>
@@ -178,10 +183,59 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
     );
   };
 
-  // Menú ⋯ de la cabecera de un proyecto; hoy solo permite eliminarlo.
+  // Menú ⋯ de la cabecera de un proyecto: renombrarlo o eliminarlo.
+  const menuProyecto = (s: ProjectTreeSection) => {
+    const claveMenu = `proyecto:${s.id}`;
+    return (
+      <div className="diagram-list__menu-wrap">
+        <button
+          type="button"
+          className="diagram-list__menu-button"
+          aria-label={`Opciones del proyecto ${s.nombre}`}
+          aria-haspopup="menu"
+          aria-expanded={menuAbierto === claveMenu}
+          onClick={() => setMenuAbierto(menuAbierto === claveMenu ? null : claveMenu)}
+        >
+          ⋯
+        </button>
+        {menuAbierto === claveMenu ? (
+          <ul role="menu" className="diagram-list__menu">
+            <li role="none">
+              <button type="button" role="menuitem" onClick={() => elegir(() => setDialogo({ tipo: 'renombrar-proyecto', projectId: s.id, nombre: s.nombre }))}>
+                Renombrar…
+              </button>
+            </li>
+            <li role="none">
+              <button type="button" role="menuitem" onClick={() => elegir(() => setDialogo({ tipo: 'eliminarProyecto', proyectoId: s.id, nombre: s.nombre }))}>
+                Eliminar proyecto…
+              </button>
+            </li>
+          </ul>
+        ) : null}
+      </div>
+    );
+  };
+
+  const buscando = busqueda.trim() !== '';
+  // "Sin proyecto" no va en el árbol: esos diagramas ya están en Recientes.
+  const proyectos = secciones.filter((s): s is ProjectTreeSection => s.id !== null);
+  // Buscando, todo se muestra desplegado para no esconder resultados.
+  const verProyectos = buscando || proyectosAbiertos;
+
   return (
     <nav className="diagram-list" aria-label="Diagramas">
-      <h2 className="diagram-list__title">Diagramas</h2>
+      <button type="button" className="sidebar-nav__row" aria-expanded={verProyectos} onClick={() => setProyectosAbiertos((v) => !v)}>
+        <FolderIcon /> Proyectos
+      </button>
+      <div className="diagram-list__projects" data-open={verProyectos ? '' : undefined}>
+        <div className="diagram-list__projects-fold">
+          {proyectos.length > 0 ? (
+            <ProjectTree secciones={proyectos} abierta={(id) => buscando || !plegadas.has(id)} openDiagramId={openDiagramId} onToggle={alternar} onOpen={onOpen} menu={menuProyecto} />
+          ) : (
+            <p className="diagram-list__hint">{buscando ? 'Ningún proyecto coincide.' : 'Aún no hay proyectos. Crea uno desde el menú ⋯ de un diagrama.'}</p>
+          )}
+        </div>
+      </div>
       {diagrams.length > 0 ? (
         <input
           type="search"
@@ -192,59 +246,13 @@ export function DiagramList({ diagrams, projects, activeDiagramId, openDiagramId
           onChange={(e) => setBusqueda(e.target.value)}
         />
       ) : null}
-      {visibles.length === 0 && (diagrams.length === 0 || projects.length === 0 || busqueda.trim()) ? (
+      <h2 className="diagram-list__title">Recientes</h2>
+      {visibles.length === 0 ? (
         <p className="diagram-list__empty">{diagrams.length === 0 ? 'Aún no hay diagramas.' : 'Sin resultados.'}</p>
-      ) : projects.length === 0 ? (
-        <ul>{visibles.map(renderItem)}</ul>
       ) : (
-        <ul>
-          {secciones.map((s) => {
-            const clave = s.id ?? 'sin-proyecto';
-            // Buscando, las secciones se muestran abiertas para no esconder resultados.
-            const abierta = busqueda.trim() !== '' || !plegadas.has(clave);
-            // "Sin proyecto" no tiene nombre que cambiar, así que no lleva menú.
-            const projectId = s.id;
-            const claveMenu = `proyecto:${clave}`;
-            return (
-              <li key={clave} className="diagram-list__section">
-                <div className="diagram-list__section-head">
-                  <button type="button" className="diagram-list__section-title" aria-expanded={abierta} onClick={() => alternar(clave)}>
-                    <span aria-hidden>{abierta ? '▾' : '▸'}</span> {s.nombre} <span className="diagram-list__count">{s.diagramas.length}</span>
-                  </button>
-                  {projectId !== null ? (
-                    <div className="diagram-list__menu-wrap">
-                      <button
-                        type="button"
-                        className="diagram-list__menu-button"
-                        aria-label={`Opciones del proyecto ${s.nombre}`}
-                        aria-haspopup="menu"
-                        aria-expanded={menuAbierto === claveMenu}
-                        onClick={() => setMenuAbierto(menuAbierto === claveMenu ? null : claveMenu)}
-                      >
-                        ⋯
-                      </button>
-                      {menuAbierto === claveMenu ? (
-                        <ul role="menu" className="diagram-list__menu">
-                          <li role="none">
-                            <button type="button" role="menuitem" onClick={() => elegir(() => setDialogo({ tipo: 'renombrar-proyecto', projectId, nombre: s.nombre }))}>
-                              Renombrar…
-                            </button>
-                          </li>
-                          <li role="none">
-                            <button type="button" role="menuitem" onClick={() => elegir(() => setDialogo({ tipo: 'eliminarProyecto', proyectoId: projectId, nombre: s.nombre }))}>
-                              Eliminar proyecto…
-                            </button>
-                          </li>
-                        </ul>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-                {abierta ? <ul>{s.diagramas.map(renderItem)}</ul> : null}
-              </li>
-            );
-          })}
-        </ul>
+        <AnimatedList ariaLabel="Recientes" className="diagram-list__recent">
+          {visibles.map(renderItem)}
+        </AnimatedList>
       )}
       {dialogo?.tipo === 'eliminarProyecto' ? (
         <DeleteProjectDialog

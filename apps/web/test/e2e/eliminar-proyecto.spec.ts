@@ -10,7 +10,7 @@ test.describe('eliminar un proyecto', () => {
     await page.goto('/');
     const lista = page.getByRole('navigation', { name: 'Diagramas' });
     const seccion = lista.locator('li.diagram-list__section', { hasText: 'Proyecto Cancelable' });
-    await expect(seccion.locator('.diagram-list__item', { hasText: 'Diagrama cancelar' })).toBeVisible();
+    await expect(seccion.locator('.project-tree__item', { hasText: 'Diagrama cancelar' })).toBeVisible();
 
     await seccion.getByRole('button', { name: 'Opciones del proyecto' }).click();
     await page.getByRole('menuitem', { name: 'Eliminar proyecto…' }).click();
@@ -19,7 +19,7 @@ test.describe('eliminar un proyecto', () => {
     await ventana.getByRole('button', { name: 'Cancelar' }).click();
     await expect(ventana).toHaveCount(0);
 
-    await expect(seccion.locator('.diagram-list__item', { hasText: 'Diagrama cancelar' })).toBeVisible();
+    await expect(seccion.locator('.project-tree__item', { hasText: 'Diagrama cancelar' })).toBeVisible();
     await page.reload();
     await expect(lista.locator('li.diagram-list__section', { hasText: 'Proyecto Cancelable' })).toBeVisible();
   });
@@ -34,7 +34,7 @@ test.describe('eliminar un proyecto', () => {
     await page.goto('/');
     const lista = page.getByRole('navigation', { name: 'Diagramas' });
     const seccion = lista.locator('li.diagram-list__section', { hasText: 'Proyecto Borrable' });
-    await expect(seccion.locator('.diagram-list__item')).toHaveCount(2);
+    await expect(seccion.locator('.project-tree__item')).toHaveCount(2);
 
     await seccion.getByRole('button', { name: 'Opciones del proyecto' }).click();
     await page.getByRole('menuitem', { name: 'Eliminar proyecto…' }).click();
