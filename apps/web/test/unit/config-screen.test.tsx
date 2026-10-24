@@ -4,12 +4,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AGENTS, mcpUrlParaAgentes, promptInstalacion } from '../../src/app/agents';
 import { ConfigScreen } from '../../src/app/ConfigScreen';
 import { type ConnectedAgent } from '../../src/state/api-client';
-import { clearToken, setToken } from '../../src/state/auth-token';
 
 const origin = 'http://127.0.0.1:3333';
 let agents: ConnectedAgent[] = [];
 const renderScreen = (section: 'general' | 'mcp' = 'mcp', onSection = vi.fn()) =>
-  render(<ConfigScreen origin={origin} agents={agents} connection="connected" section={section} onSection={onSection} onBack={vi.fn()} />);
+  render(<ConfigScreen origin={origin} agents={agents} section={section} onSection={onSection} onBack={vi.fn()} />);
 
 /** Abre la ventana de conexión de un agente desde su tarjeta. */
 const abrir = async (nombre: string) => {
@@ -20,7 +19,6 @@ const abrir = async (nombre: string) => {
 describe('ConfigScreen', () => {
   afterEach(() => {
     agents = [];
-    clearToken();
     vi.restoreAllMocks();
   });
 
@@ -36,11 +34,12 @@ describe('ConfigScreen', () => {
     expect(onSection).toHaveBeenCalledWith('mcp');
   });
 
-  it('muestra la URL del MCP, el estado del hub y una tarjeta por agente', async () => {
+  it('muestra solo las tarjetas de los agentes, sin la URL del MCP ni el estado del hub', async () => {
     renderScreen();
     expect(screen.getByRole('region', { name: 'Conexiones MCP' })).toBeInTheDocument();
-    expect(screen.getByText(`${origin}/mcp`)).toBeInTheDocument();
-    expect(screen.getByText('Conectado al hub')).toBeInTheDocument();
+    expect(screen.queryByText(`${origin}/mcp`)).toBeNull();
+    expect(screen.queryByText('Conectado al hub')).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Conectados' })).toBeNull();
     for (const agent of AGENTS) {
       const card = screen.getByRole('article', { name: agent.name });
       expect(card).toHaveTextContent(agent.summary);
@@ -52,11 +51,31 @@ describe('ConfigScreen', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('marca como conectadas las integraciones cuyo cliente ya llamó al hub', () => {
-    agents = [{ id: 1, name: 'claude-code', version: '2.1.0', lastCallAt: '2026-01-02T03:04:00.000Z' }];
+  it('primero muestra los conectados y después los habilitados', () => {
+    agents = [{ id: 1, name: 'opencode', version: '1.0.0', lastCallAt: '2026-01-02T03:04:00.000Z' }];
     renderScreen();
-    expect(within(screen.getByRole('article', { name: 'Claude Code (HTTP)' })).getByRole('button', { name: 'Conectado' })).toBeInTheDocument();
-    expect(within(screen.getByRole('article', { name: 'OpenCode (HTTP)' })).getByRole('button', { name: 'Conectar' })).toBeInTheDocument();
+    const conectados = screen.getByRole('region', { name: 'Conectados' });
+    const habilitados = screen.getByRole('region', { name: 'Habilitados' });
+    expect(conectados.compareDocumentPosition(habilitados) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(conectados).getAllByRole('article').map((a) => a.getAttribute('aria-label'))).toEqual(['OpenCode (HTTP)', 'OpenCode (stdio)']);
+    expect(within(conectados).getAllByRole('button', { name: 'Conectado' })).toHaveLength(2);
+    expect(within(habilitados).getByRole('article', { name: 'Claude Code (HTTP)' })).toBeInTheDocument();
+    expect(within(habilitados).queryByRole('button', { name: 'Conectado' })).toBeNull();
+  });
+
+  it('OpenCode lleva su logo oficial en las dos versiones del tema; el resto, sus iniciales', () => {
+    renderScreen();
+    const opencode = screen.getByRole('article', { name: 'OpenCode (HTTP)' });
+    expect(Array.from(opencode.querySelectorAll('img')).map((i) => i.getAttribute('src'))).toEqual(['/logos/opencode-light.svg', '/logos/opencode-dark.svg']);
+    const claude = screen.getByRole('article', { name: 'Claude Code (HTTP)' });
+    expect(claude.querySelector('img')).toBeNull();
+    expect(claude).toHaveTextContent('CC');
+  });
+
+  it('xAI se conecta como herramienta MCP remota en cada petición', () => {
+    const xai = AGENTS.find((a) => a.id === 'xai')!;
+    expect(JSON.parse(xai.snippet(`${origin}/mcp`))).toEqual({ type: 'mcp', server_label: 'chartsia', server_url: `${origin}/mcp`, authorization: '<CHARTSIA_TOKEN>' });
+    expect(promptInstalacion(xai, `${origin}/mcp`)).toContain('xAI');
   });
 
   it('el comando de Claude Code es de usuario y añade el token fuera de loopback', () => {
@@ -80,9 +99,9 @@ describe('ConfigScreen', () => {
     }
   });
 
-  it('solo la Responses API, que no tiene configuración global, lo explica en su ayuda', () => {
+  it('solo las API de respuestas, que no tienen configuración global, lo explican en su ayuda', () => {
     const sinGlobal = AGENTS.filter((a) => /no tiene configuración global/i.test(a.help));
-    expect(sinGlobal.map((a) => a.id)).toEqual(['openai']);
+    expect(sinGlobal.map((a) => a.id)).toEqual(['openai', 'xai']);
   });
 
   it('la ventana de Claude Desktop explica su archivo de configuración', async () => {
@@ -101,17 +120,6 @@ describe('ConfigScreen', () => {
     }
     const remoto = snippet('opencode-remote', 'https://hub.example.com/mcp');
     expect(remoto.mcp.chartsia.headers.Authorization).toBe('Bearer <CHARTSIA_TOKEN>');
-  });
-
-  it('lista los agentes conectados con su versión y su última llamada, o avisa si no hay', () => {
-    const { unmount } = renderScreen();
-    expect(screen.getByText('Ningún agente se ha conectado todavía.')).toBeInTheDocument();
-    unmount();
-    agents = [{ id: 1, name: '<b>claude-code</b>', version: '2.1.0', lastCallAt: '2026-01-02T03:04:00.000Z' }];
-    renderScreen();
-    const item = within(screen.getByRole('list', { name: 'Agentes conectados' })).getByRole('listitem');
-    expect(item).toHaveTextContent('<b>claude-code</b> v2.1.0 · última llamada');
-    expect(item.querySelector('b')).toBeNull();
   });
 
   it('copia el comando de la tarjeta', async () => {
@@ -133,12 +141,15 @@ describe('ConfigScreen', () => {
     }
   });
 
-  it('la ventana de cada tarjeta tiene el botón de copiar comando y el de copiar prompt', async () => {
+  it('en la ventana de cada tarjeta el botón de copiar va dentro del comando y dentro del prompt', async () => {
     renderScreen();
     for (const agent of AGENTS) {
       const ventana = await abrir(agent.name);
-      expect(within(ventana).getByRole('button', { name: `Copiar configuración de ${agent.name}` })).toBeInTheDocument();
-      expect(within(ventana).getByRole('button', { name: `Copiar prompt de ${agent.name}` })).toBeInTheDocument();
+      const comando = within(ventana).getByRole('button', { name: `Copiar configuración de ${agent.name}` });
+      expect(comando.closest('.code-block')!.querySelector('code')!.textContent).toBe(agent.snippet(`${origin}/mcp`));
+      const prompt = within(ventana).getByRole('button', { name: `Copiar prompt de ${agent.name}` });
+      expect(prompt.closest('.code-block')).toHaveTextContent('create_diagram');
+      expect(within(ventana).queryByRole('button', { name: 'Copiar' })).toBeNull();
       await userEvent.click(within(ventana).getByRole('button', { name: 'Cerrar' }));
     }
   });
@@ -157,18 +168,8 @@ describe('ConfigScreen', () => {
     const user = userEvent.setup();
     vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(new Error('denegado'));
     renderScreen();
-    await user.click(screen.getByRole('button', { name: 'Copiar URL del MCP' }));
+    await abrir('Claude Code (HTTP)');
+    await user.click(screen.getByRole('button', { name: 'Copiar configuración de Claude Code (HTTP)' }));
     expect(await screen.findByText(/No se pudo copiar/)).toBeInTheDocument();
-  });
-
-  it('sin token lo indica; con token lo enmascara y permite verlo', async () => {
-    const { unmount } = renderScreen();
-    expect(screen.getByText(/No hay token guardado/)).toBeInTheDocument();
-    unmount();
-    setToken('secreto-123');
-    renderScreen();
-    expect(screen.queryByText('secreto-123')).toBeNull();
-    await userEvent.click(screen.getByRole('button', { name: 'Ver token' }));
-    expect(screen.getByText('secreto-123')).toBeInTheDocument();
   });
 });

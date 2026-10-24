@@ -3,8 +3,11 @@ export interface Agent {
   name: string;
   /** Iniciales del recuadro del logo mientras no haya una imagen. */
   monogram: string;
-  /** Logo opcional (ruta en `public/`); sin él se muestran las iniciales. */
-  logo?: string;
+  /**
+   * Logo oficial para el tema claro y el oscuro (rutas en `public/`); sin él se muestran las iniciales.
+   * Solo se usan logos cuya marca permite mostrarlos sin pedir permiso.
+   */
+  logo?: { light: string; dark: string };
   /** Tipo de cliente que se muestra bajo el nombre. */
   category: string;
   /** Una frase para la tarjeta de la integración. */
@@ -77,9 +80,20 @@ export const AGENTS: Agent[] = [
     snippet: (mcpUrl) => JSON.stringify({ type: 'mcp', server_label: 'chartsia', server_url: mcpUrl, authorization: '<CHARTSIA_TOKEN>' }),
   },
   {
+    id: 'xai',
+    name: 'xAI Responses API',
+    monogram: 'xAI',
+    category: 'API',
+    summary: 'Herramienta MCP remota en cada petición a la API de Grok.',
+    clients: [],
+    help: 'No tiene configuración global ni carpetas: la herramienta va en cada petición, en el array "tools". El hub debe ser accesible desde internet por HTTP en streaming y el token va en authorization.',
+    snippet: (mcpUrl) => JSON.stringify({ type: 'mcp', server_label: 'chartsia', server_url: mcpUrl, authorization: '<CHARTSIA_TOKEN>' }),
+  },
+  {
     id: 'opencode-remote',
     name: 'OpenCode (HTTP)',
     monogram: 'OC',
+    logo: { light: '/logos/opencode-light.svg', dark: '/logos/opencode-dark.svg' },
     category: 'Terminal',
     summary: 'Servidor remoto en tu opencode.json global o del proyecto.',
     clients: ['opencode'],
@@ -104,6 +118,7 @@ export const AGENTS: Agent[] = [
     id: 'opencode-local',
     name: 'OpenCode (stdio)',
     monogram: 'OC',
+    logo: { light: '/logos/opencode-light.svg', dark: '/logos/opencode-dark.svg' },
     category: 'Terminal',
     summary: 'Puente stdio local, lanzado por OpenCode con node.',
     clients: ['opencode'],
@@ -129,9 +144,10 @@ export const AGENTS: Agent[] = [
 /** Prompt para pegar en el propio agente: le indica cómo conectarse al hub con el mismo snippet de la tarjeta. */
 export function promptInstalacion(agent: Agent, mcpUrl: string): string {
   const snippet = agent.snippet(mcpUrl);
-  if (agent.id === 'openai') {
+  if (agent.id === 'openai' || agent.id === 'xai') {
+    const api = agent.id === 'openai' ? 'la API de Respuestas de OpenAI' : 'la API de xAI (Grok)';
     return [
-      'Estoy escribiendo código que llama a la API de Respuestas de OpenAI. Añade a cada petición ChartsIA, el servidor MCP que dibuja diagramas UML y C4, con esta herramienta en el array "tools":',
+      `Estoy escribiendo código que llama a ${api}. Añade a cada petición ChartsIA, el servidor MCP que dibuja diagramas UML y C4, con esta herramienta en el array "tools":`,
       snippet,
       `La URL del hub es ${mcpUrl}. El hub debe ser accesible desde internet. Si necesitas el token CHARTSIA_TOKEN, pídemelo; no lo inventes.`,
       'Al terminar, haz una llamada de prueba que liste las herramientas y comprueba que aparece create_diagram.',

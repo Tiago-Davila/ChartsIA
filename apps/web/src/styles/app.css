@@ -826,27 +826,6 @@ body.is-resizing * { cursor: col-resize !important; }
 }
 
 /* Estado de conexión */
-.connection {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  font-size: 12px;
-  color: var(--text-muted);
-  border-top: 1px solid var(--border);
-}
-.connection__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--danger);
-}
-.connection--connected .connection__dot {
-  background: var(--ok);
-}
-.connection--reconnecting .connection__dot {
-  background: var(--warn);
-}
 
 /* Toolbar */
 .toolbar {
@@ -1501,26 +1480,48 @@ button:disabled,
 .config__header h2 { margin: 0 0 4px; font-size: 20px; }
 .config__header p { margin: 0; color: var(--text-muted); }
 .config h3 { margin: 20px 0 6px; font-size: 14px; }
-.config__hub .connection { padding: 4px 0; border-top: 0; }
-.config__hub {
-  margin-bottom: 24px;
-  padding: 4px 16px 16px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-}
-.config code,
-.config__connect code { display: block; margin: 6px 0; padding: 8px 10px; overflow-x: auto; white-space: nowrap; background: var(--surface-muted); border: 1px solid var(--border); border-radius: 6px; }
 .config__connect { display: grid; justify-items: start; gap: 6px; margin-bottom: 16px; }
 .config__connect > p { margin: 0; font-size: 14px; }
-.config__connect > code,
-.config__connect > pre { justify-self: stretch; }
+.config__connect > .code-block { justify-self: stretch; }
 .config__connect h3 { margin: 12px 0 0; font-size: 14px; }
 .modal--wide { width: min(640px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; }
-.config__prompt { margin: 6px 0; padding: 8px 10px; white-space: pre-wrap; background: var(--surface-muted); border: 1px solid var(--border); border-radius: 6px; }
-.config__prompt code { display: inline; margin: 0; padding: 0; border: 0; background: none; white-space: pre-wrap; }
+/* Código con el botón de copiar adentro, arriba a la derecha. */
+.code-block { position: relative; }
+.code-block pre {
+  max-height: 260px;
+  margin: 0;
+  padding: 10px 44px 10px 12px;
+  overflow: auto;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.code-block__copy {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 150ms ease, transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.code-block__copy:hover { color: var(--text); }
+.code-block__copy:active { transform: scale(0.94); }
+.code-block__copy:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 1px; }
+.code-block__copy[data-copied] { color: var(--ok); }
+.code-block__error { display: block; margin-top: 4px; font-size: 12px; color: var(--danger); }
 
 /* Integraciones (Integrations de React Bits) en los colores del tema. */
+.integrations-group > h3 { margin: 0 0 10px; font-size: 13px; color: var(--text-muted); }
 .integrations {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1553,7 +1554,10 @@ button:disabled,
   border-radius: 8px;
 }
 .integration__logo img { width: 22px; height: 22px; object-fit: contain; }
-.integration .integration__name { margin: 0; font-size: 14px; font-weight: 600; }
+.integration__logo-dark { display: none; }
+:root[data-theme='dark'] .integration__logo-light { display: none; }
+:root[data-theme='dark'] .integration__logo-dark { display: block; }
+.integration__name { margin: 0; font-size: 14px; font-weight: 600; }
 .integration__category { margin: 0; font-size: 12px; color: var(--text-muted); }
 .integration__summary { flex: 1; margin: 0; font-size: 13px; color: var(--text-muted); }
 .integration__action {

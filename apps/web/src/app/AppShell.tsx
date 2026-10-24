@@ -141,7 +141,7 @@ export function AppShell(props: AppShellProps) {
   if (props.configOpen) {
     return (
       <>
-        <ConfigScreen origin={props.origin} agents={props.agents} connection={props.connection} section={props.configSection ?? 'general'} onSection={props.onConfig} onBack={props.onCloseConfig} />
+        <ConfigScreen origin={props.origin} agents={props.agents} section={props.configSection ?? 'general'} onSection={props.onConfig} onBack={props.onCloseConfig} />
         {props.overlay}
       </>
     );
