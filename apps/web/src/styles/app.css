@@ -123,9 +123,9 @@
 /* Barra de herramientas en una fila arriba al centro. */
 .drawing-tool {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: 6px;
-  padding: 4px;
+  padding: 0 4px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -138,6 +138,170 @@
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--surface);
+}
+
+/* Herramientas con efecto gelatina (JellyRadio de React Bits) en los colores del tema. */
+.jelly-radio {
+  --jr-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--jr-pad-y, 6px) var(--jr-pad-x, 16px);
+  user-select: none;
+  -webkit-user-select: none;
+}
+.jelly-radio__chip {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transform-origin: 50% 50%;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.jelly-radio__chip:focus-visible { outline: none; }
+.jelly-radio__chip:focus-visible .jelly-radio__skin { box-shadow: 0 0 0 2px var(--accent-ring); }
+.jelly-radio__skin {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 12px;
+  overflow: hidden;
+  color: var(--text);
+  white-space: nowrap;
+  background: var(--surface-muted);
+  border-radius: 16px;
+  transition: transform 160ms var(--jr-ease-out), background-color 200ms ease, color 200ms ease;
+}
+.jelly-radio__skin::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--text);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .jelly-radio__chip[data-on='false']:hover .jelly-radio__skin::before { opacity: 0.08; }
+}
+.jelly-radio__chip:active .jelly-radio__skin { transform: scale(0.97); }
+.jelly-radio__chip[data-on='true'] .jelly-radio__skin {
+  color: var(--on-accent);
+  background: var(--accent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .jelly-radio__chip:active .jelly-radio__skin { transform: none; }
+}
+
+/* Botón de mantener para confirmar (HoldButton de React Bits) en los colores de peligro del tema. */
+.hold-button {
+  --hb-bg: var(--danger-soft);
+  --hb-fill: var(--danger);
+  --hb-text: var(--danger);
+  --hb-fill-text: #fff;
+  --hb-wave: 6px;
+  --hb-w: 0px;
+  --hb-h: 0px;
+  --hb-p: 0;
+  --hb-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  isolation: isolate;
+  padding: 6px 12px;
+  color: var(--hb-text);
+  font: inherit;
+  line-height: inherit;
+  background: var(--hb-bg);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: transform 160ms var(--hb-ease-out), box-shadow 200ms var(--hb-ease-out);
+}
+.hold-button[data-phase='holding'] {
+  transform: scale(0.97);
+  box-shadow: 0 8px 24px -6px color-mix(in srgb, var(--hb-fill) 60%, transparent);
+  transition: transform 160ms var(--hb-ease-out), box-shadow var(--hb-hold) linear;
+}
+.hold-button:focus-visible { outline: 2px solid var(--hb-fill); outline-offset: 2px; }
+.hold-button__pulse {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+}
+.hold-button[data-phase='done'] .hold-button__pulse { animation: hb-pulse 600ms var(--hb-ease-out) forwards; }
+@keyframes hb-pulse {
+  from { opacity: 1; box-shadow: 0 0 0 0 color-mix(in srgb, var(--hb-fill) 55%, transparent); }
+  to { opacity: 0; box-shadow: 0 0 0 14px color-mix(in srgb, var(--hb-fill) 0%, transparent); }
+}
+.hold-button__label {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  white-space: nowrap;
+}
+.hold-button__clip {
+  position: absolute;
+  inset: -1px;
+  z-index: 3;
+  clip-path: inset(0 round var(--radius));
+  pointer-events: none;
+}
+.hold-button__fill,
+.hold-button__crest {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--hb-fill-text);
+  background: var(--hb-fill);
+}
+.hold-button__fill {
+  clip-path: inset(0 calc((1 - var(--hb-p)) * (100% + 0.75 * var(--hb-wave)) - var(--hb-p) * 0.25 * var(--hb-wave)) 0 0);
+}
+.hold-button__crest {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='200' viewBox='0 0 20 200' preserveAspectRatio='none'%3E%3Cpath d='M0 0H10C18 8 18 25.3 10 33.3S2 58.7 10 66.7S18 92 10 100S2 125.3 10 133.3S18 158.7 10 166.7S2 192 10 200H0Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='200' viewBox='0 0 20 200' preserveAspectRatio='none'%3E%3Cpath d='M0 0H10C18 8 18 25.3 10 33.3S2 58.7 10 66.7S18 92 10 100S2 125.3 10 133.3S18 158.7 10 166.7S2 192 10 200H0Z'/%3E%3C/svg%3E");
+  -webkit-mask-repeat: repeat-y;
+  mask-repeat: repeat-y;
+  -webkit-mask-size: var(--hb-wave) calc(var(--hb-h) * 2);
+  mask-size: var(--hb-wave) calc(var(--hb-h) * 2);
+  -webkit-mask-position-x: calc(-1 * var(--hb-wave) + var(--hb-p) * (var(--hb-w) + var(--hb-wave)));
+  mask-position-x: calc(-1 * var(--hb-wave) + var(--hb-p) * (var(--hb-w) + var(--hb-wave)));
+  -webkit-mask-position-y: calc(-1 * var(--hb-p) * var(--hb-cycles) * var(--hb-h));
+  mask-position-y: calc(-1 * var(--hb-p) * var(--hb-cycles) * var(--hb-h));
+}
+.hold-button__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hold-button { transform: none !important; }
+  .hold-button__fill { clip-path: inset(0); opacity: 0; transition: opacity 200ms ease; }
+  .hold-button__crest { display: none; }
+  .hold-button[data-phase='holding'] .hold-button__fill,
+  .hold-button[data-phase='done'] .hold-button__fill { opacity: 1; transition: opacity var(--hb-hold) linear; }
+  .hold-button__pulse { animation: none !important; }
 }
 
 /* Nuevo diagrama */
