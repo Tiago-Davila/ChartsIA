@@ -7,7 +7,8 @@ test.describe('nuevo diagrama desde la app', () => {
     await page.goto(`/d/${existente}`);
     const lista = page.getByRole('navigation', { name: 'Diagramas' });
 
-    await page.getByRole('button', { name: 'Nuevo diagrama' }).click();
+    await page.getByRole('button', { name: 'Nuevo', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Diagrama en blanco' }).click();
     const formulario = page.getByRole('form', { name: 'Nuevo diagrama' });
     await formulario.getByLabel('Tipo').selectOption('er');
     await formulario.getByLabel('Título').fill('Mi diagrama nuevo');
@@ -17,7 +18,7 @@ test.describe('nuevo diagrama desde la app', () => {
     const nuevo = lista.getByRole('button', { name: /^Mi diagrama nuevo/ });
     await expect(nuevo).toHaveAttribute('aria-current', 'page');
     await expect(nuevo).toContainText('Entidad-relación');
-    await expect(page).toHaveURL(/\/d\/dg_/);
+    await expect(page).toHaveURL(/\/d\/[a-z0-9-]+-[a-z2-7]{12}$/);
     expect(page.url()).not.toContain(existente);
 
     await page.reload();

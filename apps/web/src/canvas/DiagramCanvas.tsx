@@ -19,6 +19,7 @@ import {
 } from '@xyflow/react';
 import { type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { DRAWING_DEFAULT_COLOR, DRAWING_WIDTH_PX, HIGHLIGHTER_DEFAULT_COLOR, HIGHLIGHTER_OPACITY, HIGHLIGHTER_WIDTH_PX, type Point, type StackOrderTarget, type StyleLineWidth } from '@chartsia/core/model';
+import { JellyRadio, type JellyRadioItem } from '../app/JellyRadio';
 import { edgeTypes } from '../edges';
 import { nodeTypes } from '../nodes';
 import { useDiagramEditActions } from '../nodes/edit-context';
@@ -50,7 +51,8 @@ export interface DiagramCanvasProps {
   onAddFrame?: (box: FrameBox) => void;
 }
 
-export const FIT_VIEW_OPTIONS = { padding: 0.15, maxZoom: 1.25 };
+// Arriba deja lugar para la barra de herramientas, que flota sobre el lienzo.
+export const FIT_VIEW_OPTIONS = { padding: { top: '96px' as const, x: 0.15, bottom: 0.15 }, maxZoom: 1.25 };
 const PRO_OPTIONS = { hideAttribution: true };
 const MINIMAP_STYLE = { width: 180, height: 120 };
 const MAX_CAPTURE_POINTS = 2048;
@@ -59,6 +61,16 @@ const BUCKET_DEFAULT_COLOR = PALETTE[3].value;
 
 /** Herramienta activa de la barra. `select` es la de por defecto y apaga a las demás. */
 type CanvasTool = 'select' | 'hand' | 'pen' | 'highlighter' | 'bucket' | 'text' | 'frame';
+/** Herramientas de la barra, en orden. */
+const TOOLS: JellyRadioItem<CanvasTool>[] = [
+  { value: 'select', label: 'Selección' },
+  { value: 'hand', label: 'Mano' },
+  { value: 'pen', label: 'Lápiz' },
+  { value: 'highlighter', label: 'Marcador' },
+  { value: 'bucket', label: 'Balde' },
+  { value: 'text', label: 'Texto' },
+  { value: 'frame', label: 'Marco' },
+];
 /** Herramientas con color propio elegido en la barra. */
 type ColoredTool = 'pen' | 'highlighter' | 'bucket';
 /** Arrastre de la herramienta Marco: esquinas inicial y actual, en píxeles del lienzo. */
@@ -321,12 +333,6 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   // Borra lo seleccionado igual que la tecla Supr.
   const deleteSelection = () => void deleteElements({ nodes: nodes.filter((n) => n.selected), edges: edges.filter((e) => e.selected) });
 
-  // Botón de la barra: al pulsar la herramienta activa vuelve a la selección.
-  const toolButton = (value: CanvasTool, label: string) => (
-    <button type="button" className={`button${tool === value ? ' button--primary' : ''}`} aria-pressed={tool === value} onClick={() => setTool((active) => (active === value ? 'select' : value))}>
-      {label}
-    </button>
-  );
 
   const selectedIds = nodes.filter((n) => n.selected).map((n) => n.id);
   const allLocked = nodes.filter((n) => n.selected).every((n) => (n.data as ElementNodeData).element.locked === true);
@@ -411,26 +417,21 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
           maxZoom={4}
           proOptions={PRO_OPTIONS}
         >
-          <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#d5d9e0" />
+          <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
           <MiniMap pannable zoomable nodeColor={nodeColor} nodeStrokeColor="#9aa5b1" style={MINIMAP_STYLE} />
           <Controls showInteractive={false} />
           {readOnly ? null : <SelectionPanel nodes={nodes} edges={edges} editingEdge={editingEdge} onEditEdge={setEditingEdge} />}
           {readOnly ? null : (
-            <Panel position="top-left" className="drawing-tool nodrag nopan">
-              {toolButton('select', 'Selección')}
-              {toolButton('hand', 'Mano')}
-              {toolButton('pen', 'Lápiz')}
-              {toolButton('highlighter', 'Marcador')}
+            <Panel position="top-center" className="drawing-tool nodrag nopan">
+              {/* Al pulsar la herramienta activa vuelve a la selección. */}
+              <JellyRadio items={TOOLS} value={tool} ariaLabel="Herramientas" onSelect={(value) => setTool((active) => (active === value ? 'select' : value))} />
               {drawingMode ? (
                 <input type="color" aria-label={highlighter ? 'Color del marcador' : 'Color del lápiz'} value={drawingColor} onChange={(event) => setColors((current) => ({ ...current, [tool]: event.target.value }))} />
               ) : null}
               {drawingMode ? (
                 <WidthPicker label={highlighter ? 'Grosor del marcador' : 'Grosor del lápiz'} value={widths[tool]} onPick={(width) => setWidths((current) => ({ ...current, [tool]: width }))} />
               ) : null}
-              {toolButton('bucket', 'Balde')}
               {bucketMode ? <input type="color" aria-label="Color del balde" value={bucketColor} onChange={(event) => setColors((current) => ({ ...current, bucket: event.target.value }))} /> : null}
-              {toolButton('text', 'Texto')}
-              {toolButton('frame', 'Marco')}
             </Panel>
           )}
         </ReactFlow>

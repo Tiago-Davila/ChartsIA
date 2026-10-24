@@ -14,13 +14,13 @@ describe('contract: create_diagram', () => {
     expect(res.structuredContent).toEqual({
       diagramId: 'dg_aaaaaaaaaaaa',
       revision: 1,
-      viewUrl: 'http://127.0.0.1:3333/d/dg_aaaaaaaaaaaa',
+      viewUrl: 'http://chartsia.localhost:3333/d/dg_aaaaaaaaaaaa',
       counts: { elements: 1, relations: 0 },
       warnings: [],
     });
     const [text, link] = res.content as { type: string; text?: string; uri?: string; mimeType?: string }[];
     expect(text?.type).toBe('text');
-    expect(text?.text).toContain('http://127.0.0.1:3333/d/dg_aaaaaaaaaaaa');
+    expect(text?.text).toContain('http://chartsia.localhost:3333/d/dg_aaaaaaaaaaaa');
     expect(link).toMatchObject({ type: 'resource_link', uri: 'chartsia://diagrams/dg_aaaaaaaaaaaa/export.svg', mimeType: 'image/svg+xml' });
   });
 

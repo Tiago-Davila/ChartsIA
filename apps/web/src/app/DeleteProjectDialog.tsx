@@ -1,3 +1,4 @@
+import { HoldButton } from './HoldButton';
 import { Modal } from './Modal';
 
 export interface DeleteProjectDialogProps {
@@ -15,7 +16,7 @@ export function textoDiagramas(cantidad: number): string {
   return `Sus ${cantidad} diagramas pasan a «Sin proyecto».`;
 }
 
-/** Advertencia antes de eliminar un proyecto: Cancelar no hace nada y Eliminar lo borra. */
+/** Advertencia antes de eliminar un proyecto: Cancelar no hace nada y mantener pulsado Eliminar lo borra. */
 export function DeleteProjectDialog({ nombre, diagramas, onConfirmar, onCerrar }: DeleteProjectDialogProps) {
   return (
     <Modal titulo="Eliminar proyecto" onCerrar={onCerrar}>
@@ -26,9 +27,9 @@ export function DeleteProjectDialog({ nombre, diagramas, onConfirmar, onCerrar }
         <button type="button" className="button" onClick={onCerrar}>
           Cancelar
         </button>
-        <button type="button" className="button button--danger" onClick={onConfirmar}>
-          Eliminar
-        </button>
+        <HoldButton hint="Mantén pulsado para confirmar" onHold={onConfirmar}>
+          Mantener para eliminar
+        </HoldButton>
       </div>
     </Modal>
   );

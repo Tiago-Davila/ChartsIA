@@ -810,9 +810,9 @@
     {
       "id": "cliente-referencia-label",
       "type": "text",
-      "x": 173.5,
-      "y": 402,
-      "width": -16,
+      "x": 137.25,
+      "y": 426.5,
+      "width": 56.5,
       "height": 15,
       "angle": 0,
       "strokeColor": "#1e1e1e",

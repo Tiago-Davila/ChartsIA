@@ -1,3 +1,4 @@
+import { direccionDe } from './support/rutas';
 import { library, shop } from './support/fake-agent';
 import { expect, test } from './support/fixtures';
 
@@ -11,7 +12,7 @@ test('Ajustar abre el diagrama editado por el agente y muestra el cambio', async
   await agent.apply([{ op: 'add_element', element: { id: 'Auditoria', kind: 'container', name: 'Auditoría', technology: 'Nest.js' } }], tienda);
 
   await page.getByRole('button', { name: 'Ajustar', exact: true }).click();
-  await expect(page).toHaveURL(new RegExp(`/d/${tienda}$`));
+  await expect(page).toHaveURL(direccionDe(tienda));
 
   const nuevo = page.locator('[data-element-id="Auditoria"]');
   await expect(nuevo).toBeVisible();

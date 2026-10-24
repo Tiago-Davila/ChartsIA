@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { DeleteProjectDialog, textoDiagramas } from '../../src/app/DeleteProjectDialog';
@@ -25,14 +25,31 @@ describe('DeleteProjectDialog', () => {
     expect(screen.getByText(/Se elimina el proyecto «Tienda»\. Sus 3 diagramas pasan a «Sin proyecto»\. Los diagramas no se borran\./)).toBeInTheDocument();
   });
 
-  it('Cancelar cierra sin eliminar, y Eliminar confirma una sola vez', async () => {
+  it('Cancelar cierra sin eliminar', async () => {
     const { onConfirmar, onCerrar } = abrir(1);
     await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
     expect(onCerrar).toHaveBeenCalledOnce();
     expect(onConfirmar).not.toHaveBeenCalled();
+  });
 
-    await userEvent.click(screen.getByRole('button', { name: 'Eliminar' }));
-    expect(onConfirmar).toHaveBeenCalledOnce();
+  it('Eliminar confirma una sola vez al mantenerlo pulsado, y soltarlo antes no elimina', () => {
+    vi.useFakeTimers({ toFake: ['performance', 'requestAnimationFrame', 'cancelAnimationFrame', 'setTimeout', 'clearTimeout'] });
+    try {
+      const { onConfirmar } = abrir(1);
+      const eliminar = screen.getByRole('button', { name: 'Mantener para eliminar' });
+      fireEvent.keyDown(eliminar, { key: 'Enter' });
+      act(() => vi.advanceTimersByTime(500));
+      fireEvent.keyUp(eliminar, { key: 'Enter' });
+      act(() => vi.advanceTimersByTime(2000));
+      expect(onConfirmar).not.toHaveBeenCalled();
+
+      fireEvent.keyDown(eliminar, { key: 'Enter' });
+      act(() => vi.advanceTimersByTime(1700));
+      fireEvent.keyUp(eliminar, { key: 'Enter' });
+      expect(onConfirmar).toHaveBeenCalledOnce();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('Escape cierra sin eliminar', async () => {

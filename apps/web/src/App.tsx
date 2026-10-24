@@ -1,10 +1,11 @@
 import { type ExportFormat } from '@chartsia/core/export';
 import { type DiagramType } from '@chartsia/core/model';
 import { ReactFlowProvider } from '@xyflow/react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AppShell } from './app/AppShell';
 import { ErrorToast } from './app/ErrorToast';
-import { diagramPath, navigate, useRoute } from './app/routes';
+import { Landing } from './app/Landing';
+import { configPath, diagramPath, navigate, useRoute } from './app/routes';
 import { TokenPrompt } from './app/TokenPrompt';
 import { toReactFlow } from './canvas/to-react-flow';
 import { useDiagramEdits } from './canvas/use-diagram-edits';
@@ -15,9 +16,9 @@ import { setToken } from './state/auth-token';
 import { api } from './state/clients';
 import { diagramStore, useDiagramStore } from './state/diagram-store';
 import { downloadBlob } from './state/download';
-import { forgetDiagram, useHubSync } from './state/use-hub-sync';
+import { forgetDiagram, pathDeDiagrama, useHubSync } from './state/use-hub-sync';
 
-const openDiagram = (diagramId: string) => navigate(diagramPath(diagramId));
+const openDiagram = (diagramId: string) => navigate(pathDeDiagrama(diagramId));
 
 /** Muestra el error del hub en el aviso; si no hay respuesta del hub, un mensaje genérico. */
 function reportError(error: unknown) {
@@ -30,6 +31,7 @@ function ConnectedApp() {
   const route = useRoute();
   const { live, reload } = useHubSync(api, route);
   const diagrams = useDiagramStore((s) => s.diagrams);
+  const listLoaded = useDiagramStore((s) => s.listLoaded);
   const projects = useDiagramStore((s) => s.projects);
   const agents = useDiagramStore((s) => s.agents);
   const activeDiagramId = useDiagramStore((s) => s.activeDiagramId);
@@ -43,6 +45,19 @@ function ConnectedApp() {
   const edits = useDiagramEdits(api);
   const shortcuts = useMemo(() => ({ history: edits.history, duplicate: edits.duplicate, copy: edits.copy, cut: edits.cut, paste: edits.paste }), [edits.history, edits.duplicate, edits.copy, edits.cut, edits.paste]);
   useShortcuts(shortcuts, diagram !== undefined);
+  const [empezado, setEmpezado] = useState(false);
+  const [abrirEnBlanco, setAbrirEnBlanco] = useState(false);
+  // "Empezar" abre la ventana de diagrama en blanco una sola vez: al volver a montarse la barra ya no se abre.
+  useEffect(() => {
+    if (abrirEnBlanco) setAbrirEnBlanco(false);
+  }, [abrirEnBlanco]);
+
+  // Pestaña: "<diagrama> · ChartsIA" con el diagrama abierto; "ChartsIA" en la lista y en la configuración.
+  const routeId = route.name === 'diagram' ? route.diagramId : null;
+  const tituloPestana = diagram && diagram.id === routeId ? diagram.title : undefined;
+  useEffect(() => {
+    document.title = tituloPestana ? `${tituloPestana} · ChartsIA` : 'ChartsIA';
+  }, [tituloPestana]);
 
   // `viewVersion` fuerza a rehacer los nodos y descartar cambios optimistas rechazados.
   const flow = useMemo(() => (diagram ? toReactFlow(diagram) : { nodes: [], edges: [] }), [diagram, viewVersion]);
@@ -165,6 +180,20 @@ function ConnectedApp() {
     );
   }
 
+  // Sin ningún diagrama, la portada es la pantalla inicial hasta que se pulsa "Empezar".
+  if (route.name === 'home' && listLoaded && diagrams.length === 0 && !empezado) {
+    return (
+      <Landing
+        origin={window.location.origin}
+        agents={agents}
+        onStart={() => {
+          setEmpezado(true);
+          setAbrirEnBlanco(true);
+        }}
+      />
+    );
+  }
+
   return (
     <DiagramEditContext.Provider value={edits.editActions}>
       <div className={`app-root${animate ? ' animate-agent' : ''}`}>
@@ -180,8 +209,9 @@ function ConnectedApp() {
           edges={flow.edges}
           origin={window.location.origin}
           configOpen={route.name === 'config'}
-          onConfig={() => navigate('/config')}
-          onCloseConfig={() => navigate(diagram ? diagramPath(diagram.id) : '/')}
+          configSection={route.name === 'config' ? route.section : undefined}
+          onConfig={(section = 'general') => navigate(configPath(section))}
+          onCloseConfig={() => navigate(diagram ? diagramPath(diagram.id, diagram.title) : '/')}
           onOpen={openDiagram}
           onCreateDiagram={onCreateDiagram}
           onImportMermaid={onImportMermaid}
@@ -212,6 +242,7 @@ function ConnectedApp() {
           changedIds={changedIds}
           onOpenLatest={onOpenLatest}
           onChangedFitted={diagramStore.getState().clearChangedIds}
+          startBlank={abrirEnBlanco}
           overlay={<ErrorToast />}
         />
       </div>

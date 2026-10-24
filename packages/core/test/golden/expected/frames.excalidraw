@@ -357,9 +357,9 @@
     {
       "id": "Nota-label",
       "type": "text",
-      "x": 128,
-      "y": 158,
-      "width": 104,
+      "x": 162,
+      "y": 171.25,
+      "width": 36,
       "height": 17.5,
       "angle": 0,
       "strokeColor": "#1e1e1e",

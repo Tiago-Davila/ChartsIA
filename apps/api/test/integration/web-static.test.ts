@@ -49,7 +49,7 @@ describe('app web servida desde una carpeta que empieza con punto', () => {
     rmSync(tmp, { recursive: true, force: true });
   });
 
-  it.each(['/', '/d/abc', '/config'])('%s responde index.html', async (ruta) => {
+  it.each(['/', '/d/abc', '/d/biblioteca-gvqrp4kdubn3', '/config'])('%s responde index.html', async (ruta) => {
     const res = await request(app.getHttpServer()).get(ruta).expect(200);
     expect(res.text).toContain('<title>ChartsIA</title>');
   });

@@ -24,22 +24,29 @@ draw.io o Excalidraw.
 
 ```bash
 pnpm install
-pnpm dev            # hub en http://127.0.0.1:3333 y app en http://127.0.0.1:5173
+pnpm dev            # hub en http://127.0.0.1:3333 y app en http://chartsia.localhost:5173
 ```
 
 Producción (un solo proceso: el hub sirve también la app compilada):
 
 ```bash
 pnpm build
-pnpm --filter @chartsia/api start      # app y MCP en http://127.0.0.1:3333
+pnpm --filter @chartsia/api start      # app y MCP en http://chartsia.localhost:3333
 ```
+
+La app se abre en `http://chartsia.localhost:<puerto>`. Los navegadores resuelven `*.localhost`
+a loopback, así que no hace falta tocar `/etc/hosts`; `127.0.0.1` también funciona. Cada
+diagrama tiene una dirección `/d/<slug-del-título>-<id-corto>`, por ejemplo
+`/d/biblioteca-gvqrp4kdubn3`: el slug es decorativo y se actualiza si cambia el título, y el
+id corto (la parte del id sin `dg_`) es lo que identifica al diagrama. Las direcciones viejas
+`/d/dg_<id>` siguen abriendo el diagrama y se sustituyen por la nueva.
 
 | Variable | Defecto | Uso |
 |----------|---------|-----|
 | `CHARTSIA_PORT` | `3333` | Puerto del hub |
 | `CHARTSIA_HOST` | `127.0.0.1` | Interfaz; fuera de loopback se exige token |
 | `CHARTSIA_TOKEN` | generado | Token de acceso fuera de loopback |
-| `CHARTSIA_PUBLIC_URL` | `http://<host>:<port>` | Base de `viewUrl` y de las descargas |
+| `CHARTSIA_PUBLIC_URL` | `http://chartsia.localhost:<port>` (en loopback), `http://<host>:<port>` en otro caso | Base de `viewUrl`, de las descargas y de la URL que muestra el arranque |
 | `CHARTSIA_DATA_DIR` | `~/.chartsia/diagrams` | Diagramas en JSON (escritura atómica) |
 | `CHARTSIA_MAX_ELEMENTS` | `500` | Máximo de elementos por diagrama |
 | `CHARTSIA_MAX_REQUEST_BYTES` | `8388608` | Tamaño máximo de petición |
@@ -51,30 +58,40 @@ La app y la herramienta MCP `import_mermaid` importan `classDiagram` y `classDia
 
 ## Conectar agentes
 
-- **Claude Code (HTTP)**:
-  `claude mcp add --transport http chartsia http://127.0.0.1:3333/mcp`
-- **Claude Desktop (stdio)**: comando `pnpm --filter @chartsia/api exec chartsia-mcp`
-  (puente stdio → hub; el hub debe estar corriendo). Variables: `CHARTSIA_URL`, `CHARTSIA_TOKEN`.
-- **OpenCode**: en `opencode.json` (proyecto) bajo `mcp`; la pantalla de configuración de la app
-  muestra estos JSON con la URL real. Esquema: `https://opencode.ai/config.json`.
-  - HTTP:
+La pantalla `/config` de la app muestra, junto al comando de cada agente, un prompt de instalación para pegarlo en el propio agente, que se conecta solo al hub.
+
+- **Claude Code (HTTP)**: `--scope user` la deja disponible en todas las carpetas (se guarda en `~/.claude.json`):
+  `claude mcp add --transport http --scope user chartsia http://127.0.0.1:3333/mcp`
+  Sin `--scope user` queda solo en la carpeta donde se ejecuta (`local`).
+- **Claude Desktop (stdio)**: es global por usuario. Añade a `claude_desktop_config.json`
+  (macOS: `~/Library/Application Support/Claude/`; Windows: `%APPDATA%\Claude\`), tras `pnpm build`,
+  un servidor con la ruta absoluta al puente y reinicia la app:
+  ```json
+  { "mcpServers": { "chartsia": { "command": "node",
+    "args": ["<RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js"],
+    "env": { "CHARTSIA_URL": "http://127.0.0.1:3333/mcp" } } } }
+  ```
+  El hub debe estar corriendo.
+- **Codex CLI**: queda en `~/.codex/config.toml`, disponible en todas las carpetas:
+  `codex mcp add chartsia --url http://127.0.0.1:3333/mcp`
+- **Grok Build**: queda en `~/.grok/config.toml`, disponible en todas las carpetas:
+  `grok mcp add --transport http chartsia http://127.0.0.1:3333/mcp`
+- **OpenCode**: en `~/.config/opencode/opencode.json` (global, todos los proyectos) o en `opencode.json`
+  del proyecto, bajo `mcp`; la pantalla de configuración de la app muestra estos JSON con la URL real.
+  Esquema: `https://opencode.ai/config.json`.
+  - HTTP (OpenCode llama `remote` a cualquier servidor HTTP, aunque corra en tu máquina):
     ```json
     { "mcp": { "chartsia": { "type": "remote", "url": "http://127.0.0.1:3333/mcp" } } }
     ```
-    Fuera de loopback añade `"headers": { "Authorization": "Bearer <CHARTSIA_TOKEN>" }`.
-  - stdio (puente `chartsia-mcp`; el hub debe estar corriendo):
+  - stdio (puente `chartsia-mcp`, tras `pnpm build`; el hub debe estar corriendo):
     ```json
     { "mcp": { "chartsia": { "type": "local",
-      "command": ["pnpm", "--filter", "@chartsia/api", "exec", "chartsia-mcp"],
-      "cwd": "<RUTA_AL_REPO_CHARTSIA>",
+      "command": ["node", "<RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js"],
       "environment": { "CHARTSIA_URL": "http://127.0.0.1:3333/mcp" } } } }
     ```
-    Fuera de loopback añade `"CHARTSIA_TOKEN": "<CHARTSIA_TOKEN>"` en `environment`.
-  - No subas el token real al repositorio: usa un `opencode.json` local o ignorado por git.
   - Comprueba la conexión con `opencode mcp list`.
-- **OpenAI Responses API**: herramienta
-  `{"type":"mcp","server_label":"chartsia","server_url":"https://<túnel>/mcp","authorization":"<CHARTSIA_TOKEN>"}`;
-  el hub debe ser accesible desde internet (p. ej. un túnel) con `CHARTSIA_HOST=0.0.0.0`.
+
+Los agentes corren en la misma máquina que el hub, así que ninguno necesita token.
 
 Herramientas: `create_diagram`, `apply_changes`, `get_diagram`, `list_diagrams`,
 `open_diagram`, `export_diagram`. Recursos: `chartsia://diagrams/{id}`,
@@ -84,7 +101,7 @@ Contrato completo en [specs/001-mcp-class-c4-diagrams/contracts](specs/001-mcp-c
 ### Acceso desde la red
 
 En loopback no hace falta token (y se rechazan cabeceras `Host` ajenas para evitar DNS
-rebinding). Si el hub escucha en otra interfaz, exige `Authorization: Bearer <token>` en `/mcp`
+rebinding: solo se aceptan loopback, `*.localhost` y el host de `CHARTSIA_PUBLIC_URL`). Si el hub escucha en otra interfaz, exige `Authorization: Bearer <token>` en `/mcp`
 y `/api`, y `auth.token` en el canal en vivo. Al arrancar muestra la URL de la app con el token
 en el fragmento (`…/#token=<token>`): el fragmento no llega al servidor y la app lo guarda solo
 para la pestaña. Si falta, la app pide el token.
@@ -93,7 +110,7 @@ para la pestaña. Si falta, la app pide el token.
 
 Los conectores de la interfaz de ChatGPT exigen OAuth o un servidor sin autenticación. ChartsIA
 usa token Bearer, así que la conexión directa desde la interfaz de ChatGPT queda fuera de
-alcance; usa la Responses API o los clientes de Claude.
+alcance; usa Codex CLI o los clientes de Claude.
 
 ## Desarrollo
 

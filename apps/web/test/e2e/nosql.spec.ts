@@ -1,16 +1,18 @@
+import { idDesdeUrl } from './support/rutas';
 import { library } from './support/fake-agent';
 import { expect, test } from './support/fixtures';
 
 test('crea un diagrama NoSQL, muestra subdocumentos y conserva la edición al recargar', async ({ page, agent }) => {
   const previous = await agent.create({ ...library, title: 'Inicio' });
   await page.goto(`/d/${previous}`);
-  await page.getByRole('button', { name: 'Nuevo diagrama' }).click();
+  await page.getByRole('button', { name: 'Nuevo', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Diagrama en blanco' }).click();
   const form = page.getByRole('form', { name: 'Nuevo diagrama' });
   await form.getByLabel('Tipo').selectOption('nosql');
   await form.getByLabel('Título').fill('Pedidos documentales');
   await form.getByRole('button', { name: 'Crear' }).click();
   await expect(page.getByRole('heading', { name: /Pedidos documentales/ })).toBeVisible();
-  const id = page.url().split('/').at(-1)!;
+  const id = idDesdeUrl(page.url())!;
 
   const created = await agent.apply([
     {

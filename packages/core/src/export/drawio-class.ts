@@ -52,7 +52,7 @@ export function classCells(el: Element, parent: string, geo: { x: number; y: num
       cells.push({ id: `${el.id}:sep:${s}`, parent: el.id, value: '', vertex: true, style: SEPARATOR, geometry: { x: 0, y: section.top - 4, width: geo.width, height: 8 } });
     }
     section.lines.forEach((line, i) => {
-      const fontStyle = (line.line.italic ? 2 : 0) + (line.line.underline ? 4 : 0);
+      const fontStyle = (line.line.bold ? 1 : 0) + (line.line.italic ? 2 : 0) + (line.line.underline ? 4 : 0);
       cells.push({
         id: `${el.id}:${line.line.slot ?? `${s}:${i}`}`, parent: el.id, value: line.line.text, vertex: true,
         style: drawioFont(MEMBER + (fontStyle ? `fontStyle=${fontStyle};` : ''), el.style, FONT.member),

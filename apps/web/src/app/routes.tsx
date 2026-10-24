@@ -1,17 +1,46 @@
 import { useCallback, useSyncExternalStore } from 'react';
 
-export type Route = { name: 'home' } | { name: 'config' } | { name: 'diagram'; diagramId: string };
+export type ConfigSection = 'general' | 'mcp';
+
+export type Route = { name: 'home' } | { name: 'config'; section: ConfigSection } | { name: 'diagram'; diagramId: string };
 
 const DIAGRAM_PATH = /^\/d\/([^/]+)\/?$/;
+const ID_COMPLETO = /^dg_[a-z2-7]{12}$/;
+const ID_AL_FINAL = /-([a-z2-7]{12})$/;
 
-export function parseRoute(pathname: string): Route {
-  if (pathname === '/config') return { name: 'config' };
-  const match = DIAGRAM_PATH.exec(pathname);
-  return match ? { name: 'diagram', diagramId: decodeURIComponent(match[1]!) } : { name: 'home' };
+/** Pasa un título a slug para la dirección: minúsculas, sin acentos, palabras unidas con guiones. */
+export function slugify(titulo: string): string {
+  const slug = titulo
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+  return slug || 'diagrama';
 }
 
-export function diagramPath(diagramId: string): string {
-  return `/d/${encodeURIComponent(diagramId)}`;
+/** Saca el id del segmento `/d/…`: `dg_<12>` (dirección vieja) o `<slug>-<12>`; el slug no cuenta. */
+export function diagramIdFromSegment(segmento: string): string {
+  if (ID_COMPLETO.test(segmento)) return segmento;
+  const corto = ID_AL_FINAL.exec(segmento);
+  return corto ? `dg_${corto[1]}` : segmento;
+}
+
+export function parseRoute(pathname: string): Route {
+  if (pathname === '/config') return { name: 'config', section: 'general' };
+  if (pathname === '/config/mcp') return { name: 'config', section: 'mcp' };
+  const match = DIAGRAM_PATH.exec(pathname);
+  return match ? { name: 'diagram', diagramId: diagramIdFromSegment(decodeURIComponent(match[1]!)) } : { name: 'home' };
+}
+
+/** Dirección de una sección de la configuración. */
+export function configPath(section: ConfigSection): string {
+  return section === 'general' ? '/config' : '/config/mcp';
+}
+
+/** Dirección de un diagrama: `/d/<slug-del-título>-<parte-única-del-id>`; el slug es decorativo. */
+export function diagramPath(diagramId: string, titulo = ''): string {
+  return `/d/${slugify(titulo)}-${diagramId.replace(/^dg_/, '')}`;
 }
 
 const listeners = new Set<() => void>();
@@ -37,7 +66,7 @@ export function navigate(path: string, options: { replace?: boolean } = {}): voi
 
 /**
  * Enrutado mínimo de la app: `/` (diagrama activo o estado vacío), `/d/:id` (destino de
- * `viewUrl`) y `/config` (conexión de agentes). Tres rutas no justifican una dependencia de router (principio VI).
+ * `viewUrl`) y `/config` o `/config/mcp` (configuración general y conexión de agentes). Tan pocas rutas no justifican una dependencia de router (principio VI).
  */
 export function useRoute(): Route {
   const path = useSyncExternalStore(subscribe, getPath, () => '/');

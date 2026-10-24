@@ -7,6 +7,8 @@ import { type DiagramUpdatedEvent } from './live-client';
 
 export interface DiagramState {
   diagrams: DiagramSummary[];
+  /** La lista ya llegó del hub al menos una vez; antes no se sabe si está vacía. */
+  listLoaded: boolean;
   projects: Project[];
   agents: ConnectedAgent[];
   activeDiagramId: string | null;
@@ -63,6 +65,7 @@ function upsert(list: DiagramSummary[], summary: DiagramSummary): DiagramSummary
 export function createDiagramStore() {
   return createStore<DiagramState>()((set, get) => ({
     diagrams: [],
+    listLoaded: false,
     projects: [],
     agents: [],
     activeDiagramId: null,
@@ -75,7 +78,7 @@ export function createDiagramStore() {
     lastChangedIds: [],
     viewVersion: 0,
 
-    setList: (list) => set({ diagrams: list.diagrams, projects: list.projects, activeDiagramId: list.activeDiagramId }),
+    setList: (list) => set({ diagrams: list.diagrams, listLoaded: true, projects: list.projects, activeDiagramId: list.activeDiagramId }),
     setAgents: (agents) => set({ agents }),
     open: (diagramId) =>
       set((s) => (s.openDiagramId === diagramId ? s : { openDiagramId: diagramId, diagram: undefined, errors: [], lastOrigin: undefined, lastChangedIds: [] })),

@@ -1,8 +1,10 @@
+import { idDesdeUrl } from './support/rutas';
 import { expect, test } from './support/fixtures';
 
 test('importa Mermaid desde la app, persiste clases y relaciones y las renderiza tras recargar', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Importar Mermaid' }).click();
+  await page.getByRole('button', { name: 'Nuevo', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Importar Mermaid' }).click();
   await page.getByLabel('Mermaid classDiagram').fill([
     'classDiagram',
     'class Usuario {',
@@ -21,7 +23,7 @@ test('importa Mermaid desde la app, persiste clases y relaciones y las renderiza
   await expect(page.getByText('Sesion', { exact: true })).toBeVisible();
   await expect(page.getByRole('status').filter({ hasText: /lollipop/ })).toBeVisible();
   await page.getByRole('button', { name: 'Listo' }).click();
-  const id = /\/d\/(dg_[a-z0-9]+)/.exec(page.url())?.[1];
+  const id = idDesdeUrl(page.url());
   expect(id).toBeTruthy();
   const stored = await (await page.request.get(`/api/diagrams/${id}`)).json();
   expect(stored).toMatchObject({
@@ -42,7 +44,8 @@ test('importa Mermaid desde la app, persiste clases y relaciones y las renderiza
 
 test('al rechazar sintaxis conserva el texto para corregirlo y muestra el error accionable', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Importar Mermaid' }).click();
+  await page.getByRole('button', { name: 'Nuevo', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Importar Mermaid' }).click();
   const source = 'graph TD\nA --> B';
   await page.getByLabel('Mermaid classDiagram').fill(source);
   await page.getByRole('button', { name: 'Importar' }).click();
@@ -54,7 +57,8 @@ test('al rechazar sintaxis conserva el texto para corregirlo y muestra el error 
 
 test('trata HTML y callbacks de Mermaid como texto inerte', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Importar Mermaid' }).click();
+  await page.getByRole('button', { name: 'Nuevo', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Importar Mermaid' }).click();
   const label = '<img src=x onerror=window.__chartsiaPwned=true>';
   await page.getByLabel('Mermaid classDiagram').fill([
     'classDiagram',
@@ -65,7 +69,7 @@ test('trata HTML y callbacks de Mermaid como texto inerte', async ({ page }) => 
   await expect(page.getByRole('heading', { name: 'Diagrama importado' })).toBeVisible();
   await expect(page.locator('img')).toHaveCount(0);
   expect(await page.evaluate(() => (window as Window & { __chartsiaPwned?: boolean }).__chartsiaPwned)).toBeUndefined();
-  const id = /\/d\/(dg_[a-z0-9]+)/.exec(page.url())?.[1];
+  const id = idDesdeUrl(page.url());
   const stored = await (await page.request.get(`/api/diagrams/${id}`)).json();
   expect(JSON.stringify(stored)).not.toContain('javascript:');
   expect(stored.elements[0].name).toBe(label);

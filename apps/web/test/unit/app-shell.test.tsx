@@ -44,17 +44,26 @@ describe('AppShell', () => {
     expect(screen.getByRole('heading', { name: 'Conecta tu agente' })).toBeInTheDocument();
     expect(screen.queryByText(/claude mcp add/)).toBeNull();
     await userEvent.click(screen.getByRole('link', { name: 'la configuración' }));
+    expect(onConfig).toHaveBeenCalledWith('mcp');
+  });
+
+  it('el engranaje abre la configuración', async () => {
+    const onConfig = vi.fn();
+    renderShell({ onConfig });
+    await userEvent.click(screen.getByRole('button', { name: 'Configuración' }));
     expect(onConfig).toHaveBeenCalled();
   });
 
-  it('el engranaje abre la configuración y la pantalla permite volver', async () => {
+  it('la configuración reemplaza la barra de proyectos, cambia de sección y permite volver', async () => {
     const onConfig = vi.fn();
     const onCloseConfig = vi.fn();
-    renderShell({ onConfig, onCloseConfig, configOpen: true });
-    await userEvent.click(screen.getByRole('button', { name: 'Configuración' }));
-    expect(onConfig).toHaveBeenCalled();
+    renderShell({ onConfig, onCloseConfig, configOpen: true, configSection: 'mcp' });
     expect(screen.getByRole('heading', { name: 'Configuración' })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: '← Volver al lienzo' }));
+    expect(screen.getByRole('region', { name: 'Conexiones MCP' })).toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: 'Recientes' })).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'General' }));
+    expect(onConfig).toHaveBeenLastCalledWith('general');
+    await userEvent.click(screen.getByRole('button', { name: 'Volver al lienzo' }));
     expect(onCloseConfig).toHaveBeenCalled();
   });
 

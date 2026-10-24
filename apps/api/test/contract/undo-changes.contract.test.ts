@@ -14,7 +14,7 @@ describe('contract: undo_changes', () => {
 
     const undo = await h.call('undo_changes', { direction: 'undo' });
     expect(undo.isError).toBeFalsy();
-    expect(undo.structuredContent).toEqual({ diagramId: id, revision: 3, viewUrl: `http://127.0.0.1:3333/d/${id}` });
+    expect(undo.structuredContent).toEqual({ diagramId: id, revision: 3, viewUrl: `http://chartsia.localhost:3333/d/${id}` });
     expect((await h.repo.get(id))?.elements.map((e) => e.id)).toEqual(['Pedido']);
 
     await h.call('undo_changes', { diagramId: id, direction: 'redo' });

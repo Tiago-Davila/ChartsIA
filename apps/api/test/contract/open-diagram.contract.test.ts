@@ -14,7 +14,7 @@ describe('contract: open_diagram', () => {
     h.emitted.length = 0;
     const res = await h.call('open_diagram', { diagramId: first });
     expect(res.isError).toBeFalsy();
-    expect(res.structuredContent).toEqual({ diagramId: first, viewUrl: `http://127.0.0.1:3333/d/${first}` });
+    expect(res.structuredContent).toEqual({ diagramId: first, viewUrl: `http://chartsia.localhost:3333/d/${first}` });
     expect((await h.call('list_diagrams')).structuredContent!.activeDiagramId).toBe(first);
     expect(h.emitted).toEqual([{ name: 'active.changed', payload: { diagramId: first } }]);
   });

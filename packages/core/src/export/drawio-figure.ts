@@ -1,11 +1,12 @@
 import { type Element } from '../model/diagram.js';
 import { type FigureShape } from '../model/enums.js';
-import { ARROWS, SLOPE } from '../shapes/general/figure.js';
+import { ARROWS, figureTextArea, SLOPE } from '../shapes/general/figure.js';
 import { FONT } from '../shapes/types.js';
 import { type DrawioCell } from './drawio.js';
 import { drawioBox, drawioFont } from './drawio-style.js';
 
 const COMMON = 'whiteSpace=wrap;html=0;align=center;fontSize=14;fillColor=#fffef5;strokeColor=#1f2933;';
+const r = (n: number) => Math.round(n * 100) / 100;
 
 /** Inclinación de los lados (hexágono y paralelogramo) como fracción del ancho, igual que el contorno del núcleo. */
 function slant(geo: { width: number; height: number }): number {
@@ -23,8 +24,11 @@ function figureStyle(shape: FigureShape, geo: { width: number; height: number })
       return 'rounded=0;';
     case 'triangle':
     case 'isosceles-triangle':
-    case 'equilateral-triangle':
-      return 'triangle;direction=north;verticalAlign=bottom;';
+    case 'equilateral-triangle': {
+      // El texto va en la mitad inferior, como en el SVG: se baja con el margen superior y se estrecha con los laterales.
+      const area = figureTextArea(shape, geo);
+      return `triangle;direction=north;verticalAlign=middle;spacingTop=${r(area.y)};spacingLeft=${r(area.x)};spacingRight=${r(area.x)};`;
+    }
     case 'scalene-triangle':
       return 'shape=mxgraph.basic.acute_triangle;dx=30;verticalAlign=bottom;';
     case 'right-triangle':
@@ -67,4 +71,16 @@ function figureStyle(shape: FigureShape, geo: { width: number; height: number })
 export function figureCells(el: Element, parent: string, geo: { x: number; y: number; width: number; height: number }): DrawioCell[] | undefined {
   if (el.kind !== 'figure') return undefined;
   return [{ id: el.id, parent, value: el.name, vertex: true, geometry: geo, style: drawioFont(drawioBox(`${figureStyle(el.shape, geo)}${COMMON}`, el.style), el.style, FONT.name) }];
+}
+
+// Triángulos que draw.io dibuja con `direction=north`, que también gira sus puertos.
+const NORTH_TRIANGLES = new Set<string>(['triangle', 'isosceles-triangle', 'equilateral-triangle']);
+
+/**
+ * Punto de conexión (fracción del ancho y del alto) tal como lo lee draw.io. El triángulo se dibuja
+ * con `direction=north` y draw.io gira también sus puntos de conexión, así que se deshace ese giro.
+ */
+export function figureConstraint(el: Element | undefined, fx: number, fy: number): [number, number] {
+  if (el?.kind === 'figure' && NORTH_TRIANGLES.has(el.shape)) return [r(1 - fy), fx];
+  return [fx, fy];
 }
