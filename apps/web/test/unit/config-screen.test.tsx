@@ -8,7 +8,14 @@ import { clearToken, setToken } from '../../src/state/auth-token';
 
 const origin = 'http://127.0.0.1:3333';
 let agents: ConnectedAgent[] = [];
-const renderScreen = () => render(<ConfigScreen origin={origin} agents={agents} connection="connected" onBack={vi.fn()} />);
+const renderScreen = (section: 'general' | 'mcp' = 'mcp', onSection = vi.fn()) =>
+  render(<ConfigScreen origin={origin} agents={agents} connection="connected" section={section} onSection={onSection} onBack={vi.fn()} />);
+
+/** Abre la ventana de conexión de un agente desde su tarjeta. */
+const abrir = async (nombre: string) => {
+  await userEvent.click(within(screen.getByRole('article', { name: nombre })).getByRole('button'));
+  return screen.getByRole('dialog', { name: `Conectar ${nombre}` });
+};
 
 describe('ConfigScreen', () => {
   afterEach(() => {
@@ -17,12 +24,39 @@ describe('ConfigScreen', () => {
     vi.restoreAllMocks();
   });
 
-  it('muestra la URL del MCP, el estado del hub y una tarjeta por agente', () => {
+  it('tiene su propia barra con General y Conexiones MCP, y General por ahora está vacía', async () => {
+    const onSection = vi.fn();
+    renderScreen('general', onSection);
+    const secciones = screen.getByRole('list', { name: 'Secciones' });
+    expect(within(secciones).getByRole('button', { name: 'General' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('region', { name: 'General' })).toBeInTheDocument();
+    expect(screen.queryByText(`${origin}/mcp`)).toBeNull();
+    expect(screen.queryByRole('article')).toBeNull();
+    await userEvent.click(within(secciones).getByRole('button', { name: 'Conexiones MCP' }));
+    expect(onSection).toHaveBeenCalledWith('mcp');
+  });
+
+  it('muestra la URL del MCP, el estado del hub y una tarjeta por agente', async () => {
     renderScreen();
+    expect(screen.getByRole('region', { name: 'Conexiones MCP' })).toBeInTheDocument();
     expect(screen.getByText(`${origin}/mcp`)).toBeInTheDocument();
     expect(screen.getByText('Conectado al hub')).toBeInTheDocument();
-    for (const agent of AGENTS) expect(screen.getByRole('article', { name: agent.name })).toBeInTheDocument();
-    expect(screen.getByText(`claude mcp add --transport http --scope user chartsia ${origin}/mcp`)).toBeInTheDocument();
+    for (const agent of AGENTS) {
+      const card = screen.getByRole('article', { name: agent.name });
+      expect(card).toHaveTextContent(agent.summary);
+      expect(within(card).getByRole('button', { name: 'Conectar' })).toBeInTheDocument();
+    }
+    const ventana = await abrir('Claude Code (HTTP)');
+    expect(within(ventana).getByText(`claude mcp add --transport http --scope user chartsia ${origin}/mcp`)).toBeInTheDocument();
+    await userEvent.click(within(ventana).getByRole('button', { name: 'Cerrar' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('marca como conectadas las integraciones cuyo cliente ya llamó al hub', () => {
+    agents = [{ id: 1, name: 'claude-code', version: '2.1.0', lastCallAt: '2026-01-02T03:04:00.000Z' }];
+    renderScreen();
+    expect(within(screen.getByRole('article', { name: 'Claude Code (HTTP)' })).getByRole('button', { name: 'Conectado' })).toBeInTheDocument();
+    expect(within(screen.getByRole('article', { name: 'OpenCode (HTTP)' })).getByRole('button', { name: 'Conectar' })).toBeInTheDocument();
   });
 
   it('el comando de Claude Code es de usuario y añade el token fuera de loopback', () => {
@@ -51,10 +85,9 @@ describe('ConfigScreen', () => {
     expect(sinGlobal.map((a) => a.id)).toEqual(['openai']);
   });
 
-  it('muestra en la tarjeta la ayuda de Claude Desktop con su archivo de configuración', () => {
+  it('la ventana de Claude Desktop explica su archivo de configuración', async () => {
     renderScreen();
-    const card = screen.getByRole('article', { name: 'Claude Desktop (stdio)' });
-    expect(card).toHaveTextContent('claude_desktop_config.json');
+    expect(await abrir('Claude Desktop (stdio)')).toHaveTextContent('claude_desktop_config.json');
     expect(JSON.parse(AGENTS.find((a) => a.id === 'claude-desktop')!.snippet(`${origin}/mcp`)).mcpServers.chartsia.command).toBe('node');
   });
 
@@ -76,7 +109,7 @@ describe('ConfigScreen', () => {
     unmount();
     agents = [{ id: 1, name: '<b>claude-code</b>', version: '2.1.0', lastCallAt: '2026-01-02T03:04:00.000Z' }];
     renderScreen();
-    const item = screen.getByRole('listitem');
+    const item = within(screen.getByRole('list', { name: 'Agentes conectados' })).getByRole('listitem');
     expect(item).toHaveTextContent('<b>claude-code</b> v2.1.0 · última llamada');
     expect(item.querySelector('b')).toBeNull();
   });
@@ -85,6 +118,7 @@ describe('ConfigScreen', () => {
     const user = userEvent.setup();
     const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
     renderScreen();
+    await abrir('Claude Code (HTTP)');
     await user.click(screen.getByRole('button', { name: 'Copiar configuración de Claude Code (HTTP)' }));
     expect(writeText).toHaveBeenCalledWith(`claude mcp add --transport http --scope user chartsia ${origin}/mcp`);
     expect(await screen.findByText('Copiado')).toBeInTheDocument();
@@ -99,12 +133,13 @@ describe('ConfigScreen', () => {
     }
   });
 
-  it('cada tarjeta muestra el botón de copiar comando y el de copiar prompt', () => {
+  it('la ventana de cada tarjeta tiene el botón de copiar comando y el de copiar prompt', async () => {
     renderScreen();
     for (const agent of AGENTS) {
-      const card = screen.getByRole('article', { name: agent.name });
-      expect(within(card).getByRole('button', { name: `Copiar configuración de ${agent.name}` })).toBeInTheDocument();
-      expect(within(card).getByRole('button', { name: `Copiar prompt de ${agent.name}` })).toBeInTheDocument();
+      const ventana = await abrir(agent.name);
+      expect(within(ventana).getByRole('button', { name: `Copiar configuración de ${agent.name}` })).toBeInTheDocument();
+      expect(within(ventana).getByRole('button', { name: `Copiar prompt de ${agent.name}` })).toBeInTheDocument();
+      await userEvent.click(within(ventana).getByRole('button', { name: 'Cerrar' }));
     }
   });
 
@@ -113,6 +148,7 @@ describe('ConfigScreen', () => {
     const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
     renderScreen();
     const claude = AGENTS.find((a) => a.id === 'claude-code')!;
+    await abrir(claude.name);
     await user.click(screen.getByRole('button', { name: `Copiar prompt de ${claude.name}` }));
     expect(writeText).toHaveBeenCalledWith(promptInstalacion(claude, `${origin}/mcp`));
   });

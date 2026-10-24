@@ -4,7 +4,7 @@ import { ReactFlowProvider } from '@xyflow/react';
 import { useCallback, useEffect, useMemo } from 'react';
 import { AppShell } from './app/AppShell';
 import { ErrorToast } from './app/ErrorToast';
-import { diagramPath, navigate, useRoute } from './app/routes';
+import { configPath, diagramPath, navigate, useRoute } from './app/routes';
 import { TokenPrompt } from './app/TokenPrompt';
 import { toReactFlow } from './canvas/to-react-flow';
 import { useDiagramEdits } from './canvas/use-diagram-edits';
@@ -187,7 +187,8 @@ function ConnectedApp() {
           edges={flow.edges}
           origin={window.location.origin}
           configOpen={route.name === 'config'}
-          onConfig={() => navigate('/config')}
+          configSection={route.name === 'config' ? route.section : undefined}
+          onConfig={(section = 'general') => navigate(configPath(section))}
           onCloseConfig={() => navigate(diagram ? diagramPath(diagram.id, diagram.title) : '/')}
           onOpen={openDiagram}
           onCreateDiagram={onCreateDiagram}

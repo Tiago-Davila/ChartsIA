@@ -1,6 +1,16 @@
 export interface Agent {
   id: string;
   name: string;
+  /** Iniciales del recuadro del logo mientras no haya una imagen. */
+  monogram: string;
+  /** Logo opcional (ruta en `public/`); sin él se muestran las iniciales. */
+  logo?: string;
+  /** Tipo de cliente que se muestra bajo el nombre. */
+  category: string;
+  /** Una frase para la tarjeta de la integración. */
+  summary: string;
+  /** Nombres que el cliente manda en `clientInfo` al conectarse, para marcarlo como conectado. */
+  clients: string[];
   /** Instrucción corta de uso. */
   help: string;
   /** Comando o configuración que se copia. */
@@ -25,6 +35,10 @@ export const AGENTS: Agent[] = [
   {
     id: 'claude-code',
     name: 'Claude Code (HTTP)',
+    monogram: 'CC',
+    category: 'Terminal',
+    summary: 'Agente de terminal: un comando y queda disponible en todas tus carpetas.',
+    clients: ['claude-code'],
     help: 'Ejecuta este comando en tu terminal. Con --scope user queda disponible en todas tus carpetas (se guarda en ~/.claude.json).',
     snippet: (mcpUrl) =>
       `claude mcp add --transport http --scope user chartsia ${mcpUrl}${esLoopback(mcpUrl) ? '' : ' --header "Authorization: Bearer <CHARTSIA_TOKEN>"'}`,
@@ -32,6 +46,10 @@ export const AGENTS: Agent[] = [
   {
     id: 'claude-desktop',
     name: 'Claude Desktop (stdio)',
+    monogram: 'CD',
+    category: 'Escritorio',
+    summary: 'La app de escritorio, a través del puente stdio hacia el hub.',
+    clients: ['claude-ai'],
     help: 'Claude Desktop es global por usuario. Pega este bloque en claude_desktop_config.json (macOS: ~/Library/Application Support/Claude/; Windows: %APPDATA%\\Claude\\), sustituye <RUTA_AL_REPO_CHARTSIA> (antes ejecuta "pnpm build"), reinicia Claude Desktop y deja el hub corriendo.',
     snippet: (mcpUrl) =>
       JSON.stringify(
@@ -51,12 +69,20 @@ export const AGENTS: Agent[] = [
   {
     id: 'openai',
     name: 'OpenAI Responses API',
+    monogram: 'OA',
+    category: 'API',
+    summary: 'Herramienta MCP en cada petición a la Responses API.',
+    clients: ['openai-mcp'],
     help: 'No tiene configuración global ni carpetas: la herramienta va en cada petición, en el array "tools". El hub debe ser accesible desde internet y el token va en authorization.',
     snippet: (mcpUrl) => JSON.stringify({ type: 'mcp', server_label: 'chartsia', server_url: mcpUrl, authorization: '<CHARTSIA_TOKEN>' }),
   },
   {
     id: 'opencode-remote',
     name: 'OpenCode (HTTP)',
+    monogram: 'OC',
+    category: 'Terminal',
+    summary: 'Servidor remoto en tu opencode.json global o del proyecto.',
+    clients: ['opencode'],
     help: 'Añádelo a "mcp" en ~/.config/opencode/opencode.json para todos tus proyectos, o en el opencode.json de un proyecto. Fuera de loopback, sustituye <CHARTSIA_TOKEN> y no lo subas al repositorio.',
     snippet: (mcpUrl) =>
       JSON.stringify(
@@ -77,6 +103,10 @@ export const AGENTS: Agent[] = [
   {
     id: 'opencode-local',
     name: 'OpenCode (stdio)',
+    monogram: 'OC',
+    category: 'Terminal',
+    summary: 'Puente stdio local, lanzado por OpenCode con node.',
+    clients: ['opencode'],
     help: 'Puente stdio hacia el hub (debe estar corriendo). Para todos tus proyectos, añádelo a ~/.config/opencode/opencode.json; sustituye <RUTA_AL_REPO_CHARTSIA> (antes ejecuta "pnpm build"). Fuera de loopback sustituye <CHARTSIA_TOKEN> y no lo subas al repositorio.',
     snippet: (mcpUrl) =>
       JSON.stringify(

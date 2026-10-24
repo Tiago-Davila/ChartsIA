@@ -45,3 +45,28 @@ export function FileIcon() {
 export function CodeIcon() {
   return <Icon><path d="m8 7-5 5 5 5M16 7l5 5-5 5" /></Icon>;
 }
+
+/** Panel lateral, para el botón "Vista" que oculta o muestra la barra. */
+export function SidebarIcon() {
+  return <Icon><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16" /></Icon>;
+}
+
+/** Flecha para volver atrás. */
+export function ArrowLeftIcon() {
+  return <Icon><path d="M19 12H5M11 6l-6 6 6 6" /></Icon>;
+}
+
+/** Controles deslizantes de la configuración general. */
+export function SlidersIcon() {
+  return <Icon><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" /><circle cx="16" cy="6" r="2" /><circle cx="10" cy="12" r="2" /><circle cx="18" cy="18" r="2" /></Icon>;
+}
+
+/** Enchufe de las conexiones MCP. */
+export function PlugIcon() {
+  return <Icon><path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4" /></Icon>;
+}
+
+/** Tilde de "Conectado". */
+export function CheckIcon() {
+  return <Icon><path d="m5 12 5 5 9-10" /></Icon>;
+}

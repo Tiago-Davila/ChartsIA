@@ -98,6 +98,26 @@ describe('barra lateral', () => {
     expect(otra).toHaveAttribute('aria-valuenow', '200');
   });
 
+  it('Vista oculta la barra dejando un riel, lo recuerda y la vuelve a mostrar', async () => {
+    const onConfig = vi.fn();
+    const { unmount } = renderShell({ onConfig });
+    const vista = screen.getByRole('button', { name: 'Vista' });
+    expect(vista).toHaveAttribute('aria-expanded', 'true');
+    await userEvent.click(vista);
+    expect(vista).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('list', { name: 'Recientes' })).toBeNull();
+    expect(screen.queryByRole('separator')).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'Configuración' }));
+    expect(onConfig).toHaveBeenCalled();
+    unmount();
+
+    renderShell();
+    const otra = screen.getByRole('button', { name: 'Vista' });
+    expect(otra).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(otra);
+    expect(screen.getByRole('list', { name: 'Recientes' })).toBeInTheDocument();
+  });
+
   it('el ancho siempre queda dentro del rango', () => {
     expect(clampWidth(50, 200, 480)).toBe(200);
     expect(clampWidth(900, 200, 480)).toBe(480);

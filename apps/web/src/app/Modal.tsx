@@ -2,6 +2,8 @@ import { useEffect, useId, useRef, type ReactNode } from 'react';
 
 export interface ModalProps {
   titulo: string;
+  /** Clase extra de la ventana, por ejemplo para hacerla más ancha. */
+  className?: string;
   onCerrar(): void;
   children: ReactNode;
 }
@@ -10,7 +12,7 @@ const ENFOCABLES =
   'input:not([disabled]), button:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
 
 /** Ventana modal base: foco inicial dentro, Escape y clic en el fondo la cierran. Los hijos son el cuerpo. */
-export function Modal({ titulo, onCerrar, children }: ModalProps) {
+export function Modal({ titulo, className = '', onCerrar, children }: ModalProps) {
   const id = useId();
   const ventana = useRef<HTMLDivElement>(null);
 
@@ -45,7 +47,7 @@ export function Modal({ titulo, onCerrar, children }: ModalProps) {
   // Solo el mousedown directo sobre el fondo cierra; arrastrar desde un campo hasta fuera no.
   return (
     <div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && onCerrar()}>
-      <div ref={ventana} className="modal" role="dialog" aria-modal="true" aria-labelledby={id}>
+      <div ref={ventana} className={`modal ${className}`.trim()} role="dialog" aria-modal="true" aria-labelledby={id}>
         <h2 id={id} className="modal__title">
           {titulo}
         </h2>
