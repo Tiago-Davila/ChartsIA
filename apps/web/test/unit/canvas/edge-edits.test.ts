@@ -128,6 +128,40 @@ describe('conectar arrastrando', () => {
   });
 });
 
+describe('tipos de flecha ofrecidos según el par', () => {
+  const mixed: Pick<Diagram, 'elements' | 'relations'> = {
+    elements: [
+      { id: 'C', kind: 'class', name: 'C', attributes: [], operations: [] },
+      { id: 'I', kind: 'interface', name: 'I', attributes: [], operations: [] },
+      { id: 'E', kind: 'entity', name: 'E' },
+      { id: 'F', kind: 'entity', name: 'F' },
+    ],
+    relations: [],
+  };
+
+  it('clase a interfaz no ofrece herencia', () => {
+    const kinds = relationKinds(mixed.elements, { id: 'r', kind: 'realization', source: 'C', target: 'I' });
+    expect(kinds).not.toContain('inheritance');
+    expect(kinds).toContain('realization');
+  });
+
+  it('entidad a entidad no ofrece atributo ER', () => {
+    const kinds = relationKinds(mixed.elements, { id: 'r', kind: 'er-rel', source: 'E', target: 'F' });
+    expect(kinds).not.toContain('er-attr');
+    expect(kinds).toContain('er-rel');
+  });
+
+  it('un tipo válido para el par se ofrece', () => {
+    expect(relationKinds(mixed.elements, { id: 'r', kind: 'inheritance', source: 'C', target: 'C' })).toContain('inheritance');
+  });
+
+  it('el tipo actual se muestra aunque el par no lo admita', () => {
+    const kinds = relationKinds(mixed.elements, { id: 'r', kind: 'inheritance', source: 'C', target: 'I' });
+    expect(kinds).toContain('inheritance');
+    expect(kinds).toContain('realization');
+  });
+});
+
 describe('alinear y repartir', () => {
   const boxes = [
     { id: 'a', x: 0, y: 0, width: 100, height: 50 },
