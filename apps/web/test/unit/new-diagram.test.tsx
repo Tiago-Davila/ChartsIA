@@ -6,7 +6,7 @@ import { NewDiagram } from '../../src/app/NewDiagram';
 const proyectos = [{ id: 'pr_1', name: 'Tienda', createdAt: '2026-01-01' }];
 
 /** Abre el menú "+ Nuevo" y elige una opción. */
-const elegir = async (opcion: 'Diagrama en blanco' | 'Importar Mermaid') => {
+const elegir = async (opcion: 'Diagrama en blanco' | 'Importar Mermaid' | 'Importar Excalidraw') => {
   await userEvent.click(screen.getByRole('button', { name: 'Nuevo' }));
   await userEvent.click(screen.getByRole('menuitem', { name: opcion }));
 };
@@ -127,5 +127,53 @@ describe('NewDiagram', () => {
     expect(await screen.findByRole('status')).toHaveTextContent('Diagrama importado con aproximaciones');
     expect(screen.getByRole('list', { name: 'Avisos de importación' })).toHaveTextContent('El lollipop se importó como realización.');
     expect(screen.getByRole('button', { name: 'Listo' })).toBeInTheDocument();
+  });
+
+  it('solo ofrece importar Excalidraw si la app sabe hacerlo', async () => {
+    const { unmount } = render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Nuevo' }));
+    expect(screen.queryByRole('menuitem', { name: 'Importar Excalidraw' })).toBeNull();
+    unmount();
+
+    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} onImportExcalidraw={vi.fn()} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Nuevo' }));
+    expect(screen.getByRole('menuitem', { name: 'Importar Excalidraw' })).toBeInTheDocument();
+  });
+
+  it('importa el JSON de Excalidraw pegado con título y proyecto opcionales', async () => {
+    const onImportExcalidraw = vi.fn().mockResolvedValue([]);
+    render(<NewDiagram projects={proyectos} onCreate={vi.fn()} onImportMermaid={vi.fn()} onImportExcalidraw={onImportExcalidraw} />);
+    await elegir('Importar Excalidraw');
+    expect(screen.getByRole('button', { name: 'Importar' })).toBeDisabled();
+    await userEvent.click(screen.getByLabelText('JSON de Excalidraw'));
+    await userEvent.paste('{"type":"excalidraw","elements":[]}');
+    await userEvent.type(screen.getByLabelText('Título (opcional)'), ' Boceto ');
+    await userEvent.selectOptions(screen.getByLabelText('Proyecto'), 'pr_1');
+    await userEvent.click(screen.getByRole('button', { name: 'Importar' }));
+    expect(onImportExcalidraw).toHaveBeenCalledWith('{"type":"excalidraw","elements":[]}', 'Boceto', 'pr_1');
+    expect(screen.queryByRole('form', { name: 'Importar Excalidraw' })).toBeNull();
+  });
+
+  it('lee el archivo .excalidraw elegido en el cuadro de texto', async () => {
+    const onImportExcalidraw = vi.fn().mockResolvedValue([]);
+    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} onImportExcalidraw={onImportExcalidraw} />);
+    await elegir('Importar Excalidraw');
+    const contenido = '{"type":"excalidraw","elements":[]}';
+    await userEvent.upload(screen.getByLabelText('Archivo .excalidraw'), new File([contenido], 'boceto.excalidraw', { type: '' }));
+    expect(await screen.findByDisplayValue(contenido)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Importar' }));
+    expect(onImportExcalidraw).toHaveBeenCalledWith(contenido, undefined, undefined);
+  });
+
+  it('conserva el JSON si falla la importación de Excalidraw y muestra los avisos si los hay', async () => {
+    const onImportExcalidraw = vi.fn().mockResolvedValueOnce(null).mockResolvedValueOnce(['Se omitieron los elementos de tipo "embeddable".']);
+    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} onImportExcalidraw={onImportExcalidraw} />);
+    await elegir('Importar Excalidraw');
+    await userEvent.click(screen.getByLabelText('JSON de Excalidraw'));
+    await userEvent.paste('{"type":"excalidraw","elements":[]}');
+    await userEvent.click(screen.getByRole('button', { name: 'Importar' }));
+    expect(await screen.findByLabelText('JSON de Excalidraw')).toHaveValue('{"type":"excalidraw","elements":[]}');
+    await userEvent.click(screen.getByRole('button', { name: 'Importar' }));
+    expect(await screen.findByRole('list', { name: 'Avisos de importación' })).toHaveTextContent('embeddable');
   });
 });

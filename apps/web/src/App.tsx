@@ -43,7 +43,7 @@ function ConnectedApp() {
   const changedIds = useDiagramStore((s) => s.lastChangedIds);
   const animate = useDiagramStore((s) => s.lastOrigin === 'agent');
   const edits = useDiagramEdits(api);
-  const shortcuts = useMemo(() => ({ history: edits.history, duplicate: edits.duplicate, copy: edits.copy, cut: edits.cut, paste: edits.paste }), [edits.history, edits.duplicate, edits.copy, edits.cut, edits.paste]);
+  const shortcuts = useMemo(() => ({ history: edits.history, duplicate: edits.duplicate, copy: edits.copy, cut: edits.cut, paste: edits.paste, pasteExcalidraw: edits.pasteExcalidraw }), [edits.history, edits.duplicate, edits.copy, edits.cut, edits.paste, edits.pasteExcalidraw]);
   useShortcuts(shortcuts, diagram !== undefined);
   const [empezado, setEmpezado] = useState(false);
   const [abrirEnBlanco, setAbrirEnBlanco] = useState(false);
@@ -86,6 +86,17 @@ function ConnectedApp() {
   const onImportMermaid = useCallback(async (source: string, title?: string, projectId?: string) => {
     try {
       const { diagramId, warnings } = await api.importMermaid({ source, ...(title ? { title } : {}), ...(projectId ? { projectId } : {}) });
+      openDiagram(diagramId);
+      return warnings;
+    } catch (error) {
+      reportError(error);
+      return null;
+    }
+  }, []);
+
+  const onImportExcalidraw = useCallback(async (source: string, title?: string, projectId?: string) => {
+    try {
+      const { diagramId, warnings } = await api.importExcalidraw({ source, ...(title ? { title } : {}), ...(projectId ? { projectId } : {}) });
       openDiagram(diagramId);
       return warnings;
     } catch (error) {
@@ -215,6 +226,7 @@ function ConnectedApp() {
           onOpen={openDiagram}
           onCreateDiagram={onCreateDiagram}
           onImportMermaid={onImportMermaid}
+          onImportExcalidraw={onImportExcalidraw}
           onMoveDiagram={onMoveDiagram}
           onNewProject={onNewProject}
           onRenameProject={onRenameProject}

@@ -85,6 +85,8 @@ export function createApiClient({ baseUrl = '', getToken, fetch: fetchImpl = (..
       json<{ diagramId: string; revision: number; viewUrl: string }>('/api/diagrams', { method: 'POST', body: JSON.stringify(body) }),
     importMermaid: (body: { source: string; title?: string; projectId?: string }) =>
       json<{ diagramId: string; revision: number; viewUrl: string; counts: { elements: number; relations: number }; warnings: string[] }>('/api/diagrams/import-mermaid', { method: 'POST', body: JSON.stringify(body) }),
+    importExcalidraw: (body: { source: string; title?: string; projectId?: string }) =>
+      json<{ diagramId: string; revision: number; viewUrl: string; counts: { elements: number; relations: number }; warnings: string[] }>('/api/diagrams/import-excalidraw', { method: 'POST', body: JSON.stringify(body) }),
     listAgents: async () => (await json<{ agents: ConnectedAgent[] }>('/api/agents')).agents,
     getDiagram: (diagramId: string) => json<Diagram>(`/api/diagrams/${id(diagramId)}`),
     applyOperations: (diagramId: string, body: { baseRevision?: number; operations: Operation[] }) =>

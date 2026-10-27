@@ -184,6 +184,34 @@ describe('POST /api/diagrams', () => {
     expect((await body(await json('/api/diagrams'))).diagrams).toHaveLength(before.diagrams.length);
   });
 
+  it('POST /import-excalidraw crea el diagrama, lo activa y rechaza JSON inválido sin persistir', async () => {
+    const source = JSON.stringify({
+      type: 'excalidraw/clipboard',
+      elements: [
+        { id: 'A', type: 'rectangle', x: 10, y: 20, width: 100, height: 60, boundElements: [{ type: 'text', id: 'tA' }] },
+        { id: 'tA', type: 'text', x: 20, y: 40, width: 80, height: 25, text: 'Pedido', fontSize: 20, fontFamily: 2, containerId: 'A' },
+        { id: 'B', type: 'ellipse', x: 300, y: 20, width: 100, height: 60, angle: 1 },
+        { id: 'f', type: 'arrow', x: 110, y: 50, width: 190, height: 0, points: [[0, 0], [190, 0]], startBinding: { elementId: 'A' }, endBinding: { elementId: 'B' }, startArrowhead: null, endArrowhead: 'arrow' },
+      ],
+    });
+    const response = await json('/api/diagrams/import-excalidraw', { method: 'POST', body: JSON.stringify({ source, title: 'Boceto' }) });
+    expect(response.status).toBe(201);
+    const created = await body(response);
+    expect(created).toMatchObject({ revision: 1, counts: { elements: 2, relations: 1 }, warnings: [expect.stringContaining('rotación')] });
+    expect(await body(await json(`/api/diagrams/${created.diagramId}`))).toMatchObject({
+      title: 'Boceto',
+      elements: [{ id: 'A', kind: 'figure', name: 'Pedido', layout: { x: 10, y: 20 } }, { id: 'B', kind: 'figure', shape: 'oval' }],
+      relations: [{ kind: 'connector', source: 'A', target: 'B' }],
+    });
+    expect((await body(await json('/api/diagrams'))).activeDiagramId).toBe(created.diagramId);
+
+    const before = await body(await json('/api/diagrams'));
+    const invalid = await json('/api/diagrams/import-excalidraw', { method: 'POST', body: JSON.stringify({ source: '{"type":"excalidrawlib"}' }) });
+    expect(invalid.status).toBe(422);
+    expect((await body(invalid)).errors[0]).toMatchObject({ code: 'SCHEMA_VIOLATION', path: '/source/type', hint: expect.any(String) });
+    expect((await body(await json('/api/diagrams'))).diagrams).toHaveLength(before.diagrams.length);
+  });
+
   it('rechaza SVG activo antes de persistirlo', async () => {
     const created = await body(await json('/api/diagrams', {
       method: 'POST',
