@@ -399,6 +399,8 @@ body.is-resizing * { cursor: col-resize !important; }
   border-radius: 16px;
   transition: transform 160ms var(--jr-ease-out), background-color 200ms ease, color 200ms ease;
 }
+/* Opción con ícono: un cuadrado del alto del chip. */
+.jelly-radio__skin--icon { width: 32px; padding: 0; }
 .jelly-radio__skin::before {
   content: '';
   position: absolute;
