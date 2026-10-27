@@ -19,6 +19,7 @@ import {
 } from '@xyflow/react';
 import { type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { DRAWING_DEFAULT_COLOR, DRAWING_WIDTH_PX, HIGHLIGHTER_DEFAULT_COLOR, HIGHLIGHTER_OPACITY, HIGHLIGHTER_WIDTH_PX, type Point, type StackOrderTarget, type StyleLineWidth } from '@chartsia/core/model';
+import { BucketIcon, FrameToolIcon, HandIcon, HighlighterIcon, PenToolIcon, PointerIcon, TextToolIcon } from '../app/icons';
 import { JellyRadio, type JellyRadioItem } from '../app/JellyRadio';
 import { edgeTypes } from '../edges';
 import { nodeTypes } from '../nodes';
@@ -63,13 +64,13 @@ const BUCKET_DEFAULT_COLOR = PALETTE[3].value;
 type CanvasTool = 'select' | 'hand' | 'pen' | 'highlighter' | 'bucket' | 'text' | 'frame';
 /** Herramientas de la barra, en orden. */
 const TOOLS: JellyRadioItem<CanvasTool>[] = [
-  { value: 'select', label: 'Selección' },
-  { value: 'hand', label: 'Mano' },
-  { value: 'pen', label: 'Lápiz' },
-  { value: 'highlighter', label: 'Marcador' },
-  { value: 'bucket', label: 'Balde' },
-  { value: 'text', label: 'Texto' },
-  { value: 'frame', label: 'Marco' },
+  { value: 'select', label: 'Selección', icon: <PointerIcon /> },
+  { value: 'hand', label: 'Mano', icon: <HandIcon /> },
+  { value: 'pen', label: 'Lápiz', icon: <PenToolIcon /> },
+  { value: 'highlighter', label: 'Marcador', icon: <HighlighterIcon /> },
+  { value: 'bucket', label: 'Balde', icon: <BucketIcon /> },
+  { value: 'text', label: 'Texto', icon: <TextToolIcon /> },
+  { value: 'frame', label: 'Marco', icon: <FrameToolIcon /> },
 ];
 /** Herramientas con color propio elegido en la barra. */
 type ColoredTool = 'pen' | 'highlighter' | 'bucket';

@@ -83,6 +83,22 @@ test.describe('barra de figuras', () => {
     await expect(page.locator('[data-element-id="Clase"]')).toBeVisible();
   });
 
+  test('cada figura se muestra con el ícono de su forma y su nombre aparece al pasar el mouse', async ({ page, agent }) => {
+    const id = await agent.create(base);
+    await page.goto(`/d/${id}`);
+    const clase = page.locator('[data-figure="class"]');
+    await expect(clase).toHaveAttribute('title', 'Clase');
+    await expect(clase.locator('svg.figure-icon')).toBeVisible();
+    await expect(clase.locator('svg.figure-icon text')).toHaveCount(0);
+    await expect(page.getByText('Clase', { exact: true })).toHaveClass('sr-only');
+
+    const items = page.locator('.figure-sidebar__item');
+    const total = await items.count();
+    expect(total).toBeGreaterThan(40);
+    await expect(page.locator('.figure-sidebar__item svg.figure-icon')).toHaveCount(total);
+    await expect(page.locator('.figure-sidebar__item[title]')).toHaveCount(total);
+  });
+
   test('los botones de la barra entran en su ancho sin desplazamiento horizontal', async ({ page, agent }) => {
     const er = await agent.create({ type: 'er', title: 'ER', elements: [], relations: [] });
     await page.goto(`/d/${er}`);
