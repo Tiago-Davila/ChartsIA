@@ -1,0 +1,56 @@
+{
+  "diagram": {
+    "type": "class",
+    "title": "Diagrama importado",
+    "elements": [
+      {
+        "id": "Zr8u3nQ-b3Bj4tPz-OV9S",
+        "name": "Servicio",
+        "layout": {
+          "x": 100,
+          "y": 100,
+          "width": 140,
+          "height": 140,
+          "resized": true
+        },
+        "style": {
+          "lineWidth": "medium",
+          "fontFamily": "handwritten",
+          "fontSize": 20
+        },
+        "kind": "figure",
+        "shape": "square"
+      },
+      {
+        "id": "otro",
+        "name": " ",
+        "layout": {
+          "x": 400,
+          "y": 100,
+          "width": 160,
+          "height": 100,
+          "resized": true
+        },
+        "style": {
+          "fillColor": "#ffec99",
+          "lineWidth": "medium"
+        },
+        "kind": "figure",
+        "shape": "oval"
+      }
+    ],
+    "relations": [
+      {
+        "id": "Flecha1",
+        "kind": "connector",
+        "source": "Zr8u3nQ-b3Bj4tPz-OV9S",
+        "target": "otro",
+        "arrowheads": "both",
+        "style": {
+          "lineWidth": "medium"
+        }
+      }
+    ]
+  },
+  "warnings": []
+}

@@ -1,0 +1,9 @@
+{
+  "type": "excalidraw/clipboard",
+  "elements": [
+    { "id": "Zr8u3nQ-b3Bj4tPz-OV9S", "type": "rectangle", "x": 100, "y": 100, "width": 140, "height": 140, "strokeColor": "#1e1e1e", "backgroundColor": "transparent", "strokeWidth": 2, "boundElements": [{ "type": "text", "id": "t1" }, { "type": "arrow", "id": "9flecha" }] },
+    { "id": "t1", "type": "text", "x": 120, "y": 160, "width": 100, "height": 25, "text": "Servicio", "fontSize": 20, "fontFamily": 5, "strokeColor": "#1e1e1e", "containerId": "Zr8u3nQ-b3Bj4tPz-OV9S" },
+    { "id": "otro", "type": "ellipse", "x": 400, "y": 100, "width": 160, "height": 100, "strokeColor": "#1e1e1e", "backgroundColor": "#ffec99", "fillStyle": "solid", "strokeWidth": 2, "boundElements": [{ "type": "arrow", "id": "9flecha" }] },
+    { "id": "9flecha", "type": "arrow", "x": 240, "y": 170, "width": 160, "height": 0, "strokeColor": "#1e1e1e", "strokeWidth": 2, "points": [[0, 0], [160, 0]], "startBinding": { "elementId": "Zr8u3nQ-b3Bj4tPz-OV9S", "focus": 0, "gap": 1 }, "endBinding": { "elementId": "otro", "focus": 0, "gap": 1 }, "startArrowhead": "arrow", "endArrowhead": "arrow" }
+  ]
+}
