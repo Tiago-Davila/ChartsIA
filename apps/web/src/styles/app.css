@@ -260,6 +260,14 @@ body.is-resizing * { cursor: col-resize !important; }
   position: relative;
   width: 100%;
   height: 100%;
+  /* Arrastrar el rectángulo de selección no debe resaltar el texto de los paneles. */
+  user-select: none;
+  -webkit-user-select: none;
+}
+/* Los campos de texto del lienzo siguen permitiendo escribir y seleccionar. */
+.diagram-canvas :is(input, textarea) {
+  user-select: text;
+  -webkit-user-select: text;
 }
 .diagram-canvas.is-drawing .react-flow__pane { cursor: crosshair; }
 .diagram-canvas.is-painting .react-flow__node { cursor: copy; }
