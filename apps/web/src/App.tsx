@@ -10,7 +10,6 @@ import { TokenPrompt } from './app/TokenPrompt';
 import { toReactFlow } from './canvas/to-react-flow';
 import { useDiagramEdits } from './canvas/use-diagram-edits';
 import { useShortcuts } from './canvas/use-shortcuts';
-import { usePasteDrawio } from './canvas/use-paste-drawio';
 import { DiagramEditContext } from './nodes/edit-context';
 import { ApiError } from './state/api-client';
 import { setToken } from './state/auth-token';
@@ -44,7 +43,7 @@ function ConnectedApp() {
   const changedIds = useDiagramStore((s) => s.lastChangedIds);
   const animate = useDiagramStore((s) => s.lastOrigin === 'agent');
   const edits = useDiagramEdits(api);
-  const shortcuts = useMemo(() => ({ history: edits.history, duplicate: edits.duplicate, copy: edits.copy, cut: edits.cut, paste: edits.paste, pasteExcalidraw: edits.pasteExcalidraw }), [edits.history, edits.duplicate, edits.copy, edits.cut, edits.paste, edits.pasteExcalidraw]);
+  const shortcuts = useMemo(() => ({ history: edits.history, duplicate: edits.duplicate, copy: edits.copy, cut: edits.cut, paste: edits.paste, pasteExternal: edits.pasteExternal }), [edits.history, edits.duplicate, edits.copy, edits.cut, edits.paste, edits.pasteExternal]);
   useShortcuts(shortcuts, diagram !== undefined);
   const [empezado, setEmpezado] = useState(false);
   const [abrirEnBlanco, setAbrirEnBlanco] = useState(false);
@@ -116,7 +115,6 @@ function ConnectedApp() {
       return null;
     }
   }, []);
-  usePasteDrawio(useCallback((source: string) => void onImportDrawio(source), [onImportDrawio]), route.name !== 'config');
 
   // Mueve un diagrama de proyecto; la lista se actualiza con el evento `projects.changed`.
   const onMoveDiagram = useCallback(async (diagramId: string, projectId: string | null) => {

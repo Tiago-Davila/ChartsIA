@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { NewDiagram } from '../../src/app/NewDiagram';
-import { esDrawio, usePasteDrawio } from '../../src/canvas/use-paste-drawio';
+import { esDrawio, esExcalidraw } from '../../src/canvas/clipboard';
 
 const proyectos = [{ id: 'pr_1', name: 'Tienda', createdAt: '2026-01-01' }];
 const XML = '<mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/></root></mxGraphModel>';
@@ -64,8 +64,8 @@ describe('NewDiagram: importar draw.io', () => {
   });
 });
 
-describe('pegar lo copiado en draw.io', () => {
-  it('reconoce un mxGraphModel o un mxfile, también codificados como URL', () => {
+describe('reconocer lo copiado en otras apps', () => {
+  it('reconoce un mxGraphModel o un mxfile de draw.io, también codificados como URL', () => {
     expect(esDrawio(XML)).toBe(true);
     expect(esDrawio('  <mxfile host="x"></mxfile>')).toBe(true);
     expect(esDrawio(encodeURIComponent(XML))).toBe(true);
@@ -73,33 +73,9 @@ describe('pegar lo copiado en draw.io', () => {
     expect(esDrawio('<svg></svg>')).toBe(false);
   });
 
-  function Pegable({ onImport, enabled = true }: { onImport(source: string): void; enabled?: boolean }) {
-    usePasteDrawio(onImport, enabled);
-    return <input aria-label="campo" />;
-  }
-  /** Dispara un pegado con el texto dado sobre el elemento. */
-  function pegar(target: Element, text: string) {
-    const event = new Event('paste', { bubbles: true, cancelable: true });
-    Object.defineProperty(event, 'clipboardData', { value: { getData: () => text } });
-    target.dispatchEvent(event);
-    return event;
-  }
-
-  it('importa el XML pegado fuera de un campo de texto y cancela el pegado normal', () => {
-    const onImport = vi.fn();
-    render(<Pegable onImport={onImport} />);
-    const event = pegar(document.body, XML);
-    expect(onImport).toHaveBeenCalledWith(XML);
-    expect(event.defaultPrevented).toBe(true);
-  });
-
-  it('no actúa dentro de un campo de texto, con otro contenido ni deshabilitado', () => {
-    const onImport = vi.fn();
-    const { rerender } = render(<Pegable onImport={onImport} />);
-    pegar(screen.getByLabelText('campo'), XML);
-    pegar(document.body, 'texto cualquiera');
-    rerender(<Pegable onImport={onImport} enabled={false} />);
-    pegar(document.body, XML);
-    expect(onImport).not.toHaveBeenCalled();
+  it('reconoce los elementos copiados en Excalidraw y no un texto cualquiera', () => {
+    expect(esExcalidraw('{"type":"excalidraw/clipboard","elements":[]}')).toBe(true);
+    expect(esExcalidraw('{"type":"excalidraw","elements":[]}')).toBe(false);
+    expect(esExcalidraw(XML)).toBe(false);
   });
 });

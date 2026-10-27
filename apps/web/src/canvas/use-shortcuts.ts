@@ -6,8 +6,8 @@ export interface ShortcutActions {
   copy(): void;
   cut(): void;
   paste(): void;
-  /** Pega elementos copiados de Excalidraw; devuelve false si el texto no lo es. */
-  pasteExcalidraw(text: string): boolean;
+  /** Pega lo copiado en Excalidraw o draw.io; devuelve false si el texto no es de ninguno. */
+  pasteExternal(text: string): boolean;
 }
 
 /** Ignora los atajos mientras se escribe en un campo de texto (no en listas ni selectores de color). */
@@ -17,7 +17,7 @@ function isTyping(target: EventTarget | null): boolean {
   return target.isContentEditable || ['INPUT', 'TEXTAREA'].includes(target.tagName);
 }
 
-/** Atajos globales del lienzo: Ctrl+Z deshace, Ctrl+Shift+Z y Ctrl+Y rehacen, Ctrl+D duplica, Ctrl+C copia, Ctrl+X corta y Ctrl+V pega (el evento de pegado distingue lo copiado en Excalidraw). */
+/** Atajos globales del lienzo: Ctrl+Z deshace, Ctrl+Shift+Z y Ctrl+Y rehacen, Ctrl+D duplica, Ctrl+C copia, Ctrl+X corta y Ctrl+V pega (el evento de pegado distingue lo copiado en Excalidraw o draw.io). */
 export function useShortcuts(actions: ShortcutActions, enabled: boolean): void {
   useEffect(() => {
     if (!enabled) return;
@@ -39,7 +39,7 @@ export function useShortcuts(actions: ShortcutActions, enabled: boolean): void {
     const onPaste = (e: ClipboardEvent) => {
       if (isTyping(e.target)) return;
       e.preventDefault();
-      if (!actions.pasteExcalidraw(e.clipboardData?.getData('text/plain') ?? '')) actions.paste();
+      if (!actions.pasteExternal(e.clipboardData?.getData('text/plain') ?? '')) actions.paste();
     };
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('paste', onPaste);

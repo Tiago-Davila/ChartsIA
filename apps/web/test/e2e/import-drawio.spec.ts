@@ -82,22 +82,18 @@ test('rechaza un XML con DOCTYPE, muestra el error y conserva el texto para corr
   await expect(page.getByRole('alert')).toContainText('DOCTYPE');
 });
 
-test('Ctrl+V de lo copiado en draw.io sobre el lienzo lo importa como diagrama nuevo', async ({ page, agent }) => {
-  const original = await agent.create({ ...shop, title: 'Lienzo base' });
-  await page.goto(`/d/${original}`);
-  await expect(page.getByRole('heading', { name: /Lienzo base/ })).toBeVisible();
+test('Ctrl+V de lo copiado en draw.io sobre el lienzo lo agrega al diagrama abierto', async ({ page, agent }) => {
+  const id = await agent.create({ type: 'class', title: 'Pegar draw.io', elements: [], relations: [] });
+  await page.goto(`/d/${id}`);
+  await expect(page.getByRole('heading', { name: 'Pegar draw.io' })).toBeVisible();
   // draw.io copia el mxGraphModel en el portapapeles del sistema, a veces codificado como URL.
   const clipboard = encodeURIComponent('<mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/><mxCell id="P" value="Pegado" style="rounded=0;" vertex="1" parent="1"><mxGeometry x="10" y="20" width="120" height="60" as="geometry"/></mxCell></root></mxGraphModel>');
   await page.evaluate((text) => {
     const data = new DataTransfer();
     data.setData('text/plain', text);
-    document.body.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+    window.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
   }, clipboard);
 
-  await expect(page.getByRole('heading', { name: /Diagrama importado/ })).toBeVisible();
-  const id = idDesdeUrl(page.url());
-  expect(id).toBeTruthy();
-  expect(id).not.toBe(original);
-  const stored = await (await page.request.get(`/api/diagrams/${id}`)).json();
-  expect(stored.elements).toMatchObject([{ id: 'P', name: 'Pegado', layout: { x: 10, y: 20 } }]);
+  await expect.poll(async () => (await agent.layout(id)).elements.map((e) => e.name)).toEqual(['Pegado']);
+  expect(idDesdeUrl(page.url())).toBe(id);
 });
