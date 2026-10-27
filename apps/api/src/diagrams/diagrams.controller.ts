@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post } from '@nestjs/common';
 import { z } from 'zod';
 import { type Diagram } from '@chartsia/core/model';
-import { MAX_MERMAID_SOURCE_LENGTH } from '@chartsia/core/import';
+import { importExcalidraw, MAX_EXCALIDRAW_SOURCE_LENGTH, MAX_MERMAID_SOURCE_LENGTH } from '@chartsia/core/import';
 import { DomainValidationError, fromZodError } from '@chartsia/core/validation';
 import { PublicUrls } from '../common/public-urls.js';
 import { APP_CONFIG, type AppConfig } from '../config/config.js';
@@ -17,6 +17,12 @@ const OperationsBodySchema = z.strictObject({
 const CreateBodySchema = z.strictObject({
   type: z.unknown(),
   title: z.unknown(),
+  projectId: z.string().max(64).optional(),
+});
+
+const ImportExcalidrawBodySchema = z.strictObject({
+  source: z.string().min(1).max(MAX_EXCALIDRAW_SOURCE_LENGTH),
+  title: z.string().min(1).max(120).optional(),
   projectId: z.string().max(64).optional(),
 });
 
@@ -52,6 +58,22 @@ export class DiagramsController {
     const { type, title, projectId } = parsed.data;
     const { diagram } = await this.commands.create({ type, title, elements: [], relations: [] }, projectId);
     return { diagramId: diagram.id, revision: diagram.revision, viewUrl: this.urls.view(diagram.id) };
+  }
+
+  @Post('import-excalidraw')
+  async importExcalidraw(@Body() body: unknown) {
+    const parsed = ImportExcalidrawBodySchema.safeParse(body ?? {});
+    if (!parsed.success) throw new DomainValidationError(fromZodError(parsed.error));
+    const { source, title, projectId } = parsed.data;
+    const imported = importExcalidraw(source, title);
+    const { diagram, warnings } = await this.commands.create(imported.diagram, projectId);
+    return {
+      diagramId: diagram.id,
+      revision: diagram.revision,
+      viewUrl: this.urls.view(diagram.id),
+      counts: { elements: diagram.elements.length, relations: diagram.relations.length },
+      warnings: [...imported.warnings, ...warnings],
+    };
   }
 
   @Post('import-mermaid')
