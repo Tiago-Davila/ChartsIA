@@ -13,7 +13,7 @@ const elegir = async (opcion: 'Diagrama en blanco' | 'Importar Mermaid' | 'Impor
 
 describe('NewDiagram', () => {
   it('muestra solo el botón hasta que se elige una opción, y el formulario va en una ventana', async () => {
-    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} />);
+    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} onImportDrawio={vi.fn()} />);
     expect(screen.queryByRole('form', { name: 'Nuevo diagrama' })).toBeNull();
     expect(screen.queryByRole('menu')).toBeNull();
     await elegir('Diagrama en blanco');
@@ -23,7 +23,7 @@ describe('NewDiagram', () => {
   });
 
   it('el menú se recorre con las flechas y Escape lo cierra devolviendo el foco al botón', async () => {
-    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} />);
+    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} onImportDrawio={vi.fn()} />);
     const boton = screen.getByRole('button', { name: 'Nuevo' });
     await userEvent.click(boton);
     expect(boton).toHaveAttribute('aria-expanded', 'true');
@@ -36,7 +36,7 @@ describe('NewDiagram', () => {
   });
 
   it('un clic fuera cierra el menú sin abrir nada', async () => {
-    render(<><NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} /><p>afuera</p></>);
+    render(<><NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} onImportDrawio={vi.fn()} /><p>afuera</p></>);
     await userEvent.click(screen.getByRole('button', { name: 'Nuevo' }));
     await userEvent.click(screen.getByText('afuera'));
     expect(screen.queryByRole('menu')).toBeNull();
@@ -44,7 +44,7 @@ describe('NewDiagram', () => {
   });
 
   it('ofrece todos los tipos de diagrama', async () => {
-    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} />);
+    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} onImportDrawio={vi.fn()} />);
     await elegir('Diagrama en blanco');
     const opciones = screen.getAllByRole('option').map((o) => (o as HTMLOptionElement).value);
     expect(opciones).toEqual(['class', 'c4-context', 'c4-container', 'c4-component', 'er', 'nosql']);
@@ -52,7 +52,7 @@ describe('NewDiagram', () => {
 
   it('crea con el tipo y el título elegidos, recortado, y se cierra', async () => {
     const onCreate = vi.fn();
-    render(<NewDiagram projects={[]} onCreate={onCreate} onImportMermaid={vi.fn()} />);
+    render(<NewDiagram projects={[]} onCreate={onCreate} onImportMermaid={vi.fn()} onImportDrawio={vi.fn()} />);
     await elegir('Diagrama en blanco');
     await userEvent.selectOptions(screen.getByLabelText('Tipo'), 'er');
     await userEvent.type(screen.getByLabelText('Título'), '  Tienda  ');
@@ -63,7 +63,7 @@ describe('NewDiagram', () => {
 
   it('con un título vacío no deja crear', async () => {
     const onCreate = vi.fn();
-    render(<NewDiagram projects={[]} onCreate={onCreate} onImportMermaid={vi.fn()} />);
+    render(<NewDiagram projects={[]} onCreate={onCreate} onImportMermaid={vi.fn()} onImportDrawio={vi.fn()} />);
     await elegir('Diagrama en blanco');
     await userEvent.type(screen.getByLabelText('Título'), '   {Enter}');
     expect(screen.getByRole('button', { name: 'Crear' })).toBeDisabled();
@@ -72,12 +72,12 @@ describe('NewDiagram', () => {
 
   it('solo pide proyecto si hay proyectos y lo envía', async () => {
     const onCreate = vi.fn();
-    const { unmount } = render(<NewDiagram projects={[]} onCreate={onCreate} onImportMermaid={vi.fn()} />);
+    const { unmount } = render(<NewDiagram projects={[]} onCreate={onCreate} onImportMermaid={vi.fn()} onImportDrawio={vi.fn()} />);
     await elegir('Diagrama en blanco');
     expect(screen.queryByLabelText('Proyecto')).toBeNull();
     unmount();
 
-    render(<NewDiagram projects={proyectos} onCreate={onCreate} onImportMermaid={vi.fn()} />);
+    render(<NewDiagram projects={proyectos} onCreate={onCreate} onImportMermaid={vi.fn()} onImportDrawio={vi.fn()} />);
     await elegir('Diagrama en blanco');
     await userEvent.selectOptions(screen.getByLabelText('Proyecto'), 'pr_1');
     await userEvent.type(screen.getByLabelText('Título'), 'En proyecto{Enter}');
@@ -86,7 +86,7 @@ describe('NewDiagram', () => {
 
   it('Cancelar descarta lo escrito', async () => {
     const onCreate = vi.fn();
-    render(<NewDiagram projects={[]} onCreate={onCreate} onImportMermaid={vi.fn()} />);
+    render(<NewDiagram projects={[]} onCreate={onCreate} onImportMermaid={vi.fn()} onImportDrawio={vi.fn()} />);
     await elegir('Diagrama en blanco');
     await userEvent.type(screen.getByLabelText('Título'), 'Algo');
     await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
@@ -97,7 +97,7 @@ describe('NewDiagram', () => {
 
   it('importa Mermaid con título y proyecto opcionales', async () => {
     const onImportMermaid = vi.fn().mockResolvedValue([]);
-    render(<NewDiagram projects={proyectos} onCreate={vi.fn()} onImportMermaid={onImportMermaid} />);
+    render(<NewDiagram projects={proyectos} onCreate={vi.fn()} onImportMermaid={onImportMermaid} onImportDrawio={vi.fn()} />);
     await elegir('Importar Mermaid');
     await userEvent.type(screen.getByLabelText('Mermaid classDiagram'), 'classDiagram\nclass Usuario');
     await userEvent.type(screen.getByLabelText('Título (opcional)'), ' Usuarios ');
@@ -109,7 +109,7 @@ describe('NewDiagram', () => {
 
   it('conserva el texto si falla la importación para que se pueda corregir', async () => {
     const onImportMermaid = vi.fn().mockResolvedValue(null);
-    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={onImportMermaid} />);
+    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={onImportMermaid} onImportDrawio={vi.fn()} />);
     await elegir('Importar Mermaid');
     const source = 'classDiagram\nclass';
     await userEvent.type(screen.getByLabelText('Mermaid classDiagram'), source);
@@ -120,7 +120,7 @@ describe('NewDiagram', () => {
 
   it('muestra aproximaciones del modelo cuando el import termina correctamente', async () => {
     const onImportMermaid = vi.fn().mockResolvedValue(['El lollipop se importó como realización.']);
-    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={onImportMermaid} />);
+    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={onImportMermaid} onImportDrawio={vi.fn()} />);
     await elegir('Importar Mermaid');
     await userEvent.type(screen.getByLabelText('Mermaid classDiagram'), 'classDiagram\nA ()-- B');
     await userEvent.click(screen.getByRole('button', { name: 'Importar' }));
@@ -130,19 +130,19 @@ describe('NewDiagram', () => {
   });
 
   it('solo ofrece importar Excalidraw si la app sabe hacerlo', async () => {
-    const { unmount } = render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} />);
+    const { unmount } = render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} onImportDrawio={vi.fn()} />);
     await userEvent.click(screen.getByRole('button', { name: 'Nuevo' }));
     expect(screen.queryByRole('menuitem', { name: 'Importar Excalidraw' })).toBeNull();
     unmount();
 
-    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} onImportExcalidraw={vi.fn()} />);
+    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} onImportDrawio={vi.fn()} onImportExcalidraw={vi.fn()} />);
     await userEvent.click(screen.getByRole('button', { name: 'Nuevo' }));
     expect(screen.getByRole('menuitem', { name: 'Importar Excalidraw' })).toBeInTheDocument();
   });
 
   it('importa el JSON de Excalidraw pegado con título y proyecto opcionales', async () => {
     const onImportExcalidraw = vi.fn().mockResolvedValue([]);
-    render(<NewDiagram projects={proyectos} onCreate={vi.fn()} onImportMermaid={vi.fn()} onImportExcalidraw={onImportExcalidraw} />);
+    render(<NewDiagram projects={proyectos} onCreate={vi.fn()} onImportMermaid={vi.fn()} onImportDrawio={vi.fn()} onImportExcalidraw={onImportExcalidraw} />);
     await elegir('Importar Excalidraw');
     expect(screen.getByRole('button', { name: 'Importar' })).toBeDisabled();
     await userEvent.click(screen.getByLabelText('JSON de Excalidraw'));
@@ -156,7 +156,7 @@ describe('NewDiagram', () => {
 
   it('lee el archivo .excalidraw elegido en el cuadro de texto', async () => {
     const onImportExcalidraw = vi.fn().mockResolvedValue([]);
-    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} onImportExcalidraw={onImportExcalidraw} />);
+    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} onImportDrawio={vi.fn()} onImportExcalidraw={onImportExcalidraw} />);
     await elegir('Importar Excalidraw');
     const contenido = '{"type":"excalidraw","elements":[]}';
     await userEvent.upload(screen.getByLabelText('Archivo .excalidraw'), new File([contenido], 'boceto.excalidraw', { type: '' }));
@@ -167,7 +167,7 @@ describe('NewDiagram', () => {
 
   it('conserva el JSON si falla la importación de Excalidraw y muestra los avisos si los hay', async () => {
     const onImportExcalidraw = vi.fn().mockResolvedValueOnce(null).mockResolvedValueOnce(['Se omitieron los elementos de tipo "embeddable".']);
-    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} onImportExcalidraw={onImportExcalidraw} />);
+    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} onImportDrawio={vi.fn()} onImportExcalidraw={onImportExcalidraw} />);
     await elegir('Importar Excalidraw');
     await userEvent.click(screen.getByLabelText('JSON de Excalidraw'));
     await userEvent.paste('{"type":"excalidraw","elements":[]}');
