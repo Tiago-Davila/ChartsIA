@@ -21,6 +21,7 @@ const base: AppShellProps = {
   onOpen: vi.fn(),
   onCreateDiagram: vi.fn(),
   onImportMermaid: vi.fn(),
+  onImportDrawio: vi.fn(),
   onMoveDiagram: vi.fn(),
   onNewProject: vi.fn(),
   onRenameProject: vi.fn(),

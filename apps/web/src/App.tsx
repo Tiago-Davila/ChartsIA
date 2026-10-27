@@ -10,6 +10,7 @@ import { TokenPrompt } from './app/TokenPrompt';
 import { toReactFlow } from './canvas/to-react-flow';
 import { useDiagramEdits } from './canvas/use-diagram-edits';
 import { useShortcuts } from './canvas/use-shortcuts';
+import { usePasteDrawio } from './canvas/use-paste-drawio';
 import { DiagramEditContext } from './nodes/edit-context';
 import { ApiError } from './state/api-client';
 import { setToken } from './state/auth-token';
@@ -104,6 +105,18 @@ function ConnectedApp() {
       return null;
     }
   }, []);
+
+  const onImportDrawio = useCallback(async (source: string, title?: string, projectId?: string) => {
+    try {
+      const { diagramId, warnings } = await api.importDrawio({ source, ...(title ? { title } : {}), ...(projectId ? { projectId } : {}) });
+      openDiagram(diagramId);
+      return warnings;
+    } catch (error) {
+      reportError(error);
+      return null;
+    }
+  }, []);
+  usePasteDrawio(useCallback((source: string) => void onImportDrawio(source), [onImportDrawio]), route.name !== 'config');
 
   // Mueve un diagrama de proyecto; la lista se actualiza con el evento `projects.changed`.
   const onMoveDiagram = useCallback(async (diagramId: string, projectId: string | null) => {
@@ -227,6 +240,7 @@ function ConnectedApp() {
           onCreateDiagram={onCreateDiagram}
           onImportMermaid={onImportMermaid}
           onImportExcalidraw={onImportExcalidraw}
+          onImportDrawio={onImportDrawio}
           onMoveDiagram={onMoveDiagram}
           onNewProject={onNewProject}
           onRenameProject={onRenameProject}
