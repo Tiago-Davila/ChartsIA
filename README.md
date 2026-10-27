@@ -56,6 +56,8 @@ Las imágenes se insertan como datos embebidos en el diagrama y se guardan en el
 
 La app y la herramienta MCP `import_mermaid` importan `classDiagram` y `classDiagram-v2`, hasta 256 Ki caracteres. Se conservan clases, miembros, namespaces y relaciones; las directivas visuales se omiten con avisos. Los links, callbacks y la configuración incrustada nunca se ejecutan ni se consultan. La importación inválida no crea un diagrama y devuelve un error con la ruta `/source` y la línea cuando está disponible; las aproximaciones de relaciones incluyen un aviso.
 
+La app (**+ Nuevo > Importar draw.io**, pegando el XML, eligiendo un archivo o pegando con Ctrl+V sobre el lienzo lo copiado en draw.io) y la herramienta MCP `import_drawio` importan `.drawio` sin comprimir o comprimido (deflate + base64) y `mxGraphModel` sueltos, hasta 4 Mi caracteres. Se conservan los elementos, relaciones y posiciones que exporta ChartsIA, y las formas generales de draw.io; con varias páginas se importa la primera. Lo que no tiene equivalente se omite con un aviso, y el XML con `DOCTYPE` o entidades se rechaza. La importación inválida no crea un diagrama y devuelve un error con la ruta `/source`.
+
 ## Conectar agentes
 
 La pantalla `/config` de la app muestra, junto al comando de cada agente, un prompt de instalación para pegarlo en el propio agente, que se conecta solo al hub.
