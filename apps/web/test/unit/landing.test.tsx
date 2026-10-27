@@ -44,7 +44,7 @@ describe('pantalla inicial', () => {
   });
 
   it('"Empezar" deja abierta la ventana de diagrama en blanco', () => {
-    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} openBlank />);
+    render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} onImportDrawio={vi.fn()} openBlank />);
     expect(screen.getByRole('dialog', { name: 'Nuevo diagrama' })).toBeInTheDocument();
   });
 });

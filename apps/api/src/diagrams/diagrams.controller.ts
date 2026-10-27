@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post } from '@nestjs/common';
 import { z } from 'zod';
 import { type Diagram } from '@chartsia/core/model';
-import { MAX_MERMAID_SOURCE_LENGTH } from '@chartsia/core/import';
+import { importDrawio, importExcalidraw, MAX_DRAWIO_SOURCE_LENGTH, MAX_EXCALIDRAW_SOURCE_LENGTH, MAX_MERMAID_SOURCE_LENGTH } from '@chartsia/core/import';
 import { DomainValidationError, fromZodError } from '@chartsia/core/validation';
 import { PublicUrls } from '../common/public-urls.js';
 import { APP_CONFIG, type AppConfig } from '../config/config.js';
@@ -20,8 +20,20 @@ const CreateBodySchema = z.strictObject({
   projectId: z.string().max(64).optional(),
 });
 
+const ImportExcalidrawBodySchema = z.strictObject({
+  source: z.string().min(1).max(MAX_EXCALIDRAW_SOURCE_LENGTH),
+  title: z.string().min(1).max(120).optional(),
+  projectId: z.string().max(64).optional(),
+});
+
 const ImportMermaidBodySchema = z.strictObject({
   source: z.string().min(1).max(MAX_MERMAID_SOURCE_LENGTH),
+  title: z.string().min(1).max(120).optional(),
+  projectId: z.string().max(64).optional(),
+});
+
+const ImportDrawioBodySchema = z.strictObject({
+  source: z.string().min(1).max(MAX_DRAWIO_SOURCE_LENGTH),
   title: z.string().min(1).max(120).optional(),
   projectId: z.string().max(64).optional(),
 });
@@ -54,12 +66,44 @@ export class DiagramsController {
     return { diagramId: diagram.id, revision: diagram.revision, viewUrl: this.urls.view(diagram.id) };
   }
 
+  @Post('import-excalidraw')
+  async importExcalidraw(@Body() body: unknown) {
+    const parsed = ImportExcalidrawBodySchema.safeParse(body ?? {});
+    if (!parsed.success) throw new DomainValidationError(fromZodError(parsed.error));
+    const { source, title, projectId } = parsed.data;
+    const imported = importExcalidraw(source, title);
+    const { diagram, warnings } = await this.commands.create(imported.diagram, projectId);
+    return {
+      diagramId: diagram.id,
+      revision: diagram.revision,
+      viewUrl: this.urls.view(diagram.id),
+      counts: { elements: diagram.elements.length, relations: diagram.relations.length },
+      warnings: [...imported.warnings, ...warnings],
+    };
+  }
+
   @Post('import-mermaid')
   async importMermaid(@Body() body: unknown) {
     const parsed = ImportMermaidBodySchema.safeParse(body ?? {});
     if (!parsed.success) throw new DomainValidationError(fromZodError(parsed.error));
     const { source, title, projectId } = parsed.data;
     const imported = parseMermaidImport(source, title);
+    const { diagram, warnings } = await this.commands.create(imported.diagram, projectId);
+    return {
+      diagramId: diagram.id,
+      revision: diagram.revision,
+      viewUrl: this.urls.view(diagram.id),
+      counts: { elements: diagram.elements.length, relations: diagram.relations.length },
+      warnings: [...imported.warnings, ...warnings],
+    };
+  }
+
+  @Post('import-drawio')
+  async importDrawio(@Body() body: unknown) {
+    const parsed = ImportDrawioBodySchema.safeParse(body ?? {});
+    if (!parsed.success) throw new DomainValidationError(fromZodError(parsed.error));
+    const { source, title, projectId } = parsed.data;
+    const imported = await importDrawio(source, title);
     const { diagram, warnings } = await this.commands.create(imported.diagram, projectId);
     return {
       diagramId: diagram.id,

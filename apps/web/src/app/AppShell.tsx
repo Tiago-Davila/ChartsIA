@@ -40,6 +40,8 @@ export interface AppShellProps {
   onOpen(diagramId: string): void;
   onCreateDiagram(type: DiagramType, title: string, projectId?: string): void;
   onImportMermaid(source: string, title?: string, projectId?: string): Promise<string[] | null>;
+  onImportExcalidraw?(source: string, title?: string, projectId?: string): Promise<string[] | null>;
+  onImportDrawio(source: string, title?: string, projectId?: string): Promise<string[] | null>;
   onMoveDiagram(diagramId: string, projectId: string | null): void;
   onNewProject(diagramId: string, name: string): void;
   onRenameProject(projectId: string, name: string): void;
@@ -217,7 +219,7 @@ export function AppShell(props: AppShellProps) {
         </div>
         {sidebarHidden ? null : (
           <div className="app-shell__sidebar-scroll">
-            <NewDiagram projects={props.projects} onCreate={props.onCreateDiagram} onImportMermaid={props.onImportMermaid} openBlank={props.startBlank} />
+            <NewDiagram projects={props.projects} onCreate={props.onCreateDiagram} onImportMermaid={props.onImportMermaid} onImportExcalidraw={props.onImportExcalidraw} onImportDrawio={props.onImportDrawio} openBlank={props.startBlank} />
             <DiagramList diagrams={props.diagrams} projects={props.projects} activeDiagramId={props.activeDiagramId} openDiagramId={diagram?.id ?? null} onOpen={props.onOpen} onMove={props.onMoveDiagram} onNewProject={props.onNewProject} onRenameProject={props.onRenameProject} onDeleteProject={props.onDeleteProject} onRename={props.onRenameDiagram} onDelete={props.onDeleteDiagram} />
           </div>
         )}

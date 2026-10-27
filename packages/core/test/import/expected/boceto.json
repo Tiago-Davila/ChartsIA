@@ -1,0 +1,236 @@
+{
+  "diagram": {
+    "type": "class",
+    "title": "Diagrama importado",
+    "elements": [
+      {
+        "id": "marco1",
+        "name": "Cliente",
+        "layout": {
+          "x": 0,
+          "y": 0,
+          "width": 460,
+          "height": 240,
+          "resized": true
+        },
+        "kind": "frame"
+      },
+      {
+        "id": "api",
+        "name": "API REST",
+        "parentId": "marco1",
+        "layout": {
+          "x": 40,
+          "y": 60,
+          "width": 160,
+          "height": 80,
+          "resized": true
+        },
+        "style": {
+          "borderColor": "#1971c2",
+          "fillColor": "#a5d8ff",
+          "lineWidth": "thick",
+          "fontColor": "#e03131",
+          "fontFamily": "sans-serif",
+          "fontSize": 20
+        },
+        "kind": "figure",
+        "shape": "rectangle"
+      },
+      {
+        "id": "bd",
+        "name": "BD",
+        "parentId": "marco1",
+        "layout": {
+          "x": 320,
+          "y": 60,
+          "width": 100,
+          "height": 100,
+          "resized": true
+        },
+        "style": {
+          "fillColor": "#ffc9c9",
+          "lineWidth": "medium",
+          "fontFamily": "monospace",
+          "fontSize": 20
+        },
+        "kind": "figure",
+        "shape": "circle"
+      },
+      {
+        "id": "rombo",
+        "name": " ",
+        "layout": {
+          "x": 40,
+          "y": 300,
+          "width": 120,
+          "height": 90,
+          "resized": true
+        },
+        "style": {
+          "borderColor": "#2f9e44",
+          "fillColor": "#b2f2bb",
+          "lineWidth": "thin"
+        },
+        "kind": "figure",
+        "shape": "diamond"
+      },
+      {
+        "id": "nota",
+        "name": "Revisar con el equipo",
+        "layout": {
+          "x": 220,
+          "y": 320
+        },
+        "style": {
+          "fontFamily": "handwritten",
+          "fontSize": 20
+        },
+        "kind": "text"
+      },
+      {
+        "id": "suelta",
+        "name": "Flecha",
+        "layout": {
+          "x": 160,
+          "y": 345
+        },
+        "kind": "drawing",
+        "points": [
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 60,
+            "y": 0
+          }
+        ],
+        "strokeColor": "#1e1e1e",
+        "strokeWidth": 2
+      },
+      {
+        "id": "regla",
+        "name": "Trazo",
+        "layout": {
+          "x": 40,
+          "y": 420
+        },
+        "kind": "drawing",
+        "points": [
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 100,
+            "y": 30
+          },
+          {
+            "x": 200,
+            "y": 0
+          }
+        ],
+        "strokeColor": "#f08c00",
+        "strokeWidth": 2
+      },
+      {
+        "id": "garabato",
+        "name": "Trazo",
+        "layout": {
+          "x": 300,
+          "y": 420
+        },
+        "kind": "drawing",
+        "points": [
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 10,
+            "y": 20
+          },
+          {
+            "x": 20,
+            "y": 5
+          },
+          {
+            "x": 40,
+            "y": 18
+          }
+        ],
+        "strokeColor": "#6741d9",
+        "strokeWidth": 4
+      },
+      {
+        "id": "foto",
+        "name": "Imagen",
+        "layout": {
+          "x": 400,
+          "y": 300,
+          "width": 80,
+          "height": 40,
+          "resized": true
+        },
+        "kind": "image",
+        "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAYAAAD0In+KAAAAEUlEQVR4nGM4H2zxX6NsxX8AE2IEn6hGtYAAAAAASUVORK5CYII="
+      },
+      {
+        "id": "grupo-a",
+        "name": " ",
+        "layout": {
+          "x": 0,
+          "y": 700,
+          "width": 50,
+          "height": 50,
+          "resized": true
+        },
+        "style": {
+          "lineWidth": "medium"
+        },
+        "kind": "figure",
+        "shape": "square"
+      },
+      {
+        "id": "grupo-b",
+        "name": " ",
+        "layout": {
+          "x": 80,
+          "y": 700,
+          "width": 50,
+          "height": 50,
+          "resized": true
+        },
+        "style": {
+          "lineWidth": "medium"
+        },
+        "kind": "figure",
+        "shape": "square"
+      }
+    ],
+    "relations": [
+      {
+        "id": "flecha1",
+        "kind": "connector",
+        "source": "api",
+        "target": "bd",
+        "label": "lee",
+        "dashed": true,
+        "style": {
+          "lineWidth": "medium",
+          "fontFamily": "handwritten",
+          "fontSize": 16
+        }
+      }
+    ]
+  },
+  "warnings": [
+    "El estilo de relleno rayado o cuadriculado no tiene equivalente; se usó relleno liso.",
+    "La rotación no se conserva: los elementos rotados se importaron sin girar.",
+    "Se omitieron imágenes cuyos datos no vienen en \"files\".",
+    "Se omitieron los elementos de tipo \"embeddable\", que el modelo no soporta.",
+    "Los grupos de Excalidraw no se conservan; sus elementos se importaron sueltos. (2 elementos)",
+    "Las flechas que no unen dos elementos importados se convirtieron en trazos sin conexión."
+  ]
+}

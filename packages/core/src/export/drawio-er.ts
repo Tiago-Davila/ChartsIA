@@ -33,7 +33,7 @@ export function erCells(el: Element, parent: string, geo: Geo): DrawioCell[] | u
   return [{
     id: el.id, parent, value: el.name, vertex: true, geometry: geo,
     style: drawioFont(
-      drawioBox(`${shape}${dashed}rounded=0;whiteSpace=wrap;html=0;align=center;fontStyle=1;fontSize=14;fillColor=#fffef5;strokeColor=#1f2933;`, el.style),
+      drawioBox(`${shape}${dashed}rounded=0;whiteSpace=wrap;html=0;align=center;fontStyle=1;fontSize=14;fillColor=#fffef5;strokeColor=#1f2933;chartsia=entity;`, el.style),
       el.style,
       FONT.name,
     ),
@@ -46,7 +46,7 @@ function attributeCells(el: Extract<Element, { kind: 'attribute' }>, parent: str
   const oval: DrawioCell = {
     id: el.id, parent, value: el.name, vertex: true, geometry: geo,
     style: drawioFont(
-      drawioBox(`${shape}whiteSpace=wrap;html=0;align=center;fontSize=13;${el.key ? 'fontStyle=4;' : ''}${el.derived ? 'dashed=1;' : ''}fillColor=#fffef5;strokeColor=#1f2933;`, el.style),
+      drawioBox(`${shape}whiteSpace=wrap;html=0;align=center;fontSize=13;${el.key ? 'fontStyle=4;' : ''}${el.derived ? 'dashed=1;' : ''}fillColor=#fffef5;strokeColor=#1f2933;chartsia=attribute;`, el.style),
       el.style,
       FONT.member,
     ),
@@ -69,7 +69,7 @@ function relationshipCells(el: Extract<Element, { kind: 'relationship' }>, paren
   const cells: DrawioCell[] = [{
     id: el.id, parent, value: el.name, vertex: true, geometry: geo,
     style: drawioFont(
-      drawioBox('shape=rhombus;perimeter=rhombusPerimeter;rounded=0;whiteSpace=wrap;html=0;align=center;fontSize=13;fillColor=#fffef5;strokeColor=#1f2933;', el.style),
+      drawioBox('shape=rhombus;perimeter=rhombusPerimeter;rounded=0;whiteSpace=wrap;html=0;align=center;fontSize=13;fillColor=#fffef5;strokeColor=#1f2933;chartsia=relationship;', el.style),
       el.style,
       FONT.name,
     ),
@@ -94,7 +94,7 @@ function specializationCells(el: Extract<Element, { kind: 'specialization' }>, p
     {
       id: el.id, parent, value: '', vertex: true,
       geometry: { x: cx - TRIANGLE_WIDTH / 2, y: geo.y, width: TRIANGLE_WIDTH, height: TRIANGLE_HEIGHT },
-      style: drawioBox('shape=triangle;direction=north;whiteSpace=wrap;html=0;fillColor=#fffef5;strokeColor=#1f2933;', el.style),
+      style: drawioBox('shape=triangle;direction=north;whiteSpace=wrap;html=0;fillColor=#fffef5;strokeColor=#1f2933;chartsia=specialization;', el.style),
     },
     {
       id: `${el.id}-kind`, parent, value: el.overlapping ? 'o' : 'd', vertex: true,

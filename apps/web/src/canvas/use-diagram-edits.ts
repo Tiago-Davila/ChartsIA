@@ -1,3 +1,5 @@
+import { importDrawio, importExcalidraw } from '@chartsia/core/import';
+import { isDomainValidationError } from '@chartsia/core/validation';
 import { DRAWING_MAX_COORDINATE, DRAWING_MAX_POINTS, type Diagram, type Element, isGroupKind, type Operation, type Point, type Relation, type RelationChanges, type StackOrderTarget } from '@chartsia/core/model';
 import { type Connection, type Edge, type Node, type OnNodeDrag, useReactFlow } from '@xyflow/react';
 import { useCallback, useMemo } from 'react';
@@ -11,7 +13,7 @@ import { readImageFile } from './image-import';
 import { changesForAddMember, changesForRemoveMember, changesForSlot, type MemberKind } from './slot-edits';
 import { type StyleUpdate } from './style-edits';
 import { simplifyStroke } from './drawing';
-import { copyElements, getClipboard, PASTE_STEP, pasteOperations } from './clipboard';
+import { copyElements, esDrawio, esExcalidraw, getClipboard, PASTE_STEP, pasteOperations } from './clipboard';
 import { newTextBlock } from './text-block';
 import { framePadding } from '@chartsia/core/shapes';
 import { unlockedOperations } from './locks';
@@ -396,6 +398,33 @@ export function useDiagramEdits(api: ApiClient) {
     void send(pasteOperations(clip, diagram, offset));
   }, [send]);
 
+  /** Ctrl+V con lo copiado en Excalidraw o draw.io: lo importa y lo pega en el diagrama abierto, centrado en la vista. Devuelve false si el texto no es de ninguno. */
+  const pasteExternal = useCallback(
+    (text: string) => {
+      const excalidraw = esExcalidraw(text);
+      if (!excalidraw && !esDrawio(text)) return false;
+      if (!diagramStore.getState().diagram) return true;
+      void (async () => {
+        try {
+          const { diagram: imported } = excalidraw ? importExcalidraw(text) : await importDrawio(text);
+          const diagram = diagramStore.getState().diagram;
+          if (!diagram) return;
+          const boxes = imported.elements.map((e) => ({ x: e.layout?.x ?? 0, y: e.layout?.y ?? 0, width: e.layout?.width ?? 0, height: e.layout?.height ?? 0 }));
+          const center = screenToFlowPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+          const dx = boxes.length ? center.x - (Math.min(...boxes.map((b) => b.x)) + Math.max(...boxes.map((b) => b.x + b.width))) / 2 : 0;
+          const dy = boxes.length ? center.y - (Math.min(...boxes.map((b) => b.y)) + Math.max(...boxes.map((b) => b.y + b.height))) / 2 : 0;
+          const elements = imported.elements.map((e) => (e.layout ? { ...e, layout: { ...e.layout, x: e.layout.x + dx, y: e.layout.y + dy } } : e));
+          void send(pasteOperations({ diagramId: '', elements, relations: imported.relations, pastes: 0 }, diagram, 0));
+        } catch (error) {
+          if (!isDomainValidationError(error)) throw error;
+          diagramStore.getState().showErrors(error.errors);
+        }
+      })();
+      return true;
+    },
+    [screenToFlowPosition, send],
+  );
+
   /** Cambia el orden de dibujo de los nodos seleccionados en un solo lote, recorridos en el sentido que conserva su orden relativo. */
   const reorder = useCallback(
     (to: StackOrderTarget) => {
@@ -495,5 +524,5 @@ export function useDiagramEdits(api: ApiClient) {
     [editText, addMember, removeMember, resize, updateRelation, updateStyles, leaveGroup, ungroup, groupInFrame],
   );
 
-  return { onNodeDragStop, onDelete, onConnect, onDraw: addDrawing, editText, editActions, history, duplicate, copy, cut, paste, reorder, align, setLocked, rename, insertImages, addFigure, addFigureAtCenter, addText, addFrame };
+  return { onNodeDragStop, onDelete, onConnect, onDraw: addDrawing, editText, editActions, history, duplicate, copy, cut, paste, pasteExternal, reorder, align, setLocked, rename, insertImages, addFigure, addFigureAtCenter, addText, addFrame };
 }

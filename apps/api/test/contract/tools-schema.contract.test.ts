@@ -21,9 +21,9 @@ describe('contract: listado de tools', () => {
   });
   afterAll(() => h.close());
 
-  it('expone las 11 herramientas del contrato', () => {
+  it('expone las 13 herramientas del contrato', () => {
     expect(tools.map((t) => t.name).sort()).toEqual(
-      ['apply_changes', 'create_diagram', 'create_project', 'delete_diagram', 'export_diagram', 'get_diagram', 'import_mermaid', 'list_diagrams', 'move_diagram', 'open_diagram', 'undo_changes'],
+      ['apply_changes', 'create_diagram', 'create_project', 'delete_diagram', 'export_diagram', 'get_diagram', 'import_drawio', 'import_excalidraw', 'import_mermaid', 'list_diagrams', 'move_diagram', 'open_diagram', 'undo_changes'],
     );
   });
 
@@ -58,7 +58,7 @@ describe('contract: listado de tools', () => {
 
   it('los ejemplos de las descripciones son entradas válidas para su herramienta', async () => {
     const fresh = await createMcpHarness();
-    const order = ['create_diagram', 'apply_changes', 'import_mermaid', 'get_diagram', 'list_diagrams', 'export_diagram', 'open_diagram', 'create_project', 'move_diagram', 'delete_diagram'];
+    const order = ['create_diagram', 'apply_changes', 'import_mermaid', 'import_drawio', 'get_diagram', 'list_diagrams', 'export_diagram', 'open_diagram', 'create_project', 'move_diagram', 'delete_diagram', 'import_excalidraw'];
     let projectId = '';
     const created: string[] = [];
     for (const name of order) {
@@ -68,7 +68,7 @@ describe('contract: listado de tools', () => {
       if ('projectId' in args) args.projectId = projectId;
       const res = await fresh.call(name, args);
       expect(res.isError, `${name}: ${JSON.stringify(res.structuredContent)}`).toBeFalsy();
-      if (name === 'create_diagram' || name === 'import_mermaid') created.push(res.structuredContent!.diagramId as string);
+      if (name === 'create_diagram' || name === 'import_mermaid' || name === 'import_drawio') created.push(res.structuredContent!.diagramId as string);
       if (name === 'create_project') projectId = res.structuredContent!.projectId as string;
     }
     await fresh.close();

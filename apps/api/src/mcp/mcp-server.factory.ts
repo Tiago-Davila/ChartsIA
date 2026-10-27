@@ -21,11 +21,13 @@ import { ToolResultFormatter } from './tool-result.js';
 import { applyChangesTool } from './tools/apply-changes.tool.js';
 import { createDiagramTool } from './tools/create-diagram.tool.js';
 import { importMermaidTool } from './tools/import-mermaid.tool.js';
+import { importDrawioTool } from './tools/import-drawio.tool.js';
 import { exportDiagramTool } from './tools/export-diagram.tool.js';
 import { getDiagramTool } from './tools/get-diagram.tool.js';
 import { createProjectTool } from './tools/create-project.tool.js';
 import { moveDiagramTool } from './tools/move-diagram.tool.js';
 import { deleteDiagramTool } from './tools/delete-diagram.tool.js';
+import { importExcalidrawTool } from './tools/import-excalidraw.tool.js';
 import { listDiagramsTool } from './tools/list-diagrams.tool.js';
 import { openDiagramTool } from './tools/open-diagram.tool.js';
 import { undoChangesTool } from './tools/undo-changes.tool.js';
@@ -38,11 +40,13 @@ export const SCHEMA_VERSION = '1.0.0';
 const INSTRUCTIONS = [
   'ChartsIA dibuja diagramas de clases UML, C4 y entidad-relación en una app que la persona tiene abierta.',
   'Flujo habitual: create_diagram con la estructura (sin coordenadas), import_mermaid para importar classDiagram, apply_changes para cada refinamiento y export_diagram si piden un archivo. undo_changes deshace o rehace el último cambio.',
+  'import_drawio importa un .drawio o lo copiado en draw.io (XML, también comprimido) a un diagrama nuevo.',
   'Cada pedido de un diagrama nuevo o distinto (otro tema, sistema o tipo) va con create_diagram, que no toca los diagramas anteriores; apply_changes solo refina el diagrama existente del que se habla (por defecto el activo).',
   'Usa get_diagram para conocer los ids actuales antes de editar y list_diagrams / open_diagram para cambiar de diagrama.',
   'No agrupes diagramas en proyectos (create_project, move_diagram, projectId de create_diagram) salvo que la persona lo pida.',
   'No agrupes elementos en package, boundary o frame salvo que la persona lo pida (o que un component lo exija).',
   'No borres diagramas (delete_diagram) salvo que la persona lo pida: no se puede deshacer.',
+  'Para un dibujo hecho en Excalidraw (archivo .excalidraw o elementos copiados) usa import_excalidraw con su JSON.',
   'Si una herramienta devuelve isError, lee code, path y hint de cada error, corrige la entrada y vuelve a llamarla.',
 ].join(' ');
 
@@ -67,6 +71,7 @@ export class McpServerFactory {
     this.tools = [
       createDiagramTool(commands, results),
       importMermaidTool(commands, results),
+      importDrawioTool(commands, results),
       applyChangesTool(commands, results),
       getDiagramTool(query),
       listDiagramsTool(query),
@@ -76,6 +81,7 @@ export class McpServerFactory {
       createProjectTool(commands),
       moveDiagramTool(commands),
       deleteDiagramTool(commands),
+      importExcalidrawTool(commands, results),
     ];
     const failure = toToolJsonSchema(FailureSchema);
     this.listing = this.tools.map((tool) => ({

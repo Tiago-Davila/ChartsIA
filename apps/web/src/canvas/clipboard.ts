@@ -15,6 +15,16 @@ export interface Clipboard {
 // Portapapeles en memoria: sobrevive a cambiar de diagrama y no usa el del sistema.
 let clipboard: Clipboard | undefined;
 
+/** Indica si un texto son elementos copiados en Excalidraw. */
+export function esExcalidraw(text: string): boolean {
+  return text.trimStart().startsWith('{') && text.includes('"excalidraw/clipboard"');
+}
+
+/** Indica si un texto es XML de draw.io: un mxGraphModel o un mxfile, a veces codificado como URL. */
+export function esDrawio(text: string): boolean {
+  return /^\s*(<|%3C)(mxGraphModel|mxfile)\b/i.test(text);
+}
+
 /** Indica si hay algo copiado para pegar. */
 export function hasClipboard(): boolean {
   return clipboard !== undefined;
