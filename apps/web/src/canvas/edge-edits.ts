@@ -45,10 +45,9 @@ export function connectionRelation(diagram: Pick<Diagram, 'elements' | 'relation
   return candidates.find((rel) => admits(diagram.elements, rel.kind, rel.source, rel.target)) ?? { id, kind: 'connector', source, target };
 }
 
-/** Tipos de flecha que admiten los extremos de la relación; si ninguno, solo el suyo para no perderlo. */
+/** Tipos de flecha que admiten los extremos de la relación, incluido el actual para que el selector lo muestre. */
 export function relationKinds(elements: Element[], relation: Relation): RelationKind[] {
-  const kinds = RELATION_KINDS.filter((kind) => admits(elements, kind, relation.source, relation.target));
-  return kinds.length > 0 ? kinds : [relation.kind];
+  return RELATION_KINDS.filter((kind) => kind === relation.kind || admits(elements, kind, relation.source, relation.target));
 }
 
 /** Tipos de flecha que admiten cada campo opcional; los demás tipos no lo aceptan. */

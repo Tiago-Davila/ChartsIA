@@ -1,4 +1,4 @@
-import { type Page } from '@playwright/test';
+import { type Locator, type Page } from '@playwright/test';
 import { library } from './support/fake-agent';
 import { expect, test } from './support/fixtures';
 
@@ -8,6 +8,37 @@ async function drag(page: Page, from: { x: number; y: number }, to: { x: number;
   await page.mouse.down();
   await page.mouse.move(to.x, to.y, { steps: 10 });
   await page.mouse.up();
+}
+
+/** Espera a que la caja de un elemento deje de moverse, con el layout ya asentado. */
+async function esperarQuieto(locator: Locator) {
+  let anterior = '';
+  await expect
+    .poll(async () => {
+      const actual = JSON.stringify(await locator.boundingBox());
+      const quieto = actual === anterior;
+      anterior = actual;
+      return quieto;
+    })
+    .toBe(true);
+}
+
+/** Hace clic en el primer punto del nodo que no tapan aristas ni handles, recorriéndolo desde arriba. */
+async function clicLibre(page: Page, nodo: Locator, modifiers: 'Control'[] = []) {
+  await esperarQuieto(nodo);
+  const id = await nodo.getAttribute('data-element-id');
+  const punto = await page.evaluate((id) => {
+    const caja = document.querySelector(`[data-element-id="${id}"]`)!.getBoundingClientRect();
+    for (let y = 6; y < caja.height; y += 8) {
+      for (let x = 6; x < caja.width; x += 8) {
+        const encima = document.elementFromPoint(caja.left + x, caja.top + y);
+        if (!encima?.closest('.react-flow__handle') && encima?.closest('[data-element-id]')?.getAttribute('data-element-id') === id) return { x, y };
+      }
+    }
+    return null;
+  }, id);
+  if (!punto) throw new Error(`El nodo ${id} no tiene ningún punto visible libre de aristas`);
+  await nodo.click({ position: punto, modifiers });
 }
 
 const center = (box: { x: number; y: number; width: number; height: number }) => ({ x: box.x + box.width / 2, y: box.y + box.height / 2 });
@@ -114,18 +145,26 @@ test.describe('más edición en el lienzo', () => {
     const relations = async () => (await agent.layout(id)).relations;
 
     const libro = page.locator('[data-element-id="Libro"]');
+    const socio = page.locator('[data-element-id="Socio"]');
+    await esperarQuieto(libro);
+    await esperarQuieto(socio);
     await libro.hover();
     const from = (await libro.locator('.react-flow__handle-bottom').boundingBox())!;
-    const to = (await page.locator('[data-element-id="Socio"] .react-flow__handle-top').boundingBox())!;
+    const to = (await socio.locator('.react-flow__handle-top').boundingBox())!;
+    await expect.poll(() => page.evaluate(({ x, y }) => !!document.elementFromPoint(x, y)?.closest('.react-flow__handle'), center(from))).toBe(true);
     await drag(page, center(from), center(to));
     await expect.poll(async () => (await relations()).some((r) => r.source === 'Libro' && r.target === 'Socio')).toBe(true);
 
-    await page.locator('[data-element-id="Autor"]').click({ position: { x: 20, y: 8 } });
+    const autor = page.locator('[data-element-id="Autor"]');
+    await clicLibre(page, autor);
     await page.keyboard.press('Control+d');
     await expect.poll(async () => (await agent.layout(id)).elements.map((e) => e.id)).toContain('Autor_copia');
 
-    await page.locator('[data-element-id="Autor"]').click({ position: { x: 20, y: 8 } });
-    await page.locator('[data-element-id="Socio"]').click({ position: { x: 20, y: 8 }, modifiers: ['Control'] });
+    // La copia agranda el diagrama y puede dejar a Autor fuera de la vista.
+    await page.getByRole('button', { name: 'Ajustar', exact: true }).click();
+    await clicLibre(page, autor);
+    await clicLibre(page, socio, ['Control']);
+    await expect.poll(() => page.locator('.react-flow__node.selected').count()).toBe(2);
     await page.getByText('Alinear', { exact: true }).click();
     await page.getByRole('menuitem', { name: 'Alinear a la izquierda' }).click();
     await expect
