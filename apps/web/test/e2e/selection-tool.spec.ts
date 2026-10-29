@@ -65,3 +65,18 @@ test('el rectángulo de selección que pasa por debajo de un panel no selecciona
   // El texto de los paneles no se puede seleccionar en ningún navegador.
   await expect(agrupar).toHaveCSS('user-select', 'none');
 });
+
+test('cada herramienta se muestra con su ícono y su nombre aparece al pasar el mouse', async ({ page, agent }) => {
+  const id = await agent.create({ ...library, title: 'Íconos de herramientas' });
+  await page.goto(`/d/${id}`);
+
+  const herramientas = page.getByRole('group', { name: 'Herramientas' }).getByRole('button');
+  await expect(herramientas).toHaveCount(7);
+  for (const [i, nombre] of ['Selección', 'Mano', 'Lápiz', 'Marcador', 'Balde', 'Texto', 'Marco'].entries()) {
+    const boton = herramientas.nth(i);
+    await expect(boton).toHaveAccessibleName(nombre);
+    await expect(boton).toHaveAttribute('title', nombre);
+    await expect(boton.locator('svg')).toBeVisible();
+    await expect(boton).not.toContainText(nombre);
+  }
+});

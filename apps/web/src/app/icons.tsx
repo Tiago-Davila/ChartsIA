@@ -99,3 +99,54 @@ export function GitHubIcon() {
 export function PencilIcon() {
   return <Icon><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z" /><path d="m13.5 6.5 4 4" /></Icon>;
 }
+
+// Íconos de las herramientas del lienzo copiados de Lucide (https://lucide.dev, licencia ISC).
+
+/** Puntero de la herramienta Selección (Lucide mouse-pointer-2). */
+export function PointerIcon() {
+  return <Icon size={18}><path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z" /></Icon>;
+}
+
+/** Mano de la herramienta Mano (Lucide hand). */
+export function HandIcon() {
+  return (
+    <Icon size={18}>
+      <path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2" />
+      <path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2" />
+      <path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8" />
+      <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
+    </Icon>
+  );
+}
+
+/** Lápiz de la herramienta Lápiz (Lucide pencil). */
+export function PenToolIcon() {
+  return <Icon size={18}><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" /></Icon>;
+}
+
+/** Marcador de la herramienta Marcador (Lucide highlighter). */
+export function HighlighterIcon() {
+  return <Icon size={18}><path d="m9 11-6 6v3h9l3-3" /><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4" /></Icon>;
+}
+
+/** Balde de la herramienta Balde (Lucide paint-bucket). */
+export function BucketIcon() {
+  return (
+    <Icon size={18}>
+      <path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z" />
+      <path d="m5 2 5 5" />
+      <path d="M2 13h15" />
+      <path d="M22 20a2 2 0 1 1-4 0c0-1.6 1.7-2.4 2-4 .3 1.6 2 2.4 2 4Z" />
+    </Icon>
+  );
+}
+
+/** Letra de la herramienta Texto (Lucide type). */
+export function TextToolIcon() {
+  return <Icon size={18}><path d="M4 7V4h16v3M9 20h6M12 4v16" /></Icon>;
+}
+
+/** Marco de la herramienta Marco (Lucide frame). */
+export function FrameToolIcon() {
+  return <Icon size={18}><path d="M22 6H2M22 18H2M6 2v20M18 2v20" /></Icon>;
+}

@@ -324,15 +324,17 @@ body.is-resizing * { cursor: col-resize !important; }
 }
 .figure-sidebar__items {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
   gap: 6px;
   padding: 4px 10px 12px;
 }
 .figure-sidebar__item {
-  padding: 10px 6px;
-  font-size: 12px;
-  text-align: center;
-  overflow-wrap: anywhere;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 6px;
   cursor: grab;
   user-select: none;
   background: var(--surface-muted);
@@ -340,6 +342,9 @@ body.is-resizing * { cursor: col-resize !important; }
   border-radius: 6px;
 }
 .figure-sidebar__item:hover { border-color: var(--accent); }
+/* Ícono de la figura: ocupa el botón sin deformarse y el trazo no se adelgaza al achicarse. */
+.figure-icon { width: 100%; height: 100%; }
+.figure-icon * { vector-effect: non-scaling-stroke; }
 /* Barra de herramientas en una fila arriba al centro. */
 .drawing-tool {
   display: flex;
@@ -399,6 +404,8 @@ body.is-resizing * { cursor: col-resize !important; }
   border-radius: 16px;
   transition: transform 160ms var(--jr-ease-out), background-color 200ms ease, color 200ms ease;
 }
+/* Opción con ícono: un cuadrado del alto del chip. */
+.jelly-radio__skin--icon { width: 32px; padding: 0; }
 .jelly-radio__skin::before {
   content: '';
   position: absolute;

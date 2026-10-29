@@ -1,10 +1,12 @@
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { type ReactNode, useEffect, useLayoutEffect, useRef } from 'react';
 
 // Adaptado de JellyRadio de React Bits: la opción elegida se hincha y empuja a sus vecinas hacia afuera.
 
 export interface JellyRadioItem<T extends string> {
   value: T;
   label: string;
+  /** Con ícono, la opción muestra solo el ícono y su nombre aparece al pasar el mouse. */
+  icon?: ReactNode;
 }
 
 export interface JellyRadioProps<T extends string> {
@@ -166,10 +168,12 @@ export function JellyRadio<T extends string>({ items, value, ariaLabel, onSelect
           type="button"
           className="jelly-radio__chip"
           aria-pressed={i === at}
+          aria-label={it.icon ? it.label : undefined}
+          title={it.icon ? it.label : undefined}
           data-on={i === at ? 'true' : 'false'}
           onClick={() => onSelect(it.value)}
         >
-          <span className="jelly-radio__skin">{it.label}</span>
+          <span className={it.icon ? 'jelly-radio__skin jelly-radio__skin--icon' : 'jelly-radio__skin'}>{it.icon ?? it.label}</span>
         </button>
       ))}
     </div>
