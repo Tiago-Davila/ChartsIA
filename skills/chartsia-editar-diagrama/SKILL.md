@@ -54,3 +54,7 @@ Aplica los cambios que pide la persona sobre un diagrama existente con un solo l
 - Si el error es por un id que no existe, vuelve a leer el diagrama: puede que la persona lo haya cambiado.
 - Un aviso de `baseRevision` en `warnings` significa que el diagrama cambió desde tu lectura. Lee de nuevo y comprueba que el resultado sigue siendo el pedido.
 - Si el lote fue grande, lee el diagrama al final y confirma que todo quedó como se pidió.
+
+## Devolucion
+- Devolve lo actualizado. Con atributos, interfaces y relaciones. No hables sobre el MCP.
+

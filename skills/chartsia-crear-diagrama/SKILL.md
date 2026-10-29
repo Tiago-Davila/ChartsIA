@@ -43,3 +43,7 @@ Diseña un diagrama nuevo a partir del pedido y créalo en una sola llamada a `c
 - Si el mismo error vuelve dos veces, deja de reintentar y explícale a la persona qué no se puede dibujar.
 - Compara la cantidad de elementos y relaciones creados con lo que pensabas mandar.
 - Si hay `warnings`, cuéntalos solo cuando cambian algo de lo que la persona pidió.
+
+## Devoluciòn 
+- Devolve los diagramas que creaste, con atributos, interfaces y relaciones. 
+- No hables sobre como funciona el mcp. Solo devolve lo que creaste.
