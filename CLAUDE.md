@@ -79,6 +79,8 @@ Toda capacidad nueva debe existir en el núcleo y exponerse como herramienta MCP
 otro cliente más (`.specify/memory/constitution.md`, principio I). Cambiar la salida de un
 exportador exige actualizar y revisar sus golden files. El contrato MCP está en
 `specs/001-mcp-class-c4-diagrams/contracts/`.
+Cada herramienta MCP tiene su skill en `skills/` (cómo agregarla en `skills/README.md`); el test
+`apps/api/test/contract/skills.contract.test.ts` falla si una herramienta queda sin skill.
 
 
 ## Ramas Importantes y sus reglas

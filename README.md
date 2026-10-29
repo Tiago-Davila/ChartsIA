@@ -100,6 +100,18 @@ Herramientas: `create_diagram`, `apply_changes`, `get_diagram`, `list_diagrams`,
 `chartsia://diagrams/{id}/export.{ext}` y `chartsia://schema/{type}` (guía por tipo de diagrama).
 Contrato completo en [specs/001-mcp-class-c4-diagrams/contracts](specs/001-mcp-class-c4-diagrams/contracts).
 
+### Skills para agentes
+
+La carpeta [`skills/`](skills/README.md) tiene una skill por herramienta (`/chartsia-crear-diagrama`,
+`/chartsia-editar-diagrama`…) que le enseña al agente a diseñar, en qué orden llamar y cómo revisar
+el resultado. Se instalan de forma global con:
+
+```bash
+npx skills add Tiago-Davila/ChartsIA -g --skill '*'
+```
+
+Cómo actualizarlas y cómo agregar una nueva está en [`skills/README.md`](skills/README.md).
+
 ### Acceso desde la red
 
 En loopback no hace falta token (y se rechazan cabeceras `Host` ajenas para evitar DNS
