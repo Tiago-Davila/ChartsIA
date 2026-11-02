@@ -1,80 +1,128 @@
-# ChartsIA
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/wordmark-dark.svg">
+    <img src="docs/assets/wordmark-light.svg" alt="ChartsIA" width="360">
+  </picture>
+</p>
 
-<img width="1346" height="768" alt="image" src="https://github.com/user-attachments/assets/0b9d563e-061b-4473-a58b-bf6c50299a2f" />
+<p align="center">
+  Diagramas UML, C4 y entidad-relación que tu agente de IA dibuja en vivo por MCP.
+</p>
 
+<p align="center">
+  <img src="https://img.shields.io/badge/node-%E2%89%A5%2024-5fa04e" alt="Node.js 24 o superior">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licencia-MIT-blue" alt="Licencia MIT"></a>
+</p>
 
+<p align="center">
+  <a href="#requisitos">Requisitos</a> ·
+  <a href="#instalación">Instalación</a> ·
+  <a href="#conectar-agentes">Conectar agentes</a> ·
+  <a href="#cómo-probar">Cómo probar</a> ·
+  <a href="#desarrollo">Desarrollo</a> ·
+  <a href="#licencia">Licencia</a>
+</p>
 
+Le pides el diagrama a Claude, Codex u otro agente, el agente llama a las herramientas MCP de
+ChartsIA y el diagrama aparece al instante en un lienzo infinito. Ahí lo sigues editando a mano
+o lo exportas a SVG, draw.io o Excalidraw. Todo corre en tu máquina.
 
-
-Diagramas de clases UML y C4 dibujados por agentes de IA. Pides el diagrama a Claude o GPT,
-el agente llama a las herramientas MCP de ChartsIA y el diagrama aparece al instante en un
-lienzo infinito (React Flow), donde puedes seguir editándolo a mano o exportarlo a SVG,
-draw.io o Excalidraw.
-
-- **MCP para Claude y GPT**: mismo contrato por Streamable HTTP (`/mcp`) y stdio
-  (`chartsia-mcp`). Esquemas en el subconjunto JSON Schema común a ambos proveedores.
-- **Diagramas**: clases (clase, interfaz, enum, paquete y las seis relaciones UML) y C4 de
-  contexto, contenedores y componentes (persona, sistema, contenedor con variantes BD/cola/web,
-  componente, límite y leyenda).
-- **Layout automático y determinista** (ELK + enrutado ortogonal propio): sin solapes y con
-  relaciones que no atraviesan elementos. Los cambios incrementales no mueven lo que ya estaba.
-- **Errores accionables**: cada error trae `code`, `path` (JSON Pointer), `message` y `hint`
-  para que el agente se corrija solo.
-- **Exportación** a SVG, draw.io y Excalidraw (este último con trazo a mano alzada y Excalifont).
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/0b9d563e-061b-4473-a58b-bf6c50299a2f" alt="Lienzo de ChartsIA con un diagrama dibujado por un agente" width="900">
+</p>
 
 ## Requisitos
 
-- Node.js 24 LTS y pnpm 11.
+- Node.js 24 LTS o superior.
+- Un agente con soporte MCP: Claude Code, Claude Desktop, Codex CLI, Gemini CLI, Grok Build u OpenCode.
+
+## Instalación
+
+```bash
+npx chartsia
+```
+
+Abre la app en <http://chartsia.localhost:24278>. El hub queda escuchando en esa dirección y el
+MCP en `http://127.0.0.1:24278/mcp`. Los diagramas se guardan en `~/.chartsia/diagrams`, así que
+actualizar ChartsIA no los borra.
 
 ## Conectar agentes
 
-> **Aviso**: el puerto por defecto del hub cambió de `3333` a `24278`. Si ya configuraste ChartsIA en tu cliente MCP con `:3333`, actualiza la URL (o fija el puerto anterior con `CHARTSIA_PORT=3333`).
+Con el hub corriendo, copia el comando de tu agente. Todos quedan disponibles en todas tus carpetas.
 
-La pantalla `/config` de la app muestra, junto al comando de cada agente, un prompt de instalación para pegarlo en el propio agente, que se conecta solo al hub.
+**Claude Code**
 
-- **Claude Code (HTTP)**: `--scope user` la deja disponible en todas las carpetas (se guarda en `~/.claude.json`):
-  `claude mcp add --transport http --scope user chartsia http://127.0.0.1:24278/mcp`
-  Sin `--scope user` queda solo en la carpeta donde se ejecuta (`local`).
-- **Claude Desktop (stdio)**: es global por usuario. Añade a `claude_desktop_config.json`
-  (macOS: `~/Library/Application Support/Claude/`; Windows: `%APPDATA%\Claude\`), tras `pnpm build`,
-  un servidor con la ruta absoluta al puente y reinicia la app:
-  ```json
-  { "mcpServers": { "chartsia": { "command": "node",
-    "args": ["<RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js"],
-    "env": { "CHARTSIA_URL": "http://127.0.0.1:24278/mcp" } } } }
-  ```
-  El hub debe estar corriendo.
-- **Codex CLI**: queda en `~/.codex/config.toml`, disponible en todas las carpetas:
-  `codex mcp add chartsia --url http://127.0.0.1:24278/mcp`
-- **Grok Build**: queda en `~/.grok/config.toml`, disponible en todas las carpetas:
-  `grok mcp add --transport http chartsia http://127.0.0.1:24278/mcp`
-- **OpenCode**: en `~/.config/opencode/opencode.json` (global, todos los proyectos) o en `opencode.json`
-  del proyecto, bajo `mcp`; la pantalla de configuración de la app muestra estos JSON con la URL real.
-  Esquema: `https://opencode.ai/config.json`.
-  - HTTP (OpenCode llama `remote` a cualquier servidor HTTP, aunque corra en tu máquina):
-    ```json
-    { "mcp": { "chartsia": { "type": "remote", "url": "http://127.0.0.1:24278/mcp" } } }
-    ```
-  - stdio (puente `chartsia-mcp`, tras `pnpm build`; el hub debe estar corriendo):
-    ```json
-    { "mcp": { "chartsia": { "type": "local",
-      "command": ["node", "<RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js"],
-      "environment": { "CHARTSIA_URL": "http://127.0.0.1:24278/mcp" } } } }
-    ```
-  - Comprueba la conexión con `opencode mcp list`.
+```bash
+claude mcp add --transport http --scope user chartsia http://127.0.0.1:24278/mcp
+```
 
-Los agentes corren en la misma máquina que el hub, así que ninguno necesita token.
+**Codex CLI**
 
-Herramientas: `create_diagram`, `apply_changes`, `get_diagram`, `list_diagrams`,
-`open_diagram`, `export_diagram`. Recursos: `chartsia://diagrams/{id}`,
-`chartsia://diagrams/{id}/export.{ext}` y `chartsia://schema/{type}` (guía por tipo de diagrama).
-Contrato completo en [specs/001-mcp-class-c4-diagrams/contracts](specs/001-mcp-class-c4-diagrams/contracts).
+```bash
+codex mcp add chartsia --url http://127.0.0.1:24278/mcp
+```
 
+**Gemini CLI**
 
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+```bash
+gemini mcp add --scope user --transport http chartsia http://127.0.0.1:24278/mcp
+```
+
+**Grok Build**
+
+```bash
+grok mcp add --transport http chartsia http://127.0.0.1:24278/mcp
+```
+
+**OpenCode**
+
+```bash
+opencode mcp add chartsia --url http://127.0.0.1:24278/mcp
+```
+
+Para Claude Desktop y los demás clientes por stdio, la pantalla **Configuración** de la app
+muestra el bloque listo para pegar.
+
+### Skills
+
+Las skills le enseñan al agente a diseñar el diagrama, en qué orden llamar a las herramientas y
+cómo revisar el resultado. Se instalan una vez para todos tus agentes:
+
+```bash
+npx skills add Tiago-Davila/ChartsIA -g --skill '*'
+```
+
+## Cómo probar
+
+Con la app abierta, pídele un diagrama a tu agente:
+
+```text
+/chartsia-crear-diagrama crea un diagrama de clases de una biblioteca: socios, libros,
+autores y préstamos. Un socio puede tener varios préstamos activos y cada libro tiene uno
+o más autores.
+```
+
+<!-- Video de la prueba: arrastra el .mp4 al editor de GitHub y deja la URL sola en esta línea. -->
+
+## Desarrollo
+
+Requiere también pnpm 11.
+
+```bash
+git clone https://github.com/Tiago-Davila/ChartsIA && cd ChartsIA
+pnpm install
+pnpm dev                                   # hub en :24278 y app con recarga en :5173
+pnpm build && pnpm --filter chartsia start # un solo proceso, como el paquete de npm
+pnpm test && pnpm typecheck && pnpm lint
+```
+
+| Paquete | Contenido |
+|---------|-----------|
+| `packages/core` | Modelo, validación, layout, formas y exportadores (se publica como `@chartsia/core`) |
+| `apps/api` | Hub Nest.js: MCP, REST, Socket.IO y puente stdio (se publica como `chartsia`) |
+| `apps/web` | App React + React Flow |
 
 ## Licencia
 
-ChartsIA se distribuye bajo la licencia MIT; el texto completo está en [LICENSE](LICENSE).
-Los avisos de las dependencias y recursos de terceros están en
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+MIT; el texto completo está en [LICENSE](LICENSE). Los avisos de dependencias y recursos de
+terceros están en [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
