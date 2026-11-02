@@ -48,6 +48,7 @@ export function useHubSync(api: ApiClient, route: Route): { live: React.RefObjec
   const reload = () => {
     reloadList();
     api.listAgents().then((agents) => diagramStore.getState().setAgents(agents)).catch(report);
+    api.getHub().then((hub) => diagramStore.getState().setHub(hub)).catch(report);
     const open = diagramStore.getState().openDiagramId;
     if (open) {
       // Si se borró mientras la app estaba desconectada, el 404 la devuelve a la lista.

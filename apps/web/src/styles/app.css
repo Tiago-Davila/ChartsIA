@@ -1454,7 +1454,6 @@ button:disabled,
 }
 
 /* Configuración: pantalla propia con su barra de secciones. */
-.theme-toggle { display: inline-flex; gap: 6px; align-items: center; }
 .config-shell {
   display: grid;
   grid-template-columns: 240px 1fr;
@@ -1499,6 +1498,33 @@ button:disabled,
 .config__connect > p { margin: 0; font-size: 14px; }
 .config__connect > .code-block { justify-self: stretch; }
 .config__connect h3 { margin: 12px 0 0; font-size: 14px; }
+/* Preferencia con su leyenda arriba y las opciones como botones segmentados. */
+.config__field { margin: 0 0 8px; padding: 0; border: 0; }
+.config__field legend { margin-bottom: 6px; padding: 0; font-size: 14px; font-weight: 600; }
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-muted);
+}
+.segmented label {
+  position: relative;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.segmented input { position: absolute; opacity: 0; pointer-events: none; }
+.segmented label:has(input:checked) { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgb(0 0 0 / 10%); }
+.segmented label:has(input:focus-visible) { outline: 2px solid var(--accent-ring); outline-offset: 1px; }
+/* Datos del hub: nombre a la izquierda y valor a la derecha. */
+.config__datos { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 16px; align-items: center; margin: 0; font-size: 14px; }
+.config__datos dt { color: var(--text-muted); }
+.config__datos dd { margin: 0; }
+.config__nota { margin: 0; font-size: 14px; color: var(--text-muted); }
 .modal--wide { width: min(640px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; }
 /* Código con el botón de copiar adentro, arriba a la derecha. */
 .code-block { position: relative; }

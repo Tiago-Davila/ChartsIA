@@ -25,6 +25,13 @@ export interface ConnectedAgent {
   lastCallAt: string;
 }
 
+/** Datos del hub para la sección General de la configuración. */
+export interface HubInfo {
+  version: string;
+  port: number;
+  dataDir: string;
+}
+
 export interface DiagramListResponse {
   activeDiagramId: string | null;
   diagrams: DiagramSummary[];
@@ -90,6 +97,7 @@ export function createApiClient({ baseUrl = '', getToken, fetch: fetchImpl = (..
     importDrawio: (body: { source: string; title?: string; projectId?: string }) =>
       json<{ diagramId: string; revision: number; viewUrl: string; counts: { elements: number; relations: number }; warnings: string[] }>('/api/diagrams/import-drawio', { method: 'POST', body: JSON.stringify(body) }),
     listAgents: async () => (await json<{ agents: ConnectedAgent[] }>('/api/agents')).agents,
+    getHub: () => json<HubInfo>('/api/hub'),
     getDiagram: (diagramId: string) => json<Diagram>(`/api/diagrams/${id(diagramId)}`),
     applyOperations: (diagramId: string, body: { baseRevision?: number; operations: Operation[] }) =>
       json<ApplyResponse>(`/api/diagrams/${id(diagramId)}/operations`, { method: 'POST', body: JSON.stringify(body) }),
