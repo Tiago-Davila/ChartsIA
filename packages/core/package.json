@@ -1,10 +1,22 @@
 {
   "name": "@chartsia/core",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "description": "Modelo canónico, validación, layout, formas y exportadores de ChartsIA",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tiago-Davila/ChartsIA.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/Tiago-Davila/ChartsIA#readme",
+  "bugs": "https://github.com/Tiago-Davila/ChartsIA/issues",
+  "engines": {
+    "node": ">=24"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "@chartsia/source": "./src/index.ts",
@@ -53,7 +65,8 @@
     }
   },
   "files": [
-    "dist",
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
     "LICENSE",
     "THIRD_PARTY_NOTICES.md"
   ],

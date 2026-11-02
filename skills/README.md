@@ -51,7 +51,7 @@ Toda herramienta MCP nueva necesita una skill: el test
 2. Si no, crea `skills/chartsia-<accion>/SKILL.md` copiando la plantilla de abajo. El nombre usa
    el prefijo `chartsia-`, minúsculas y guiones, y coincide con la carpeta.
 3. Agrega la fila a la tabla de arriba.
-4. Corre `pnpm --filter @chartsia/api exec vitest run test/contract/skills.contract.test.ts`.
+4. Corre `pnpm --filter chartsia exec vitest run test/contract/skills.contract.test.ts`.
 
 Cada `SKILL.md` tiene exactamente estas cuatro secciones, en este orden, y nada más:
 
