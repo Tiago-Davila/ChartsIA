@@ -62,7 +62,8 @@
     "prepack": "cp ../../LICENSE ../../THIRD_PARTY_NOTICES.md .",
     "postpack": "rm -f LICENSE THIRD_PARTY_NOTICES.md",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --exclude '**/*.perf.test.ts' && pnpm test:perf",
+    "test:perf": "vitest run perf.test --fileParallelism=false",
     "test:golden": "vitest run test/golden"
   },
   "dependencies": {
