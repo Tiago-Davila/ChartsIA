@@ -8,7 +8,7 @@
     "node": ">=24"
   },
   "scripts": {
-    "dev": "pnpm --filter @chartsia/core build && pnpm --parallel --filter @chartsia/api --filter @chartsia/web dev",
+    "dev": "pnpm --filter @chartsia/core build && pnpm --parallel --filter chartsia --filter @chartsia/web dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",

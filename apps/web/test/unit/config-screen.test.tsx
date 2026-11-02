@@ -95,18 +95,19 @@ describe('ConfigScreen', () => {
     expect(mcpUrlParaAgentes('https://hub.example.com')).toBe('https://hub.example.com/mcp');
   });
 
-  it('los agentes stdio lanzan el puente con node y su ruta absoluta, no con pnpm exec (#251)', () => {
+  it('los agentes stdio lanzan el puente del paquete de npm con npx, no con pnpm exec (#251)', () => {
     const mcpUrl = `${origin}/mcp`;
-    for (const agent of AGENTS) expect(agent.snippet(mcpUrl)).not.toContain('chartsia-mcp');
-    for (const id of ['claude-desktop', 'opencode-local']) {
-      expect(AGENTS.find((a) => a.id === id)!.snippet(mcpUrl)).toContain('<RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js');
-    }
+    for (const agent of AGENTS) expect(agent.snippet(mcpUrl)).not.toContain('pnpm');
+    const desktop = JSON.parse(AGENTS.find((a) => a.id === 'claude-desktop')!.snippet(mcpUrl)).mcpServers.chartsia;
+    expect([desktop.command, ...desktop.args]).toEqual(['npx', '-y', '-p', 'chartsia', 'chartsia-mcp']);
+    const opencode = JSON.parse(AGENTS.find((a) => a.id === 'opencode-local')!.snippet(mcpUrl)).mcp.chartsia;
+    expect(opencode.command).toEqual(['npx', '-y', '-p', 'chartsia', 'chartsia-mcp']);
   });
 
   it('la ventana de Claude Desktop explica su archivo de configuración', async () => {
     renderScreen();
     expect(await abrir('Claude Desktop (stdio)')).toHaveTextContent('claude_desktop_config.json');
-    expect(JSON.parse(AGENTS.find((a) => a.id === 'claude-desktop')!.snippet(`${origin}/mcp`)).mcpServers.chartsia.command).toBe('node');
+    expect(JSON.parse(AGENTS.find((a) => a.id === 'claude-desktop')!.snippet(`${origin}/mcp`)).mcpServers.chartsia.command).toBe('npx');
   });
 
   it('los snippets de OpenCode son JSON válido con la URL del hub', () => {

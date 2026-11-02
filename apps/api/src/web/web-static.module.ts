@@ -7,9 +7,11 @@ import type { NextFunction, Request, Response } from 'express';
 const WEB_DIST = Symbol('WEB_DIST');
 const RUTAS_DEL_HUB = /^\/(api|mcp|socket\.io)(\/|$)/;
 
-/** `apps/web/dist` relativo a `apps/api/dist` (o `src` en tests). */
+/** `public` del paquete publicado en npm o, en el monorepo, `apps/web/dist` relativo a `apps/api/dist` (o `src` en tests). */
 export function defaultWebDist(): string {
-  return resolve(dirname(fileURLToPath(import.meta.url)), '../../../web/dist');
+  const aqui = dirname(fileURLToPath(import.meta.url));
+  const empaquetada = resolve(aqui, '../../public');
+  return existsSync(empaquetada) ? empaquetada : resolve(aqui, '../../../web/dist');
 }
 
 /** Crea el middleware que sirve el archivo pedido y, si no existe, `index.html`. */

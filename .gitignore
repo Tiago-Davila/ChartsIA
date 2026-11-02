@@ -16,6 +16,10 @@ Thumbs.db
 .vscode/
 .idea/
 
-# copias temporales que crea el prepack de core
+# copias temporales que crean los prepack de core y del hub
 packages/core/LICENSE
 packages/core/THIRD_PARTY_NOTICES.md
+apps/api/public/
+apps/api/README.md
+apps/api/LICENSE
+apps/api/THIRD_PARTY_NOTICES.md
