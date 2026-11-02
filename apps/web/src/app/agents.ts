@@ -67,6 +67,15 @@ export const AGENTS: Agent[] = [
     snippet: (mcpUrl) => `codex mcp add chartsia --url ${mcpUrl}`,
   },
   {
+    id: 'gemini',
+    name: 'Gemini CLI',
+    category: 'Terminal',
+    summary: 'Agente de terminal de Google: un comando y queda disponible en todas tus carpetas.',
+    clients: ['gemini-cli-mcp-client'],
+    help: 'Ejecuta este comando en tu terminal. Con --scope user queda en tu configuración de usuario, disponible en todas tus carpetas.',
+    snippet: (mcpUrl) => `gemini mcp add --scope user --transport http chartsia ${mcpUrl}`,
+  },
+  {
     id: 'grok-build',
     name: 'Grok Build',
     category: 'Terminal',
@@ -76,21 +85,13 @@ export const AGENTS: Agent[] = [
     snippet: (mcpUrl) => `grok mcp add --transport http chartsia ${mcpUrl}`,
   },
   {
-    id: 'opencode-remote',
-    name: 'OpenCode (HTTP)',
+    id: 'opencode',
+    name: 'OpenCode',
     category: 'Terminal',
-    summary: 'Por HTTP desde tu opencode.json global o del proyecto.',
+    summary: 'Agente de terminal de código abierto: un comando y queda disponible en todas tus carpetas.',
     clients: ['opencode'],
-    help: 'Añádelo a "mcp" en ~/.config/opencode/opencode.json para todos tus proyectos, o en el opencode.json de un proyecto. OpenCode llama "remote" a cualquier servidor por HTTP, aunque corra en tu máquina.',
-    snippet: (mcpUrl) =>
-      JSON.stringify(
-        {
-          $schema: 'https://opencode.ai/config.json',
-          mcp: { chartsia: { type: 'remote', url: mcpUrl } },
-        },
-        null,
-        2,
-      ),
+    help: 'Ejecuta este comando en tu terminal. Queda en tu configuración global de OpenCode, disponible en todas tus carpetas.',
+    snippet: (mcpUrl) => `opencode mcp add chartsia --url ${mcpUrl}`,
   },
   {
     id: 'opencode-local',
@@ -121,7 +122,7 @@ export const AGENTS: Agent[] = [
 export function promptInstalacion(agent: Agent, mcpUrl: string): string {
   return [
     'Conéctate al servidor MCP de ChartsIA, que dibuja diagramas UML y C4.',
-    `Añádelo a tu configuración global o de usuario, para que esté disponible en todas mis carpetas, con el nombre chartsia y la URL ${mcpUrl}. Usa esta referencia:`,
+    `Añádelo a tu configuración global o de usuario, para que esté disponible en todas mis carpetas, con el nombre chartsia y la URL ${mcpUrl}. Usa esta referencia, que es un comando o un bloque de configuración:`,
     agent.snippet(mcpUrl),
     'Si necesitas un dato que no tienes, pídemelo; no lo inventes. Si no puedes editar tu configuración tú mismo, o hace falta reiniciar, dime qué debo hacer.',
     'Al terminar, verifica la conexión listando tus herramientas MCP y comprueba que aparece create_diagram. Si falla, dime el error.',

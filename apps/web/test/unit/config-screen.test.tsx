@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -57,7 +59,7 @@ describe('ConfigScreen', () => {
     const conectados = screen.getByRole('region', { name: 'Conectados' });
     const habilitados = screen.getByRole('region', { name: 'Habilitados' });
     expect(conectados.compareDocumentPosition(habilitados) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(within(conectados).getAllByRole('article').map((a) => a.getAttribute('aria-label'))).toEqual(['OpenCode (HTTP)', 'OpenCode (stdio)']);
+    expect(within(conectados).getAllByRole('article').map((a) => a.getAttribute('aria-label'))).toEqual(['OpenCode', 'OpenCode (stdio)']);
     expect(within(conectados).getAllByRole('button', { name: 'Conectado' })).toHaveLength(2);
     expect(within(habilitados).getByRole('article', { name: 'Claude Code (HTTP)' })).toBeInTheDocument();
     expect(within(habilitados).queryByRole('button', { name: 'Conectado' })).toBeNull();
@@ -70,10 +72,20 @@ describe('ConfigScreen', () => {
     }
   });
 
-  it('Codex CLI y Grok Build se conectan con su propio comando mcp add', () => {
+  it('el comando de cada agente de terminal es el de la sección "Conectar agentes" del README', () => {
+    const readme = readFileSync(resolve(__dirname, '../../../../README.md'), 'utf8');
+    const porAgente = { 'claude-code': 'Claude Code', codex: 'Codex CLI', gemini: 'Gemini CLI', 'grok-build': 'Grok Build', opencode: 'OpenCode' };
+    for (const [id, titulo] of Object.entries(porAgente)) {
+      const comando = readme.match(new RegExp(String.raw`\*\*${titulo}\*\*\s+` + '```bash\\n(.+)\\n```'))?.[1];
+      expect(comando, `README sin comando para ${titulo}`).toBeDefined();
+      expect(AGENTS.find((a) => a.id === id)!.snippet('http://127.0.0.1:24278/mcp')).toBe(comando);
+    }
+  });
+
+  it('los comandos de Gemini CLI y OpenCode usan la URL del hub', () => {
     const snippet = (id: string) => AGENTS.find((a) => a.id === id)!.snippet(`${origin}/mcp`);
-    expect(snippet('codex')).toBe(`codex mcp add chartsia --url ${origin}/mcp`);
-    expect(snippet('grok-build')).toBe(`grok mcp add --transport http chartsia ${origin}/mcp`);
+    expect(snippet('gemini')).toBe(`gemini mcp add --scope user --transport http chartsia ${origin}/mcp`);
+    expect(snippet('opencode')).toBe(`opencode mcp add chartsia --url ${origin}/mcp`);
   });
 
   it('ningún agente usa token: todos corren en la misma máquina que el hub', () => {
@@ -110,13 +122,10 @@ describe('ConfigScreen', () => {
     expect(JSON.parse(AGENTS.find((a) => a.id === 'claude-desktop')!.snippet(`${origin}/mcp`)).mcpServers.chartsia.command).toBe('npx');
   });
 
-  it('los snippets de OpenCode son JSON válido con la URL del hub', () => {
-    const snippet = (id: string, url: string) => JSON.parse(AGENTS.find((a) => a.id === id)!.snippet(url));
-    for (const id of ['opencode-remote', 'opencode-local']) {
-      const config = snippet(id, `${origin}/mcp`);
-      expect(config.$schema).toBe('https://opencode.ai/config.json');
-      expect(JSON.stringify(config.mcp.chartsia)).toContain(`${origin}/mcp`);
-    }
+  it('el snippet de OpenCode por stdio es JSON válido con la URL del hub', () => {
+    const config = JSON.parse(AGENTS.find((a) => a.id === 'opencode-local')!.snippet(`${origin}/mcp`));
+    expect(config.$schema).toBe('https://opencode.ai/config.json');
+    expect(JSON.stringify(config.mcp.chartsia)).toContain(`${origin}/mcp`);
   });
 
   it('copia el comando de la tarjeta', async () => {
