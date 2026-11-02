@@ -31,11 +31,6 @@ o lo exportas a SVG, draw.io o Excalidraw. Todo corre en tu máquina.
   <img src="https://github.com/user-attachments/assets/0b9d563e-061b-4473-a58b-bf6c50299a2f" alt="Lienzo de ChartsIA con un diagrama dibujado por un agente" width="900">
 </p>
 
-## Requisitos
-
-- Node.js 24 LTS o superior.
-- Un agente con soporte MCP: Claude Code, Claude Desktop, Codex CLI, Gemini CLI, Grok Build u OpenCode.
-
 ## Instalación
 
 ```bash
