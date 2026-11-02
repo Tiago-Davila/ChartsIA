@@ -38,7 +38,7 @@ pnpm --filter @chartsia/core test:golden -u # regenerar golden files; revisar si
 ```
 
 Un solo test: `pnpm --filter @chartsia/<core|api|web> exec vitest run <ruta-o-patrón> -t "<nombre>"`.
-En `apps/api`, `pnpm test` también corre los tests de rendimiento (`*.perf.test.ts`) en serie.
+En `apps/api` y `packages/core`, `pnpm test` también corre los tests de rendimiento (`*.perf.test.ts`) en serie.
 
 Los tests y Vite resuelven `@chartsia/core` desde sus fuentes mediante la condición de export
 `@chartsia/source`, así que no hace falta compilar el core para testear. Sí hace falta para
