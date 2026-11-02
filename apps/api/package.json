@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Hub Nest.js de ChartsIA: MCP, REST y Socket.IO",
+  "license": "MIT",
   "bin": {
     "chartsia-mcp": "dist/stdio-bridge.js"
   },
