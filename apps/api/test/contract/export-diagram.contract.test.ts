@@ -22,7 +22,7 @@ describe('contract: export_diagram', () => {
       format,
       mimeType,
       filename: `pedidos.${format}`,
-      downloadUrl: `http://chartsia.localhost:3333/api/diagrams/${id}/export?format=${format}`,
+      downloadUrl: `http://chartsia.localhost:24278/api/diagrams/${id}/export?format=${format}`,
     });
     expect(res.structuredContent!.content).toMatch(pattern);
   });

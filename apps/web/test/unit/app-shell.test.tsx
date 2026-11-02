@@ -15,7 +15,7 @@ const base: AppShellProps = {
   connection: 'connected',
   nodes: [],
   edges: [],
-  origin: 'http://127.0.0.1:3333',
+  origin: 'http://127.0.0.1:24278',
   onConfig: vi.fn(),
   onCloseConfig: vi.fn(),
   onOpen: vi.fn(),

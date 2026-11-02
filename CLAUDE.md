@@ -29,7 +29,7 @@ Node 24 y pnpm 11 (monorepo pnpm: `packages/*`, `apps/*`).
 
 ```bash
 pnpm install
-pnpm dev                                    # hub en :3333 y app Vite en :5173
+pnpm dev                                    # hub en :24278 y app Vite en :5173
 pnpm build && pnpm --filter @chartsia/api start   # un proceso: el hub sirve la app compilada
 pnpm test                                   # tests de core, api y web
 pnpm typecheck && pnpm lint
