@@ -26,44 +26,6 @@ draw.io o Excalidraw.
 
 - Node.js 24 LTS y pnpm 11.
 
-## Instalación y arranque
-
-```bash
-pnpm install
-pnpm dev            # hub en http://127.0.0.1:24278 y app en http://chartsia.localhost:5173
-```
-
-Producción (un solo proceso: el hub sirve también la app compilada):
-
-```bash
-pnpm build
-pnpm --filter @chartsia/api start      # app y MCP en http://chartsia.localhost:24278
-```
-
-La app se abre en `http://chartsia.localhost:<puerto>`. Los navegadores resuelven `*.localhost`
-a loopback, así que no hace falta tocar `/etc/hosts`; `127.0.0.1` también funciona. Cada
-diagrama tiene una dirección `/d/<slug-del-título>-<id-corto>`, por ejemplo
-`/d/biblioteca-gvqrp4kdubn3`: el slug es decorativo y se actualiza si cambia el título, y el
-id corto (la parte del id sin `dg_`) es lo que identifica al diagrama. Las direcciones viejas
-`/d/dg_<id>` siguen abriendo el diagrama y se sustituyen por la nueva.
-
-| Variable | Defecto | Uso |
-|----------|---------|-----|
-| `CHARTSIA_PORT` | `24278` | Puerto del hub |
-| `CHARTSIA_HOST` | `127.0.0.1` | Interfaz; fuera de loopback se exige token |
-| `CHARTSIA_TOKEN` | generado | Token de acceso fuera de loopback |
-| `CHARTSIA_PUBLIC_URL` | `http://chartsia.localhost:<port>` (en loopback), `http://<host>:<port>` en otro caso | Base de `viewUrl`, de las descargas y de la URL que muestra el arranque |
-| `CHARTSIA_DATA_DIR` | `~/.chartsia/diagrams` | Diagramas en JSON (escritura atómica) |
-| `CHARTSIA_MAX_ELEMENTS` | `500` | Máximo de elementos por diagrama |
-| `CHARTSIA_MAX_REQUEST_BYTES` | `8388608` | Tamaño máximo de petición |
-| `CHARTSIA_WEB_ORIGIN` | `http://127.0.0.1:5173` | Origen CORS de la app en desarrollo |
-
-Las imágenes se insertan como datos embebidos en el diagrama y se guardan en el JSON del hub; no se guardan rutas del equipo ni se descargan URLs remotas. Se aceptan PNG y JPG válidos y SVG con un subconjunto de primitivas y texto, sin scripts, enlaces ni estilos activos. El límite es 5 MiB por archivo, 25 MiB y 40 millones de píxeles raster por diagrama. El límite HTTP predeterminado de 8 MiB permite enviar una imagen de hasta 5 MiB codificada en base64; `CHARTSIA_MAX_REQUEST_BYTES` se puede ajustar para instalaciones que necesiten otro tamaño.
-
-La app y la herramienta MCP `import_mermaid` importan `classDiagram` y `classDiagram-v2`, hasta 256 Ki caracteres. Se conservan clases, miembros, namespaces y relaciones; las directivas visuales se omiten con avisos. Los links, callbacks y la configuración incrustada nunca se ejecutan ni se consultan. La importación inválida no crea un diagrama y devuelve un error con la ruta `/source` y la línea cuando está disponible; las aproximaciones de relaciones incluyen un aviso.
-
-La app (**+ Nuevo > Importar draw.io**, pegando el XML o eligiendo un archivo; con Ctrl+V sobre el lienzo, lo copiado en draw.io se agrega al diagrama abierto) y la herramienta MCP `import_drawio` importan `.drawio` sin comprimir o comprimido (deflate + base64) y `mxGraphModel` sueltos, hasta 4 Mi caracteres. Se conservan los elementos, relaciones y posiciones que exporta ChartsIA, y las formas generales de draw.io; con varias páginas se importa la primera. Lo que no tiene equivalente se omite con un aviso, y el XML con `DOCTYPE` o entidades se rechaza. La importación inválida no crea un diagrama y devuelve un error con la ruta `/source`.
-
 ## Conectar agentes
 
 > **Aviso**: el puerto por defecto del hub cambió de `3333` a `24278`. Si ya configuraste ChartsIA en tu cliente MCP con `:3333`, actualiza la URL (o fija el puerto anterior con `CHARTSIA_PORT=3333`).
@@ -108,48 +70,7 @@ Herramientas: `create_diagram`, `apply_changes`, `get_diagram`, `list_diagrams`,
 `chartsia://diagrams/{id}/export.{ext}` y `chartsia://schema/{type}` (guía por tipo de diagrama).
 Contrato completo en [specs/001-mcp-class-c4-diagrams/contracts](specs/001-mcp-class-c4-diagrams/contracts).
 
-### Skills para agentes
 
-La carpeta [`skills/`](skills/README.md) tiene una skill por herramienta (`/chartsia-crear-diagrama`,
-`/chartsia-editar-diagrama`…) que le enseña al agente a diseñar, en qué orden llamar y cómo revisar
-el resultado. Se instalan de forma global con:
-
-```bash
-npx skills add Tiago-Davila/ChartsIA -g --skill '*'
-```
-
-Cómo actualizarlas y cómo agregar una nueva está en [`skills/README.md`](skills/README.md).
-
-### Acceso desde la red
-
-En loopback no hace falta token (y se rechazan cabeceras `Host` ajenas para evitar DNS
-rebinding: solo se aceptan loopback, `*.localhost` y el host de `CHARTSIA_PUBLIC_URL`). Si el hub escucha en otra interfaz, exige `Authorization: Bearer <token>` en `/mcp`
-y `/api`, y `auth.token` en el canal en vivo. Al arrancar muestra la URL de la app con el token
-en el fragmento (`…/#token=<token>`): el fragmento no llega al servidor y la app lo guarda solo
-para la pestaña. Si falta, la app pide el token.
-
-### Limitación conocida: ChatGPT (interfaz web)
-
-Los conectores de la interfaz de ChatGPT exigen OAuth o un servidor sin autenticación. ChartsIA
-usa token Bearer, así que la conexión directa desde la interfaz de ChatGPT queda fuera de
-alcance; usa Codex CLI o los clientes de Claude.
-
-## Desarrollo
-
-```bash
-pnpm test                                   # núcleo, hub (unit, contract, integración) y app
-pnpm --filter @chartsia/core test:golden -u # regenerar golden files (solo con revisión del diff)
-pnpm --filter @chartsia/web test:e2e        # Playwright: agente simulado → app en vivo
-pnpm typecheck && pnpm lint
-```
-
-| Paquete | Contenido |
-|---------|-----------|
-| `packages/core` | Modelo canónico, validación, operaciones, formas, layout, render y exportadores (sin frameworks) |
-| `apps/api` | Hub Nest.js: MCP, REST, Socket.IO, persistencia y puente stdio |
-| `apps/web` | App React + React Flow |
-
-El proceso de trabajo sigue spec-kit (`specs/`, `.specify/`). Atribuciones de terceros en
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Licencia
