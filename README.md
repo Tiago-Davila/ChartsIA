@@ -143,3 +143,9 @@ pnpm typecheck && pnpm lint
 
 El proceso de trabajo sigue spec-kit (`specs/`, `.specify/`). Atribuciones de terceros en
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## Licencia
+
+ChartsIA se distribuye bajo la licencia MIT; el texto completo está en [LICENSE](LICENSE).
+Los avisos de las dependencias y recursos de terceros están en
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
