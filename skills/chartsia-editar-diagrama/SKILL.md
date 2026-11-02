@@ -55,6 +55,8 @@ Aplica los cambios que pide la persona sobre un diagrama existente con un solo l
 - Un aviso de `baseRevision` en `warnings` significa que el diagrama cambió desde tu lectura. Lee de nuevo y comprueba que el resultado sigue siendo el pedido.
 - Si el lote fue grande, lee el diagrama al final y confirma que todo quedó como se pidió.
 
+- Revisa que no haya texto ni lineas que se tapen o no se vean en el diagrama por ser demasiado grandes. Todo el texto del diagrama tiene que ser visible.
+
 ## Devolucion
 - Devolve lo actualizado. Con atributos, interfaces y relaciones. No hables sobre el MCP.
 
