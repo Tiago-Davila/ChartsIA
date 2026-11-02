@@ -24,14 +24,14 @@ draw.io o Excalidraw.
 
 ```bash
 pnpm install
-pnpm dev            # hub en http://127.0.0.1:3333 y app en http://chartsia.localhost:5173
+pnpm dev            # hub en http://127.0.0.1:24278 y app en http://chartsia.localhost:5173
 ```
 
 Producción (un solo proceso: el hub sirve también la app compilada):
 
 ```bash
 pnpm build
-pnpm --filter @chartsia/api start      # app y MCP en http://chartsia.localhost:3333
+pnpm --filter @chartsia/api start      # app y MCP en http://chartsia.localhost:24278
 ```
 
 La app se abre en `http://chartsia.localhost:<puerto>`. Los navegadores resuelven `*.localhost`
@@ -43,7 +43,7 @@ id corto (la parte del id sin `dg_`) es lo que identifica al diagrama. Las direc
 
 | Variable | Defecto | Uso |
 |----------|---------|-----|
-| `CHARTSIA_PORT` | `3333` | Puerto del hub |
+| `CHARTSIA_PORT` | `24278` | Puerto del hub |
 | `CHARTSIA_HOST` | `127.0.0.1` | Interfaz; fuera de loopback se exige token |
 | `CHARTSIA_TOKEN` | generado | Token de acceso fuera de loopback |
 | `CHARTSIA_PUBLIC_URL` | `http://chartsia.localhost:<port>` (en loopback), `http://<host>:<port>` en otro caso | Base de `viewUrl`, de las descargas y de la URL que muestra el arranque |
@@ -60,10 +60,12 @@ La app (**+ Nuevo > Importar draw.io**, pegando el XML o eligiendo un archivo; c
 
 ## Conectar agentes
 
+> **Aviso**: el puerto por defecto del hub cambió de `3333` a `24278`. Si ya configuraste ChartsIA en tu cliente MCP con `:3333`, actualiza la URL (o fija el puerto anterior con `CHARTSIA_PORT=3333`).
+
 La pantalla `/config` de la app muestra, junto al comando de cada agente, un prompt de instalación para pegarlo en el propio agente, que se conecta solo al hub.
 
 - **Claude Code (HTTP)**: `--scope user` la deja disponible en todas las carpetas (se guarda en `~/.claude.json`):
-  `claude mcp add --transport http --scope user chartsia http://127.0.0.1:3333/mcp`
+  `claude mcp add --transport http --scope user chartsia http://127.0.0.1:24278/mcp`
   Sin `--scope user` queda solo en la carpeta donde se ejecuta (`local`).
 - **Claude Desktop (stdio)**: es global por usuario. Añade a `claude_desktop_config.json`
   (macOS: `~/Library/Application Support/Claude/`; Windows: `%APPDATA%\Claude\`), tras `pnpm build`,
@@ -71,25 +73,25 @@ La pantalla `/config` de la app muestra, junto al comando de cada agente, un pro
   ```json
   { "mcpServers": { "chartsia": { "command": "node",
     "args": ["<RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js"],
-    "env": { "CHARTSIA_URL": "http://127.0.0.1:3333/mcp" } } } }
+    "env": { "CHARTSIA_URL": "http://127.0.0.1:24278/mcp" } } } }
   ```
   El hub debe estar corriendo.
 - **Codex CLI**: queda en `~/.codex/config.toml`, disponible en todas las carpetas:
-  `codex mcp add chartsia --url http://127.0.0.1:3333/mcp`
+  `codex mcp add chartsia --url http://127.0.0.1:24278/mcp`
 - **Grok Build**: queda en `~/.grok/config.toml`, disponible en todas las carpetas:
-  `grok mcp add --transport http chartsia http://127.0.0.1:3333/mcp`
+  `grok mcp add --transport http chartsia http://127.0.0.1:24278/mcp`
 - **OpenCode**: en `~/.config/opencode/opencode.json` (global, todos los proyectos) o en `opencode.json`
   del proyecto, bajo `mcp`; la pantalla de configuración de la app muestra estos JSON con la URL real.
   Esquema: `https://opencode.ai/config.json`.
   - HTTP (OpenCode llama `remote` a cualquier servidor HTTP, aunque corra en tu máquina):
     ```json
-    { "mcp": { "chartsia": { "type": "remote", "url": "http://127.0.0.1:3333/mcp" } } }
+    { "mcp": { "chartsia": { "type": "remote", "url": "http://127.0.0.1:24278/mcp" } } }
     ```
   - stdio (puente `chartsia-mcp`, tras `pnpm build`; el hub debe estar corriendo):
     ```json
     { "mcp": { "chartsia": { "type": "local",
       "command": ["node", "<RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js"],
-      "environment": { "CHARTSIA_URL": "http://127.0.0.1:3333/mcp" } } } }
+      "environment": { "CHARTSIA_URL": "http://127.0.0.1:24278/mcp" } } } }
     ```
   - Comprueba la conexión con `opencode mcp list`.
 

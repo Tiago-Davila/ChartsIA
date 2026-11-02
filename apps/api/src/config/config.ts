@@ -34,7 +34,7 @@ function intFromEnv(env: NodeJS.ProcessEnv, name: string, fallback: number): num
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
-  const port = intFromEnv(env, 'CHARTSIA_PORT', 3333);
+  const port = intFromEnv(env, 'CHARTSIA_PORT', 24278);
   const host = env.CHARTSIA_HOST || '127.0.0.1';
   const urlHost = host === '0.0.0.0' || host === '::' ? '127.0.0.1' : host;
   // En loopback la dirección usa el nombre de la app: `*.localhost` resuelve a loopback sin tocar /etc/hosts.
