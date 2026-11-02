@@ -1,5 +1,11 @@
 # ChartsIA
 
+<img width="1346" height="768" alt="image" src="https://github.com/user-attachments/assets/0b9d563e-061b-4473-a58b-bf6c50299a2f" />
+
+
+
+
+
 Diagramas de clases UML y C4 dibujados por agentes de IA. Pides el diagrama a Claude o GPT,
 el agente llama a las herramientas MCP de ChartsIA y el diagrama aparece al instante en un
 lienzo infinito (React Flow), donde puedes seguir editándolo a mano o exportarlo a SVG,
