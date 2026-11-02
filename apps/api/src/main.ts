@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { createApp } from './bootstrap.js';
 import { loadConfig } from './config/config.js';
 

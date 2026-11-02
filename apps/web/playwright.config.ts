@@ -21,7 +21,7 @@ export default defineConfig({
   },
   webServer: {
     // El borrado lo hace node para que `/tmp` se resuelva igual que en el hub, también en Windows.
-    command: `node -e "require('node:fs').rmSync(process.env.CHARTSIA_DATA_DIR, { recursive: true, force: true })" && pnpm --filter @chartsia/core --filter @chartsia/api build && vite build && node ../api/dist/main.js`,
+    command: `node -e "require('node:fs').rmSync(process.env.CHARTSIA_DATA_DIR, { recursive: true, force: true })" && pnpm --filter @chartsia/core --filter chartsia build && vite build && node ../api/dist/main.js`,
     url: `http://127.0.0.1:${PORT}/api/health`,
     reuseExistingServer: false,
     timeout: 180_000,

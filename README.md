@@ -1,5 +1,11 @@
 # ChartsIA
 
+<img width="1346" height="768" alt="image" src="https://github.com/user-attachments/assets/0b9d563e-061b-4473-a58b-bf6c50299a2f" />
+
+
+
+
+
 Diagramas de clases UML y C4 dibujados por agentes de IA. Pides el diagrama a Claude o GPT,
 el agente llama a las herramientas MCP de ChartsIA y el diagrama aparece al instante en un
 lienzo infinito (React Flow), donde puedes seguir editándolo a mano o exportarlo a SVG,
@@ -20,13 +26,14 @@ draw.io o Excalidraw.
 
 - Node.js 24 LTS y pnpm 11.
 
-
 ## Conectar agentes
+
+> **Aviso**: el puerto por defecto del hub cambió de `3333` a `24278`. Si ya configuraste ChartsIA en tu cliente MCP con `:3333`, actualiza la URL (o fija el puerto anterior con `CHARTSIA_PORT=3333`).
 
 La pantalla `/config` de la app muestra, junto al comando de cada agente, un prompt de instalación para pegarlo en el propio agente, que se conecta solo al hub.
 
 - **Claude Code (HTTP)**: `--scope user` la deja disponible en todas las carpetas (se guarda en `~/.claude.json`):
-  `claude mcp add --transport http --scope user chartsia http://127.0.0.1:3333/mcp`
+  `claude mcp add --transport http --scope user chartsia http://127.0.0.1:24278/mcp`
   Sin `--scope user` queda solo en la carpeta donde se ejecuta (`local`).
 - **Claude Desktop (stdio)**: es global por usuario. Añade a `claude_desktop_config.json`
   (macOS: `~/Library/Application Support/Claude/`; Windows: `%APPDATA%\Claude\`), tras `pnpm build`,
@@ -34,25 +41,25 @@ La pantalla `/config` de la app muestra, junto al comando de cada agente, un pro
   ```json
   { "mcpServers": { "chartsia": { "command": "node",
     "args": ["<RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js"],
-    "env": { "CHARTSIA_URL": "http://127.0.0.1:3333/mcp" } } } }
+    "env": { "CHARTSIA_URL": "http://127.0.0.1:24278/mcp" } } } }
   ```
   El hub debe estar corriendo.
 - **Codex CLI**: queda en `~/.codex/config.toml`, disponible en todas las carpetas:
-  `codex mcp add chartsia --url http://127.0.0.1:3333/mcp`
+  `codex mcp add chartsia --url http://127.0.0.1:24278/mcp`
 - **Grok Build**: queda en `~/.grok/config.toml`, disponible en todas las carpetas:
-  `grok mcp add --transport http chartsia http://127.0.0.1:3333/mcp`
+  `grok mcp add --transport http chartsia http://127.0.0.1:24278/mcp`
 - **OpenCode**: en `~/.config/opencode/opencode.json` (global, todos los proyectos) o en `opencode.json`
   del proyecto, bajo `mcp`; la pantalla de configuración de la app muestra estos JSON con la URL real.
   Esquema: `https://opencode.ai/config.json`.
   - HTTP (OpenCode llama `remote` a cualquier servidor HTTP, aunque corra en tu máquina):
     ```json
-    { "mcp": { "chartsia": { "type": "remote", "url": "http://127.0.0.1:3333/mcp" } } }
+    { "mcp": { "chartsia": { "type": "remote", "url": "http://127.0.0.1:24278/mcp" } } }
     ```
   - stdio (puente `chartsia-mcp`, tras `pnpm build`; el hub debe estar corriendo):
     ```json
     { "mcp": { "chartsia": { "type": "local",
       "command": ["node", "<RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js"],
-      "environment": { "CHARTSIA_URL": "http://127.0.0.1:3333/mcp" } } } }
+      "environment": { "CHARTSIA_URL": "http://127.0.0.1:24278/mcp" } } } }
     ```
   - Comprueba la conexión con `opencode mcp list`.
 
@@ -64,4 +71,10 @@ Herramientas: `create_diagram`, `apply_changes`, `get_diagram`, `list_diagrams`,
 Contrato completo en [specs/001-mcp-class-c4-diagrams/contracts](specs/001-mcp-class-c4-diagrams/contracts).
 
 
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## Licencia
+
+ChartsIA se distribuye bajo la licencia MIT; el texto completo está en [LICENSE](LICENSE).
+Los avisos de las dependencias y recursos de terceros están en
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

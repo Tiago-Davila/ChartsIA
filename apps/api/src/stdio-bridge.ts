@@ -2,18 +2,18 @@
 /**
  * `chartsia-mcp`: puente stdio ↔ Streamable HTTP para clientes MCP que solo lanzan procesos
  * (p. ej. Claude Desktop). Reenvía cada mensaje JSON-RPC al hub, que conserva el estado.
- *   CHARTSIA_URL   URL del endpoint MCP (defecto http://127.0.0.1:3333/mcp)
+ *   CHARTSIA_URL   URL del endpoint MCP (defecto http://127.0.0.1:24278/mcp)
  *   CHARTSIA_TOKEN token del hub si escucha fuera de loopback
  */
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { isJSONRPCRequest, type JSONRPCMessage } from '@modelcontextprotocol/sdk/types.js';
 
-const url = new URL(process.env.CHARTSIA_URL || 'http://127.0.0.1:3333/mcp');
+const url = new URL(process.env.CHARTSIA_URL || 'http://127.0.0.1:24278/mcp');
 const token = process.env.CHARTSIA_TOKEN;
 const log = (text: string) => process.stderr.write(`[chartsia-mcp] ${text}\n`);
 const hubDown = () =>
-  `No se puede conectar con el hub de ChartsIA en ${url.origin}. Arráncalo con "pnpm dev" (o "pnpm --filter @chartsia/api start") y vuelve a intentarlo.`;
+  `No se puede conectar con el hub de ChartsIA en ${url.origin}. Arráncalo con "npx chartsia" (o "pnpm dev" desde el repo) y vuelve a intentarlo.`;
 
 async function checkHub(): Promise<void> {
   try {

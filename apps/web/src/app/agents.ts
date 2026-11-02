@@ -41,14 +41,14 @@ export const AGENTS: Agent[] = [
     category: 'Escritorio',
     summary: 'La app de escritorio, a través del puente stdio hacia el hub.',
     clients: ['claude-ai'],
-    help: 'Claude Desktop es global por usuario. Pega este bloque en claude_desktop_config.json (macOS: ~/Library/Application Support/Claude/; Windows: %APPDATA%\\Claude\\), sustituye <RUTA_AL_REPO_CHARTSIA> (antes ejecuta "pnpm build"), reinicia Claude Desktop y deja el hub corriendo.',
+    help: 'Claude Desktop es global por usuario. Pega este bloque en claude_desktop_config.json (macOS: ~/Library/Application Support/Claude/; Windows: %APPDATA%\\Claude\\), reinicia Claude Desktop y deja el hub corriendo (npx chartsia).',
     snippet: (mcpUrl) =>
       JSON.stringify(
         {
           mcpServers: {
             chartsia: {
-              command: 'node',
-              args: ['<RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js'],
+              command: 'npx',
+              args: ['-y', '-p', 'chartsia', 'chartsia-mcp'],
               env: { CHARTSIA_URL: mcpUrl },
             },
           },
@@ -96,9 +96,9 @@ export const AGENTS: Agent[] = [
     id: 'opencode-local',
     name: 'OpenCode (stdio)',
     category: 'Terminal',
-    summary: 'Puente stdio local, lanzado por OpenCode con node.',
+    summary: 'Puente stdio local, lanzado por OpenCode con npx.',
     clients: ['opencode'],
-    help: 'Puente stdio hacia el hub (debe estar corriendo). Para todos tus proyectos, añádelo a ~/.config/opencode/opencode.json; sustituye <RUTA_AL_REPO_CHARTSIA> (antes ejecuta "pnpm build").',
+    help: 'Puente stdio hacia el hub (debe estar corriendo). Para todos tus proyectos, añádelo a ~/.config/opencode/opencode.json.',
     snippet: (mcpUrl) =>
       JSON.stringify(
         {
@@ -106,7 +106,7 @@ export const AGENTS: Agent[] = [
           mcp: {
             chartsia: {
               type: 'local',
-              command: ['node', '<RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js'],
+              command: ['npx', '-y', '-p', 'chartsia', 'chartsia-mcp'],
               environment: { CHARTSIA_URL: mcpUrl },
             },
           },
@@ -123,7 +123,7 @@ export function promptInstalacion(agent: Agent, mcpUrl: string): string {
     'Conéctate al servidor MCP de ChartsIA, que dibuja diagramas UML y C4.',
     `Añádelo a tu configuración global o de usuario, para que esté disponible en todas mis carpetas, con el nombre chartsia y la URL ${mcpUrl}. Usa esta referencia:`,
     agent.snippet(mcpUrl),
-    'Si necesitas un dato que no tienes, como la ruta del repositorio, pídemelo; no lo inventes. Si no puedes editar tu configuración tú mismo, o hace falta reiniciar, dime qué debo hacer.',
+    'Si necesitas un dato que no tienes, pídemelo; no lo inventes. Si no puedes editar tu configuración tú mismo, o hace falta reiniciar, dime qué debo hacer.',
     'Al terminar, verifica la conexión listando tus herramientas MCP y comprueba que aparece create_diagram. Si falla, dime el error.',
   ].join('\n\n');
 }

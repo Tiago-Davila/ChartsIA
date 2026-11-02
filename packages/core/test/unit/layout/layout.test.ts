@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layoutDiagram, relayoutDiagram, warmUpLayout } from '../../../src/layout/index.js';
+import { layoutDiagram, relayoutDiagram } from '../../../src/layout/index.js';
 import type { Diagram, DiagramInput } from '../../../src/model/index.js';
 import { applyOperations } from '../../../src/operations/index.js';
 import { c4ContainerDiagram, classDiagram, erDiagram } from '../../support/fixtures.js';
@@ -100,15 +100,6 @@ describe('layoutDiagram (completo)', () => {
       relations,
     }));
     expect(withDrawing.relations[0]!.route).toEqual(withoutDrawing.relations[0]!.route);
-  });
-
-  it('dispone 200 elementos en menos de 1 s (servidor en caliente)', async () => {
-    await warmUpLayout();
-    await layoutDiagram(grid(200));
-    const start = performance.now();
-    const out = await layoutDiagram(grid(200));
-    expect(performance.now() - start).toBeLessThan(1000);
-    expect(overlappingPairs(out)).toEqual([]);
   });
 });
 

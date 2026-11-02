@@ -4,16 +4,16 @@ import { isLoopback, loadConfig } from '../../src/config/config.js';
 describe('config', () => {
   it('usa valores por defecto en loopback sin exigir token', () => {
     const config = loadConfig({});
-    expect(config.port).toBe(3333);
+    expect(config.port).toBe(24278);
     expect(config.host).toBe('127.0.0.1');
     expect(config.maxElements).toBe(500);
     expect(config.maxRequestBytes).toBe(8 * 1024 * 1024);
-    expect(config.publicUrl).toBe('http://chartsia.localhost:3333');
+    expect(config.publicUrl).toBe('http://chartsia.localhost:24278');
     expect(config.authRequired).toBe(false);
   });
 
   it('usa el host configurado en la dirección de la app, salvo en loopback', () => {
-    expect(loadConfig({ CHARTSIA_HOST: '192.168.1.10' }).publicUrl).toBe('http://192.168.1.10:3333');
+    expect(loadConfig({ CHARTSIA_HOST: '192.168.1.10' }).publicUrl).toBe('http://192.168.1.10:24278');
     expect(loadConfig({ CHARTSIA_HOST: '0.0.0.0', CHARTSIA_PORT: '4000' }).publicUrl).toBe('http://chartsia.localhost:4000');
   });
 
