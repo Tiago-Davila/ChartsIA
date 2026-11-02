@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Modelo canónico, validación, layout, formas y exportadores de ChartsIA",
+  "license": "MIT",
   "exports": {
     ".": {
       "@chartsia/source": "./src/index.ts",
@@ -52,12 +53,17 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "prepack": "cp ../../LICENSE ../../THIRD_PARTY_NOTICES.md .",
+    "postpack": "rm -f LICENSE THIRD_PARTY_NOTICES.md",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --exclude '**/*.perf.test.ts' && pnpm test:perf",
+    "test:perf": "vitest run perf.test --fileParallelism=false",
     "test:golden": "vitest run test/golden"
   },
   "dependencies": {

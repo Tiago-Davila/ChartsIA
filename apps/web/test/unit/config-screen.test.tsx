@@ -5,7 +5,7 @@ import { AGENTS, mcpUrlParaAgentes, promptInstalacion } from '../../src/app/agen
 import { ConfigScreen } from '../../src/app/ConfigScreen';
 import { type ConnectedAgent } from '../../src/state/api-client';
 
-const origin = 'http://127.0.0.1:3333';
+const origin = 'http://127.0.0.1:24278';
 let agents: ConnectedAgent[] = [];
 const renderScreen = (section: 'general' | 'mcp' = 'mcp', onSection = vi.fn()) =>
   render(<ConfigScreen origin={origin} agents={agents} section={section} onSection={onSection} onBack={vi.fn()} />);
@@ -90,7 +90,7 @@ describe('ConfigScreen', () => {
   });
 
   it('la URL del MCP para los agentes cambia *.localhost por 127.0.0.1, que resuelven fuera del navegador', () => {
-    expect(mcpUrlParaAgentes('http://chartsia.localhost:3333')).toBe('http://127.0.0.1:3333/mcp');
+    expect(mcpUrlParaAgentes('http://chartsia.localhost:24278')).toBe('http://127.0.0.1:24278/mcp');
     expect(mcpUrlParaAgentes('http://127.0.0.1:5173')).toBe('http://127.0.0.1:5173/mcp');
     expect(mcpUrlParaAgentes('https://hub.example.com')).toBe('https://hub.example.com/mcp');
   });

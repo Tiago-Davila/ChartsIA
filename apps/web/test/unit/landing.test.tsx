@@ -5,7 +5,7 @@ import { AGENTS } from '../../src/app/agents';
 import { Landing, REPO_URL } from '../../src/app/Landing';
 import { NewDiagram } from '../../src/app/NewDiagram';
 
-const origin = 'http://127.0.0.1:3333';
+const origin = 'http://127.0.0.1:24278';
 
 describe('pantalla inicial', () => {
   it('muestra el título, Empezar y el enlace para dar una estrella en GitHub', async () => {
