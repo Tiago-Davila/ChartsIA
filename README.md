@@ -1,159 +1,123 @@
-# ChartsIA
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/wordmark-dark.svg">
+    <img src="docs/assets/wordmark-light.svg" alt="ChartsIA" width="360">
+  </picture>
+</p>
 
-<img width="1346" height="768" alt="image" src="https://github.com/user-attachments/assets/0b9d563e-061b-4473-a58b-bf6c50299a2f" />
+<p align="center">
+  Diagramas UML, C4 y entidad-relación que tu agente de IA dibuja en vivo por MCP.
+</p>
 
+<p align="center">
+  <img src="https://img.shields.io/badge/node-%E2%89%A5%2024-5fa04e" alt="Node.js 24 o superior">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licencia-MIT-blue" alt="Licencia MIT"></a>
+</p>
 
+<p align="center">
+  <a href="#requisitos">Requisitos</a> ·
+  <a href="#instalación">Instalación</a> ·
+  <a href="#conectar-agentes">Conectar agentes</a> ·
+  <a href="#cómo-probar">Cómo probar</a> ·
+  <a href="#desarrollo">Desarrollo</a> ·
+  <a href="#licencia">Licencia</a>
+</p>
 
+Le pides el diagrama a Claude, Codex u otro agente, el agente llama a las herramientas MCP de
+ChartsIA y el diagrama aparece al instante en un lienzo infinito. Ahí lo sigues editando a mano
+o lo exportas a SVG, draw.io o Excalidraw. Todo corre en tu máquina.
 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/0b9d563e-061b-4473-a58b-bf6c50299a2f" alt="Lienzo de ChartsIA con un diagrama dibujado por un agente" width="900">
+</p>
 
-Diagramas de clases UML y C4 dibujados por agentes de IA. Pides el diagrama a Claude o GPT,
-el agente llama a las herramientas MCP de ChartsIA y el diagrama aparece al instante en un
-lienzo infinito (React Flow), donde puedes seguir editándolo a mano o exportarlo a SVG,
-draw.io o Excalidraw.
-
-- **MCP para Claude y GPT**: mismo contrato por Streamable HTTP (`/mcp`) y stdio
-  (`chartsia-mcp`). Esquemas en el subconjunto JSON Schema común a ambos proveedores.
-- **Diagramas**: clases (clase, interfaz, enum, paquete y las seis relaciones UML) y C4 de
-  contexto, contenedores y componentes (persona, sistema, contenedor con variantes BD/cola/web,
-  componente, límite y leyenda).
-- **Layout automático y determinista** (ELK + enrutado ortogonal propio): sin solapes y con
-  relaciones que no atraviesan elementos. Los cambios incrementales no mueven lo que ya estaba.
-- **Errores accionables**: cada error trae `code`, `path` (JSON Pointer), `message` y `hint`
-  para que el agente se corrija solo.
-- **Exportación** a SVG, draw.io y Excalidraw (este último con trazo a mano alzada y Excalifont).
-
-## Requisitos
-
-- Node.js 24 LTS y pnpm 11.
-
-## Instalación y arranque
-
-```bash
-pnpm install
-pnpm dev            # hub en http://127.0.0.1:24278 y app en http://chartsia.localhost:5173
-```
-
-Producción (un solo proceso: el hub sirve también la app compilada):
+## Instalación
 
 ```bash
-pnpm build
-pnpm --filter @chartsia/api start      # app y MCP en http://chartsia.localhost:24278
+npx chartsia
 ```
 
-La app se abre en `http://chartsia.localhost:<puerto>`. Los navegadores resuelven `*.localhost`
-a loopback, así que no hace falta tocar `/etc/hosts`; `127.0.0.1` también funciona. Cada
-diagrama tiene una dirección `/d/<slug-del-título>-<id-corto>`, por ejemplo
-`/d/biblioteca-gvqrp4kdubn3`: el slug es decorativo y se actualiza si cambia el título, y el
-id corto (la parte del id sin `dg_`) es lo que identifica al diagrama. Las direcciones viejas
-`/d/dg_<id>` siguen abriendo el diagrama y se sustituyen por la nueva.
-
-| Variable | Defecto | Uso |
-|----------|---------|-----|
-| `CHARTSIA_PORT` | `24278` | Puerto del hub |
-| `CHARTSIA_HOST` | `127.0.0.1` | Interfaz; fuera de loopback se exige token |
-| `CHARTSIA_TOKEN` | generado | Token de acceso fuera de loopback |
-| `CHARTSIA_PUBLIC_URL` | `http://chartsia.localhost:<port>` (en loopback), `http://<host>:<port>` en otro caso | Base de `viewUrl`, de las descargas y de la URL que muestra el arranque |
-| `CHARTSIA_DATA_DIR` | `~/.chartsia/diagrams` | Diagramas en JSON (escritura atómica) |
-| `CHARTSIA_MAX_ELEMENTS` | `500` | Máximo de elementos por diagrama |
-| `CHARTSIA_MAX_REQUEST_BYTES` | `8388608` | Tamaño máximo de petición |
-| `CHARTSIA_WEB_ORIGIN` | `http://127.0.0.1:5173` | Origen CORS de la app en desarrollo |
-
-Las imágenes se insertan como datos embebidos en el diagrama y se guardan en el JSON del hub; no se guardan rutas del equipo ni se descargan URLs remotas. Se aceptan PNG y JPG válidos y SVG con un subconjunto de primitivas y texto, sin scripts, enlaces ni estilos activos. El límite es 5 MiB por archivo, 25 MiB y 40 millones de píxeles raster por diagrama. El límite HTTP predeterminado de 8 MiB permite enviar una imagen de hasta 5 MiB codificada en base64; `CHARTSIA_MAX_REQUEST_BYTES` se puede ajustar para instalaciones que necesiten otro tamaño.
-
-La app y la herramienta MCP `import_mermaid` importan `classDiagram` y `classDiagram-v2`, hasta 256 Ki caracteres. Se conservan clases, miembros, namespaces y relaciones; las directivas visuales se omiten con avisos. Los links, callbacks y la configuración incrustada nunca se ejecutan ni se consultan. La importación inválida no crea un diagrama y devuelve un error con la ruta `/source` y la línea cuando está disponible; las aproximaciones de relaciones incluyen un aviso.
-
-La app (**+ Nuevo > Importar draw.io**, pegando el XML o eligiendo un archivo; con Ctrl+V sobre el lienzo, lo copiado en draw.io se agrega al diagrama abierto) y la herramienta MCP `import_drawio` importan `.drawio` sin comprimir o comprimido (deflate + base64) y `mxGraphModel` sueltos, hasta 4 Mi caracteres. Se conservan los elementos, relaciones y posiciones que exporta ChartsIA, y las formas generales de draw.io; con varias páginas se importa la primera. Lo que no tiene equivalente se omite con un aviso, y el XML con `DOCTYPE` o entidades se rechaza. La importación inválida no crea un diagrama y devuelve un error con la ruta `/source`.
+Abre la app en <http://chartsia.localhost:24278>. El hub queda escuchando en esa dirección y el
+MCP en `http://127.0.0.1:24278/mcp`. Los diagramas se guardan en `~/.chartsia/diagrams`, así que
+actualizar ChartsIA no los borra.
 
 ## Conectar agentes
 
-> **Aviso**: el puerto por defecto del hub cambió de `3333` a `24278`. Si ya configuraste ChartsIA en tu cliente MCP con `:3333`, actualiza la URL (o fija el puerto anterior con `CHARTSIA_PORT=3333`).
+Con el hub corriendo, copia el comando de tu agente. Todos quedan disponibles en todas tus carpetas.
 
-La pantalla `/config` de la app muestra, junto al comando de cada agente, un prompt de instalación para pegarlo en el propio agente, que se conecta solo al hub.
+**Claude Code**
 
-- **Claude Code (HTTP)**: `--scope user` la deja disponible en todas las carpetas (se guarda en `~/.claude.json`):
-  `claude mcp add --transport http --scope user chartsia http://127.0.0.1:24278/mcp`
-  Sin `--scope user` queda solo en la carpeta donde se ejecuta (`local`).
-- **Claude Desktop (stdio)**: es global por usuario. Añade a `claude_desktop_config.json`
-  (macOS: `~/Library/Application Support/Claude/`; Windows: `%APPDATA%\Claude\`), tras `pnpm build`,
-  un servidor con la ruta absoluta al puente y reinicia la app:
-  ```json
-  { "mcpServers": { "chartsia": { "command": "node",
-    "args": ["<RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js"],
-    "env": { "CHARTSIA_URL": "http://127.0.0.1:24278/mcp" } } } }
-  ```
-  El hub debe estar corriendo.
-- **Codex CLI**: queda en `~/.codex/config.toml`, disponible en todas las carpetas:
-  `codex mcp add chartsia --url http://127.0.0.1:24278/mcp`
-- **Grok Build**: queda en `~/.grok/config.toml`, disponible en todas las carpetas:
-  `grok mcp add --transport http chartsia http://127.0.0.1:24278/mcp`
-- **OpenCode**: en `~/.config/opencode/opencode.json` (global, todos los proyectos) o en `opencode.json`
-  del proyecto, bajo `mcp`; la pantalla de configuración de la app muestra estos JSON con la URL real.
-  Esquema: `https://opencode.ai/config.json`.
-  - HTTP (OpenCode llama `remote` a cualquier servidor HTTP, aunque corra en tu máquina):
-    ```json
-    { "mcp": { "chartsia": { "type": "remote", "url": "http://127.0.0.1:24278/mcp" } } }
-    ```
-  - stdio (puente `chartsia-mcp`, tras `pnpm build`; el hub debe estar corriendo):
-    ```json
-    { "mcp": { "chartsia": { "type": "local",
-      "command": ["node", "<RUTA_AL_REPO_CHARTSIA>/apps/api/dist/stdio-bridge.js"],
-      "environment": { "CHARTSIA_URL": "http://127.0.0.1:24278/mcp" } } } }
-    ```
-  - Comprueba la conexión con `opencode mcp list`.
+```bash
+claude mcp add --transport http --scope user chartsia http://127.0.0.1:24278/mcp
+```
 
-Los agentes corren en la misma máquina que el hub, así que ninguno necesita token.
+**Codex CLI**
 
-Herramientas: `create_diagram`, `apply_changes`, `get_diagram`, `list_diagrams`,
-`open_diagram`, `export_diagram`. Recursos: `chartsia://diagrams/{id}`,
-`chartsia://diagrams/{id}/export.{ext}` y `chartsia://schema/{type}` (guía por tipo de diagrama).
-Contrato completo en [specs/001-mcp-class-c4-diagrams/contracts](specs/001-mcp-class-c4-diagrams/contracts).
+```bash
+codex mcp add chartsia --url http://127.0.0.1:24278/mcp
+```
 
-### Skills para agentes
+**Gemini CLI**
 
-La carpeta [`skills/`](skills/README.md) tiene una skill por herramienta (`/chartsia-crear-diagrama`,
-`/chartsia-editar-diagrama`…) que le enseña al agente a diseñar, en qué orden llamar y cómo revisar
-el resultado. Se instalan de forma global con:
+```bash
+gemini mcp add --scope user --transport http chartsia http://127.0.0.1:24278/mcp
+```
+
+**Grok Build**
+
+```bash
+grok mcp add --transport http chartsia http://127.0.0.1:24278/mcp
+```
+
+**OpenCode**
+
+```bash
+opencode mcp add chartsia --url http://127.0.0.1:24278/mcp
+```
+
+Para Claude Desktop y los demás clientes por stdio, la pantalla **Configuración** de la app
+muestra el bloque listo para pegar.
+
+### Skills
+
+Las skills le enseñan al agente a diseñar el diagrama, en qué orden llamar a las herramientas y
+cómo revisar el resultado. Se instalan una vez para todos tus agentes:
 
 ```bash
 npx skills add Tiago-Davila/ChartsIA -g --skill '*'
 ```
 
-Cómo actualizarlas y cómo agregar una nueva está en [`skills/README.md`](skills/README.md).
+## Cómo probar
 
-### Acceso desde la red
+Con la app abierta, pídele un diagrama a tu agente:
 
-En loopback no hace falta token (y se rechazan cabeceras `Host` ajenas para evitar DNS
-rebinding: solo se aceptan loopback, `*.localhost` y el host de `CHARTSIA_PUBLIC_URL`). Si el hub escucha en otra interfaz, exige `Authorization: Bearer <token>` en `/mcp`
-y `/api`, y `auth.token` en el canal en vivo. Al arrancar muestra la URL de la app con el token
-en el fragmento (`…/#token=<token>`): el fragmento no llega al servidor y la app lo guarda solo
-para la pestaña. Si falta, la app pide el token.
+```text
+/chartsia-crear-diagrama crea un diagrama de clases de una biblioteca: socios, libros,
+autores y préstamos. Un socio puede tener varios préstamos activos y cada libro tiene uno
+o más autores.
+```
 
-### Limitación conocida: ChatGPT (interfaz web)
-
-Los conectores de la interfaz de ChatGPT exigen OAuth o un servidor sin autenticación. ChartsIA
-usa token Bearer, así que la conexión directa desde la interfaz de ChatGPT queda fuera de
-alcance; usa Codex CLI o los clientes de Claude.
+<!-- Video de la prueba: arrastra el .mp4 al editor de GitHub y deja la URL sola en esta línea. -->
 
 ## Desarrollo
 
+Requiere también pnpm 11.
+
 ```bash
-pnpm test                                   # núcleo, hub (unit, contract, integración) y app
-pnpm --filter @chartsia/core test:golden -u # regenerar golden files (solo con revisión del diff)
-pnpm --filter @chartsia/web test:e2e        # Playwright: agente simulado → app en vivo
-pnpm typecheck && pnpm lint
+git clone https://github.com/Tiago-Davila/ChartsIA && cd ChartsIA
+pnpm install
+pnpm dev                                   # hub en :24278 y app con recarga en :5173
+pnpm build && pnpm --filter chartsia start # un solo proceso, como el paquete de npm
+pnpm test && pnpm typecheck && pnpm lint
 ```
 
 | Paquete | Contenido |
 |---------|-----------|
-| `packages/core` | Modelo canónico, validación, operaciones, formas, layout, render y exportadores (sin frameworks) |
-| `apps/api` | Hub Nest.js: MCP, REST, Socket.IO, persistencia y puente stdio |
+| `packages/core` | Modelo, validación, layout, formas y exportadores (se publica como `@chartsia/core`) |
+| `apps/api` | Hub Nest.js: MCP, REST, Socket.IO y puente stdio (se publica como `chartsia`) |
 | `apps/web` | App React + React Flow |
-
-El proceso de trabajo sigue spec-kit (`specs/`, `.specify/`). Atribuciones de terceros en
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Licencia
 
-ChartsIA se distribuye bajo la licencia MIT; el texto completo está en [LICENSE](LICENSE).
-Los avisos de las dependencias y recursos de terceros están en
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+MIT; el texto completo está en [LICENSE](LICENSE). Los avisos de dependencias y recursos de
+terceros están en [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

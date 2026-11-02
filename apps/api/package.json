@@ -1,15 +1,41 @@
 {
-  "name": "@chartsia/api",
+  "name": "chartsia",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
-  "description": "Hub Nest.js de ChartsIA: MCP, REST y Socket.IO",
+  "description": "Diagramas UML, C4 y ER dibujados por agentes de IA vía MCP, con un lienzo en vivo para editarlos y exportarlos",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tiago-Davila/ChartsIA.git",
+    "directory": "apps/api"
+  },
+  "homepage": "https://github.com/Tiago-Davila/ChartsIA#readme",
+  "bugs": "https://github.com/Tiago-Davila/ChartsIA/issues",
+  "keywords": [
+    "mcp",
+    "uml",
+    "c4",
+    "diagramas",
+    "claude",
+    "react-flow"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
   "bin": {
+    "chartsia": "dist/main.js",
     "chartsia-mcp": "dist/stdio-bridge.js"
   },
+  "files": [
+    "dist/**/*.js",
+    "public",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "prepack": "cp ../../README.md ../../LICENSE ../../THIRD_PARTY_NOTICES.md . && rm -rf public && cp -r ../web/dist public && find public -name '*.map' -delete",
+    "postpack": "rm -rf public README.md LICENSE THIRD_PARTY_NOTICES.md",
     "dev": "tsc -p tsconfig.build.json && pnpm run \"/^dev:/\"",
     "dev:tsc": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
     "dev:hub": "node --watch-path=dist --enable-source-maps dist/main.js",

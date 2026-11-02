@@ -13,7 +13,7 @@ const url = new URL(process.env.CHARTSIA_URL || 'http://127.0.0.1:24278/mcp');
 const token = process.env.CHARTSIA_TOKEN;
 const log = (text: string) => process.stderr.write(`[chartsia-mcp] ${text}\n`);
 const hubDown = () =>
-  `No se puede conectar con el hub de ChartsIA en ${url.origin}. Arráncalo con "pnpm dev" (o "pnpm --filter @chartsia/api start") y vuelve a intentarlo.`;
+  `No se puede conectar con el hub de ChartsIA en ${url.origin}. Arráncalo con "npx chartsia" (o "pnpm dev" desde el repo) y vuelve a intentarlo.`;
 
 async function checkHub(): Promise<void> {
   try {

@@ -1,0 +1,49 @@
+# Publica @chartsia/core y chartsia en npm al crear un tag vX.Y.Z, con trusted publishing y provenance.
+name: Publicar en npm
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Comprobar que el tag coincide con la versión de los paquetes
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          for paquete in packages/core apps/api; do
+            actual=$(node -p "require('./$paquete/package.json').version")
+            if [ "$actual" != "$version" ]; then
+              echo "El tag es $GITHUB_REF_NAME pero $paquete tiene la versión $actual"
+              exit 1
+            fi
+          done
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm typecheck
+
+      # pnpm pack cambia workspace:* por la versión real del core; npm publish hace el trusted publishing.
+      - name: Empaquetar
+        run: |
+          mkdir paquetes
+          (cd packages/core && pnpm pack --pack-destination ../../paquetes)
+          (cd apps/api && pnpm pack --pack-destination ../../paquetes)
+
+      - name: Publicar
+        run: |
+          npm publish paquetes/chartsia-core-*.tgz --provenance --access public
+          npm publish paquetes/chartsia-[0-9]*.tgz --provenance --access public
