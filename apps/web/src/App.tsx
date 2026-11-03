@@ -34,6 +34,7 @@ function ConnectedApp() {
   const listLoaded = useDiagramStore((s) => s.listLoaded);
   const projects = useDiagramStore((s) => s.projects);
   const agents = useDiagramStore((s) => s.agents);
+  const hub = useDiagramStore((s) => s.hub);
   const activeDiagramId = useDiagramStore((s) => s.activeDiagramId);
   const diagram = useDiagramStore((s) => s.diagram);
   const loading = useDiagramStore((s) => s.openDiagramId !== null && s.diagram === undefined);
@@ -223,6 +224,7 @@ function ConnectedApp() {
           diagrams={diagrams}
           projects={projects}
           agents={agents}
+          hub={hub}
           activeDiagramId={activeDiagramId}
           connection={connection}
           diagram={diagram}

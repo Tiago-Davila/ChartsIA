@@ -1,10 +1,64 @@
-import { type CSSProperties, type ReactNode } from 'react';
-import { type ConnectedAgent } from '../state/api-client';
+import { type CSSProperties, type ReactNode, useState } from 'react';
+import { type ConnectedAgent, type HubInfo } from '../state/api-client';
+import { mcpUrlParaAgentes } from './agents';
 import { AnimatedList } from './AnimatedList';
 import { ArrowLeftIcon, PlugIcon, SlidersIcon } from './icons';
-import { AgentIntegrations } from './Integrations';
+import { AgentIntegrations, CodeBlock } from './Integrations';
 import { type ConfigSection } from './routes';
-import { ThemeToggle } from './ThemeToggle';
+import { applyTheme, initialTheme, type ThemePreference } from './theme';
+
+const TEMAS: { id: ThemePreference; label: string }[] = [
+  { id: 'system', label: 'Según el sistema' },
+  { id: 'light', label: 'Claro' },
+  { id: 'dark', label: 'Oscuro' },
+];
+
+/** Sección "General": el tema de la app y los datos del hub. */
+function General({ origin, hub }: { origin: string; hub: HubInfo | null }) {
+  const [tema, setTema] = useState<ThemePreference>(initialTheme);
+  const elegir = (preferencia: ThemePreference) => {
+    applyTheme(preferencia);
+    setTema(preferencia);
+  };
+  return (
+    <>
+      <header className="config__header">
+        <h2 id="config-section">General</h2>
+        <p>Apariencia de la app y datos del hub.</p>
+      </header>
+      <fieldset className="config__field">
+        <legend>Tema</legend>
+        <div className="segmented">
+          {TEMAS.map((t) => (
+            <label key={t.id}>
+              <input type="radio" name="tema" value={t.id} checked={tema === t.id} onChange={() => elegir(t.id)} />
+              {t.label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      <h3>Hub</h3>
+      {hub ? (
+        <dl className="config__datos">
+          <dt>Versión</dt>
+          <dd>{hub.version}</dd>
+          <dt>Puerto</dt>
+          <dd>{hub.port}</dd>
+          <dt>URL del MCP</dt>
+          <dd>
+            <CodeBlock text={mcpUrlParaAgentes(origin)} label="Copiar URL del MCP" />
+          </dd>
+          <dt>Carpeta de datos</dt>
+          <dd>
+            <CodeBlock text={hub.dataDir} label="Copiar carpeta de datos" />
+          </dd>
+        </dl>
+      ) : (
+        <p className="config__nota">Cargando los datos del hub…</p>
+      )}
+    </>
+  );
+}
 
 /** Sección "Conexiones MCP": las tarjetas de los agentes, conectados primero. */
 function McpConnections({ origin, agents }: { origin: string; agents: ConnectedAgent[] }) {
@@ -27,13 +81,14 @@ const SECCIONES: { id: ConfigSection; label: string; icon: ReactNode }[] = [
 export interface ConfigScreenProps {
   origin: string;
   agents: ConnectedAgent[];
+  hub: HubInfo | null;
   section: ConfigSection;
   onSection(section: ConfigSection): void;
   onBack(): void;
 }
 
 /** Pantalla `/config`: barra propia con sus secciones (General y Conexiones MCP) y el contenido de la elegida. */
-export function ConfigScreen({ origin, agents, section, onSection, onBack }: ConfigScreenProps) {
+export function ConfigScreen({ origin, agents, hub, section, onSection, onBack }: ConfigScreenProps) {
   return (
     <div className="config-shell">
       <aside className="config-nav">
@@ -56,15 +111,10 @@ export function ConfigScreen({ origin, agents, section, onSection, onBack }: Con
             ))}
           </AnimatedList>
         </nav>
-        <div className="sidebar-footer">
-          <ThemeToggle />
-        </div>
       </aside>
       <section className="config" aria-labelledby="config-section">
         {section === 'general' ? (
-          <header className="config__header">
-            <h2 id="config-section">General</h2>
-          </header>
+          <General origin={origin} hub={hub} />
         ) : (
           <McpConnections origin={origin} agents={agents} />
         )}

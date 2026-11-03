@@ -3,12 +3,13 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AGENTS, mcpUrlParaAgentes, promptInstalacion } from '../../src/app/agents';
 import { ConfigScreen } from '../../src/app/ConfigScreen';
-import { type ConnectedAgent } from '../../src/state/api-client';
+import { type ConnectedAgent, type HubInfo } from '../../src/state/api-client';
 
 const origin = 'http://127.0.0.1:24278';
 let agents: ConnectedAgent[] = [];
+let hub: HubInfo | null = null;
 const renderScreen = (section: 'general' | 'mcp' = 'mcp', onSection = vi.fn()) =>
-  render(<ConfigScreen origin={origin} agents={agents} section={section} onSection={onSection} onBack={vi.fn()} />);
+  render(<ConfigScreen origin={origin} agents={agents} hub={hub} section={section} onSection={onSection} onBack={vi.fn()} />);
 
 /** Abre la ventana de conexión de un agente desde su tarjeta. */
 const abrir = async (nombre: string) => {
@@ -19,19 +20,65 @@ const abrir = async (nombre: string) => {
 describe('ConfigScreen', () => {
   afterEach(() => {
     agents = [];
+    hub = null;
+    localStorage.clear();
+    delete document.documentElement.dataset.theme;
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
-  it('tiene su propia barra con General y Conexiones MCP, y General por ahora está vacía', async () => {
+  it('tiene su propia barra con General y Conexiones MCP, y General no muestra agentes', async () => {
     const onSection = vi.fn();
     renderScreen('general', onSection);
     const secciones = screen.getByRole('list', { name: 'Secciones' });
     expect(within(secciones).getByRole('button', { name: 'General' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('region', { name: 'General' })).toBeInTheDocument();
-    expect(screen.queryByText(`${origin}/mcp`)).toBeNull();
     expect(screen.queryByRole('article')).toBeNull();
     await userEvent.click(within(secciones).getByRole('button', { name: 'Conexiones MCP' }));
     expect(onSection).toHaveBeenCalledWith('mcp');
+  });
+
+  it('el tema está en General, sigue al sistema por defecto y recuerda la elección', async () => {
+    renderScreen('general');
+    expect(screen.queryByRole('button', { name: /Cambiar a tema/ })).toBeNull();
+    const temas = screen.getByRole('group', { name: 'Tema' });
+    expect(within(temas).getByRole('radio', { name: 'Según el sistema' })).toBeChecked();
+    await userEvent.click(within(temas).getByRole('radio', { name: 'Oscuro' }));
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(localStorage.getItem('chartsia.theme')).toBe('dark');
+    await userEvent.click(within(temas).getByRole('radio', { name: 'Claro' }));
+    expect(document.documentElement.dataset.theme).toBe('light');
+    expect(localStorage.getItem('chartsia.theme')).toBe('light');
+  });
+
+  it('con "Según el sistema" el tema cambia cuando cambia el del sistema', async () => {
+    let oscuro = false;
+    const oyentes: (() => void)[] = [];
+    vi.stubGlobal('matchMedia', () => ({ get matches() { return oscuro; }, addEventListener: (_: string, fn: () => void) => oyentes.push(fn), removeEventListener: vi.fn() }));
+    localStorage.setItem('chartsia.theme', 'light');
+    renderScreen('general');
+    await userEvent.click(screen.getByRole('radio', { name: 'Según el sistema' }));
+    expect(document.documentElement.dataset.theme).toBe('light');
+    oscuro = true;
+    for (const fn of oyentes) fn();
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(localStorage.getItem('chartsia.theme')).toBe('system');
+  });
+
+  it('muestra versión, puerto, URL del MCP y carpeta de datos del hub', () => {
+    hub = { version: '0.1.0', port: 24278, dataDir: '/home/ana/.chartsia/diagrams' };
+    renderScreen('general');
+    const datos = screen.getByRole('region', { name: 'General' });
+    expect(datos).toHaveTextContent('Versión0.1.0');
+    expect(datos).toHaveTextContent('Puerto24278');
+    expect(within(datos).getByText(`${origin}/mcp`)).toBeInTheDocument();
+    expect(within(datos).getByText('/home/ana/.chartsia/diagrams')).toBeInTheDocument();
+    expect(within(datos).getByRole('button', { name: 'Copiar carpeta de datos' })).toBeInTheDocument();
+  });
+
+  it('mientras el hub no responde, avisa que los datos están cargando', () => {
+    renderScreen('general');
+    expect(screen.getByText('Cargando los datos del hub…')).toBeInTheDocument();
   });
 
   it('muestra solo las tarjetas de los agentes, sin la URL del MCP ni el estado del hub', async () => {

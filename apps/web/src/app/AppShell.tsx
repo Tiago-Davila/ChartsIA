@@ -2,7 +2,7 @@ import { type ExportFormat } from '@chartsia/core/export';
 import { type Diagram, type DiagramType, type Point } from '@chartsia/core/model';
 import { type Edge, type Node } from '@xyflow/react';
 import { type ClipboardEvent, type CSSProperties, type DragEvent, type ReactNode, useRef, useState } from 'react';
-import { type ConnectedAgent, type Project } from '../state/api-client';
+import { type ConnectedAgent, type HubInfo, type Project } from '../state/api-client';
 import { type AlignMode } from '../canvas/align';
 import { DiagramCanvas, type DiagramCanvasProps } from '../canvas/DiagramCanvas';
 import { FigureSidebar } from '../canvas/FigureSidebar';
@@ -22,6 +22,8 @@ export interface AppShellProps {
   diagrams: DiagramListItem[];
   projects: Project[];
   agents: ConnectedAgent[];
+  /** Datos del hub para la sección General; `null` mientras cargan. */
+  hub?: HubInfo | null;
   activeDiagramId: string | null;
   connection: ConnectionState;
   diagram?: Diagram;
@@ -145,7 +147,7 @@ export function AppShell(props: AppShellProps) {
   if (props.configOpen) {
     return (
       <>
-        <ConfigScreen origin={props.origin} agents={props.agents} section={props.configSection ?? 'general'} onSection={props.onConfig} onBack={props.onCloseConfig} />
+        <ConfigScreen origin={props.origin} agents={props.agents} hub={props.hub ?? null} section={props.configSection ?? 'general'} onSection={props.onConfig} onBack={props.onCloseConfig} />
         {props.overlay}
       </>
     );

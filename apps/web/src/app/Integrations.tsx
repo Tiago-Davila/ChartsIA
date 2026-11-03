@@ -5,7 +5,7 @@ import { CheckIcon, CopyIcon, PlusIcon } from './icons';
 import { Modal } from './Modal';
 
 /** Bloque de código con un botón de copiar dentro; avisa si el navegador no deja copiar. */
-function CodeBlock({ text, label }: { text: string; label: string }) {
+export function CodeBlock({ text, label }: { text: string; label: string }) {
   const [state, setState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const copy = () => {
     // El portapapeles no existe sin contexto seguro (HTTP fuera de loopback).
