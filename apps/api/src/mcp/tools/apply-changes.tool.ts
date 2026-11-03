@@ -5,6 +5,15 @@ import { type ToolResultFormatter } from '../tool-result.js';
 import { DiagramIdSchema } from './schemas.js';
 import { defineTool } from './tool-definition.js';
 
+const FLOW_OPERATIONS = {
+  operations: [
+    { op: 'add_element', element: { id: 'cola', kind: 'flow-node', variant: 'queue', name: 'orders.created', subtitle: 'src/orders/events.ts:12' } },
+    { op: 'add_relation', relation: { id: 'stock_cola', kind: 'flow-edge', source: 'stock', target: 'cola', flowType: 'event', label: 'publica' } },
+    { op: 'update_element', id: 'db', changes: { variant: 'database', subtitle: 'db/schema.sql:30' } },
+    { op: 'update_relation', id: 'stock_db', changes: { flowType: 'write' } },
+  ],
+};
+
 const EXAMPLE = {
   operations: [
     { op: 'add_element', element: { id: 'Cliente', kind: 'class', name: 'Cliente', attributes: [], operations: [] } },
@@ -25,12 +34,14 @@ export const applyChangesTool = (commands: DiagramCommandService, results: ToolR
       'update_relation admite además sourceTotal/targetTotal (participación total en er-rel y connector), kind (cambiar el tipo de flecha), sourceSide/targetSide ("top"|"right"|"bottom"|"left") y waypoints (puntos de quiebre); para invertir una flecha intercambia source y target. En un connector (flecha libre, válido en cualquier tipo de diagrama) admite arrowheads (none | end | both), dashed y label. En una er-rel también admite sourceCardinality, targetCardinality e identifying, y update_element admite weak y associative en una entity, identifying en una relationship, overlapping en una specialization, y en un attribute key, partialKey, multivalued y derived (en una value-list, values reemplaza la lista completa); en una table update_element admite columns (reemplaza la lista completa); en una figure (válida en cualquier tipo de diagrama) update_element admite shape: circle, oval, square, rectangle, isosceles-triangle, equilateral-triangle, scalene-triangle, right-triangle, diamond, parallelogram, pentagon, hexagon, heptagon, octagon, cloud, arrow, double-arrow, arrow-right, arrow-left, arrow-up o arrow-down.',
       'Un elemento kind "drawing" representa un trazo libre y admite points (2 a 1024 puntos {x,y} locales entre 0 y 5000), strokeColor (#rrggbb) y strokeWidth (0.5 a 16; la app ofrece 1.5 fino, 2.5 medio y 5 grueso). Con highlighter: true es un marcador: trazo ancho y semitransparente dibujado detrás de las figuras (usa strokeWidth 14 y un color claro como #facc15; la app ofrece 8 fino, 14 medio y 16 grueso). Puedes reemplazar points, color o grosor con update_element; highlighter: true lo vuelve marcador y null lo vuelve lápiz.',
       'Un elemento kind "text" es un bloque de texto: cambia su contenido con update_element {id, changes: {name}}, con markdown liviano (títulos, negrita, cursiva, listas y bloques ``` con lenguaje). El tamaño se calcula solo a partir del texto.',
+      'En diagramas flow, add_element agrega un flow-node {id, kind: "flow-node", variant, name, subtitle?} y add_relation una flow-edge {id, kind: "flow-edge", source, target, flowType?, label?}; update_element admite variant y subtitle, y update_relation admite flowType. Cada flow-edge que sale de un nodo decision necesita label. Los nodos nuevos se ubican sin mover los que ya estaban; para crear un flujo desde cero usa create_diagram, que lo ordena mejor.',
       'En diagramas nosql, update_element admite fields para reemplazar todos los campos de una collection (rutas planas path:string[]); usa nosql-rel para referencias entre colecciones.',
       'Un elemento kind "frame" es un grupo con título (name), válido en cualquier tipo de diagrama; otros elementos lo referencian con parentId. Puedes anidar frames y agrupar cualquier tipo de elemento, también imágenes y trazos.',
       'Estilo visual (solo si la persona lo pide): update_element y update_relation admiten style {borderColor?, fillColor?, fontColor? ("#rrggbb"), lineWidth? ("thin"|"medium"|"thick", grosor del borde o de la línea), fontFamily? ("sans-serif"|"serif"|"monospace"|"handwritten"), fontSize? (entero de 8 a 48)}. style reemplaza el estilo completo, así que reenvía los campos que quieras conservar; style: null lo elimina. En una relación, borderColor es el color de la línea.',
       'En changes, null elimina un campo opcional; id y kind no se pueden cambiar. Al eliminar un elemento se eliminan también sus relaciones.',
       'Sin diagramId se usa el diagrama activo (la respuesta indica cuál). baseRevision es informativo: si no coincide se aplica igual y se avisa en warnings.',
       'Si alguna operación es inválida no se aplica ninguna y recibes los errores con path (p. ej. /operations/2/id) y hint.',
+      `Agregar un nodo a un flujo (operaciones): ${JSON.stringify(FLOW_OPERATIONS)}`,
       `Ejemplo de entrada: ${JSON.stringify(EXAMPLE)}`,
     ].join('\n'),
     input: z.strictObject({
