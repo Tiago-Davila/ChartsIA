@@ -16,16 +16,17 @@ Exporta un diagrama con `export_diagram` y lo deja donde la persona lo necesita.
 
 ## Diseño
 
-- **Formato**: elige según el pedido.
-  - `svg`: imagen para documentación, un README o una presentación. Es el formato por defecto si la persona no dice otro; aclara que elegiste SVG.
+- **Formato**: si la persona lo nombra, úsalo; si no, omite `format` y se usa el formato por defecto de sus preferencias (SVG de fábrica), y dile cuál se usó. Opciones:
+  - `svg`: imagen para documentación, un README o una presentación.
   - `drawio`: para seguir editando en draw.io (app.diagrams.net).
   - `excalidraw`: para seguir como boceto en excalidraw.com.
+- **Opciones**: sin enviar nada se usan las preferencias de exportación guardadas (fondo, margen, escala, título). Envía `background`, `margin`, `scale` o `includeTitle` solo si la persona lo pide para este archivo; valen para esa llamada y no se guardan. `background` vale en los tres formatos; `margin`, `scale` e `includeTitle` solo en SVG. Para cambiar el valor de siempre usa `set_preferences`, de `chartsia-preferencias`.
 - **Destino**: la ruta que dijo la persona. Si no dijo ninguna y puedes escribir archivos, usa el `filename` que devuelve la herramienta en la carpeta de trabajo actual.
 
 ## Orden
 
 1. Asegúrate de exportar el diagrama correcto: el activo, o el `diagramId` del que se habla.
-2. Llama a `export_diagram` con el `format` elegido.
+2. Llama a `export_diagram` con el `format` elegido (o sin él) y las opciones pedidas.
 3. Si la respuesta trae `content` y puedes escribir archivos, guárdalo tal cual en la ruta de destino, con la extensión de `filename`.
 4. Si no trae `content` (archivo de más de 512 KiB) o no puedes escribir archivos, entrega el `downloadUrl`.
 5. Di la ruta exacta del archivo guardado o el enlace de descarga.

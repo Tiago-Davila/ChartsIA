@@ -1,10 +1,8 @@
 import { type Diagram } from '../model/diagram.js';
 import { exportDrawio } from './drawio.js';
 import { exportExcalidraw } from './excalidraw.js';
+import { DEFAULT_EXPORT_SETTINGS, type ExportFormat, type ExportSettings } from './options.js';
 import { exportSvg } from './svg.js';
-
-export const EXPORT_FORMATS = ['svg', 'drawio', 'excalidraw'] as const;
-export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
 export const MIME_TYPES: Record<ExportFormat, string> = {
   svg: 'image/svg+xml',
@@ -32,12 +30,14 @@ export function exportFilename(title: string, format: ExportFormat): string {
   return `${slug || 'diagrama'}.${format}`;
 }
 
-export function exportDiagram(diagram: Diagram, format: ExportFormat): ExportResult {
-  const content = format === 'svg' ? exportSvg(diagram) : format === 'drawio' ? exportDrawio(diagram) : exportExcalidraw(diagram);
+/** Exporta en el formato pedido; sin opciones usa las de siempre. */
+export function exportDiagram(diagram: Diagram, format: ExportFormat, settings: ExportSettings = DEFAULT_EXPORT_SETTINGS): ExportResult {
+  const content = format === 'svg' ? exportSvg(diagram, settings) : format === 'drawio' ? exportDrawio(diagram, settings) : exportExcalidraw(diagram, settings);
   return { format, mimeType: MIME_TYPES[format], filename: exportFilename(diagram.title, format), content };
 }
 
 export { exportDrawio } from './drawio.js';
 export { exportExcalidraw } from './excalidraw.js';
+export * from './options.js';
 export { exportSvg } from './svg.js';
 export { escapeXml } from './xml-escape.js';

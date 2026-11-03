@@ -65,7 +65,7 @@ export function reportError(error: unknown) {
   diagramStore.getState().showErrors(errors);
 }
 
-interface ChoiceProps<T extends string> {
+export interface ChoiceProps<T extends string> {
   legend: string;
   name: string;
   value: T;
@@ -74,7 +74,7 @@ interface ChoiceProps<T extends string> {
 }
 
 /** Una preferencia con su leyenda y las opciones como botones segmentados. */
-function Choice<T extends string>({ legend, name, value, options, onChange }: ChoiceProps<T>) {
+export function Choice<T extends string>({ legend, name, value, options, onChange }: ChoiceProps<T>) {
   return (
     <fieldset className="config__field">
       <legend>{legend}</legend>

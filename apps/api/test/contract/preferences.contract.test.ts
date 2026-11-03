@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { DEFAULT_EXPORT_PREFERENCES } from '@chartsia/core/export';
 import { DEFAULT_PREFERENCES } from '@chartsia/core/model';
 import { createMcpHarness, type McpHarness } from '../support/mcp-test-harness.js';
 
@@ -27,7 +28,7 @@ describe('contract: set_preferences', () => {
   it('sin cambios devuelve las preferencias por defecto', async () => {
     const res = await h.call('set_preferences', {});
     expect(res.isError).toBeFalsy();
-    expect(res.structuredContent).toEqual(DEFAULT_PREFERENCES);
+    expect(res.structuredContent).toEqual({ ...DEFAULT_PREFERENCES, export: DEFAULT_EXPORT_PREFERENCES });
   });
 
   it('guarda solo lo pedido, lo conserva entre llamadas y lo escribe en config.json', async () => {
@@ -41,7 +42,7 @@ describe('contract: set_preferences', () => {
       palette: { class: { fillColor: '#fde68a' } },
     });
     const file = JSON.parse(await readFile(h.config.configFile, 'utf8'));
-    expect(file.diagrams).toEqual(res.structuredContent);
+    expect(file.diagrams).toEqual({ ...res.structuredContent, export: undefined });
     expect((await h.call('set_preferences', { palette: { class: null } })).structuredContent).toMatchObject({ palette: {} });
   });
 

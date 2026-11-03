@@ -4,7 +4,8 @@ import { mcpUrlParaAgentes } from './agents';
 import { AnimatedList } from './AnimatedList';
 import { type CanvasPreferences, setCanvasPreferences, useCanvasPreferences } from './canvas-preferences';
 import { DiagramPreferences } from './DiagramPreferences';
-import { ArrowLeftIcon, DatabaseIcon, FileIcon, GridIcon, PlugIcon, SlidersIcon } from './icons';
+import { ExportPreferencesSection } from './ExportPreferences';
+import { ArrowLeftIcon, DatabaseIcon, DownloadIcon, FileIcon, GridIcon, PlugIcon, SlidersIcon } from './icons';
 import { HubData } from './HubData';
 import { AgentIntegrations, CodeBlock } from './Integrations';
 import { type ConfigSection } from './routes';
@@ -160,6 +161,7 @@ const SECCIONES: { id: ConfigSection; label: string; icon: ReactNode }[] = [
   { id: 'general', label: 'General', icon: <SlidersIcon /> },
   { id: 'lienzo', label: 'Lienzo', icon: <GridIcon /> },
   { id: 'diagramas', label: 'Diagramas', icon: <FileIcon /> },
+  { id: 'exportacion', label: 'Exportación', icon: <DownloadIcon /> },
   { id: 'hub', label: 'Hub y datos', icon: <DatabaseIcon /> },
   { id: 'mcp', label: 'Conexiones MCP', icon: <PlugIcon /> },
 ];
@@ -205,6 +207,8 @@ export function ConfigScreen({ origin, agents, hub, section, onSection, onBack }
           <Lienzo />
         ) : section === 'diagramas' ? (
           <DiagramPreferences />
+        ) : section === 'exportacion' ? (
+          <ExportPreferencesSection />
         ) : section === 'hub' ? (
           <HubData />
         ) : (

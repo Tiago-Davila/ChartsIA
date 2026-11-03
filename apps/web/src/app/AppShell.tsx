@@ -51,6 +51,7 @@ export interface AppShellProps {
   onRenameDiagram(diagramId: string, title: string): void;
   onDeleteDiagram(diagramId: string): void;
   onExport(format: ExportFormat): void;
+  defaultExportFormat?: ExportFormat;
   onImportImages?(files: File[], screenPosition?: { x: number; y: number }): void;
   onAddFigure?(key: string, screenPosition: { x: number; y: number }): void;
   /** Doble clic en la barra: agrega la figura centrada en el centro de la vista. */
@@ -168,6 +169,7 @@ export function AppShell(props: AppShellProps) {
             revision={diagram.revision}
             disabled={props.readOnly}
             onExport={props.onExport}
+            defaultFormat={props.defaultExportFormat}
             onRename={props.onRename}
             onAlign={props.readOnly ? undefined : props.onAlign}
             changedIds={props.changedIds}

@@ -51,6 +51,11 @@ export function UploadIcon() {
   return <Icon><path d="M12 15V4M7 9l5-5 5 5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" /></Icon>;
 }
 
+/** Flecha hacia abajo sobre una bandeja, para exportar. */
+export function DownloadIcon() {
+  return <Icon><path d="M12 4v11M7 10l5 5 5-5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" /></Icon>;
+}
+
 /** Panel lateral, para el botón "Vista" que oculta o muestra la barra. */
 export function SidebarIcon() {
   return <Icon><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16" /></Icon>;
