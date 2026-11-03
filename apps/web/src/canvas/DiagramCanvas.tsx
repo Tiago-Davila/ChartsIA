@@ -19,6 +19,7 @@ import {
 } from '@xyflow/react';
 import { type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { DRAWING_DEFAULT_COLOR, DRAWING_WIDTH_PX, HIGHLIGHTER_DEFAULT_COLOR, HIGHLIGHTER_OPACITY, HIGHLIGHTER_WIDTH_PX, type Point, type StackOrderTarget, type StyleLineWidth } from '@chartsia/core/model';
+import { useCanvasPreferences } from '../app/canvas-preferences';
 import { BucketIcon, FrameToolIcon, HandIcon, HighlighterIcon, PenToolIcon, PointerIcon, TextToolIcon } from '../app/icons';
 import { JellyRadio, type JellyRadioItem } from '../app/JellyRadio';
 import { edgeTypes } from '../edges';
@@ -123,6 +124,7 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
   // Elemento o flecha sobre el que se abrió el menú, para "Copiar estilo".
   const menuTarget = useRef<{ id: string; relation: boolean }>(undefined);
   const { zoom } = useViewport();
+  const preferences = useCanvasPreferences();
   const initialized = useNodesInitialized();
   const canvas = useRef<HTMLDivElement>(null);
   const activePointer = useRef<number | undefined>(undefined);
@@ -171,12 +173,12 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
     clearFrame();
     setTool('select');
   }, [diagramId, clearFrame]);
-  // Al abrir otro diagrama se encuadra completo, cuando React Flow ya midió sus nodos.
+  // Al abrir otro diagrama se encuadra completo (o al 100 %, centrado), cuando React Flow ya midió sus nodos.
   useEffect(() => {
     if (!initialized || fittedFor.current === diagramId) return;
     fittedFor.current = diagramId;
-    void fitView(FIT_VIEW_OPTIONS);
-  }, [initialized, diagramId, fitView]);
+    void fitView(preferences.onOpen === 'actual' ? { ...FIT_VIEW_OPTIONS, minZoom: 1, maxZoom: 1 } : FIT_VIEW_OPTIONS);
+  }, [initialized, diagramId, fitView, preferences.onOpen]);
 
   // Convierte una muestra de pantalla al lienzo y la conserva para la vista previa.
   const addSample = useCallback((event: ReactPointerEvent<HTMLDivElement>, force = false) => {
@@ -416,11 +418,13 @@ export function DiagramCanvas({ diagramId, nodes: incomingNodes, edges: incoming
           deleteKeyCode={readOnly ? null : ['Delete', 'Backspace']}
           minZoom={0.05}
           maxZoom={4}
+          snapToGrid={preferences.snapToGrid}
+          snapGrid={[preferences.gridSize, preferences.gridSize]}
           proOptions={PRO_OPTIONS}
         >
-          <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
-          <MiniMap pannable zoomable nodeColor={nodeColor} nodeStrokeColor="#9aa5b1" style={MINIMAP_STYLE} />
-          <Controls showInteractive={false} />
+          {preferences.grid ? <Background variant={BackgroundVariant.Dots} gap={preferences.gridSize} size={1} /> : null}
+          {preferences.minimap ? <MiniMap pannable zoomable nodeColor={nodeColor} nodeStrokeColor="#9aa5b1" style={MINIMAP_STYLE} /> : null}
+          {preferences.zoomControls ? <Controls showInteractive={false} /> : null}
           {readOnly ? null : <SelectionPanel nodes={nodes} edges={edges} editingEdge={editingEdge} onEditEdge={setEditingEdge} />}
           {readOnly ? null : (
             <Panel position="top-center" className="drawing-tool nodrag nopan">

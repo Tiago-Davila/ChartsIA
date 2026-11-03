@@ -66,6 +66,11 @@ export function SlidersIcon() {
   return <Icon><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" /><circle cx="16" cy="6" r="2" /><circle cx="10" cy="12" r="2" /><circle cx="18" cy="18" r="2" /></Icon>;
 }
 
+/** Cuadrícula de las preferencias del lienzo. */
+export function GridIcon() {
+  return <Icon><path d="M4 4h16v16H4zM4 12h16M12 4v16" /></Icon>;
+}
+
 /** Enchufe de las conexiones MCP. */
 export function PlugIcon() {
   return <Icon><path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4" /></Icon>;

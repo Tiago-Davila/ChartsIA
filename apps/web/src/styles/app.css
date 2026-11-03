@@ -1394,6 +1394,13 @@ button:disabled,
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
+.toast--info {
+  background: var(--surface);
+  border-color: var(--border);
+}
+.toast--info .toast__title {
+  color: var(--text);
+}
 .toast__title {
   display: flex;
   justify-content: space-between;

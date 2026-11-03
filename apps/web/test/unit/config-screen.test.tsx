@@ -4,13 +4,14 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AGENTS, mcpUrlParaAgentes, promptInstalacion } from '../../src/app/agents';
+import { DEFAULT_CANVAS_PREFERENCES, canvasPreferences, setCanvasPreferences } from '../../src/app/canvas-preferences';
 import { ConfigScreen } from '../../src/app/ConfigScreen';
 import { type ConnectedAgent, type HubInfo } from '../../src/state/api-client';
 
 const origin = 'http://127.0.0.1:24278';
 let agents: ConnectedAgent[] = [];
 let hub: HubInfo | null = null;
-const renderScreen = (section: 'general' | 'mcp' = 'mcp', onSection = vi.fn()) =>
+const renderScreen = (section: 'general' | 'lienzo' | 'mcp' = 'mcp', onSection = vi.fn()) =>
   render(<ConfigScreen origin={origin} agents={agents} hub={hub} section={section} onSection={onSection} onBack={vi.fn()} />);
 
 /** Abre la ventana de conexión de un agente desde su tarjeta. */
@@ -23,6 +24,7 @@ describe('ConfigScreen', () => {
   afterEach(() => {
     agents = [];
     hub = null;
+    setCanvasPreferences(DEFAULT_CANVAS_PREFERENCES);
     localStorage.clear();
     delete document.documentElement.dataset.theme;
     vi.unstubAllGlobals();
@@ -65,6 +67,40 @@ describe('ConfigScreen', () => {
     for (const fn of oyentes) fn();
     expect(document.documentElement.dataset.theme).toBe('dark');
     expect(localStorage.getItem('chartsia.theme')).toBe('system');
+  });
+
+  it('Lienzo está en la barra y sus opciones empiezan con los valores por defecto', () => {
+    renderScreen('lienzo');
+    expect(within(screen.getByRole('list', { name: 'Secciones' })).getByRole('button', { name: 'Lienzo' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('region', { name: 'Lienzo' })).toBeInTheDocument();
+    const marcadas: [string, string][] = [
+      ['Cuadrícula', 'Mostrar'],
+      ['Tamaño de la cuadrícula', '20 px'],
+      ['Ajustar a la cuadrícula al mover', 'No'],
+      ['Minimapa', 'Mostrar'],
+      ['Controles de zoom', 'Mostrar'],
+      ['Al abrir un diagrama', 'Ajustar a la pantalla'],
+      ['Animaciones', 'Según el sistema'],
+      ['Cuando el agente cambia el diagrama', 'Abrirlo automáticamente'],
+    ];
+    for (const [leyenda, opcion] of marcadas) expect(within(screen.getByRole('group', { name: leyenda })).getByRole('radio', { name: opcion })).toBeChecked();
+  });
+
+  it.each([
+    ['Cuadrícula', 'Ocultar', { grid: false }],
+    ['Tamaño de la cuadrícula', '40 px', { gridSize: 40 }],
+    ['Ajustar a la cuadrícula al mover', 'Sí', { snapToGrid: true }],
+    ['Minimapa', 'Ocultar', { minimap: false }],
+    ['Controles de zoom', 'Ocultar', { zoomControls: false }],
+    ['Al abrir un diagrama', 'Mostrar al 100 %', { onOpen: 'actual' }],
+    ['Animaciones', 'Reducidas', { animations: 'reduced' }],
+    ['Cuando el agente cambia el diagrama', 'Solo mostrar un aviso', { onAgentChange: 'notice' }],
+  ])('en Lienzo, "%s" → "%s" se aplica al instante y se guarda', async (leyenda, opcion, esperado) => {
+    renderScreen('lienzo');
+    await userEvent.click(within(screen.getByRole('group', { name: leyenda })).getByRole('radio', { name: opcion }));
+    expect(within(screen.getByRole('group', { name: leyenda })).getByRole('radio', { name: opcion })).toBeChecked();
+    expect(canvasPreferences()).toMatchObject(esperado);
+    expect(JSON.parse(localStorage.getItem('chartsia.canvas')!)).toMatchObject(esperado);
   });
 
   it('muestra versión, puerto, URL del MCP y carpeta de datos del hub', () => {
