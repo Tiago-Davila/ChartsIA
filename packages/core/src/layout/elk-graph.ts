@@ -12,23 +12,27 @@ const DIRECTIONS = { down: 'DOWN', right: 'RIGHT' } as const;
 const ELEMENT_GAPS = { compact: 30, normal: 60, wide: 100 } as const;
 const LAYER_GAPS = { compact: 40, normal: 80, wide: 130 } as const;
 
+/** Espacio extra entre capas de un flujo, para que quepan las etiquetas de sus conexiones. */
+const FLOW_EXTRA_LAYER_GAP = 60;
+
 /** Espaciado de las preferencias: también se aplica a cada grupo, porque ELK no lo hereda de la raíz. */
-function spacingOptions(prefs: Preferences): Record<string, string> {
+function spacingOptions(prefs: Preferences, type: Diagram['type']): Record<string, string> {
   return {
     'elk.spacing.nodeNode': String(ELEMENT_GAPS[prefs.elementSpacing]),
-    'elk.layered.spacing.nodeNodeBetweenLayers': String(LAYER_GAPS[prefs.layerSpacing]),
+    'elk.layered.spacing.nodeNodeBetweenLayers': String(LAYER_GAPS[prefs.layerSpacing] + (type === 'flow' ? FLOW_EXTRA_LAYER_GAP : 0)),
     'elk.spacing.edgeNode': '30',
   };
 }
 
-function baseOptions(prefs: Preferences): Record<string, string> {
+/** Un flujo siempre va de izquierda a derecha, porque sus nodos tienen la entrada a la izquierda y la salida a la derecha. */
+function baseOptions(prefs: Preferences, type: Diagram['type']): Record<string, string> {
   return {
     'elk.algorithm': 'layered',
-    'elk.direction': DIRECTIONS[prefs.direction],
+    'elk.direction': DIRECTIONS[type === 'flow' ? 'right' : prefs.direction],
     'elk.hierarchyHandling': 'INCLUDE_CHILDREN',
     'elk.edgeRouting': 'ORTHOGONAL',
     'elk.randomSeed': '1',
-    ...spacingOptions(prefs),
+    ...spacingOptions(prefs, type),
     'elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
     'elk.layered.nodePlacement.strategy': 'BRANDES_KOEPF',
     'elk.padding': '[top=30,left=30,bottom=30,right=30]',
@@ -59,7 +63,7 @@ export interface ElkInput {
  */
 export function buildElkGraph({ diagram, sizes, seeds }: ElkInput): ElkNode {
   const prefs = diagram.preferences ?? DEFAULT_PREFERENCES;
-  const spacing = spacingOptions(prefs);
+  const spacing = spacingOptions(prefs, diagram.type);
   const elements = [...diagram.elements].sort(byId);
   const ids = new Set(elements.map((e) => e.id));
   const nodes = new Map<string, ElkNode>();
@@ -78,7 +82,7 @@ export function buildElkGraph({ diagram, sizes, seeds }: ElkInput): ElkNode {
     }
     nodes.set(el.id, node);
   }
-  const root: ElkNode = { id: '__root__', layoutOptions: { ...baseOptions(prefs), ...(seeds ? INTERACTIVE_OPTIONS : {}) }, children: [] };
+  const root: ElkNode = { id: '__root__', layoutOptions: { ...baseOptions(prefs, diagram.type), ...(seeds ? INTERACTIVE_OPTIONS : {}) }, children: [] };
   for (const el of elements) {
     const parent = el.parentId && ids.has(el.parentId) ? nodes.get(el.parentId)! : root;
     const node = nodes.get(el.id)!;

@@ -1,5 +1,6 @@
 import { type Cardinality } from '../../model/enums.js';
 import { type Relation } from '../../model/relation.js';
+import { FLOW_EDGE_STYLES } from '../flow/edge.js';
 import { strokeWidthOf } from '../style.js';
 import { type Point } from '../../model/common.js';
 import { COLORS, type Primitive } from '../types.js';
@@ -32,7 +33,7 @@ const DASH = [6, 4];
  * "todo", que en el modelo es `source` (p. ej. Pedido ◆— LineaPedido).
  */
 export function relationStyle(
-  rel: Pick<Relation, 'kind' | 'navigable' | 'sourceCardinality' | 'targetCardinality' | 'identifying' | 'arrowheads' | 'dashed' | 'style'>,
+  rel: Pick<Relation, 'kind' | 'navigable' | 'sourceCardinality' | 'targetCardinality' | 'identifying' | 'arrowheads' | 'dashed' | 'flowType' | 'style'>,
 ): RelationStyle {
   const base = defaultRelationStyle(rel);
   return {
@@ -43,7 +44,7 @@ export function relationStyle(
   };
 }
 
-function defaultRelationStyle(rel: Pick<Relation, 'kind' | 'navigable' | 'sourceCardinality' | 'targetCardinality' | 'identifying' | 'arrowheads' | 'dashed'>): Omit<RelationStyle, 'width'> {
+function defaultRelationStyle(rel: Pick<Relation, 'kind' | 'navigable' | 'sourceCardinality' | 'targetCardinality' | 'identifying' | 'arrowheads' | 'dashed' | 'flowType'>): Omit<RelationStyle, 'width'> {
   switch (rel.kind) {
     case 'inheritance':
       return { color: COLORS.edge, end: 'triangle-hollow' };
@@ -62,6 +63,8 @@ function defaultRelationStyle(rel: Pick<Relation, 'kind' | 'navigable' | 'source
       return { color: '#707070', dash: DASH, end: 'arrow-filled' };
     case 'nosql-rel':
       return { color: COLORS.edge, end: 'arrow-filled' };
+    case 'flow-edge':
+      return FLOW_EDGE_STYLES[rel.flowType ?? 'call'];
     case 'er-attr':
       return { color: COLORS.edge };
     case 'connector': {

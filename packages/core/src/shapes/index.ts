@@ -1,6 +1,9 @@
 export * from './c4/legend.js';
 export * from './c4/palette.js';
 export { cloudPoints, figureOutline, figureTextArea, figureTextLines } from './general/figure.js';
+export { flowIconPrimitives } from './flow/icons.js';
+export { flowBadge } from './flow/node.js';
+export { FLOW_PALETTE } from './flow/palette.js';
 export { FRAME_PADDING, framePadding } from './general/frame.js';
 export * from './registry.js';
 export * from './style.js';
