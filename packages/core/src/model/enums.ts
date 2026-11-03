@@ -101,6 +101,7 @@ export const ERROR_CODES = [
   'PROJECT_NOT_FOUND',
   'NO_ACTIVE_DIAGRAM',
   'NOTHING_TO_UNDO',
+  'IMPORT_CONFLICT',
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
 

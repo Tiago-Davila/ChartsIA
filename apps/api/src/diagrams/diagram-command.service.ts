@@ -5,6 +5,7 @@ import { type Diagram, DiagramInputSchema, newDiagramId, newProjectId, type Pref
 import { applyOperations } from '@chartsia/core/operations';
 import { DomainValidationError, fromZodError, validateDiagram, validationError } from '@chartsia/core/validation';
 import { APP_CONFIG, type AppConfig } from '../config/config.js';
+import { type BackupImportResult, BackupSchema, type ConflictPolicy } from './backup.js';
 import { DiagramEvents, type Origin } from './diagram-events.js';
 import { DiagramHistory, type HistoryDirection } from './diagram-history.js';
 import { DiagramQueryService, notFound, projectNotFound } from './diagram-query.service.js';
@@ -195,6 +196,69 @@ export class DiagramCommandService {
       if (projectId !== null) await this.requireProject(projectId);
       await this.repo.setDiagramProject(diagramId, projectId);
       await this.emitProjects();
+    });
+  }
+
+  /**
+   * Importa un respaldo todo o nada. Los proyectos que ya existen se conservan; un diagrama con
+   * un id que ya existe obliga a elegir `replace` o `skip`, y sin esa elección no se escribe nada.
+   */
+  importBackup(input: unknown, onConflict?: ConflictPolicy): Promise<BackupImportResult> {
+    return this.lock.run(PROJECTS_KEY, async () => {
+      const parsed = BackupSchema.safeParse(input);
+      if (!parsed.success) throw new DomainValidationError(fromZodError(parsed.error, '/backup'));
+      const backup = parsed.data;
+      const existing = new Map((await this.repo.list()).map((s) => [s.diagramId, s]));
+      const conflicts = backup.diagrams.flatMap(({ diagram }, i) => {
+        const current = existing.get(diagram.id);
+        return current
+          ? [validationError('IMPORT_CONFLICT', `/backup/diagrams/${i}/diagram/id`, `El diagrama "${diagram.id}" ya existe como "${current.title}" (en el archivo se llama "${diagram.title}").`, 'Vuelve a importar con onConflict "replace" para reemplazarlo o "skip" para dejar el actual.')]
+          : [];
+      });
+      if (conflicts.length > 0 && !onConflict) throw new DomainValidationError(conflicts);
+
+      const result: BackupImportResult = { imported: 0, replaced: 0, skipped: 0, projectsCreated: 0 };
+      const undo: (() => Promise<void>)[] = [];
+      const known = new Set((await this.repo.listProjects()).map((p) => p.id));
+      const saved: { diagram: Diagram; replaced: boolean }[] = [];
+      try {
+        for (const project of backup.projects.filter((p) => !known.has(p.id))) {
+          await this.repo.saveProject(project);
+          undo.push(() => this.repo.deleteProject(project.id));
+          result.projectsCreated++;
+        }
+        for (const { diagram, projectId } of backup.diagrams) {
+          const current = existing.get(diagram.id);
+          if (current && onConflict === 'skip') {
+            result.skipped++;
+            continue;
+          }
+          const before = current ? await this.repo.get(diagram.id) : undefined;
+          // Un diagrama reemplazado sube de revisión para que las apps abiertas lo recarguen.
+          const written = before ? { ...diagram, revision: Math.max(diagram.revision, before.revision) + 1 } : diagram;
+          await this.repo.save(written);
+          undo.push(before ? () => this.repo.save(before) : () => this.repo.delete(diagram.id));
+          if (before) undo.push(() => this.repo.setDiagramProject(diagram.id, current?.projectId ?? null));
+          await this.repo.setDiagramProject(diagram.id, projectId ?? null);
+          saved.push({ diagram: written, replaced: before !== undefined });
+          if (before) result.replaced++;
+          else result.imported++;
+        }
+      } catch (error) {
+        for (const step of undo.reverse()) await step().catch(() => undefined);
+        throw error;
+      }
+
+      for (const { diagram, replaced } of saved) {
+        if (replaced) {
+          this.history.forget(diagram.id);
+          this.events.emit({ name: 'diagram.updated', payload: { diagramId: diagram.id, revision: diagram.revision, origin: 'app', diagram } });
+        } else {
+          this.events.emit({ name: 'diagram.created', payload: { diagramId: diagram.id, title: diagram.title, type: diagram.type } });
+        }
+      }
+      await this.emitProjects();
+      return result;
     });
   }
 

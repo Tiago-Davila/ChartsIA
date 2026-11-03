@@ -7,11 +7,13 @@ import { DiagramEvents, type DiagramEvent } from '../../src/diagrams/diagram-eve
 import { DiagramQueryService } from '../../src/diagrams/diagram-query.service.js';
 import { DiagramLock } from '../../src/diagrams/persistence/diagram-lock.js';
 import { InMemoryDiagramRepository } from '../../src/diagrams/persistence/in-memory.repository.js';
+import { HubSettingsService } from '../../src/config/hub-settings.service.js';
 import { PreferencesService } from '../../src/diagrams/preferences.service.js';
 
 /** Servicios de aplicación cableados a mano con repositorio en memoria y reloj fijo. */
 export function createServices(overrides: { maxElements?: number } = {}) {
-  const config = { ...loadConfig({}), ...overrides, configFile: join(mkdtempSync(join(tmpdir(), 'chartsia-config-')), 'config.json') };
+  const configFile = join(mkdtempSync(join(tmpdir(), 'chartsia-config-')), 'config.json');
+  const config = { ...loadConfig({ CHARTSIA_CONFIG_FILE: configFile }), ...overrides };
   const repo = new InMemoryDiagramRepository();
   const events = new DiagramEvents();
   const emitted: DiagramEvent[] = [];
@@ -24,7 +26,8 @@ export function createServices(overrides: { maxElements?: number } = {}) {
   const lock = new DiagramLock();
   const preferences = new PreferencesService(config, lock);
   const commands = new DiagramCommandService(repo, lock, events, query, config, preferences, clock, ids);
-  return { config, repo, events, emitted, query, commands, preferences };
+  const hubSettings = new HubSettingsService(config, undefined, lock);
+  return { config, repo, events, emitted, query, commands, preferences, hubSettings };
 }
 
 export const libraryInput = {

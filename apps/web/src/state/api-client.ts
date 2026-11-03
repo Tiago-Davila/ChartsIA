@@ -32,6 +32,31 @@ export interface HubInfo {
   dataDir: string;
 }
 
+/** De dónde sale un valor del hub: variable de entorno, `config.json` o el valor por defecto. */
+export type ValueSource = 'env' | 'file' | 'default';
+
+/** Configuración del hub; `running` es lo que usa el hub ahora y `value` lo que usará tras reiniciar. */
+export interface HubSettings {
+  dataDir: { value: string; source: ValueSource; running: string };
+  maxElements: { value: number; source: ValueSource };
+  network: { value: boolean; source: ValueSource; running: boolean };
+  token: { value: string | null; source: ValueSource };
+  restartRequired: boolean;
+}
+
+export interface HubSettingsChanges {
+  dataDir?: string | null;
+  maxElements?: number | null;
+  network?: boolean;
+}
+
+export interface BackupImportResult {
+  imported: number;
+  replaced: number;
+  skipped: number;
+  projectsCreated: number;
+}
+
 export interface DiagramListResponse {
   activeDiagramId: string | null;
   diagrams: DiagramSummary[];
@@ -98,6 +123,16 @@ export function createApiClient({ baseUrl = '', getToken, fetch: fetchImpl = (..
       json<{ diagramId: string; revision: number; viewUrl: string; counts: { elements: number; relations: number }; warnings: string[] }>('/api/diagrams/import-drawio', { method: 'POST', body: JSON.stringify(body) }),
     listAgents: async () => (await json<{ agents: ConnectedAgent[] }>('/api/agents')).agents,
     getHub: () => json<HubInfo>('/api/hub'),
+    getHubSettings: () => json<HubSettings>('/api/hub/config'),
+    setHubSettings: (changes: HubSettingsChanges) => json<HubSettings>('/api/hub/config', { method: 'PUT', body: JSON.stringify(changes) }),
+    regenerateToken: () => json<HubSettings>('/api/hub/token', { method: 'POST' }),
+    downloadBackup: async () => {
+      const res = await request('/api/backup');
+      const filename = /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') ?? '')?.[1] ?? 'chartsia-respaldo.json';
+      return { blob: await res.blob(), filename };
+    },
+    importBackup: (backup: unknown, onConflict?: 'replace' | 'skip') =>
+      json<BackupImportResult>('/api/backup/import', { method: 'POST', body: JSON.stringify({ backup, ...(onConflict ? { onConflict } : {}) }) }),
     getPreferences: () => json<Preferences>('/api/preferences'),
     setPreferences: (changes: PreferenceChanges) => json<Preferences>('/api/preferences', { method: 'PUT', body: JSON.stringify(changes) }),
     getExportPreferences: () => json<ExportPreferences>('/api/preferences/export'),

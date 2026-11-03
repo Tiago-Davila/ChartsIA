@@ -1532,6 +1532,12 @@ button:disabled,
 .config__datos dt { color: var(--text-muted); }
 .config__datos dd { margin: 0; }
 .config__nota { margin: 0; font-size: 14px; color: var(--text-muted); }
+/* Hub y datos: etiqueta, fila de campo con botón, aviso de reinicio y lista de conflictos. */
+.config__label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 600; }
+.config__fila { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.config__fila input[type='text'], .config__fila input[type='number'] { flex: 1 1 280px; padding: 6px 8px; font-size: 14px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
+.config__aviso { margin: 0 0 16px; padding: 8px 12px; font-size: 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-muted); }
+.config__conflictos { margin: 0 0 12px; padding-left: 20px; font-size: 13px; }
 /* Paleta por tipo de elemento: nombre, tres selectores de color y el botón para quitarlos. */
 .config__paleta { display: grid; gap: 6px; margin: 8px 0 0; padding: 0; list-style: none; font-size: 14px; }
 .config__paleta li { display: grid; grid-template-columns: minmax(120px, 1fr) repeat(3, 40px) auto; gap: 8px; align-items: center; }

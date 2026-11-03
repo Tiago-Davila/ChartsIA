@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { AgentsModule } from '../agents/agents.module.js';
+import { HealthModule } from '../health/health.module.js';
 import { DiagramsModule } from '../diagrams/diagrams.module.js';
 import { McpServerFactory } from './mcp-server.factory.js';
 import { McpController } from './mcp.controller.js';
 import { ToolResultFormatter } from './tool-result.js';
 
 @Module({
-  imports: [DiagramsModule, AgentsModule],
+  imports: [DiagramsModule, AgentsModule, HealthModule],
   controllers: [McpController],
   providers: [McpServerFactory, ToolResultFormatter],
   exports: [McpServerFactory],

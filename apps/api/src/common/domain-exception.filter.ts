@@ -8,6 +8,7 @@ const STATUS_BY_CODE: Partial<Record<ValidationError['code'], number>> = {
   NO_ACTIVE_DIAGRAM: HttpStatus.NOT_FOUND,
   PROJECT_NOT_FOUND: HttpStatus.NOT_FOUND,
   NOTHING_TO_UNDO: HttpStatus.CONFLICT,
+  IMPORT_CONFLICT: HttpStatus.CONFLICT,
 };
 
 type BodyParserError = { type?: string; limit?: number };
