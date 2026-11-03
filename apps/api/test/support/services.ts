@@ -22,8 +22,9 @@ export function createServices(overrides: { maxElements?: number } = {}) {
   const ids = () => `dg_${'abcdefghijklmnopqrstuvwxyz'[seq++ % 26]!.repeat(12)}`;
   const query = new DiagramQueryService(repo);
   const lock = new DiagramLock();
-  const commands = new DiagramCommandService(repo, lock, events, query, config, new PreferencesService(config, lock), clock, ids);
-  return { config, repo, events, emitted, query, commands };
+  const preferences = new PreferencesService(config, lock);
+  const commands = new DiagramCommandService(repo, lock, events, query, config, preferences, clock, ids);
+  return { config, repo, events, emitted, query, commands, preferences };
 }
 
 export const libraryInput = {

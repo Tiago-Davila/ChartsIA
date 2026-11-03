@@ -183,6 +183,11 @@ function ConnectedApp() {
     [edits.rename],
   );
 
+  const [defaultExportFormat, setDefaultExportFormat] = useState<ExportFormat>();
+  useEffect(() => {
+    api.getExportPreferences().then((prefs) => setDefaultExportFormat(prefs.format)).catch(() => undefined);
+  }, [route.name]);
+
   const onExport = useCallback(async (format: ExportFormat) => {
     const current = diagramStore.getState().diagram;
     if (!current) return;
@@ -252,6 +257,7 @@ function ConnectedApp() {
           onRenameDiagram={onRenameDiagram}
           onDeleteDiagram={onDeleteDiagram}
           onExport={onExport}
+          defaultExportFormat={defaultExportFormat}
           onImportImages={edits.insertImages}
           onAddFigure={edits.addFigure}
           onAddFigureAtCenter={edits.addFigureAtCenter}

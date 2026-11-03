@@ -1,11 +1,21 @@
 import { Controller, Get, Param, Query, Res } from '@nestjs/common';
 import { type Response } from 'express';
-import { z } from 'zod';
-import { EXPORT_FORMATS } from '@chartsia/core/export';
+import { ExportPreferenceChangesSchema } from '@chartsia/core/export';
 import { DomainValidationError, fromZodError } from '@chartsia/core/validation';
 import { ExportService } from './export.service.js';
 
-const ExportQuerySchema = z.object({ format: z.enum(EXPORT_FORMATS) });
+/** Toma de la query solo las opciones de exportación y pasa "10" a número y "true" a booleano. */
+function exportOptionsFrom(query: unknown): Record<string, unknown> {
+  const values = (query ?? {}) as Record<string, unknown>;
+  return Object.fromEntries(
+    Object.keys(ExportPreferenceChangesSchema.shape)
+      .filter((key) => key in values)
+      .map((key) => {
+        const value = values[key];
+        return [key, value === 'true' ? true : value === 'false' ? false : typeof value === 'string' && value !== '' && !Number.isNaN(Number(value)) ? Number(value) : value];
+      }),
+  );
+}
 
 @Controller('api/diagrams')
 export class ExportController {
@@ -13,9 +23,10 @@ export class ExportController {
 
   @Get(':id/export')
   async export(@Param('id') id: string, @Query() query: unknown, @Res() res: Response): Promise<void> {
-    const parsed = ExportQuerySchema.safeParse(query);
+    const parsed = ExportPreferenceChangesSchema.safeParse(exportOptionsFrom(query));
     if (!parsed.success) throw new DomainValidationError(fromZodError(parsed.error, '/query'));
-    const out = await this.exports.export({ diagramId: id, ...parsed.data });
+    const { format, ...settings } = parsed.data;
+    const out = await this.exports.export({ diagramId: id, format, settings });
     res
       .status(200)
       .setHeader('Content-Type', `${out.mimeType}; charset=utf-8`)

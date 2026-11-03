@@ -1,4 +1,4 @@
-import { type ExportFormat } from '@chartsia/core/export';
+import { type ExportFormat, type ExportPreferenceChanges, type ExportPreferences } from '@chartsia/core/export';
 import { type Diagram, type DiagramType, type Operation, type PreferenceChanges, type Preferences } from '@chartsia/core/model';
 import { type ValidationError } from '@chartsia/core/validation';
 
@@ -100,6 +100,8 @@ export function createApiClient({ baseUrl = '', getToken, fetch: fetchImpl = (..
     getHub: () => json<HubInfo>('/api/hub'),
     getPreferences: () => json<Preferences>('/api/preferences'),
     setPreferences: (changes: PreferenceChanges) => json<Preferences>('/api/preferences', { method: 'PUT', body: JSON.stringify(changes) }),
+    getExportPreferences: () => json<ExportPreferences>('/api/preferences/export'),
+    setExportPreferences: (changes: ExportPreferenceChanges) => json<ExportPreferences>('/api/preferences/export', { method: 'PUT', body: JSON.stringify(changes) }),
     getDiagram: (diagramId: string) => json<Diagram>(`/api/diagrams/${id(diagramId)}`),
     applyOperations: (diagramId: string, body: { baseRevision?: number; operations: Operation[] }) =>
       json<ApplyResponse>(`/api/diagrams/${id(diagramId)}/operations`, { method: 'POST', body: JSON.stringify(body) }),
