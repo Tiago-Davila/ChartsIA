@@ -149,8 +149,8 @@ describe('barra de figuras', () => {
     const seccion = (title: string) => secciones.find((s) => s.title === title)!;
     const claveDe = (title: string) => seccion(title).items.map((i) => i.key);
 
-    it('las secciones van en el orden Clases, C4, ER, NoSQL y Figuras generales', () => {
-      expect(secciones.map((s) => s.title)).toEqual(['Clases', 'C4', 'ER', 'NoSQL', 'Figuras generales']);
+    it('las secciones van en el orden Clases, C4, ER, NoSQL, Flujo y Figuras generales', () => {
+      expect(secciones.map((s) => s.title)).toEqual(['Clases', 'C4', 'ER', 'NoSQL', 'Flujo', 'Figuras generales']);
     });
 
     it('cada figura de la barra está en exactamente una sección', () => {
@@ -163,6 +163,7 @@ describe('barra de figuras', () => {
       expect(claveDe('Clases')).toEqual(['class', 'interface', 'enum', 'package']);
       expect(claveDe('C4')).toEqual(['person', 'software-system', 'container', 'component', 'boundary']);
       expect(claveDe('NoSQL')).toEqual(['collection']);
+      expect(claveDe('Flujo')).toEqual(['flow-trigger', 'flow-component', 'flow-file', 'flow-method', 'flow-service', 'flow-database', 'flow-queue', 'flow-decision', 'flow-external']);
       expect(claveDe('ER')).toEqual(expect.arrayContaining(['entity', 'entity-weak', 'table', 'attribute-composite', 'value-list', 'relationship', 'specialization']));
     });
 
@@ -173,7 +174,7 @@ describe('barra de figuras', () => {
       }
     });
 
-    const primeraDe: Record<DiagramType, string> = { class: 'Clases', 'c4-context': 'C4', 'c4-container': 'C4', 'c4-component': 'C4', er: 'ER', nosql: 'NoSQL' };
+    const primeraDe: Record<DiagramType, string> = { class: 'Clases', 'c4-context': 'C4', 'c4-container': 'C4', 'c4-component': 'C4', er: 'ER', nosql: 'NoSQL', flow: 'Flujo' };
     const titulos = secciones.map((s) => s.title);
 
     it.each(DIAGRAM_TYPES)('en un diagrama %s la sección de su tipo va primera y las demás siguen en su orden', (tipo) => {

@@ -1,4 +1,4 @@
-import { type Attribute, type Element, type ElementChanges, type Method } from '@chartsia/core/model';
+import { type Attribute, type Element, type ElementChanges, FLOW_VARIANTS, type FlowVariant, type Method } from '@chartsia/core/model';
 
 const VISIBILITY = /^\s*([+\-#~])?\s*/;
 
@@ -45,7 +45,8 @@ export function parseMethod(text: string, previous?: Method): Method | undefined
 
 /** Valor editable de un slot (la descripción completa, no solo la línea visible). */
 export function slotValue(element: Element, slot: string, shown: string): string {
-  if (slot === 'name' && element.kind === 'figure') return element.name; // el nombre se muestra partido en líneas
+  if (slot === 'name' && (element.kind === 'figure' || element.kind === 'flow-node')) return element.name; // el nombre se muestra partido en líneas
+  if (slot === 'subtitle' && element.kind === 'flow-node') return element.subtitle ?? '';
   if (slot === 'description' && 'description' in element && element.description) return element.description;
   if (slot === 'stereotype') return shown.replace(/^«|»$/g, '');
   if (slot === 'type' && 'technology' in element) return element.technology ?? '';
@@ -64,6 +65,10 @@ export function changesForSlot(element: Element, slot: string, value: string): E
       return { name: value };
     case 'description':
       return { description: value };
+    case 'subtitle':
+      return element.kind === 'flow-node' ? { subtitle: value.trim() || null } : undefined;
+    case 'variant':
+      return element.kind === 'flow-node' && (FLOW_VARIANTS as readonly string[]).includes(value) ? { variant: value as FlowVariant } : undefined;
     case 'stereotype':
       return { stereotype: value.replace(/^«|»$/g, '') };
     case 'type':

@@ -1,4 +1,4 @@
-import { type DiagramType } from '@chartsia/core/model';
+import { type DiagramType, type FlowVariant } from '@chartsia/core/model';
 
 export const DIAGRAM_TYPE_LABELS: Record<DiagramType, string> = {
   class: 'Clases',
@@ -7,6 +7,19 @@ export const DIAGRAM_TYPE_LABELS: Record<DiagramType, string> = {
   'c4-component': 'C4 · Componentes',
   er: 'Entidad-relación',
   nosql: 'NoSQL · Documentos',
+  flow: 'Flujo de sistema',
+};
+
+export const FLOW_VARIANT_LABELS: Record<FlowVariant, string> = {
+  component: 'Componente',
+  file: 'Archivo',
+  method: 'Método',
+  service: 'Servicio',
+  database: 'Base de datos',
+  queue: 'Cola',
+  trigger: 'Disparador',
+  decision: 'Decisión',
+  external: 'Externo',
 };
 
 const dateFormat = new Intl.DateTimeFormat('es', { dateStyle: 'short', timeStyle: 'short' });

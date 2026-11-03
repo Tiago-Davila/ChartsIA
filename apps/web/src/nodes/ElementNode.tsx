@@ -35,7 +35,7 @@ function typeSuggester(slot: string): ((text: string, caret: number) => Suggesti
 /**
  * Nodo genérico de un elemento: dibuja la forma del registro del núcleo y permite editar en
  * línea los textos con `slot`. Las aristas usan sus propias rutas, así que los handles solo
- * existen para que React Flow las conecte (invisibles, no conectables).
+ * existen para que React Flow las conecte; en un nodo de flujo son la entrada (izquierda) y la salida (derecha), visibles al pasar el mouse.
  */
 function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<ElementFlowNode>) {
   const { element, uml } = data;
@@ -95,8 +95,8 @@ function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<Elemen
           onRemove={(slot) => removeMember(id, slot)}
         />
       ) : null}
-      <Handle type="target"position={Position.Top} isConnectable={!readOnly} className="chartsia-handle" />
-      <Handle type="source" position={Position.Bottom} isConnectable={!readOnly} className="chartsia-handle" />
+      <Handle type="target" position={element.kind === 'flow-node' ? Position.Left : Position.Top} isConnectable={!readOnly} className="chartsia-handle" />
+      <Handle type="source" position={element.kind === 'flow-node' ? Position.Right : Position.Bottom} isConnectable={!readOnly} className="chartsia-handle" />
       {writing && element.kind === 'text' ? (
         <TextBlockEditor
           value={element.name}

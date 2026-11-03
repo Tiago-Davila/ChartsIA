@@ -7,6 +7,8 @@ import {
   type ElementKind,
   ER_ELEMENT_KINDS,
   FIGURE_ELEMENT_KINDS,
+  FLOW_ELEMENT_KINDS,
+  type FlowVariant,
   type FigureShape,
   NOSQL_ELEMENT_KINDS,
   type Point,
@@ -31,6 +33,11 @@ export interface PaletteItem {
 // Figura general con la forma indicada.
 function figure(shape: FigureShape, label: string, idBase: string): PaletteItem {
   return { key: `figure-${shape}`, label, kind: 'figure', idBase, build: (id, name) => ({ id, name, kind: 'figure', shape }) };
+}
+
+// Nodo de flujo de la variante indicada.
+function flowNode(variant: FlowVariant, label: string, idBase: string): PaletteItem {
+  return { key: `flow-${variant}`, label, kind: 'flow-node', idBase, build: (id, name) => ({ id, name, kind: 'flow-node', variant }) };
 }
 
 /** Todas las figuras que la barra sabe crear, en cualquier tipo de diagrama; las imágenes y los trazos tienen sus propios botones. */
@@ -60,6 +67,15 @@ export const PALETTE_ITEMS: readonly PaletteItem[] = [
   { key: 'specialization', label: 'Especialización disjunta', kind: 'specialization', idBase: 'EspecializacionDisjunta', build: (id, name) => ({ id, name, kind: 'specialization' }) },
   { key: 'specialization-overlapping', label: 'Especialización solapada', kind: 'specialization', idBase: 'EspecializacionSolapada', build: (id, name) => ({ id, name, kind: 'specialization', overlapping: true }) },
   { key: 'collection', label: 'Colección', kind: 'collection', idBase: 'Coleccion', build: (id, name) => ({ id, name, kind: 'collection', fields: [] }) },
+  flowNode('trigger', 'Disparador', 'Disparador'),
+  flowNode('component', 'Componente de flujo', 'ComponenteFlujo'),
+  flowNode('file', 'Archivo', 'Archivo'),
+  flowNode('method', 'Método', 'Metodo'),
+  flowNode('service', 'Servicio', 'Servicio'),
+  flowNode('database', 'Base de datos', 'BaseDeDatos'),
+  flowNode('queue', 'Cola', 'Cola'),
+  flowNode('decision', 'Decisión', 'Decision'),
+  flowNode('external', 'Externo', 'Externo'),
   figure('square', 'Cuadrado', 'Cuadrado'),
   figure('rectangle', 'Rectángulo', 'Rectangulo'),
   figure('circle', 'Círculo', 'Circulo'),
@@ -107,6 +123,7 @@ const SECCIONES: readonly { id: string; title: string; kinds: readonly ElementKi
   { id: 'c4', title: 'C4', kinds: C4_ELEMENT_KINDS },
   { id: 'er', title: 'ER', kinds: ER_ELEMENT_KINDS },
   { id: 'nosql', title: 'NoSQL', kinds: NOSQL_ELEMENT_KINDS },
+  { id: 'flujo', title: 'Flujo', kinds: FLOW_ELEMENT_KINDS },
   { id: 'figuras-generales', title: 'Figuras generales', kinds: FIGURE_ELEMENT_KINDS },
 ];
 
@@ -118,6 +135,7 @@ const SECCION_DE_TIPO: Record<DiagramType, string> = {
   'c4-component': 'c4',
   er: 'er',
   nosql: 'nosql',
+  flow: 'flujo',
 };
 
 /** Reparte PALETTE_ITEMS en las secciones de la barra, cada figura en una sola; la del tipo de diagrama va primero. */

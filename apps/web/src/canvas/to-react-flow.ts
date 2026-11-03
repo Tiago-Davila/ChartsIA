@@ -30,10 +30,16 @@ export function toReactFlow(diagram: Diagram): { nodes: ElementFlowNode[]; edges
       ...(frozen.has(element.id) ? { draggable: false, deletable: false } : {}),
       ...(isGroupKind(element.kind) || isHighlighter(element) ? { zIndex: -1 } : {}),
       data: { element, uml },
-      handles: [
-        { type: 'target', position: Position.Top, x: size.width / 2, y: 0, width: 1, height: 1 },
-        { type: 'source', position: Position.Bottom, x: size.width / 2, y: size.height, width: 1, height: 1 },
-      ],
+      handles:
+        element.kind === 'flow-node'
+          ? [
+              { type: 'target', position: Position.Left, x: 0, y: size.height / 2, width: 1, height: 1 },
+              { type: 'source', position: Position.Right, x: size.width, y: size.height / 2, width: 1, height: 1 },
+            ]
+          : [
+              { type: 'target', position: Position.Top, x: size.width / 2, y: 0, width: 1, height: 1 },
+              { type: 'source', position: Position.Bottom, x: size.width / 2, y: size.height, width: 1, height: 1 },
+            ],
     };
   });
   const edges = diagram.relations
