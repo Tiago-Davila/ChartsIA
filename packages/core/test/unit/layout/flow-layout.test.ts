@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { layoutDiagram, relayoutDiagram } from '../../../src/layout/index.js';
 import { type Diagram, type Element } from '../../../src/model/index.js';
@@ -45,6 +47,13 @@ describe('layout de flujos', () => {
       expect(route[0]).toEqual({ x: source.x + source.width!, y: source.y + source.height! / 2 });
       expect(route[route.length - 1]).toEqual({ x: target.x, y: target.y + target.height! / 2 });
     }
+  });
+
+  it('al agregar un flujo con ramas a un diagrama vacío todas las conexiones avanzan hacia la derecha', async () => {
+    const fixture = JSON.parse(readFileSync(fileURLToPath(new URL('../../golden/fixtures/flow.json', import.meta.url)), 'utf8')) as Pick<Diagram, 'elements' | 'relations'>;
+    const branched: Diagram = { ...diagram, elements: fixture.elements.filter((el) => el.kind !== 'frame').map(({ parentId: _parent, ...el }) => el as Element), relations: fixture.relations };
+    const { diagram: result } = await relayoutDiagram({ ...branched, elements: [], relations: [] }, branched);
+    for (const rel of branched.relations) expect(layoutOf(result, rel.source).x).toBeLessThan(layoutOf(result, rel.target).x);
   });
 
   it('une un nodo con un frame y respeta lo ya colocado en el layout incremental', async () => {
