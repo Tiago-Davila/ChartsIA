@@ -57,7 +57,7 @@ const COLORES = [
 ] as const;
 
 /** Muestra el error del hub en el aviso; sin respuesta del hub, un mensaje genérico. */
-function reportError(error: unknown) {
+export function reportError(error: unknown) {
   const errors =
     error instanceof ApiError && error.errors.length > 0
       ? error.errors

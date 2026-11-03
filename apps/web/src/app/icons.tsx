@@ -71,6 +71,11 @@ export function GridIcon() {
   return <Icon><path d="M4 4h16v16H4zM4 12h16M12 4v16" /></Icon>;
 }
 
+/** Cilindro de la sección Hub y datos. */
+export function DatabaseIcon() {
+  return <Icon><ellipse cx="12" cy="5" rx="8" ry="3" /><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" /></Icon>;
+}
+
 /** Enchufe de las conexiones MCP. */
 export function PlugIcon() {
   return <Icon><path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4" /></Icon>;
