@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { type Diagram, type Project } from '@chartsia/core/model';
 import { DomainValidationError, validationError } from '@chartsia/core/validation';
+import { type Backup, BACKUP_FORMAT } from './backup.js';
 import { DIAGRAM_REPOSITORY, type DiagramRepository, type DiagramSummary } from './persistence/diagram.repository.js';
 
 export interface DiagramList {
@@ -66,6 +67,16 @@ export class DiagramQueryService {
       elements: diagram.elements.map(({ layout: _layout, ...el }) => el),
       relations: diagram.relations.map(({ route: _route, ...rel }) => rel),
     } as Diagram;
+  }
+
+  /** Todos los proyectos y diagramas guardados, listos para escribirse en un archivo de respaldo. */
+  async backup(): Promise<Backup> {
+    const diagrams: Backup['diagrams'] = [];
+    for (const summary of await this.repo.list()) {
+      const diagram = await this.repo.get(summary.diagramId);
+      if (diagram) diagrams.push({ ...(summary.projectId ? { projectId: summary.projectId } : {}), diagram });
+    }
+    return { format: BACKUP_FORMAT, version: 1, exportedAt: new Date().toISOString(), projects: await this.repo.listProjects(), diagrams };
   }
 
   async list(): Promise<DiagramList> {

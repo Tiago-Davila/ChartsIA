@@ -20,6 +20,7 @@ usarla.
 | `chartsia-proyectos` | `create_project`, `move_diagram` |
 | `chartsia-borrar-diagrama` | `delete_diagram` |
 | `chartsia-preferencias` | `set_preferences` |
+| `chartsia-hub` | `get_hub_config` |
 
 ## Instalar y actualizar
 

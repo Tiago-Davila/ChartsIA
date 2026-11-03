@@ -13,6 +13,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { toToolJsonSchema } from '@chartsia/core/model';
 import { fromZodError, isDomainValidationError, validationError } from '@chartsia/core/validation';
+import { HubSettingsService } from '../config/hub-settings.service.js';
 import { DiagramCommandService } from '../diagrams/diagram-command.service.js';
 import { DiagramQueryService } from '../diagrams/diagram-query.service.js';
 import { ExportService } from '../diagrams/export.service.js';
@@ -23,6 +24,7 @@ import { createDiagramTool } from './tools/create-diagram.tool.js';
 import { importMermaidTool } from './tools/import-mermaid.tool.js';
 import { importDrawioTool } from './tools/import-drawio.tool.js';
 import { exportDiagramTool } from './tools/export-diagram.tool.js';
+import { getHubConfigTool } from './tools/get-hub-config.tool.js';
 import { getDiagramTool } from './tools/get-diagram.tool.js';
 import { createProjectTool } from './tools/create-project.tool.js';
 import { moveDiagramTool } from './tools/move-diagram.tool.js';
@@ -49,6 +51,7 @@ const INSTRUCTIONS = [
   'No borres diagramas (delete_diagram) salvo que la persona lo pida: no se puede deshacer.',
   'Para un dibujo hecho en Excalidraw (archivo .excalidraw o elementos copiados) usa import_excalidraw con su JSON.',
   'Las preferencias de diagrama (dirección, espaciado, estilo, detalle UML) se leen y cambian con set_preferences solo si la persona lo pide; valen para los diagramas nuevos.',
+  'get_hub_config solo lee la configuración del hub (carpeta de datos, máximo de elementos); la red y el token los cambia la persona desde la app.',
   'Si una herramienta devuelve isError, lee code, path y hint de cada error, corrige la entrada y vuelve a llamarla.',
 ].join(' ');
 
@@ -68,6 +71,7 @@ export class McpServerFactory {
     query: DiagramQueryService,
     private readonly exports: ExportService,
     private readonly results: ToolResultFormatter,
+    hubSettings: HubSettingsService,
   ) {
     this.query = query;
     this.tools = [
@@ -85,6 +89,7 @@ export class McpServerFactory {
       deleteDiagramTool(commands),
       importExcalidrawTool(commands, results),
       setPreferencesTool(commands),
+      getHubConfigTool(hubSettings),
     ];
     const failure = toToolJsonSchema(FailureSchema);
     this.listing = this.tools.map((tool) => ({

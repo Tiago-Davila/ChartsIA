@@ -11,6 +11,11 @@ export interface TokenState {
   generated: boolean;
 }
 
+/** Token aleatorio y fuerte (256 bits). */
+export function newToken(): string {
+  return randomBytes(32).toString('base64url');
+}
+
 /**
  * Obtiene el token de acceso (FR-030): `CHARTSIA_TOKEN` o, si falta y el hub escucha fuera de
  * loopback, uno aleatorio que se guarda en `CHARTSIA_DATA_DIR/.token` (modo 600) y se
@@ -26,7 +31,7 @@ export async function resolveToken(config: Pick<AppConfig, 'token' | 'dataDir' |
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
   }
-  const token = randomBytes(32).toString('base64url');
+  const token = newToken();
   await mkdir(config.dataDir, { recursive: true });
   await writeFile(file, token + '\n', { encoding: 'utf8', mode: 0o600 });
   return { token, generated: true };
