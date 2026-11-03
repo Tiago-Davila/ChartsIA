@@ -4,6 +4,7 @@ import { drawOrder } from '../model/draw-order.js';
 import { HIGHLIGHTER_OPACITY } from '../model/drawing-elements.js';
 import { C4_ELEMENT_KINDS, type Cardinality, ER_ELEMENT_KINDS } from '../model/enums.js';
 import { type UmlDetail } from '../model/preferences.js';
+import { DEFAULT_EXPORT_SETTINGS, type ExportSettings } from './options.js';
 import { type Relation } from '../model/relation.js';
 import { hashSeed } from '../render/hash.js';
 import { edgeLabelLines, labelAnchor, totalLine } from '../render/edges.js';
@@ -501,9 +502,9 @@ function addArrow(b: Builder, rel: Relation, byId: Map<string, Json>): void {
 /**
  * Exporta a Excalidraw (`.excalidraw`). Formas con texto ligado (`containerId` /
  * `boundElements`), flechas con `startBinding`/`endBinding` y puntos de la ruta calculada.
- * Semillas e índices se derivan de los ids, así el archivo es determinista.
+ * Semillas e índices se derivan de los ids, así el archivo es determinista. Del resto de las opciones solo usa el fondo.
  */
-export function exportExcalidraw(diagram: Diagram): string {
+export function exportExcalidraw(diagram: Diagram, settings: ExportSettings = DEFAULT_EXPORT_SETTINGS): string {
   const b = new Builder(diagram);
   const byId = new Map(diagram.elements.map((el) => [el.id, el]));
   const frameGroupIds = (element: Element) => {
@@ -549,7 +550,7 @@ export function exportExcalidraw(diagram: Diagram): string {
   const keys = orderKeys(b.elements.length);
   const elements = b.elements.map((e, i) => ({ ...e, index: keys[i] }));
   return JSON.stringify(
-    { type: 'excalidraw', version: 2, source: 'https://github.com/chartsia/chartsia', elements, appState: { gridSize: 20, viewBackgroundColor: '#ffffff' }, files: b.files },
+    { type: 'excalidraw', version: 2, source: 'https://github.com/chartsia/chartsia', elements, appState: { gridSize: 20, viewBackgroundColor: settings.background === 'transparent' ? 'transparent' : '#ffffff' }, files: b.files },
     null,
     2,
   ) + '\n';

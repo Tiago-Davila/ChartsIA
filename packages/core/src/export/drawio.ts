@@ -11,6 +11,7 @@ import { imageCells } from './drawio-image.js';
 import { textBlockCells } from './drawio-text.js';
 import { collectionCells } from './drawio-nosql.js';
 import { frameCells } from './drawio-frame.js';
+import { DEFAULT_EXPORT_SETTINGS, type ExportSettings } from './options.js';
 import { drawioFont, drawioStroke } from './drawio-style.js';
 import { xmlElement } from './xml-escape.js';
 import { FONT } from '../shapes/types.js';
@@ -99,9 +100,9 @@ function edgeXml(rel: Relation, byId: Map<string, Element>, showMultiplicities: 
 
 /**
  * Exporta a draw.io (`.drawio`): `<mxfile><diagram><mxGraphModel>` sin comprimir. Las
- * coordenadas de los hijos son relativas a su contenedor, como espera draw.io.
+ * coordenadas de los hijos son relativas a su contenedor, como espera draw.io. Del resto de las opciones solo usa el fondo.
  */
-export function exportDrawio(diagram: Diagram): string {
+export function exportDrawio(diagram: Diagram, settings: ExportSettings = DEFAULT_EXPORT_SETTINGS): string {
   const byId = new Map(diagram.elements.map((e) => [e.id, e]));
   const cells: string[] = [xmlElement('mxCell', { id: '0' }), xmlElement('mxCell', { id: '1', parent: '0' })];
   for (const el of drawOrder(diagram.elements)) {
@@ -126,7 +127,7 @@ export function exportDrawio(diagram: Diagram): string {
 
   const model = xmlElement(
     'mxGraphModel',
-    { dx: 0, dy: 0, grid: 1, gridSize: 10, guides: 1, tooltips: 1, connect: 1, arrows: 1, fold: 1, page: 0, pageScale: 1, math: 0, shadow: 0 },
+    { dx: 0, dy: 0, grid: 1, gridSize: 10, guides: 1, tooltips: 1, connect: 1, arrows: 1, fold: 1, page: 0, pageScale: 1, math: 0, shadow: 0, ...(settings.background === 'transparent' ? { background: 'none' } : {}) },
     xmlElement('root', {}, cells.join('\n')),
   );
   const file = xmlElement(

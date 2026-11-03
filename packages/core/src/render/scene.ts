@@ -28,8 +28,8 @@ export const FONT_FAMILY = "Inter, 'Helvetica Neue', Arial, sans-serif";
 
 const MARGIN = 24;
 
-/** Escena de render compartida por el SVG exportado y la app. */
-export function buildScene(diagram: Diagram): Scene {
+/** Escena de render compartida por el SVG exportado y la app; `margin` es el espacio alrededor del diagrama. */
+export function buildScene(diagram: Diagram, margin = MARGIN): Scene {
   const nodes: SceneNode[] = drawOrder(diagram.elements).map((el) => {
     const l = el.layout ?? { x: 0, y: 0, width: 0, height: 0 };
     const width = l.width ?? 0;
@@ -56,18 +56,18 @@ export function buildScene(diagram: Diagram): Scene {
     xs.push(0);
     ys.push(0);
   }
-  let minX = Math.min(...xs) - MARGIN;
-  let minY = Math.min(...ys) - MARGIN;
-  let maxX = Math.max(...xs) + MARGIN;
-  let maxY = Math.max(...ys) + MARGIN;
+  let minX = Math.min(...xs) - margin;
+  let minY = Math.min(...ys) - margin;
+  let maxX = Math.max(...xs) + margin;
+  let maxY = Math.max(...ys) + margin;
 
   let legend: SceneNode | undefined;
   const entries = diagram.preferences?.c4Legend === false ? [] : legendEntries(diagram);
   if (entries.length > 0) {
     const { size, primitives } = legendPrimitives(entries);
-    legend = { id: '__legend__', x: maxX, y: minY + MARGIN, ...size, primitives };
-    maxX += size.width + MARGIN;
-    maxY = Math.max(maxY, legend.y + size.height + MARGIN);
+    legend = { id: '__legend__', x: maxX, y: minY + margin, ...size, primitives };
+    maxX += size.width + margin;
+    maxY = Math.max(maxY, legend.y + size.height + margin);
   }
   minX = Math.floor(minX);
   minY = Math.floor(minY);
