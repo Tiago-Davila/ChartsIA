@@ -2,8 +2,9 @@ import { type CSSProperties, type ReactNode, useState } from 'react';
 import { type ConnectedAgent, type HubInfo } from '../state/api-client';
 import { mcpUrlParaAgentes } from './agents';
 import { AnimatedList } from './AnimatedList';
-import { ArrowLeftIcon, FileIcon, PlugIcon, SlidersIcon } from './icons';
+import { type CanvasPreferences, setCanvasPreferences, useCanvasPreferences } from './canvas-preferences';
 import { DiagramPreferences } from './DiagramPreferences';
+import { ArrowLeftIcon, FileIcon, GridIcon, PlugIcon, SlidersIcon } from './icons';
 import { AgentIntegrations, CodeBlock } from './Integrations';
 import { type ConfigSection } from './routes';
 import { applyTheme, initialTheme, type ThemePreference } from './theme';
@@ -61,6 +62,86 @@ function General({ origin, hub }: { origin: string; hub: HubInfo | null }) {
   );
 }
 
+/** Preferencia del lienzo con su leyenda arriba y sus opciones como botones segmentados. */
+function Preferencia<K extends keyof CanvasPreferences>({ leyenda, campo, opciones }: { leyenda: string; campo: K; opciones: [CanvasPreferences[K], string][] }) {
+  const valor = useCanvasPreferences()[campo];
+  return (
+    <fieldset className="config__field">
+      <legend>{leyenda}</legend>
+      <div className="segmented">
+        {opciones.map(([opcion, etiqueta]) => (
+          <label key={etiqueta}>
+            <input type="radio" name={campo} checked={valor === opcion} onChange={() => setCanvasPreferences({ [campo]: opcion })} />
+            {etiqueta}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+const MOSTRAR_U_OCULTAR: [boolean, string][] = [
+  [true, 'Mostrar'],
+  [false, 'Ocultar'],
+];
+
+/** Sección "Lienzo": cuadrícula, minimapa, controles de zoom y comportamiento al abrir o cambiar un diagrama. */
+function Lienzo() {
+  return (
+    <>
+      <header className="config__header">
+        <h2 id="config-section">Lienzo</h2>
+        <p>Cada cambio se aplica al instante y se recuerda en este navegador.</p>
+      </header>
+      <Preferencia leyenda="Cuadrícula" campo="grid" opciones={MOSTRAR_U_OCULTAR} />
+      <Preferencia
+        leyenda="Tamaño de la cuadrícula"
+        campo="gridSize"
+        opciones={[
+          [10, '10 px'],
+          [20, '20 px'],
+          [40, '40 px'],
+        ]}
+      />
+      <Preferencia
+        leyenda="Ajustar a la cuadrícula al mover"
+        campo="snapToGrid"
+        opciones={[
+          [false, 'No'],
+          [true, 'Sí'],
+        ]}
+      />
+      <Preferencia leyenda="Minimapa" campo="minimap" opciones={MOSTRAR_U_OCULTAR} />
+      <Preferencia leyenda="Controles de zoom" campo="zoomControls" opciones={MOSTRAR_U_OCULTAR} />
+      <Preferencia
+        leyenda="Al abrir un diagrama"
+        campo="onOpen"
+        opciones={[
+          ['fit', 'Ajustar a la pantalla'],
+          ['actual', 'Mostrar al 100 %'],
+        ]}
+      />
+      <Preferencia
+        leyenda="Animaciones"
+        campo="animations"
+        opciones={[
+          ['system', 'Según el sistema'],
+          ['normal', 'Normales'],
+          ['reduced', 'Reducidas'],
+        ]}
+      />
+      <Preferencia
+        leyenda="Cuando el agente cambia el diagrama"
+        campo="onAgentChange"
+        opciones={[
+          ['open', 'Abrirlo automáticamente'],
+          ['notice', 'Solo mostrar un aviso'],
+        ]}
+      />
+    </>
+  );
+}
+
 /** Sección "Conexiones MCP": las tarjetas de los agentes, conectados primero. */
 function McpConnections({ origin, agents }: { origin: string; agents: ConnectedAgent[] }) {
   return (
@@ -76,6 +157,7 @@ function McpConnections({ origin, agents }: { origin: string; agents: ConnectedA
 
 const SECCIONES: { id: ConfigSection; label: string; icon: ReactNode }[] = [
   { id: 'general', label: 'General', icon: <SlidersIcon /> },
+  { id: 'lienzo', label: 'Lienzo', icon: <GridIcon /> },
   { id: 'diagramas', label: 'Diagramas', icon: <FileIcon /> },
   { id: 'mcp', label: 'Conexiones MCP', icon: <PlugIcon /> },
 ];
@@ -89,7 +171,7 @@ export interface ConfigScreenProps {
   onBack(): void;
 }
 
-/** Pantalla `/config`: barra propia con sus secciones (General y Conexiones MCP) y el contenido de la elegida. */
+/** Pantalla `/config`: barra propia con sus secciones (General, Lienzo y Conexiones MCP) y el contenido de la elegida. */
 export function ConfigScreen({ origin, agents, hub, section, onSection, onBack }: ConfigScreenProps) {
   return (
     <div className="config-shell">
@@ -117,6 +199,8 @@ export function ConfigScreen({ origin, agents, hub, section, onSection, onBack }
       <section className="config" aria-labelledby="config-section">
         {section === 'general' ? (
           <General origin={origin} hub={hub} />
+        ) : section === 'lienzo' ? (
+          <Lienzo />
         ) : section === 'diagramas' ? (
           <DiagramPreferences />
         ) : (

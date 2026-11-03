@@ -23,6 +23,8 @@ export interface DiagramState {
   lastOrigin?: 'agent' | 'app';
   /** Elementos que tocó el último cambio del agente en el diagrama abierto; vacío si no se sabe o ya se encuadraron. */
   lastChangedIds: string[];
+  /** Diagrama que el agente abrió y que la app no abrió sola, a la espera de que se pulse "Abrir". */
+  agentNoticeId: string | null;
   /** Se incrementa para descartar cambios optimistas del lienzo (p. ej. tras un 422). */
   viewVersion: number;
 
@@ -41,6 +43,7 @@ export interface DiagramState {
   setNeedsToken(value: boolean): void;
   showErrors(errors: ValidationError[]): void;
   dismissErrors(): void;
+  showAgentNotice(diagramId: string | null): void;
   refreshView(): void;
   clearChangedIds(): void;
   /** Bloque de texto recién creado que debe abrirse en edición al aparecer en el lienzo. */
@@ -80,6 +83,7 @@ export function createDiagramStore() {
     errors: [],
     lastOrigin: undefined,
     lastChangedIds: [],
+    agentNoticeId: null,
     viewVersion: 0,
 
     setList: (list) => set({ diagrams: list.diagrams, listLoaded: true, projects: list.projects, activeDiagramId: list.activeDiagramId }),
@@ -121,6 +125,7 @@ export function createDiagramStore() {
     setNeedsToken: (needsToken) => set({ needsToken }),
     showErrors: (errors) => set((s) => ({ errors, viewVersion: s.viewVersion + 1 })),
     dismissErrors: () => set({ errors: [] }),
+    showAgentNotice: (agentNoticeId) => set({ agentNoticeId }),
     clearChangedIds: () => set({ lastChangedIds: [] }),
     setPendingTextEdit: (id) => set({ pendingTextEdit: id }),
     refreshView: () => set((s) => ({ viewVersion: s.viewVersion + 1 })),

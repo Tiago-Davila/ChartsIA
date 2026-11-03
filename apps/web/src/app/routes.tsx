@@ -1,6 +1,6 @@
 import { useCallback, useSyncExternalStore } from 'react';
 
-export type ConfigSection = 'general' | 'diagramas' | 'mcp';
+export type ConfigSection = 'general' | 'lienzo' | 'diagramas' | 'mcp';
 
 export type Route = { name: 'home' } | { name: 'config'; section: ConfigSection } | { name: 'diagram'; diagramId: string };
 
@@ -28,6 +28,7 @@ export function diagramIdFromSegment(segmento: string): string {
 
 export function parseRoute(pathname: string): Route {
   if (pathname === '/config') return { name: 'config', section: 'general' };
+  if (pathname === '/config/lienzo') return { name: 'config', section: 'lienzo' };
   if (pathname === '/config/diagramas') return { name: 'config', section: 'diagramas' };
   if (pathname === '/config/mcp') return { name: 'config', section: 'mcp' };
   const match = DIAGRAM_PATH.exec(pathname);
@@ -67,7 +68,7 @@ export function navigate(path: string, options: { replace?: boolean } = {}): voi
 
 /**
  * Enrutado mínimo de la app: `/` (diagrama activo o estado vacío), `/d/:id` (destino de
- * `viewUrl`) y `/config` o `/config/mcp` (configuración general y conexión de agentes). Tan pocas rutas no justifican una dependencia de router (principio VI).
+ * `viewUrl`) y `/config`, `/config/lienzo`, `/config/diagramas` o `/config/mcp` (configuración general, del lienzo, de los diagramas y conexión de agentes). Tan pocas rutas no justifican una dependencia de router (principio VI).
  */
 export function useRoute(): Route {
   const path = useSyncExternalStore(subscribe, getPath, () => '/');

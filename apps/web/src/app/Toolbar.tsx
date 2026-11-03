@@ -1,6 +1,7 @@
 import { type ExportFormat } from '@chartsia/core/export';
 import { getViewportForBounds, useNodes, useReactFlow, useStoreApi } from '@xyflow/react';
 import { useRef, useState } from 'react';
+import { canvasPreferences, reducedMotion } from './canvas-preferences';
 import { type AlignMode } from '../canvas/align';
 import { FIT_VIEW_OPTIONS } from '../canvas/DiagramCanvas';
 
@@ -77,7 +78,7 @@ export function Toolbar({ title, revision, disabled = false, onExport, onRename,
     const changed = all.filter((n) => changedIds.includes(n.id));
     if (changed.length > 0) onChangedFitted?.();
     const viewport = getViewportForBounds(getNodesBounds(changed.length > 0 ? changed : all), width, height, minZoom, FIT_VIEW_OPTIONS.maxZoom, FIT_VIEW_OPTIONS.padding);
-    void setViewport(viewport, { duration: 300 });
+    void setViewport(viewport, { duration: reducedMotion(canvasPreferences().animations) ? 0 : 300 });
   };
   const [editing, setEditing] = useState(false);
   // Guarda el título editado salvo que esté vacío o no cambie; Escape lo descarta antes de llegar aquí.
