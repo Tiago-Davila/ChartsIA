@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { layoutDiagram, relayoutDiagram } from '@chartsia/core/layout';
-import { type Diagram, DiagramInputSchema, newDiagramId, newProjectId, type Project, ProjectSchema } from '@chartsia/core/model';
+import { type Diagram, DiagramInputSchema, newDiagramId, newProjectId, type Preferences, type Project, ProjectSchema, styleElement, styleRelation, withPreferences } from '@chartsia/core/model';
 import { applyOperations } from '@chartsia/core/operations';
 import { DomainValidationError, fromZodError, validateDiagram, validationError } from '@chartsia/core/validation';
 import { APP_CONFIG, type AppConfig } from '../config/config.js';
@@ -9,6 +9,7 @@ import { DiagramHistory, type HistoryDirection } from './diagram-history.js';
 import { DiagramQueryService, notFound, projectNotFound } from './diagram-query.service.js';
 import { DiagramLock } from './persistence/diagram-lock.js';
 import { DIAGRAM_REPOSITORY, type DiagramRepository } from './persistence/diagram.repository.js';
+import { PreferencesService } from './preferences.service.js';
 import { CLOCK, type Clock, DIAGRAM_ID_GENERATOR, type IdGenerator } from './tokens.js';
 
 const PROJECTS_KEY = 'projects';
@@ -25,6 +26,19 @@ export interface CommandResult {
   warnings: string[];
 }
 
+/** A lo que agregó un cambio le suma el estilo de las preferencias con que se creó el diagrama. */
+function styleAdded(before: Diagram, after: Diagram): Diagram {
+  const prefs = before.preferences;
+  if (!prefs) return after;
+  const elementIds = new Set(before.elements.map((e) => e.id));
+  const relationIds = new Set(before.relations.map((r) => r.id));
+  return {
+    ...after,
+    elements: after.elements.map((el) => (elementIds.has(el.id) ? el : styleElement(el, prefs))),
+    relations: after.relations.map((rel) => (relationIds.has(rel.id) ? rel : styleRelation(rel, prefs))),
+  };
+}
+
 /**
  * Única ruta de escritura de diagramas para MCP y la app (principio I): valida, dispone,
  * persiste y emite eventos. No conoce transportes ni construye URLs.
@@ -39,6 +53,7 @@ export class DiagramCommandService {
     private readonly events: DiagramEvents,
     private readonly query: DiagramQueryService,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
+    private readonly preferences: PreferencesService,
     @Inject(CLOCK) private readonly clock: Clock = () => new Date(),
     @Inject(DIAGRAM_ID_GENERATOR) private readonly newId: IdGenerator = newDiagramId,
   ) {}
@@ -49,7 +64,7 @@ export class DiagramCommandService {
     if (!checked.ok) throw new DomainValidationError(checked.errors);
     const now = this.clock().toISOString();
     const diagram = await layoutDiagram({
-      ...checked.value,
+      ...withPreferences(checked.value, await this.preferences.get()),
       id: this.newId(),
       revision: 1,
       createdAt: now,
@@ -77,7 +92,7 @@ export class DiagramCommandService {
           `baseRevision ${params.baseRevision} no coincide con la revision actual ${current.revision}: los cambios se aplicaron sobre la versión más reciente (último cambio gana).`,
         );
       }
-      const laid = await relayoutDiagram(current, result.diagram);
+      const laid = await relayoutDiagram(current, styleAdded(current, result.diagram));
       warnings.push(...laid.warnings);
       const diagram: Diagram = { ...laid.diagram, revision: current.revision + 1, updatedAt: this.clock().toISOString() };
       await this.repo.save(diagram);
@@ -85,6 +100,16 @@ export class DiagramCommandService {
       this.events.emit({ name: 'diagram.updated', payload: { diagramId: id, revision: diagram.revision, origin: params.origin, diagram } });
       return { diagram, warnings, applied: result.applied };
     });
+  }
+
+  /** Preferencias de diagrama que se aplican a los diagramas nuevos. */
+  getPreferences(): Promise<Preferences> {
+    return this.preferences.get();
+  }
+
+  /** Cambia las preferencias; los diagramas que ya existen no se tocan. */
+  setPreferences(changes: unknown): Promise<Preferences> {
+    return this.preferences.update(changes);
   }
 
   /** Deshace o rehace el último cambio del diagrama, venga del agente o de la app. */

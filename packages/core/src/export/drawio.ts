@@ -71,7 +71,7 @@ function connectorEdgeStyle(rel: Relation): string {
   return `${start}${end}${rel.dashed ? 'dashed=1;' : ''}`;
 }
 
-function edgeXml(rel: Relation, byId: Map<string, Element>): string {
+function edgeXml(rel: Relation, byId: Map<string, Element>, showMultiplicities: boolean): string {
   const route = rel.route ?? [];
   const src = byId.get(rel.source);
   const tgt = byId.get(rel.target);
@@ -90,8 +90,10 @@ function edgeXml(rel: Relation, byId: Map<string, Element>): string {
     const g = xmlElement('mxGeometry', { x, relative: '1', as: 'geometry' }, xmlElement('mxPoint', { x: x < 0 ? 10 : -10, y: -10, as: 'offset' }));
     cells.push(xmlElement('mxCell', { id: `${rel.id}:${suffix}`, value: text, style: drawioFont(`edgeLabel;resizable=0;html=0;align=${align};verticalAlign=bottom;fontSize=11;`, rel.style, FONT.small), vertex: '1', connectable: '0', parent: rel.id }, g));
   };
-  end(rel.sourceMultiplicity, -1, 'source', 'left');
-  end(rel.targetMultiplicity, 1, 'target', 'right');
+  if (showMultiplicities) {
+    end(rel.sourceMultiplicity, -1, 'source', 'left');
+    end(rel.targetMultiplicity, 1, 'target', 'right');
+  }
   return cells.join('');
 }
 
@@ -117,10 +119,10 @@ export function exportDrawio(diagram: Diagram): string {
       cells.push(drawing);
       continue;
     }
-    const vertices = frameCells(el, parent, geo) ?? classCells(el, parent, geo) ?? c4Cells(el, parent, geo) ?? erCells(el, parent, geo) ?? figureCells(el, parent, geo) ?? imageCells(el, parent, geo) ?? textBlockCells(el, parent, geo) ?? collectionCells(el, parent, geo) ?? [];
+    const vertices = frameCells(el, parent, geo) ?? classCells(el, parent, geo, diagram.preferences?.uml) ?? c4Cells(el, parent, geo) ?? erCells(el, parent, geo) ?? figureCells(el, parent, geo) ?? imageCells(el, parent, geo) ?? textBlockCells(el, parent, geo) ?? collectionCells(el, parent, geo) ?? [];
     cells.push(...vertices.map(vertexXml));
   }
-  for (const rel of [...diagram.relations].sort((a, b) => (a.id < b.id ? -1 : 1))) cells.push(edgeXml(rel, byId));
+  for (const rel of [...diagram.relations].sort((a, b) => (a.id < b.id ? -1 : 1))) cells.push(edgeXml(rel, byId, diagram.preferences?.uml.multiplicities ?? true));
 
   const model = xmlElement(
     'mxGraphModel',

@@ -1,11 +1,13 @@
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 export interface AppConfig {
   port: number;
   host: string;
   token: string | undefined;
   dataDir: string;
+  /** Archivo de preferencias; por defecto `config.json` junto a la carpeta de datos. */
+  configFile: string;
   maxElements: number;
   maxRequestBytes: number;
   publicUrl: string;
@@ -39,11 +41,13 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const urlHost = host === '0.0.0.0' || host === '::' ? '127.0.0.1' : host;
   // En loopback la dirección usa el nombre de la app: `*.localhost` resuelve a loopback sin tocar /etc/hosts.
   const publicHost = isLoopback(urlHost) ? 'chartsia.localhost' : urlHost;
+  const dataDir = env.CHARTSIA_DATA_DIR || join(homedir(), '.chartsia', 'diagrams');
   return {
     port,
     host,
     token: env.CHARTSIA_TOKEN || undefined,
-    dataDir: env.CHARTSIA_DATA_DIR || join(homedir(), '.chartsia', 'diagrams'),
+    dataDir,
+    configFile: env.CHARTSIA_CONFIG_FILE || join(dirname(dataDir), 'config.json'),
     maxElements: intFromEnv(env, 'CHARTSIA_MAX_ELEMENTS', 500),
     maxRequestBytes: intFromEnv(env, 'CHARTSIA_MAX_REQUEST_BYTES', 8 * 1024 * 1024),
     publicUrl: (env.CHARTSIA_PUBLIC_URL || `http://${publicHost}:${port}`).replace(/\/+$/, ''),

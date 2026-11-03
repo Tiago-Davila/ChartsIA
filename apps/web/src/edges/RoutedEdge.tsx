@@ -8,7 +8,8 @@ import { Primitives } from '../render/Primitives';
 import { EdgeHandles } from './EdgeToolbar';
 import { EdgeMarkers } from './markers';
 
-export type RoutedEdgeData = { relation: Relation };
+/** `showMultiplicities` viene de las preferencias del diagrama; sin él se muestran. */
+export type RoutedEdgeData = { relation: Relation; showMultiplicities?: boolean };
 export type RoutedFlowEdge = Edge<RoutedEdgeData>;
 
 /**
@@ -16,10 +17,10 @@ export type RoutedFlowEdge = Edge<RoutedEdgeData>;
  * marcadores, etiqueta y multiplicidades. Sin ruta, une los extremos en línea recta.
  */
 function RoutedEdgeImpl({ id, data, sourceX, sourceY, targetX, targetY, selected }: EdgeProps<RoutedFlowEdge>) {
-  const relation = data!.relation;
+  const { relation, showMultiplicities } = data!;
   const { readOnly } = useDiagramEditActions();
   const routed = (relation.route?.length ?? 0) >= 2;
-  const primitives = useMemo(() => (routed ? edgePrimitives(relation) : []), [relation, routed]);
+  const primitives = useMemo(() => (routed ? edgePrimitives(relation, showMultiplicities) : []), [relation, routed, showMultiplicities]);
 
   const points = routed ? relation.route! : [{ x: sourceX, y: sourceY }, { x: targetX, y: targetY }];
   const d = points.map((p, i) => `${i ? 'L' : 'M'} ${p.x} ${p.y}`).join(' ');

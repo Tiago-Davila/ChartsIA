@@ -11,6 +11,7 @@ describe('rutas', () => {
     ['/d/sin-id-valido', { name: 'diagram', diagramId: 'sin-id-valido' }],
     ['/config', { name: 'config', section: 'general' }],
     ['/config/lienzo', { name: 'config', section: 'lienzo' }],
+    ['/config/diagramas', { name: 'config', section: 'diagramas' }],
     ['/config/mcp', { name: 'config', section: 'mcp' }],
     ['/otra', { name: 'home' }],
   ])('%s', (path, route) => {

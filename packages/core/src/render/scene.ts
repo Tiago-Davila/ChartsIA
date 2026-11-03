@@ -34,11 +34,11 @@ export function buildScene(diagram: Diagram): Scene {
     const l = el.layout ?? { x: 0, y: 0, width: 0, height: 0 };
     const width = l.width ?? 0;
     const height = l.height ?? 0;
-    return { id: el.id, x: l.x, y: l.y, width, height, primitives: elementPrimitives(el, { width, height }) };
+    return { id: el.id, x: l.x, y: l.y, width, height, primitives: elementPrimitives(el, { width, height }, diagram.preferences?.uml) };
   });
   const edges = [...diagram.relations]
     .sort((a, b) => (a.id < b.id ? -1 : 1))
-    .map((rel) => ({ id: rel.id, primitives: edgePrimitives(rel) }));
+    .map((rel) => ({ id: rel.id, primitives: edgePrimitives(rel, diagram.preferences?.uml.multiplicities) }));
 
   const xs: number[] = [];
   const ys: number[] = [];
@@ -62,7 +62,7 @@ export function buildScene(diagram: Diagram): Scene {
   let maxY = Math.max(...ys) + MARGIN;
 
   let legend: SceneNode | undefined;
-  const entries = legendEntries(diagram);
+  const entries = diagram.preferences?.c4Legend === false ? [] : legendEntries(diagram);
   if (entries.length > 0) {
     const { size, primitives } = legendPrimitives(entries);
     legend = { id: '__legend__', x: maxX, y: minY + MARGIN, ...size, primitives };

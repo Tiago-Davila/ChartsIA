@@ -1,4 +1,5 @@
 import { type Element } from '../model/diagram.js';
+import { type UmlDetail } from '../model/preferences.js';
 import { type StyleFontFamily } from '../model/style.js';
 
 export interface Size {
@@ -54,8 +55,9 @@ export type Primitive = RectPrimitive | EllipsePrimitive | PathPrimitive | LineP
  * app, así lo que se ve y lo que se exporta coinciden.
  */
 export interface ShapeDefinition<E extends Element = Element> {
-  measure(element: E): Size;
-  primitives(element: E, size: Size): Primitive[];
+  /** `uml` solo lo usan clases, interfaces y enumeraciones; sin él se muestra todo. */
+  measure(element: E, uml?: UmlDetail): Size;
+  primitives(element: E, size: Size, uml?: UmlDetail): Primitive[];
   /** Grupos: margen interior que deben respetar los hijos. */
   padding?: (element: E) => { top: number; right: number; bottom: number; left: number };
 }

@@ -3,6 +3,7 @@ import { type Diagram, type Element } from '../model/diagram.js';
 import { drawOrder } from '../model/draw-order.js';
 import { HIGHLIGHTER_OPACITY } from '../model/drawing-elements.js';
 import { C4_ELEMENT_KINDS, type Cardinality, ER_ELEMENT_KINDS } from '../model/enums.js';
+import { type UmlDetail } from '../model/preferences.js';
 import { type Relation } from '../model/relation.js';
 import { hashSeed } from '../render/hash.js';
 import { edgeLabelLines, labelAnchor, totalLine } from '../render/edges.js';
@@ -204,8 +205,8 @@ function arrowLabelCenter(arrow: Json): Point {
   return labelAnchor(points);
 }
 
-function addUml(b: Builder, el: Element, box: Box): void {
-  const compartments = el.kind === 'class' ? classBox(el) : el.kind === 'interface' ? interfaceBox(el) : el.kind === 'enum' ? enumBox(el) : el.kind === 'table' ? tableBox(el) : el.kind === 'value-list' ? valueListBox(el) : undefined;
+function addUml(b: Builder, el: Element, box: Box, uml?: UmlDetail): void {
+  const compartments = el.kind === 'class' ? classBox(el, uml) : el.kind === 'interface' ? interfaceBox(el, uml) : el.kind === 'enum' ? enumBox(el, uml) : el.kind === 'table' ? tableBox(el) : el.kind === 'value-list' ? valueListBox(el) : undefined;
   if (!compartments) return;
   const group = [`${el.id}-group`];
   const rect = b.shape(el.id, 'rectangle', box, { ...boxOf(el.style, '#fffef5'), groupIds: group });
@@ -532,7 +533,7 @@ export function exportExcalidraw(diagram: Diagram): string {
       b.text(`${el.id}-title`, el.name, { x: box.x + 10, y: box.y + 6, width: box.width - 20, height: 20 }, fontOf(el.style, FONT.name));
     } else if ((ER_ELEMENT_KINDS as readonly string[]).includes(el.kind)) addEr(b, el, box);
     else if ((C4_ELEMENT_KINDS as readonly string[]).includes(el.kind)) addC4(b, el, box);
-    else addUml(b, el, box);
+    else addUml(b, el, box, diagram.preferences?.uml);
     const groupIds = frameGroupIds(el);
     if (groupIds.length > 0) {
       for (const generated of b.elements.slice(start)) {

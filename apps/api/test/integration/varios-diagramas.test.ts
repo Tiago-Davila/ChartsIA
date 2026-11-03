@@ -6,6 +6,7 @@ import { loadConfig } from '../../src/config/config.js';
 import { DiagramCommandService } from '../../src/diagrams/diagram-command.service.js';
 import { DiagramEvents } from '../../src/diagrams/diagram-events.js';
 import { DiagramQueryService } from '../../src/diagrams/diagram-query.service.js';
+import { PreferencesService } from '../../src/diagrams/preferences.service.js';
 import { DiagramLock } from '../../src/diagrams/persistence/diagram-lock.js';
 import { JsonFileDiagramRepository } from '../../src/diagrams/persistence/json-file.repository.js';
 import { libraryInput } from '../support/services.js';
@@ -21,7 +22,9 @@ describe('varios diagramas en disco', () => {
     const repo = new JsonFileDiagramRepository(dir, { warn: vi.fn() });
     await repo.init();
     const query = new DiagramQueryService(repo);
-    const commands = new DiagramCommandService(repo, new DiagramLock(), new DiagramEvents(), query, loadConfig({}));
+    const config = loadConfig({ CHARTSIA_CONFIG_FILE: join(dir, 'config.json') });
+    const lock = new DiagramLock();
+    const commands = new DiagramCommandService(repo, lock, new DiagramEvents(), query, config, new PreferencesService(config, lock));
     return { query, commands };
   }
 

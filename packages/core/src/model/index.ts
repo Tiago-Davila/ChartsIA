@@ -14,6 +14,7 @@ export * from './nosql-elements.js';
 export * from './enums.js';
 export * from './json-schema.js';
 export * from './operations.js';
+export * from './preferences.js';
 export * from './project.js';
 export * from './relation.js';
 export * from './style.js';

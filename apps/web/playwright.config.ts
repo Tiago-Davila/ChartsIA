@@ -28,6 +28,7 @@ export default defineConfig({
     env: {
       CHARTSIA_PORT: String(PORT),
       CHARTSIA_DATA_DIR: dataDir,
+      CHARTSIA_CONFIG_FILE: `${dataDir}/config.json`,
       CHARTSIA_PUBLIC_URL: `http://127.0.0.1:${PORT}`,
     },
   },

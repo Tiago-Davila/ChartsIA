@@ -3,7 +3,8 @@ import { type ConnectedAgent, type HubInfo } from '../state/api-client';
 import { mcpUrlParaAgentes } from './agents';
 import { AnimatedList } from './AnimatedList';
 import { type CanvasPreferences, setCanvasPreferences, useCanvasPreferences } from './canvas-preferences';
-import { ArrowLeftIcon, GridIcon, PlugIcon, SlidersIcon } from './icons';
+import { DiagramPreferences } from './DiagramPreferences';
+import { ArrowLeftIcon, FileIcon, GridIcon, PlugIcon, SlidersIcon } from './icons';
 import { AgentIntegrations, CodeBlock } from './Integrations';
 import { type ConfigSection } from './routes';
 import { applyTheme, initialTheme, type ThemePreference } from './theme';
@@ -157,6 +158,7 @@ function McpConnections({ origin, agents }: { origin: string; agents: ConnectedA
 const SECCIONES: { id: ConfigSection; label: string; icon: ReactNode }[] = [
   { id: 'general', label: 'General', icon: <SlidersIcon /> },
   { id: 'lienzo', label: 'Lienzo', icon: <GridIcon /> },
+  { id: 'diagramas', label: 'Diagramas', icon: <FileIcon /> },
   { id: 'mcp', label: 'Conexiones MCP', icon: <PlugIcon /> },
 ];
 
@@ -199,6 +201,8 @@ export function ConfigScreen({ origin, agents, hub, section, onSection, onBack }
           <General origin={origin} hub={hub} />
         ) : section === 'lienzo' ? (
           <Lienzo />
+        ) : section === 'diagramas' ? (
+          <DiagramPreferences />
         ) : (
           <McpConnections origin={origin} agents={agents} />
         )}

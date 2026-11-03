@@ -1,5 +1,5 @@
 import { type ExportFormat } from '@chartsia/core/export';
-import { type Diagram, type DiagramType, type Operation } from '@chartsia/core/model';
+import { type Diagram, type DiagramType, type Operation, type PreferenceChanges, type Preferences } from '@chartsia/core/model';
 import { type ValidationError } from '@chartsia/core/validation';
 
 export interface DiagramSummary {
@@ -98,6 +98,8 @@ export function createApiClient({ baseUrl = '', getToken, fetch: fetchImpl = (..
       json<{ diagramId: string; revision: number; viewUrl: string; counts: { elements: number; relations: number }; warnings: string[] }>('/api/diagrams/import-drawio', { method: 'POST', body: JSON.stringify(body) }),
     listAgents: async () => (await json<{ agents: ConnectedAgent[] }>('/api/agents')).agents,
     getHub: () => json<HubInfo>('/api/hub'),
+    getPreferences: () => json<Preferences>('/api/preferences'),
+    setPreferences: (changes: PreferenceChanges) => json<Preferences>('/api/preferences', { method: 'PUT', body: JSON.stringify(changes) }),
     getDiagram: (diagramId: string) => json<Diagram>(`/api/diagrams/${id(diagramId)}`),
     applyOperations: (diagramId: string, body: { baseRevision?: number; operations: Operation[] }) =>
       json<ApplyResponse>(`/api/diagrams/${id(diagramId)}/operations`, { method: 'POST', body: JSON.stringify(body) }),

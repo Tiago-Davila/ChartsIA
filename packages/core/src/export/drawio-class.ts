@@ -1,4 +1,5 @@
 import { type Element } from '../model/diagram.js';
+import { type UmlDetail } from '../model/preferences.js';
 import { boxGeometry, type CompartmentBox } from '../shapes/uml/compartments.js';
 import { tableBox } from '../shapes/er/table.js';
 import { valueListBox } from '../shapes/er/value-list.js';
@@ -13,17 +14,17 @@ import { drawioBox, drawioFont } from './drawio-style.js';
 const MEMBER = 'text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=8;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=0;fontSize=13;';
 const SEPARATOR = 'line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;html=0;';
 
-function boxFor(el: Element): CompartmentBox | undefined {
-  if (el.kind === 'class') return classBox(el);
-  if (el.kind === 'interface') return interfaceBox(el);
-  if (el.kind === 'enum') return enumBox(el);
+function boxFor(el: Element, uml?: UmlDetail): CompartmentBox | undefined {
+  if (el.kind === 'class') return classBox(el, uml);
+  if (el.kind === 'interface') return interfaceBox(el, uml);
+  if (el.kind === 'enum') return enumBox(el, uml);
   if (el.kind === 'table') return tableBox(el);
   if (el.kind === 'value-list') return valueListBox(el);
   return undefined;
 }
 
 /** Clase/interfaz/enum/tabla como `swimlane` con `stackLayout` y una celda por miembro (mxUML25). */
-export function classCells(el: Element, parent: string, geo: { x: number; y: number; width: number; height: number }): DrawioCell[] | undefined {
+export function classCells(el: Element, parent: string, geo: { x: number; y: number; width: number; height: number }, uml?: UmlDetail): DrawioCell[] | undefined {
   if (el.kind === 'package') {
     return [{
       id: el.id, parent, value: el.name, vertex: true, geometry: geo,
@@ -34,7 +35,7 @@ export function classCells(el: Element, parent: string, geo: { x: number; y: num
       ),
     }];
   }
-  const box = boxFor(el);
+  const box = boxFor(el, uml);
   if (!box) return undefined;
   const g = boxGeometry(box);
   const header = box.header.map((l) => l.text).join('\n');
