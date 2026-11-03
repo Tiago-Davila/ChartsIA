@@ -12,6 +12,7 @@ describe('rutas', () => {
     ['/config', { name: 'config', section: 'general' }],
     ['/config/lienzo', { name: 'config', section: 'lienzo' }],
     ['/config/diagramas', { name: 'config', section: 'diagramas' }],
+    ['/config/exportacion', { name: 'config', section: 'exportacion' }],
     ['/config/mcp', { name: 'config', section: 'mcp' }],
     ['/otra', { name: 'home' }],
   ])('%s', (path, route) => {

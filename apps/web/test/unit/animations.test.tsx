@@ -10,6 +10,7 @@ vi.mock('../../src/state/clients', () => ({
     listDiagrams: () => new Promise(() => {}),
     listAgents: () => new Promise(() => {}),
     getHub: () => new Promise(() => {}),
+    getExportPreferences: () => new Promise(() => {}),
     getDiagram: () => new Promise(() => {}),
     activate: () => new Promise(() => {}),
   },

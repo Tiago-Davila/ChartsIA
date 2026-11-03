@@ -4,7 +4,8 @@ import { mcpUrlParaAgentes } from './agents';
 import { AnimatedList } from './AnimatedList';
 import { type CanvasPreferences, setCanvasPreferences, useCanvasPreferences } from './canvas-preferences';
 import { DiagramPreferences } from './DiagramPreferences';
-import { ArrowLeftIcon, FileIcon, GridIcon, PlugIcon, SlidersIcon } from './icons';
+import { ExportPreferencesSection } from './ExportPreferences';
+import { ArrowLeftIcon, DownloadIcon, FileIcon, GridIcon, PlugIcon, SlidersIcon } from './icons';
 import { AgentIntegrations, CodeBlock } from './Integrations';
 import { type ConfigSection } from './routes';
 import { applyTheme, initialTheme, type ThemePreference } from './theme';
@@ -159,6 +160,7 @@ const SECCIONES: { id: ConfigSection; label: string; icon: ReactNode }[] = [
   { id: 'general', label: 'General', icon: <SlidersIcon /> },
   { id: 'lienzo', label: 'Lienzo', icon: <GridIcon /> },
   { id: 'diagramas', label: 'Diagramas', icon: <FileIcon /> },
+  { id: 'exportacion', label: 'Exportación', icon: <DownloadIcon /> },
   { id: 'mcp', label: 'Conexiones MCP', icon: <PlugIcon /> },
 ];
 
@@ -203,6 +205,8 @@ export function ConfigScreen({ origin, agents, hub, section, onSection, onBack }
           <Lienzo />
         ) : section === 'diagramas' ? (
           <DiagramPreferences />
+        ) : section === 'exportacion' ? (
+          <ExportPreferencesSection />
         ) : (
           <McpConnections origin={origin} agents={agents} />
         )}
