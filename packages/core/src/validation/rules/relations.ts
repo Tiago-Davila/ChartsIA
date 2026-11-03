@@ -1,6 +1,7 @@
 import {
   CONNECTOR_KIND,
   type ElementKind,
+  FLOW_RELATION_KIND,
   isGroupKind,
   MULTIPLICITY_RELATION_KINDS,
   RELATION_ENDPOINT_KINDS,
@@ -40,6 +41,15 @@ const ENDPOINT_RULES: Partial<Record<Relation['kind'], { pairs: [string, string]
     pairs: [['collection', 'collection']],
     text: 'nosql-rel solo une colecciones',
   },
+  'flow-edge': {
+    pairs: [
+      ['flow-node', 'flow-node'],
+      ['flow-node', 'frame'],
+      ['frame', 'flow-node'],
+      ['frame', 'frame'],
+    ],
+    text: 'flow-edge solo une nodos de flujo (flow-node) o frames',
+  },
 };
 
 /** Si una relación del tipo dado puede unir un elemento de kind `source` con uno de kind `target`. */
@@ -70,7 +80,8 @@ export function checkRelations({ diagram, elementsById }: RuleContext): Validati
     const source = elementsById.get(rel.source);
     const target = elementsById.get(rel.target);
     if (source && target) {
-      const group = [source, target].find((e) => isGroupKind(e.kind));
+      // Una conexión de flujo también puede unir frames, para relacionar carpetas, capas o servicios.
+      const group = [source, target].find((e) => isGroupKind(e.kind) && !(rel.kind === FLOW_RELATION_KIND && e.kind === 'frame'));
       if (group) {
         notAllowed(
           `La relación "${rel.id}" conecta el grupo "${group.id}" (${group.kind}).`,
@@ -106,6 +117,7 @@ export function checkRelations({ diagram, elementsById }: RuleContext): Validati
       field('arrowheads', why);
       field('dashed', why);
     }
+    if (rel.kind !== FLOW_RELATION_KIND) field('flowType', 'flowType solo aplica a relaciones flow-edge');
     if (rel.kind !== 'er-rel' && rel.kind !== 'connector') {
       const why = 'la participación total solo aplica a er-rel y connector';
       field('sourceTotal', why);

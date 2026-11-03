@@ -19,6 +19,7 @@ const samples: Record<string, Record<string, unknown>> = {
   relationship: { kind: 'relationship' },
   specialization: { kind: 'specialization' },
   collection: { kind: 'collection', fields: [] },
+  'flow-node': { kind: 'flow-node', variant: 'file' },
   figure: { kind: 'figure', shape: 'hexagon' },
   drawing: { kind: 'drawing', points: [{ x: 0, y: 0 }, { x: 12, y: 8 }], strokeColor: '#1f2933', strokeWidth: 2 },
   image: { kind: 'image', src: pngDataUrl() },

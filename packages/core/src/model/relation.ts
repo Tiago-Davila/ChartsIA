@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ElementIdSchema, PointSchema } from './common.js';
 import { StyleSchema } from './style.js';
-import { ARROWHEADS, CARDINALITIES, NAVIGABILITIES, RELATION_KINDS, SIDES } from './enums.js';
+import { ARROWHEADS, CARDINALITIES, FLOW_EDGE_TYPES, NAVIGABILITIES, RELATION_KINDS, SIDES } from './enums.js';
 
 export const MultiplicitySchema = z
   .string()
@@ -24,6 +24,7 @@ export const RelationSchema = z.strictObject({
   targetTotal: z.boolean().optional().describe('Solo er-rel y connector: participación total del destino (línea doble en su mitad)'),
   arrowheads: z.enum(ARROWHEADS).optional().describe('Solo connector: none (sin punta), end (punta en el destino, por defecto) o both (punta en ambos extremos)'),
   dashed: z.boolean().optional().describe('Solo connector: true = línea discontinua'),
+  flowType: z.enum(FLOW_EDGE_TYPES).optional().describe('Solo flow-edge: call (llama, por defecto), import, read, write, event o data; define el trazo'),
   sourceSide: z.enum(SIDES).optional().describe('Lado del origen por el que sale; sin él se elige solo'),
   targetSide: z.enum(SIDES).optional().describe('Lado del destino por el que entra; sin él se elige solo'),
   waypoints: z.array(PointSchema).max(20).optional().describe('Puntos de quiebre manuales por los que pasa la ruta'),

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ARROWHEADS, BOUNDARY_TYPES, CARDINALITIES, CONTAINER_VARIANTS, FIGURE_SHAPES, MAX_OPERATIONS_PER_BATCH, NAVIGABILITIES, RELATION_KINDS, SIDES, STACK_ORDER_TARGETS } from './enums.js';
+import { ARROWHEADS, BOUNDARY_TYPES, CARDINALITIES, ELEMENT_VARIANTS, FIGURE_SHAPES, FLOW_EDGE_TYPES, MAX_OPERATIONS_PER_BATCH, NAVIGABILITIES, RELATION_KINDS, SIDES, STACK_ORDER_TARGETS } from './enums.js';
 import { AttributeSchema, MethodSchema } from './class-elements.js';
 import { ColumnSchema } from './er-elements.js';
 import { DescriptionSchema, ElementIdSchema, LayoutSchema, PointSchema } from './common.js';
@@ -29,7 +29,8 @@ export const ElementChangesSchema = z
     literals: z.array(z.string().min(1).max(200)).min(1).max(200).optional(),
     external: z.boolean().nullable().optional(),
     technology: z.string().min(1).max(120).nullable().optional(),
-    variant: z.enum(CONTAINER_VARIANTS).nullable().optional(),
+    variant: z.enum(ELEMENT_VARIANTS).nullable().optional(),
+    subtitle: z.string().min(1).max(200).nullable().optional(),
     boundaryType: z.enum(BOUNDARY_TYPES).optional(),
     columns: z.array(ColumnSchema).min(1).max(200).optional(),
     weak: z.boolean().nullable().optional(),
@@ -69,6 +70,7 @@ export const RelationChangesSchema = z
     identifying: z.boolean().nullable().optional(),
     sourceTotal: z.boolean().nullable().optional(),
     targetTotal: z.boolean().nullable().optional(),
+    flowType: z.enum(FLOW_EDGE_TYPES).nullable().optional(),
     arrowheads: z.enum(ARROWHEADS).nullable().optional(),
     dashed: z.boolean().nullable().optional(),
     sourceSide: z.enum(SIDES).nullable().optional(),

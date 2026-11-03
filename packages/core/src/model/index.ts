@@ -4,6 +4,7 @@ export * from './common.js';
 export * from './diagram.js';
 export * from './er-elements.js';
 export * from './figure-elements.js';
+export * from './flow-elements.js';
 export * from './frame-elements.js';
 export * from './drawing-elements.js';
 export * from './draw-order.js';
