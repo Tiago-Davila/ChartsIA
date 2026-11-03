@@ -193,7 +193,7 @@ export function AppShell(props: AppShellProps) {
               onAddText={props.onAddText}
               onAddFrame={props.onAddFrame}
             />
-            <C4Legend diagram={diagram} />
+            {diagram.preferences?.c4Legend === false ? null : <C4Legend diagram={diagram} />}
           </div>
         </>
       ) : props.loading ? (

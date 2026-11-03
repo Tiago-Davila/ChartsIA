@@ -1525,6 +1525,10 @@ button:disabled,
 .config__datos dt { color: var(--text-muted); }
 .config__datos dd { margin: 0; }
 .config__nota { margin: 0; font-size: 14px; color: var(--text-muted); }
+/* Paleta por tipo de elemento: nombre, tres selectores de color y el botón para quitarlos. */
+.config__paleta { display: grid; gap: 6px; margin: 8px 0 0; padding: 0; list-style: none; font-size: 14px; }
+.config__paleta li { display: grid; grid-template-columns: minmax(120px, 1fr) repeat(3, 40px) auto; gap: 8px; align-items: center; }
+.config__paleta input[type='color'] { width: 40px; height: 28px; padding: 2px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); cursor: pointer; }
 .modal--wide { width: min(640px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; }
 /* Código con el botón de copiar adentro, arriba a la derecha. */
 .code-block { position: relative; }

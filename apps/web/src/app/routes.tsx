@@ -1,6 +1,6 @@
 import { useCallback, useSyncExternalStore } from 'react';
 
-export type ConfigSection = 'general' | 'mcp';
+export type ConfigSection = 'general' | 'diagramas' | 'mcp';
 
 export type Route = { name: 'home' } | { name: 'config'; section: ConfigSection } | { name: 'diagram'; diagramId: string };
 
@@ -28,6 +28,7 @@ export function diagramIdFromSegment(segmento: string): string {
 
 export function parseRoute(pathname: string): Route {
   if (pathname === '/config') return { name: 'config', section: 'general' };
+  if (pathname === '/config/diagramas') return { name: 'config', section: 'diagramas' };
   if (pathname === '/config/mcp') return { name: 'config', section: 'mcp' };
   const match = DIAGRAM_PATH.exec(pathname);
   return match ? { name: 'diagram', diagramId: diagramIdFromSegment(decodeURIComponent(match[1]!)) } : { name: 'home' };
@@ -35,7 +36,7 @@ export function parseRoute(pathname: string): Route {
 
 /** Dirección de una sección de la configuración. */
 export function configPath(section: ConfigSection): string {
-  return section === 'general' ? '/config' : '/config/mcp';
+  return section === 'general' ? '/config' : `/config/${section}`;
 }
 
 /** Dirección de un diagrama: `/d/<slug-del-título>-<parte-única-del-id>`; el slug es decorativo. */

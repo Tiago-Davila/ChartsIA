@@ -38,8 +38,8 @@ function typeSuggester(slot: string): ((text: string, caret: number) => Suggesti
  * existen para que React Flow las conecte (invisibles, no conectables).
  */
 function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<ElementFlowNode>) {
-  const { element } = data;
-  const minimum = useMemo(() => measureElement(element), [element]);
+  const { element, uml } = data;
+  const minimum = useMemo(() => measureElement(element, uml), [element, uml]);
   const size = { width: width ?? minimum.width, height: height ?? minimum.height };
   const { editText, addMember, removeMember, resize, readOnly } = useDiagramEditActions();
   const [editing, setEditing] = useState<TextPrimitive>();
@@ -59,11 +59,11 @@ function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<Elemen
 
   useEffect(() => {
     if (!newSlot) return;
-    const line = shapePrimitives(element, size).find((p): p is TextPrimitive => p.type === 'text' && p.slot === newSlot);
+    const line = shapePrimitives(element, size, uml).find((p): p is TextPrimitive => p.type === 'text' && p.slot === newSlot);
     if (!line) return;
     setNewSlot(undefined);
     setEditing(line);
-  }, [element, newSlot, size.width, size.height]);
+  }, [element, uml, newSlot, size.width, size.height]);
 
   const onTextDoubleClick = useCallback(
     (p: TextPrimitive) => {
@@ -76,7 +76,7 @@ function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<Elemen
 
   return (
     <div className={`chartsia-node${selected ? ' is-selected' : ''}`} style={{ width: size.width, height: size.height }} data-element-id={id}>
-      <CleanShape element={element} size={size} onTextDoubleClick={onTextDoubleClick} />
+      <CleanShape element={element} size={size} uml={uml} onTextDoubleClick={onTextDoubleClick} />
       {selected && !readOnly && !locked && element.kind !== 'drawing' && element.kind !== 'text' ? (
         <NodeResizer minWidth={minimum.width} minHeight={minimum.height} color="var(--accent)" onResizeEnd={(_, box) => resize(id, box)} />
       ) : null}
@@ -90,7 +90,7 @@ function ElementNodeImpl({ id, data, width, height, selected }: NodeProps<Elemen
       {showMemberControls ? (
         <MemberControls
           element={element}
-          texts={shapePrimitives(element, size).filter((p): p is TextPrimitive => p.type === 'text')}
+          texts={shapePrimitives(element, size, uml).filter((p): p is TextPrimitive => p.type === 'text')}
           onAdd={(kind) => void addMember(id, kind).then(setNewSlot)}
           onRemove={(slot) => removeMember(id, slot)}
         />

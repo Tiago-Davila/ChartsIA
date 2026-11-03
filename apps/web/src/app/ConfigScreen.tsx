@@ -2,7 +2,8 @@ import { type CSSProperties, type ReactNode, useState } from 'react';
 import { type ConnectedAgent, type HubInfo } from '../state/api-client';
 import { mcpUrlParaAgentes } from './agents';
 import { AnimatedList } from './AnimatedList';
-import { ArrowLeftIcon, PlugIcon, SlidersIcon } from './icons';
+import { ArrowLeftIcon, FileIcon, PlugIcon, SlidersIcon } from './icons';
+import { DiagramPreferences } from './DiagramPreferences';
 import { AgentIntegrations, CodeBlock } from './Integrations';
 import { type ConfigSection } from './routes';
 import { applyTheme, initialTheme, type ThemePreference } from './theme';
@@ -75,6 +76,7 @@ function McpConnections({ origin, agents }: { origin: string; agents: ConnectedA
 
 const SECCIONES: { id: ConfigSection; label: string; icon: ReactNode }[] = [
   { id: 'general', label: 'General', icon: <SlidersIcon /> },
+  { id: 'diagramas', label: 'Diagramas', icon: <FileIcon /> },
   { id: 'mcp', label: 'Conexiones MCP', icon: <PlugIcon /> },
 ];
 
@@ -115,6 +117,8 @@ export function ConfigScreen({ origin, agents, hub, section, onSection, onBack }
       <section className="config" aria-labelledby="config-section">
         {section === 'general' ? (
           <General origin={origin} hub={hub} />
+        ) : section === 'diagramas' ? (
+          <DiagramPreferences />
         ) : (
           <McpConnections origin={origin} agents={agents} />
         )}

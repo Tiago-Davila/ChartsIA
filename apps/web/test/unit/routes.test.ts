@@ -10,6 +10,7 @@ describe('rutas', () => {
     ['/d/diagrama-de-clases-pedidos-abcdefghijkl/', { name: 'diagram', diagramId: 'dg_abcdefghijkl' }],
     ['/d/sin-id-valido', { name: 'diagram', diagramId: 'sin-id-valido' }],
     ['/config', { name: 'config', section: 'general' }],
+    ['/config/diagramas', { name: 'config', section: 'diagramas' }],
     ['/config/mcp', { name: 'config', section: 'mcp' }],
     ['/otra', { name: 'home' }],
   ])('%s', (path, route) => {
