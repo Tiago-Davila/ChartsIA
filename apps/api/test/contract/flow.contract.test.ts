@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createMcpHarness, type McpHarness } from '../support/mcp-test-harness.js';
 
@@ -51,6 +52,14 @@ describe('contract: flujos de sistema', () => {
     expect(stored?.type).toBe('flow');
     const x = (id: string) => stored!.elements.find((element) => element.id === id)!.layout!.x;
     expect(x('api')).toBeLessThan(x('usuarios'));
+  });
+
+  it('el ejemplo de la skill chartsia-flujo-de-sistema es una entrada válida', async () => {
+    const skill = readFileSync(new URL('../../../../skills/chartsia-flujo-de-sistema/SKILL.md', import.meta.url), 'utf8');
+    const ejemplo = JSON.parse(/```json\n([\s\S]*?)\n```/.exec(skill)![1]!);
+    const created = await h.call('create_diagram', ejemplo);
+    expect(created.isError, JSON.stringify(created.structuredContent)).toBeFalsy();
+    expect(created.structuredContent!.counts).toEqual({ elements: 9, relations: 7 });
   });
 
   it('crea un flujo completo con las variantes, los tipos de conexión y un frame', async () => {
