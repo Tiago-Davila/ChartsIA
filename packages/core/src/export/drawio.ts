@@ -10,6 +10,7 @@ import { drawingXml } from './drawio-drawing.js';
 import { imageCells } from './drawio-image.js';
 import { textBlockCells } from './drawio-text.js';
 import { collectionCells } from './drawio-nosql.js';
+import { flowEdgeStyle, flowNodeCells } from './drawio-flow.js';
 import { frameCells } from './drawio-frame.js';
 import { DEFAULT_EXPORT_SETTINGS, type ExportSettings } from './options.js';
 import { drawioFont, drawioStroke } from './drawio-style.js';
@@ -43,6 +44,7 @@ const EDGE_STYLES: Record<Relation['kind'], string> = {
   'er-rel': 'endArrow=none;',
   'er-attr': 'endArrow=none;',
   'nosql-rel': 'endArrow=block;endFill=1;endSize=12;',
+  'flow-edge': '',
   connector: 'endArrow=open;endSize=12;',
 };
 
@@ -78,6 +80,7 @@ function edgeXml(rel: Relation, byId: Map<string, Element>, showMultiplicities: 
   const tgt = byId.get(rel.target);
   let style = `${EDGE_STYLES[rel.kind]}html=0;rounded=0;edgeStyle=none;orthogonal=1;fontSize=11;labelBackgroundColor=#ffffff;`;
   if (rel.kind === 'er-rel') style = style.replace('endArrow=none;', erEdgeStyle(rel));
+  if (rel.kind === 'flow-edge') style = flowEdgeStyle(rel) + style;
   if (rel.kind === 'connector') style = style.replace('endArrow=open;endSize=12;', connectorEdgeStyle(rel));
   if (rel.kind === 'association' && rel.navigable === 'source-to-target') style = style.replace('endArrow=none;', 'endArrow=open;endSize=12;');
   style = drawioFont(drawioStroke(style, rel.style), rel.style, FONT.small);
@@ -120,7 +123,7 @@ export function exportDrawio(diagram: Diagram, settings: ExportSettings = DEFAUL
       cells.push(drawing);
       continue;
     }
-    const vertices = frameCells(el, parent, geo) ?? classCells(el, parent, geo, diagram.preferences?.uml) ?? c4Cells(el, parent, geo) ?? erCells(el, parent, geo) ?? figureCells(el, parent, geo) ?? imageCells(el, parent, geo) ?? textBlockCells(el, parent, geo) ?? collectionCells(el, parent, geo) ?? [];
+    const vertices = frameCells(el, parent, geo) ?? classCells(el, parent, geo, diagram.preferences?.uml) ?? c4Cells(el, parent, geo) ?? erCells(el, parent, geo) ?? figureCells(el, parent, geo) ?? imageCells(el, parent, geo) ?? textBlockCells(el, parent, geo) ?? collectionCells(el, parent, geo) ?? flowNodeCells(el, parent, geo) ?? [];
     cells.push(...vertices.map(vertexXml));
   }
   for (const rel of [...diagram.relations].sort((a, b) => (a.id < b.id ? -1 : 1))) cells.push(edgeXml(rel, byId, diagram.preferences?.uml.multiplicities ?? true));

@@ -1,0 +1,31 @@
+{
+  "type": "flow",
+  "title": "Procesamiento de un pedido",
+  "elements": [
+    { "id": "alta", "kind": "flow-node", "variant": "trigger", "name": "POST /orders", "subtitle": "Endpoint HTTP de la API" },
+    { "id": "modulo", "kind": "frame", "name": "Módulo de pedidos" },
+    { "id": "controlador", "kind": "flow-node", "variant": "component", "name": "OrdersController", "subtitle": "src/orders/orders.controller.ts", "parentId": "modulo" },
+    { "id": "servicio", "kind": "flow-node", "variant": "method", "name": "OrdersService.create", "subtitle": "create(dto: CreateOrderDto): Promise<Order>", "parentId": "modulo" },
+    { "id": "stock", "kind": "flow-node", "variant": "decision", "name": "¿Hay stock?", "subtitle": "inventory.isAvailable(items)", "parentId": "modulo" },
+    { "id": "repositorio", "kind": "flow-node", "variant": "file", "name": "orders.repository.ts", "subtitle": "src/orders/orders.repository.ts", "parentId": "modulo" },
+    { "id": "rechazo", "kind": "flow-node", "variant": "method", "name": "OrdersService.reject", "subtitle": "reject(order: Order): void", "parentId": "modulo" },
+    { "id": "inventario", "kind": "flow-node", "variant": "database", "name": "inventory", "subtitle": "PostgreSQL, tabla inventory" },
+    { "id": "pedidos", "kind": "flow-node", "variant": "database", "name": "orders", "subtitle": "PostgreSQL, tabla orders" },
+    { "id": "cola", "kind": "flow-node", "variant": "queue", "name": "orders.created", "subtitle": "RabbitMQ, tópico de pedidos creados" },
+    { "id": "avisos", "kind": "flow-node", "variant": "service", "name": "NotificationService", "subtitle": "Envía la confirmación al cliente" },
+    { "id": "correo", "kind": "flow-node", "variant": "external", "name": "SendGrid", "subtitle": "API de correo de terceros" }
+  ],
+  "relations": [
+    { "id": "r1", "kind": "flow-edge", "source": "alta", "target": "controlador", "flowType": "call" },
+    { "id": "r2", "kind": "flow-edge", "source": "controlador", "target": "servicio", "flowType": "call", "label": "create()" },
+    { "id": "r3", "kind": "flow-edge", "source": "servicio", "target": "stock", "flowType": "call" },
+    { "id": "r4", "kind": "flow-edge", "source": "stock", "target": "repositorio", "flowType": "call", "label": "hay stock" },
+    { "id": "r5", "kind": "flow-edge", "source": "stock", "target": "rechazo", "flowType": "call", "label": "sin stock" },
+    { "id": "r6", "kind": "flow-edge", "source": "servicio", "target": "inventario", "flowType": "read", "label": "stock" },
+    { "id": "r7", "kind": "flow-edge", "source": "servicio", "target": "repositorio", "flowType": "import" },
+    { "id": "r8", "kind": "flow-edge", "source": "repositorio", "target": "pedidos", "flowType": "write", "label": "insert" },
+    { "id": "r9", "kind": "flow-edge", "source": "repositorio", "target": "cola", "flowType": "event", "label": "OrderCreated" },
+    { "id": "r10", "kind": "flow-edge", "source": "cola", "target": "avisos", "flowType": "event" },
+    { "id": "r11", "kind": "flow-edge", "source": "avisos", "target": "correo", "flowType": "data", "label": "plantilla y destinatario" }
+  ]
+}

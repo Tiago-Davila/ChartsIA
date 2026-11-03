@@ -1,0 +1,433 @@
+{
+  "type": "flow",
+  "title": "Procesamiento de un pedido",
+  "elements": [
+    {
+      "id": "alta",
+      "name": "POST /orders",
+      "kind": "flow-node",
+      "variant": "trigger",
+      "subtitle": "Endpoint HTTP de la API",
+      "layout": {
+        "x": 30,
+        "y": 255,
+        "width": 215,
+        "height": 60,
+        "pinned": false
+      }
+    },
+    {
+      "id": "modulo",
+      "name": "Módulo de pedidos",
+      "kind": "frame",
+      "layout": {
+        "x": 390,
+        "y": 98,
+        "width": 1560,
+        "height": 242,
+        "pinned": false
+      }
+    },
+    {
+      "id": "controlador",
+      "name": "OrdersController",
+      "parentId": "modulo",
+      "kind": "flow-node",
+      "variant": "component",
+      "subtitle": "src/orders/orders.controller.ts",
+      "layout": {
+        "x": 410,
+        "y": 255,
+        "width": 258,
+        "height": 60,
+        "pinned": false
+      }
+    },
+    {
+      "id": "servicio",
+      "name": "OrdersService.create",
+      "parentId": "modulo",
+      "kind": "flow-node",
+      "variant": "method",
+      "subtitle": "create(dto: CreateOrderDto): Promise<Order>",
+      "layout": {
+        "x": 808,
+        "y": 255,
+        "width": 343,
+        "height": 60,
+        "pinned": false
+      }
+    },
+    {
+      "id": "stock",
+      "name": "¿Hay stock?",
+      "parentId": "modulo",
+      "kind": "flow-node",
+      "variant": "decision",
+      "subtitle": "inventory.isAvailable(items)",
+      "layout": {
+        "x": 1291,
+        "y": 150,
+        "width": 238,
+        "height": 60,
+        "pinned": false
+      }
+    },
+    {
+      "id": "repositorio",
+      "name": "orders.repository.ts",
+      "parentId": "modulo",
+      "kind": "flow-node",
+      "variant": "file",
+      "subtitle": "src/orders/orders.repository.ts",
+      "layout": {
+        "x": 1669,
+        "y": 260,
+        "width": 261,
+        "height": 60,
+        "pinned": false
+      }
+    },
+    {
+      "id": "rechazo",
+      "name": "OrdersService.reject",
+      "parentId": "modulo",
+      "kind": "flow-node",
+      "variant": "method",
+      "subtitle": "reject(order: Order): void",
+      "layout": {
+        "x": 1669,
+        "y": 140,
+        "width": 240,
+        "height": 60,
+        "pinned": false
+      }
+    },
+    {
+      "id": "inventario",
+      "name": "inventory",
+      "kind": "flow-node",
+      "variant": "database",
+      "subtitle": "PostgreSQL, tabla inventory",
+      "layout": {
+        "x": 2095,
+        "y": 30,
+        "width": 239,
+        "height": 60,
+        "pinned": false
+      }
+    },
+    {
+      "id": "pedidos",
+      "name": "orders",
+      "kind": "flow-node",
+      "variant": "database",
+      "subtitle": "PostgreSQL, tabla orders",
+      "layout": {
+        "x": 2095,
+        "y": 150,
+        "width": 222,
+        "height": 60,
+        "pinned": false
+      }
+    },
+    {
+      "id": "cola",
+      "name": "orders.created",
+      "kind": "flow-node",
+      "variant": "queue",
+      "subtitle": "RabbitMQ, tópico de pedidos creados",
+      "layout": {
+        "x": 2095,
+        "y": 270,
+        "width": 289,
+        "height": 60,
+        "pinned": false
+      }
+    },
+    {
+      "id": "avisos",
+      "name": "NotificationService",
+      "kind": "flow-node",
+      "variant": "service",
+      "subtitle": "Envía la confirmación al cliente",
+      "layout": {
+        "x": 2524,
+        "y": 270,
+        "width": 256,
+        "height": 60,
+        "pinned": false
+      }
+    },
+    {
+      "id": "correo",
+      "name": "SendGrid",
+      "kind": "flow-node",
+      "variant": "external",
+      "subtitle": "API de correo de terceros",
+      "layout": {
+        "x": 2920,
+        "y": 270,
+        "width": 224,
+        "height": 60,
+        "pinned": false
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "r1",
+      "kind": "flow-edge",
+      "source": "alta",
+      "target": "controlador",
+      "flowType": "call",
+      "route": [
+        {
+          "x": 245,
+          "y": 285
+        },
+        {
+          "x": 410,
+          "y": 285
+        }
+      ]
+    },
+    {
+      "id": "r2",
+      "kind": "flow-edge",
+      "source": "controlador",
+      "target": "servicio",
+      "label": "create()",
+      "flowType": "call",
+      "route": [
+        {
+          "x": 668,
+          "y": 285
+        },
+        {
+          "x": 808,
+          "y": 285
+        }
+      ]
+    },
+    {
+      "id": "r3",
+      "kind": "flow-edge",
+      "source": "servicio",
+      "target": "stock",
+      "flowType": "call",
+      "route": [
+        {
+          "x": 1151,
+          "y": 285
+        },
+        {
+          "x": 1167,
+          "y": 285
+        },
+        {
+          "x": 1167,
+          "y": 180
+        },
+        {
+          "x": 1291,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "r4",
+      "kind": "flow-edge",
+      "source": "stock",
+      "target": "repositorio",
+      "label": "hay stock",
+      "flowType": "call",
+      "route": [
+        {
+          "x": 1529,
+          "y": 180
+        },
+        {
+          "x": 1545,
+          "y": 180
+        },
+        {
+          "x": 1545,
+          "y": 290
+        },
+        {
+          "x": 1669,
+          "y": 290
+        }
+      ]
+    },
+    {
+      "id": "r5",
+      "kind": "flow-edge",
+      "source": "stock",
+      "target": "rechazo",
+      "label": "sin stock",
+      "flowType": "call",
+      "route": [
+        {
+          "x": 1529,
+          "y": 180
+        },
+        {
+          "x": 1653,
+          "y": 180
+        },
+        {
+          "x": 1653,
+          "y": 170
+        },
+        {
+          "x": 1669,
+          "y": 170
+        }
+      ]
+    },
+    {
+      "id": "r6",
+      "kind": "flow-edge",
+      "source": "servicio",
+      "target": "inventario",
+      "label": "stock",
+      "flowType": "read",
+      "route": [
+        {
+          "x": 1151,
+          "y": 285
+        },
+        {
+          "x": 1167,
+          "y": 285
+        },
+        {
+          "x": 1167,
+          "y": 60
+        },
+        {
+          "x": 2095,
+          "y": 60
+        }
+      ]
+    },
+    {
+      "id": "r7",
+      "kind": "flow-edge",
+      "source": "servicio",
+      "target": "repositorio",
+      "flowType": "import",
+      "route": [
+        {
+          "x": 1151,
+          "y": 285
+        },
+        {
+          "x": 1653,
+          "y": 285
+        },
+        {
+          "x": 1653,
+          "y": 290
+        },
+        {
+          "x": 1669,
+          "y": 290
+        }
+      ]
+    },
+    {
+      "id": "r8",
+      "kind": "flow-edge",
+      "source": "repositorio",
+      "target": "pedidos",
+      "label": "insert",
+      "flowType": "write",
+      "route": [
+        {
+          "x": 1930,
+          "y": 290
+        },
+        {
+          "x": 1946,
+          "y": 290
+        },
+        {
+          "x": 1946,
+          "y": 180
+        },
+        {
+          "x": 2095,
+          "y": 180
+        }
+      ]
+    },
+    {
+      "id": "r9",
+      "kind": "flow-edge",
+      "source": "repositorio",
+      "target": "cola",
+      "label": "OrderCreated",
+      "flowType": "event",
+      "route": [
+        {
+          "x": 1930,
+          "y": 290
+        },
+        {
+          "x": 2079,
+          "y": 290
+        },
+        {
+          "x": 2079,
+          "y": 300
+        },
+        {
+          "x": 2095,
+          "y": 300
+        }
+      ]
+    },
+    {
+      "id": "r10",
+      "kind": "flow-edge",
+      "source": "cola",
+      "target": "avisos",
+      "flowType": "event",
+      "route": [
+        {
+          "x": 2384,
+          "y": 300
+        },
+        {
+          "x": 2524,
+          "y": 300
+        }
+      ]
+    },
+    {
+      "id": "r11",
+      "kind": "flow-edge",
+      "source": "avisos",
+      "target": "correo",
+      "label": "plantilla y destinatario",
+      "flowType": "data",
+      "route": [
+        {
+          "x": 2780,
+          "y": 300
+        },
+        {
+          "x": 2920,
+          "y": 300
+        }
+      ]
+    }
+  ],
+  "id": "dg_goldengolden",
+  "revision": 1,
+  "createdAt": "2026-10-20T10:00:00.000Z",
+  "updatedAt": "2026-10-20T10:00:00.000Z"
+}
