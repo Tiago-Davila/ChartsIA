@@ -7,14 +7,17 @@ import { ExportController } from './export.controller.js';
 import { DiagramEvents } from './diagram-events.js';
 import { DiagramQueryService } from './diagram-query.service.js';
 import { ExportService } from './export.service.js';
+import { PreferencesController } from './preferences.controller.js';
+import { PreferencesService } from './preferences.service.js';
 import { PersistenceModule } from './persistence/persistence.module.js';
 import { CLOCK, DIAGRAM_ID_GENERATOR } from './tokens.js';
 
 @Module({
   imports: [PersistenceModule],
-  controllers: [DiagramsController, ProjectsController, ExportController],
+  controllers: [DiagramsController, ProjectsController, ExportController, PreferencesController],
   providers: [
     DiagramEvents,
+    PreferencesService,
     DiagramQueryService,
     DiagramCommandService,
     ExportService,

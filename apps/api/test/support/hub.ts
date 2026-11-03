@@ -23,7 +23,7 @@ export async function startHub(env: Record<string, string> = {}): Promise<TestHu
   const logs: string[] = [];
   const announced: string[] = [];
   // Puerto 0 ⇒ el sistema elige uno libre; la URL pública se fija tras escuchar.
-  const config = loadConfig({ CHARTSIA_DATA_DIR: dataDir, CHARTSIA_PORT: '1', ...env });
+  const config = loadConfig({ CHARTSIA_DATA_DIR: dataDir, CHARTSIA_CONFIG_FILE: join(dataDir, 'config.json'), CHARTSIA_PORT: '1', ...env });
   const app = await createApp(config, {
     logger: new JsonLogger({ level: 'debug', write: (l) => logs.push(l) }),
     announce: (t) => announced.push(t),

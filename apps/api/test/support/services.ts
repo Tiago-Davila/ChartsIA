@@ -1,13 +1,17 @@
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { loadConfig } from '../../src/config/config.js';
 import { DiagramCommandService } from '../../src/diagrams/diagram-command.service.js';
 import { DiagramEvents, type DiagramEvent } from '../../src/diagrams/diagram-events.js';
 import { DiagramQueryService } from '../../src/diagrams/diagram-query.service.js';
 import { DiagramLock } from '../../src/diagrams/persistence/diagram-lock.js';
 import { InMemoryDiagramRepository } from '../../src/diagrams/persistence/in-memory.repository.js';
+import { PreferencesService } from '../../src/diagrams/preferences.service.js';
 
 /** Servicios de aplicación cableados a mano con repositorio en memoria y reloj fijo. */
 export function createServices(overrides: { maxElements?: number } = {}) {
-  const config = { ...loadConfig({}), ...overrides };
+  const config = { ...loadConfig({}), ...overrides, configFile: join(mkdtempSync(join(tmpdir(), 'chartsia-config-')), 'config.json') };
   const repo = new InMemoryDiagramRepository();
   const events = new DiagramEvents();
   const emitted: DiagramEvent[] = [];
@@ -17,7 +21,8 @@ export function createServices(overrides: { maxElements?: number } = {}) {
   let seq = 0;
   const ids = () => `dg_${'abcdefghijklmnopqrstuvwxyz'[seq++ % 26]!.repeat(12)}`;
   const query = new DiagramQueryService(repo);
-  const commands = new DiagramCommandService(repo, new DiagramLock(), events, query, config, clock, ids);
+  const lock = new DiagramLock();
+  const commands = new DiagramCommandService(repo, lock, events, query, config, new PreferencesService(config, lock), clock, ids);
   return { config, repo, events, emitted, query, commands };
 }
 
