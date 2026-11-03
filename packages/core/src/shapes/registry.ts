@@ -1,4 +1,5 @@
 import { type Element } from '../model/diagram.js';
+import { type UmlDetail } from '../model/preferences.js';
 import { type ElementKind } from '../model/enums.js';
 import { boundaryShape } from './c4/boundary.js';
 import { componentShape } from './c4/component.js';
@@ -52,12 +53,12 @@ export function shapeFor<E extends Element>(element: E): ShapeDefinition<E> {
 }
 
 /** Tamaño natural de un elemento (en grupos, el mínimo sin contar a sus hijos). */
-export function measureElement(element: Element): Size {
-  return shapeFor(element).measure(element);
+export function measureElement(element: Element, uml?: UmlDetail): Size {
+  return shapeFor(element).measure(element, uml);
 }
 
-export function elementPrimitives(element: Element, size: Size): Primitive[] {
-  return shapeFor(element).primitives(element, size);
+export function elementPrimitives(element: Element, size: Size, uml?: UmlDetail): Primitive[] {
+  return shapeFor(element).primitives(element, size, uml);
 }
 
 const NO_PADDING = { top: 0, right: 0, bottom: 0, left: 0 };

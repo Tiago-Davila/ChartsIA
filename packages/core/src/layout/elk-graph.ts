@@ -1,30 +1,39 @@
 import elkModule, { type ElkExtendedEdge, type ElkNode } from 'elkjs/lib/elk.bundled.js';
 import { type Diagram } from '../model/diagram.js';
 import { isGroupKind } from '../model/enums.js';
+import { DEFAULT_PREFERENCES, type Preferences } from '../model/preferences.js';
 import { groupPadding } from '../shapes/registry.js';
 import { type Size } from '../shapes/types.js';
 import { type Rect } from './types.js';
 
 const byId = <T extends { id: string }>(a: T, b: T) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 
-/** Espaciado: también se aplica a cada grupo, porque ELK no lo hereda de la raíz. */
-const SPACING: Record<string, string> = {
-  'elk.spacing.nodeNode': '60',
-  'elk.layered.spacing.nodeNodeBetweenLayers': '80',
-  'elk.spacing.edgeNode': '30',
-};
+const DIRECTIONS = { down: 'DOWN', right: 'RIGHT' } as const;
+const ELEMENT_GAPS = { compact: 30, normal: 60, wide: 100 } as const;
+const LAYER_GAPS = { compact: 40, normal: 80, wide: 130 } as const;
 
-const BASE_OPTIONS: Record<string, string> = {
-  'elk.algorithm': 'layered',
-  'elk.direction': 'DOWN',
-  'elk.hierarchyHandling': 'INCLUDE_CHILDREN',
-  'elk.edgeRouting': 'ORTHOGONAL',
-  'elk.randomSeed': '1',
-  ...SPACING,
-  'elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
-  'elk.layered.nodePlacement.strategy': 'BRANDES_KOEPF',
-  'elk.padding': '[top=30,left=30,bottom=30,right=30]',
-};
+/** Espaciado de las preferencias: también se aplica a cada grupo, porque ELK no lo hereda de la raíz. */
+function spacingOptions(prefs: Preferences): Record<string, string> {
+  return {
+    'elk.spacing.nodeNode': String(ELEMENT_GAPS[prefs.elementSpacing]),
+    'elk.layered.spacing.nodeNodeBetweenLayers': String(LAYER_GAPS[prefs.layerSpacing]),
+    'elk.spacing.edgeNode': '30',
+  };
+}
+
+function baseOptions(prefs: Preferences): Record<string, string> {
+  return {
+    'elk.algorithm': 'layered',
+    'elk.direction': DIRECTIONS[prefs.direction],
+    'elk.hierarchyHandling': 'INCLUDE_CHILDREN',
+    'elk.edgeRouting': 'ORTHOGONAL',
+    'elk.randomSeed': '1',
+    ...spacingOptions(prefs),
+    'elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
+    'elk.layered.nodePlacement.strategy': 'BRANDES_KOEPF',
+    'elk.padding': '[top=30,left=30,bottom=30,right=30]',
+  };
+}
 
 const INTERACTIVE_OPTIONS: Record<string, string> = {
   'elk.layered.layering.strategy': 'INTERACTIVE',
@@ -49,6 +58,8 @@ export interface ElkInput {
  * compuestos y semilla fija, para que la misma entrada produzca el mismo resultado.
  */
 export function buildElkGraph({ diagram, sizes, seeds }: ElkInput): ElkNode {
+  const prefs = diagram.preferences ?? DEFAULT_PREFERENCES;
+  const spacing = spacingOptions(prefs);
   const elements = [...diagram.elements].sort(byId);
   const ids = new Set(elements.map((e) => e.id));
   const nodes = new Map<string, ElkNode>();
@@ -58,7 +69,7 @@ export function buildElkGraph({ diagram, sizes, seeds }: ElkInput): ElkNode {
     if (isGroupKind(el.kind)) {
       const p = groupPadding(el);
       node.layoutOptions = {
-        ...SPACING,
+        ...spacing,
         'elk.padding': `[top=${p.top},left=${p.left},bottom=${p.bottom},right=${p.right}]`,
         'elk.nodeSize.constraints': 'MINIMUM_SIZE',
         'elk.nodeSize.minimum': `(${size.width},${size.height})`,
@@ -67,7 +78,7 @@ export function buildElkGraph({ diagram, sizes, seeds }: ElkInput): ElkNode {
     }
     nodes.set(el.id, node);
   }
-  const root: ElkNode = { id: '__root__', layoutOptions: { ...BASE_OPTIONS, ...(seeds ? INTERACTIVE_OPTIONS : {}) }, children: [] };
+  const root: ElkNode = { id: '__root__', layoutOptions: { ...baseOptions(prefs), ...(seeds ? INTERACTIVE_OPTIONS : {}) }, children: [] };
   for (const el of elements) {
     const parent = el.parentId && ids.has(el.parentId) ? nodes.get(el.parentId)! : root;
     const node = nodes.get(el.id)!;

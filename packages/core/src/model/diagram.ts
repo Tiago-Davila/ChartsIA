@@ -21,6 +21,7 @@ import { TextElementSchema } from './text-elements.js';
 import { CollectionElementSchema } from './nosql-elements.js';
 import { FrameElementSchema } from './frame-elements.js';
 import { DIAGRAM_TYPES } from './enums.js';
+import { PreferencesSchema } from './preferences.js';
 import { RelationSchema } from './relation.js';
 import { MAX_DIAGRAM_IMAGE_BYTES, MAX_DIAGRAM_IMAGE_PIXELS, totalImageDataUrlBytes, totalImageRasterPixels } from './image-data.js';
 
@@ -85,6 +86,7 @@ export const DiagramSchema = z.strictObject({
   elements: z.array(ElementSchema),
   relations: z.array(RelationSchema),
   revision: z.number().int().nonnegative(),
+  preferences: PreferencesSchema.optional().describe('Preferencias con las que se creó el diagrama; sin ellas valen las de siempre'),
   createdAt: z.string(),
   updatedAt: z.string(),
 }).superRefine(({ elements }, ctx) => imageBudget(elements, ctx));
