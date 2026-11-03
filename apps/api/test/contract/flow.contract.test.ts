@@ -119,14 +119,14 @@ describe('contract: flujos de sistema', () => {
       relations: [],
     });
     expect(nodo.isError).toBe(true);
-    expect(nodo.structuredContent!.errors[0]).toMatchObject({ code: 'SCHEMA_VIOLATION', path: '/elements/0' });
+    expect(nodo.structuredContent!.errors?.[0]).toMatchObject({ code: 'SCHEMA_VIOLATION', path: '/elements/0' });
 
     const conexion = await h.call('create_diagram', {
       ...minimo,
       relations: [{ id: 'r', kind: 'flow-edge', source: 'api', target: 'usuarios', grosor: 3 }],
     });
     expect(conexion.isError).toBe(true);
-    expect(conexion.structuredContent!.errors[0]).toMatchObject({ code: 'SCHEMA_VIOLATION', path: '/relations/0' });
+    expect(conexion.structuredContent!.errors?.[0]).toMatchObject({ code: 'SCHEMA_VIOLATION', path: '/relations/0' });
   });
 
   it('dos create_diagram iguales dan el mismo layout', async () => {
@@ -166,7 +166,7 @@ describe('contract: flujos de sistema', () => {
       operations: [{ op: 'add_element', element: { id: 'x', kind: 'flow-node', variant: 'robot', name: 'X' } }],
     });
     expect(result.isError).toBe(true);
-    expect(result.structuredContent!.errors[0]).toMatchObject({ path: expect.stringContaining('/operations/0/element'), hint: expect.any(String) });
+    expect(result.structuredContent!.errors?.[0]).toMatchObject({ path: expect.stringContaining('/operations/0/element'), hint: expect.any(String) });
     expect((await h.repo.get(id))?.elements).toHaveLength(2);
   });
 
