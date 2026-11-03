@@ -47,17 +47,34 @@ const NOSQL_EXAMPLE = {
   relations: [{ id: 'r1', kind: 'nosql-rel', source: 'Pedidos', target: 'Clientes', label: 'clienteId' }],
 };
 
+const FLOW_EXAMPLE = {
+  type: 'flow',
+  title: 'Alta de pedido',
+  elements: [
+    { id: 'api', kind: 'flow-node', variant: 'trigger', name: 'POST /orders', subtitle: 'src/orders/controller.ts:18' },
+    { id: 'stock', kind: 'flow-node', variant: 'decision', name: '¿Hay stock?', subtitle: 'src/orders/service.ts:42' },
+    { id: 'db', kind: 'flow-node', variant: 'database', name: 'orders' },
+    { id: 'error', kind: 'flow-node', variant: 'component', name: 'Rechazar pedido', subtitle: 'src/orders/errors.ts:7' },
+  ],
+  relations: [
+    { id: 'api_stock', kind: 'flow-edge', source: 'api', target: 'stock' },
+    { id: 'stock_db', kind: 'flow-edge', source: 'stock', target: 'db', flowType: 'write', label: 'sí' },
+    { id: 'stock_error', kind: 'flow-edge', source: 'stock', target: 'error', label: 'no' },
+  ],
+};
+
 export const createDiagramTool = (commands: DiagramCommandService, results: ToolResultFormatter) =>
   defineTool({
     name: 'create_diagram',
     annotations: { title: 'Crear diagrama', readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     description: [
-      'Crea un diagrama de clases UML, C4 (contexto, contenedores o componentes), entidad-relación (er) o NoSQL (nosql) a partir de una descripción estructural y lo muestra en la app de ChartsIA, donde la persona lo ve al instante.',
+      'Crea un diagrama de clases UML, C4 (contexto, contenedores o componentes), entidad-relación (er), NoSQL (nosql) o flujo de sistema (flow) a partir de una descripción estructural y lo muestra en la app de ChartsIA, donde la persona lo ve al instante.',
       'Úsalo siempre que la persona pida un diagrama nuevo o distinto de los que ya existen (otro tema, sistema o tipo): crea un diagrama aparte y no modifica los anteriores. No uses apply_changes para eso.',
       'No envíes coordenadas: el servidor dispone el diagrama automáticamente sin solapes. Solo si quieres fijar un elemento, añade layout {"x","y"}.',
       'Cada elemento y relación lleva un id estable elegido por ti (letra inicial, letras, dígitos, "_" o "-"); úsalo después en apply_changes.',
       'El tipo de diagrama solo indica el uso previsto: todos los kinds y relaciones valen en cualquier tipo, y un mismo diagrama puede mezclar clases, C4, ER, NoSQL y figuras. Kinds: class → class, interface, enum, package (grupo). c4-context → person, software-system, boundary. c4-container → además container (variant: default|database|queue|web). c4-component → además component, que debe ir dentro de un boundary con boundaryType "container". er → entity (weak:true para entidad débil, doble borde; associative:true para entidad asociativa, borde discontinuo) y table (columns[] con name, type, pk?, fk? {table, column}, notNull?, unique?; fk debe apuntar a una columna pk de otra tabla), attribute (óvalo de la notación Chen: key? subrayado, partialKey? subrayado discontinuo, multivalued? doble óvalo, derived? discontinuo), value-list (values[]: lista de valores de un atributo), relationship (rombo de relación Chen; identifying?: true lo dibuja de doble borde) y specialization (triángulo de especialización o generalización; overlapping?: true para subclases solapadas, si no disjuntas).',
       'nosql → collection con fields[] (máx. 200) en rutas planas path:string[] de 1–8 segmentos; cada segmento empieza con letra o _ y sigue con letras, dígitos, _ o -, máx. 64, excepto __proto__, constructor y prototype. Tipos: string|number|boolean|date|timestamp|objectId|reference|geopoint|null|object|array; array requiere itemsType simple u object. Para subdocumentos, define el object o array<object> y después sus campos con la ruta extendida. nosql-rel va de la colección que guarda la referencia a la colección destino; label puede nombrar el campo de referencia.',
+      'flow → flujo de sistema, para explicar cómo se procesa algo en un código (un pedido, un login, un webhook): nodos flow-node con variant (trigger = punto de entrada, component, file, method, service, database, queue, decision, external) y subtitle opcional (ruta y línea, p. ej. "src/orders/service.ts:42"), unidos con flow-edge, que lleva flowType opcional (call por defecto, import, read, write, event o data) y label. Cada flow-edge que sale de una decision necesita label (la rama: "sí", "no"). Lee el código antes de dibujar, usa un nodo por pieza relevante y manda el flujo completo en una sola llamada a create_diagram (no lo armes de a poco con apply_changes sobre un diagrama vacío: el layout sale menos ordenado). El flujo va siempre de izquierda a derecha, sin coordenadas. Se agrupa con frame (por carpeta, capa o servicio). Guía de variantes y conexiones en chartsia://schema/flow.',
       'frame es un grupo universal con título en name; parentId contiene elementos dentro del marco y permite marcos anidados.',
       'Figuras generales: en CUALQUIER tipo de diagrama puedes usar kind "figure" con shape (circle, oval, square, rectangle, isosceles-triangle, equilateral-triangle, scalene-triangle, right-triangle, diamond, parallelogram, pentagon, hexagon, heptagon, octagon, cloud, arrow, double-arrow, arrow-right, arrow-left, arrow-up o arrow-down); name es el texto centrado dentro. Úsalas solo si la persona pide figuras básicas o libres.',
       'Lápiz: en cualquier diagrama puedes enviar un elemento kind "drawing" con name, points (2 a 1024 puntos {x,y} locales, ambos entre 0 y 5000), strokeColor (#rrggbb) y strokeWidth (0.5 a 16; la app ofrece 1.5 fino, 2.5 medio y 5 grueso). La app normaliza los trazos del puntero; para MCP, pon layout {x,y} en la posición del trazo. Marcador: el mismo kind "drawing" con highlighter: true, strokeWidth ancho (p. ej. 14; la app ofrece 8, 14 y 16) y un color claro (#facc15); se dibuja semitransparente detrás de las figuras para resaltar una zona sin tapar el texto.',
@@ -69,6 +86,7 @@ export const createDiagramTool = (commands: DiagramCommandService, results: Tool
       'Estilo (opcional, solo si la persona lo pide): cada elemento y relación admite style {borderColor?, fillColor?, fontColor? ("#rrggbb"), lineWidth? ("thin"|"medium"|"thick", grosor del borde o de la línea), fontFamily? ("sans-serif"|"serif"|"monospace"|"handwritten"), fontSize? (entero de 8 a 48)}.',
       'projectId (opcional) coloca el diagrama en un proyecto existente; úsalo solo si la persona lo pidió.',
       'Si algo es inválido no se crea nada y recibes errores con code, path (JSON Pointer), message y hint para corregirlos. La guía completa por tipo está en el recurso chartsia://schema/{type}.',
+      `Flujo de sistema con una decisión (entrada): ${JSON.stringify(FLOW_EXAMPLE)}`,
       `Pedido NoSQL con cliente y direcciones embebidas (entrada): ${JSON.stringify(NOSQL_EXAMPLE)}`,
       `Ejemplo de entrada: ${JSON.stringify(EXAMPLE)}`,
     ].join('\n'),

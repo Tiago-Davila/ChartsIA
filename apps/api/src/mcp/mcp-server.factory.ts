@@ -41,10 +41,11 @@ import { type ToolDefinition } from './tools/tool-definition.js';
 export const SCHEMA_VERSION = '1.0.0';
 
 const INSTRUCTIONS = [
-  'ChartsIA dibuja diagramas de clases UML, C4 y entidad-relación en una app que la persona tiene abierta.',
+  'ChartsIA dibuja diagramas de clases UML, C4, entidad-relación y flujos de sistema en una app que la persona tiene abierta.',
   'Flujo habitual: create_diagram con la estructura (sin coordenadas), import_mermaid para importar classDiagram, apply_changes para cada refinamiento y export_diagram si piden un archivo. undo_changes deshace o rehace el último cambio.',
   'import_drawio importa un .drawio o lo copiado en draw.io (XML, también comprimido) a un diagrama nuevo.',
   'Cada pedido de un diagrama nuevo o distinto (otro tema, sistema o tipo) va con create_diagram, que no toca los diagramas anteriores; apply_changes solo refina el diagrama existente del que se habla (por defecto el activo).',
+  'Para explicar cómo funciona un código (un pedido, un login, un webhook) lee el código y dibuja un diagrama flow con create_diagram: nodos flow-node (variant trigger, component, file, method, service, database, queue, decision o external; subtitle con la ruta y la línea) unidos con flow-edge (flowType call, import, read, write, event o data; label obligatoria en las salidas de una decision). Mándalo completo en una sola llamada y no de a poco con apply_changes sobre un diagrama vacío. Entrada mínima: {"type":"flow","title":"Login","elements":[{"id":"a","kind":"flow-node","variant":"trigger","name":"POST /login"},{"id":"b","kind":"flow-node","variant":"database","name":"users"}],"relations":[{"id":"r","kind":"flow-edge","source":"a","target":"b","flowType":"read"}]}. Guía en chartsia://schema/flow.',
   'Usa get_diagram para conocer los ids actuales antes de editar y list_diagrams / open_diagram para cambiar de diagrama.',
   'No agrupes diagramas en proyectos (create_project, move_diagram, projectId de create_diagram) salvo que la persona lo pida.',
   'No agrupes elementos en package, boundary o frame salvo que la persona lo pida (o que un component lo exija).',
