@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { type ExportPreferences } from '@chartsia/core/export';
 import { layoutDiagram, relayoutDiagram } from '@chartsia/core/layout';
 import { type Diagram, DiagramInputSchema, newDiagramId, newProjectId, type Preferences, type Project, ProjectSchema, styleElement, styleRelation, withPreferences } from '@chartsia/core/model';
 import { applyOperations } from '@chartsia/core/operations';
@@ -110,6 +111,16 @@ export class DiagramCommandService {
   /** Cambia las preferencias; los diagramas que ya existen no se tocan. */
   setPreferences(changes: unknown): Promise<Preferences> {
     return this.preferences.update(changes);
+  }
+
+  /** Preferencias de exportación: formato por defecto, fondo, margen, escala y título. */
+  getExportPreferences(): Promise<ExportPreferences> {
+    return this.preferences.getExport();
+  }
+
+  /** Cambia las preferencias de exportación; valen para las exportaciones siguientes. */
+  setExportPreferences(changes: unknown): Promise<ExportPreferences> {
+    return this.preferences.updateExport(changes);
   }
 
   /** Deshace o rehace el último cambio del diagrama, venga del agente o de la app. */
