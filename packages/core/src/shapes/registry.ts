@@ -11,6 +11,7 @@ import { frameShape } from './general/frame.js';
 import { drawingShape } from './general/drawing.js';
 import { imageShape } from './general/image.js';
 import { textBlockShape } from './general/text-block.js';
+import { flowNodeShape } from './flow/node.js';
 import { collectionShape } from './nosql/collection.js';
 import { tableShape } from './er/table.js';
 import { valueListShape } from './er/value-list.js';
@@ -42,6 +43,7 @@ const SHAPES: { [K in ElementKind]: ShapeDefinition<Extract<Element, { kind: K }
   image: imageShape,
   text: textBlockShape,
   collection: collectionShape,
+  'flow-node': flowNodeShape,
   attribute: attributeShape,
   'value-list': valueListShape,
   relationship: relationshipShape,

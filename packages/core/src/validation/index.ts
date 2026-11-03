@@ -4,6 +4,7 @@ import { buildContext, type Rule, type RuleOptions } from './context.js';
 import { fromZodError, type ValidationError } from './errors.js';
 import { checkChen } from './rules/chen.js';
 import { checkColumns } from './rules/columns.js';
+import { checkFlow } from './rules/flow.js';
 import { checkInheritanceCycles, checkParentCycles, checkParents } from './rules/hierarchy.js';
 import { checkMembers } from './rules/members.js';
 import { checkLimits } from './rules/limits.js';
@@ -24,6 +25,7 @@ const RULES: Rule[] = [
   checkColumns,
   checkChen,
   checkRelations,
+  checkFlow,
   checkParents,
   checkParentCycles,
   checkInheritanceCycles,

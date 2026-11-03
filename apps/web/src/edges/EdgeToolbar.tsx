@@ -1,4 +1,4 @@
-import { ARROWHEADS, type Arrowheads, CARDINALITIES, type Cardinality, MULTIPLICITY_RELATION_KINDS, type Point, type Relation, type RelationKind, SIDES, type Side } from '@chartsia/core/model';
+import { ARROWHEADS, type Arrowheads, CARDINALITIES, type Cardinality, FLOW_EDGE_TYPES, type FlowEdgeType, MULTIPLICITY_RELATION_KINDS, type Point, type Relation, type RelationKind, SIDES, type Side } from '@chartsia/core/model';
 import { EdgeLabelRenderer, useReactFlow } from '@xyflow/react';
 import { useState } from 'react';
 import { insertWaypoint, kindChanges, relationKinds, reverseChanges, segmentMidpoints } from '../canvas/edge-edits';
@@ -16,7 +16,17 @@ const KIND_LABELS: Record<RelationKind, string> = {
   'er-rel': 'Relación ER',
   'er-attr': 'Atributo ER',
   'nosql-rel': 'Referencia NoSQL',
+  'flow-edge': 'Conexión de flujo',
   connector: 'Conector libre',
+};
+
+const FLOW_TYPE_LABELS: Record<FlowEdgeType, string> = {
+  call: 'Llama',
+  import: 'Importa',
+  read: 'Lee',
+  write: 'Escribe',
+  event: 'Evento',
+  data: 'Datos',
 };
 
 const CARDINALITY_LABELS: Record<Cardinality, string> = {
@@ -163,6 +173,15 @@ export function EdgePanel({ relation, editingText, onEditText }: { relation: Rel
       <button type="button" className="button" onClick={() => update(reverseChanges(relation))}>
         Invertir
       </button>
+      {relation.kind === 'flow-edge' ? (
+        <select aria-label="Tipo de conexión" title="Tipo de conexión" value={relation.flowType ?? 'call'} onChange={(e) => update({ flowType: e.target.value as FlowEdgeType })}>
+          {FLOW_EDGE_TYPES.map((type) => (
+            <option key={type} value={type}>
+              {FLOW_TYPE_LABELS[type]}
+            </option>
+          ))}
+        </select>
+      ) : null}
       {relation.kind === 'er-rel' ? (
         <>
           <CardinalitySelect label="Cardinalidad origen" value={relation.sourceCardinality} onChange={(value) => update({ sourceCardinality: value })} />

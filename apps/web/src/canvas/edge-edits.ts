@@ -24,6 +24,7 @@ function connectionCandidates(id: string, source: string, target: string): Relat
   return [
     { id, kind: 'association', source, target },
     { id, kind: 'nosql-rel', source, target },
+    { id, kind: 'flow-edge', source, target },
     { id, kind: 'er-rel', source, target, sourceCardinality: 'one', targetCardinality: 'zero-many' },
     { id, kind: 'er-attr', source, target },
     { id, kind: 'er-attr', source: target, target: source },
@@ -35,14 +36,27 @@ function connectionCandidates(id: string, source: string, target: string): Relat
 function admits(elements: Element[], kind: RelationKind, source: string, target: string): boolean {
   const from = elements.find((e) => e.id === source);
   const to = elements.find((e) => e.id === target);
-  return !!from && !!to && !isGroupKind(from.kind) && !isGroupKind(to.kind) && canRelate(kind, from.kind, to.kind);
+  // Una conexión de flujo también une frames; las demás relaciones no unen grupos.
+  const joinable = (element: Element | undefined) => !!element && (!isGroupKind(element.kind) || (kind === 'flow-edge' && element.kind === 'frame'));
+  return joinable(from) && joinable(to) && canRelate(kind, from!.kind, to!.kind);
+}
+
+/** Etiqueta de la rama que sale de una decisión: "sí", "no" y luego "caso 3", "caso 4"… */
+function branchLabel(diagram: Pick<Diagram, 'elements' | 'relations'>, source: string): string | undefined {
+  const from = diagram.elements.find((e) => e.id === source);
+  if (from?.kind !== 'flow-node' || from.variant !== 'decision') return undefined;
+  const branches = diagram.relations.filter((r) => r.kind === 'flow-edge' && r.source === source).length;
+  return ['sí', 'no'][branches] ?? `caso ${branches + 1}`;
 }
 
 /** Relación nueva al conectar arrastrando: la primera semántica que admite el par o, si ninguna, un conector. */
 export function connectionRelation(diagram: Pick<Diagram, 'elements' | 'relations'>, source: string, target: string): Relation {
   const id = relationId(diagram);
   const candidates = connectionCandidates(id, source, target);
-  return candidates.find((rel) => admits(diagram.elements, rel.kind, rel.source, rel.target)) ?? { id, kind: 'connector', source, target };
+  const found = candidates.find((rel) => admits(diagram.elements, rel.kind, rel.source, rel.target));
+  if (found?.kind !== 'flow-edge') return found ?? { id, kind: 'connector', source, target };
+  const label = branchLabel(diagram, source);
+  return label ? { ...found, label } : found;
 }
 
 /** Tipos de flecha que admiten los extremos de la relación, incluido el actual para que el selector lo muestre. */
@@ -56,6 +70,7 @@ const KINDS_BY_FIELD = {
   targetMultiplicity: MULTIPLICITY_RELATION_KINDS,
   navigable: ['association'],
   technology: ['c4-rel'],
+  flowType: ['flow-edge'],
   sourceCardinality: ['er-rel'],
   targetCardinality: ['er-rel'],
   identifying: ['er-rel'],

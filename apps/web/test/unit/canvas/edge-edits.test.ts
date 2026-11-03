@@ -212,4 +212,32 @@ describe('cambiar el tipo de flecha produce siempre campos válidos', () => {
       });
     }
   }
+
+  describe('conexiones de flujo', () => {
+    const node = (id: string, variant: 'method' | 'decision' | 'database'): Diagram['elements'][number] => ({ id, kind: 'flow-node', variant, name: id });
+    const flow = {
+      elements: [node('a', 'method'), node('d', 'decision'), node('db', 'database'), { id: 'capa', kind: 'frame' as const, name: 'Capa' }, { id: 'k', kind: 'class' as const, name: 'K', attributes: [], operations: [] }],
+      relations: [] as Relation[],
+    };
+
+    it('conectar dos nodos de flujo crea una conexión de flujo, también hacia un frame', () => {
+      expect(connectionRelation(flow, 'a', 'db')).toEqual({ id: 'r1', kind: 'flow-edge', source: 'a', target: 'db' });
+      expect(connectionRelation(flow, 'a', 'capa')).toMatchObject({ kind: 'flow-edge', target: 'capa' });
+      expect(connectionRelation(flow, 'a', 'k')).toMatchObject({ kind: 'connector' });
+    });
+
+    it('las salidas de una decisión llevan etiqueta: sí, no y luego caso 3', () => {
+      const first = connectionRelation(flow, 'd', 'a');
+      expect(first).toMatchObject({ kind: 'flow-edge', label: 'sí' });
+      const second = connectionRelation({ ...flow, relations: [first] }, 'd', 'db');
+      expect(second.label).toBe('no');
+      expect(connectionRelation({ ...flow, relations: [first, { ...second, id: 'r2' }] }, 'd', 'db').label).toBe('caso 3');
+    });
+
+    it('las conexiones de flujo se pueden cambiar a otro tipo y quitan su flowType', () => {
+      const rel: Relation = { id: 'r', kind: 'flow-edge', source: 'a', target: 'db', flowType: 'write' };
+      expect(kindChanges(rel, 'connector')).toEqual({ kind: 'connector', flowType: null });
+      expect(relationKinds(flow.elements, rel)).toEqual(expect.arrayContaining(['flow-edge', 'connector']));
+    });
+  });
 });

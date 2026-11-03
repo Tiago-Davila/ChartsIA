@@ -1,4 +1,4 @@
-export const DIAGRAM_TYPES = ['class', 'c4-context', 'c4-container', 'c4-component', 'er', 'nosql'] as const;
+export const DIAGRAM_TYPES = ['class', 'c4-context', 'c4-container', 'c4-component', 'er', 'nosql', 'flow'] as const;
 export type DiagramType = (typeof DIAGRAM_TYPES)[number];
 
 export const CLASS_ELEMENT_KINDS = ['class', 'interface', 'enum', 'package'] as const;
@@ -12,6 +12,13 @@ export type ErElementKind = (typeof ER_ELEMENT_KINDS)[number];
 
 export const NOSQL_ELEMENT_KINDS = ['collection'] as const;
 export type NoSqlElementKind = (typeof NOSQL_ELEMENT_KINDS)[number];
+
+export const FLOW_ELEMENT_KINDS = ['flow-node'] as const;
+export type FlowElementKind = (typeof FLOW_ELEMENT_KINDS)[number];
+
+/** Variantes de un nodo de flujo: cada una con su ícono y su color por defecto. */
+export const FLOW_VARIANTS = ['component', 'file', 'method', 'service', 'database', 'queue', 'trigger', 'decision', 'external'] as const;
+export type FlowVariant = (typeof FLOW_VARIANTS)[number];
 
 /** Figuras generales: válidas en todos los tipos de diagrama. */
 export const FIGURE_ELEMENT_KINDS = ['figure'] as const;
@@ -34,7 +41,7 @@ export type TextElementKind = (typeof TEXT_ELEMENT_KINDS)[number];
 export const FIGURE_SHAPES = ['circle', 'square', 'rectangle', 'triangle', 'isosceles-triangle', 'equilateral-triangle', 'scalene-triangle', 'right-triangle', 'hexagon', 'cloud', 'diamond', 'parallelogram', 'oval', 'pentagon', 'heptagon', 'octagon', 'arrow', 'double-arrow', 'arrow-right', 'arrow-left', 'arrow-up', 'arrow-down'] as const;
 export type FigureShape = (typeof FIGURE_SHAPES)[number];
 
-export type ElementKind = ClassElementKind | C4ElementKind | ErElementKind | NoSqlElementKind | FigureElementKind | DrawingElementKind | ImageElementKind | FrameElementKind | TextElementKind;
+export type ElementKind = ClassElementKind | C4ElementKind | ErElementKind | NoSqlElementKind | FlowElementKind | FigureElementKind | DrawingElementKind | ImageElementKind | FrameElementKind | TextElementKind;
 
 /** Elementos que agrupan a otros mediante `parentId`. */
 export const GROUP_KINDS = ['package', 'boundary', 'frame'] as const satisfies readonly ElementKind[];
@@ -54,8 +61,13 @@ export const UML_RELATION_KINDS = [
 /** Conector libre: flecha o línea sin semántica UML/C4, válida en cualquier diagrama y entre familias. */
 export const CONNECTOR_KIND = 'connector';
 export const NOSQL_RELATION_KIND = 'nosql-rel';
-export const RELATION_KINDS = [...UML_RELATION_KINDS, 'c4-rel', 'er-rel', 'er-attr', NOSQL_RELATION_KIND, CONNECTOR_KIND] as const;
+export const FLOW_RELATION_KIND = 'flow-edge';
+export const RELATION_KINDS = [...UML_RELATION_KINDS, 'c4-rel', 'er-rel', 'er-attr', NOSQL_RELATION_KIND, FLOW_RELATION_KIND, CONNECTOR_KIND] as const;
 export type RelationKind = (typeof RELATION_KINDS)[number];
+
+/** Tipos de conexión de flujo: cada uno define su trazo (llama, importa, lee, escribe, evento, datos). */
+export const FLOW_EDGE_TYPES = ['call', 'import', 'read', 'write', 'event', 'data'] as const;
+export type FlowEdgeType = (typeof FLOW_EDGE_TYPES)[number];
 
 /** Relaciones UML que admiten multiplicidades en sus extremos. */
 export const MULTIPLICITY_RELATION_KINDS = ['association', 'aggregation', 'composition'] as const;
@@ -77,6 +89,9 @@ export type Visibility = (typeof VISIBILITIES)[number];
 
 export const CONTAINER_VARIANTS = ['default', 'database', 'queue', 'web'] as const;
 export type ContainerVariant = (typeof CONTAINER_VARIANTS)[number];
+
+/** Valores de `variant` que admite `update_element`: los de un contenedor C4 y los de un nodo de flujo, sin repetir. */
+export const ELEMENT_VARIANTS = [...CONTAINER_VARIANTS, 'component', 'file', 'method', 'service', 'trigger', 'decision', 'external'] as const satisfies readonly (ContainerVariant | FlowVariant)[];
 
 export const BOUNDARY_TYPES = ['enterprise', 'system', 'container'] as const;
 export type BoundaryType = (typeof BOUNDARY_TYPES)[number];
@@ -120,6 +135,7 @@ export const RELATION_ENDPOINT_KINDS: Partial<Record<RelationKind, readonly Elem
   'er-rel': ER_ELEMENT_KINDS,
   'er-attr': ER_ELEMENT_KINDS,
   [NOSQL_RELATION_KIND]: NOSQL_ELEMENT_KINDS,
+  [FLOW_RELATION_KIND]: [...FLOW_ELEMENT_KINDS, ...FRAME_ELEMENT_KINDS],
 };
 
 export const DEFAULT_MAX_ELEMENTS = 500;

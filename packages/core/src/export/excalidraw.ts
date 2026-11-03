@@ -25,10 +25,13 @@ import { TRIANGLE_HEIGHT, TRIANGLE_WIDTH } from '../shapes/er/specialization.js'
 import { MULTIVALUED_GAP } from '../shapes/er/attribute.js';
 import { tableBox } from '../shapes/er/table.js';
 import { valueListBox } from '../shapes/er/value-list.js';
+import { flowBadge, flowNodeShape } from '../shapes/flow/node.js';
+import { FLOW_PALETTE } from '../shapes/flow/palette.js';
 import { collectionShape } from '../shapes/nosql/collection.js';
 import { lineHeight, measureText, wrapText } from '../shapes/text-metrics.js';
 import { type Primitive } from '../shapes/types.js';
 import { CIRCLE_RADIUS, crowFoot, isCardinality, markerFrame, relationStyle, type MarkerKind } from '../shapes/uml/markers.js';
+import { flowIconDataUrl } from './flow-icon.js';
 import { orderKeys } from './fractional-index.js';
 
 type Json = Record<string, unknown>;
@@ -141,7 +144,7 @@ class Builder {
     this.line(id, { x, y }, { x: x + width, y }, extra);
   }
 
-  image(id: string, box: Box, dataURL: string): void {
+  image(id: string, box: Box, dataURL: string, groupIds: string[] = []): void {
     const fileId = `file_${id}`;
     const mimeType = /^data:(image\/(?:png|jpeg|svg\+xml));base64,/.exec(dataURL)?.[1];
     if (!mimeType) throw new Error('La imagen no tiene un data URL válido.');
@@ -150,7 +153,7 @@ class Builder {
     const width = Math.min(box.width, box.height * aspect);
     const height = Math.min(box.height, box.width / aspect);
     const fitted = { x: box.x + (box.width - width) / 2, y: box.y + (box.height - height) / 2, width, height };
-    this.elements.push(this.base(id, 'image', fitted, { fileId, status: 'saved', scale: [1, 1], crop: null }));
+    this.elements.push(this.base(id, 'image', fitted, { fileId, status: 'saved', scale: [1, 1], crop: null, groupIds }));
     this.files[fileId] = { id: fileId, dataURL, mimeType, created: this.updated, lastRetrieved: this.updated };
   }
 
@@ -404,6 +407,49 @@ function addCollection(b: Builder, el: Element, box: Box): void {
   });
 }
 
+/** Nodo de flujo como tarjeta, recuadro, ícono SVG y textos agrupados, para que se muevan juntos. */
+function addFlowNode(b: Builder, el: Element, box: Box): void {
+  if (el.kind !== 'flow-node') return;
+  const primitives = flowNodeShape.primitives(el, { width: box.width, height: box.height });
+  const card = primitives[0];
+  if (!card || card.type !== 'rect') return;
+  const palette = FLOW_PALETTE[el.variant];
+  const badge = flowBadge(box.height);
+  const groupIds = [`${el.id}-group`];
+  b.shape(el.id, 'rectangle', box, {
+    backgroundColor: card.fill,
+    strokeColor: card.stroke,
+    strokeWidth: card.strokeWidth ?? 1,
+    strokeStyle: card.dash ? 'dashed' : 'solid',
+    roundness: { type: 3 },
+    groupIds,
+    customData: { kind: 'flow-node', variant: el.variant, ...(el.subtitle ? { subtitle: el.subtitle } : {}) },
+  });
+  b.shape(`${el.id}-badge`, 'rectangle', { x: box.x + badge.x, y: box.y + badge.y, width: badge.size, height: badge.size }, {
+    backgroundColor: palette.tint,
+    strokeColor: 'transparent',
+    roundness: { type: 3 },
+    groupIds,
+  });
+  b.image(`${el.id}-icon`, { x: box.x + badge.icon.x, y: box.y + badge.icon.y, width: badge.icon.size, height: badge.icon.size }, flowIconDataUrl(el.variant, palette.accent), groupIds);
+  primitives.forEach((primitive: Primitive, i) => {
+    if (primitive.type !== 'text') return;
+    b.text(`${el.id}-text-${i}`, primitive.text, {
+      x: box.x + primitive.x,
+      y: box.y + primitive.y - primitive.size * 0.875,
+      width: Math.max(0, box.width - primitive.x),
+      height: lineHeight(primitive.size),
+    }, {
+      fontSize: primitive.size,
+      fontFamily: primitive.fontFamily ? STYLE_FONT_FAMILIES[primitive.fontFamily] : FONT_FAMILY,
+      strokeColor: primitive.color,
+      textAlign: 'left',
+      verticalAlign: 'middle',
+      groupIds,
+    });
+  });
+}
+
 /** Bloque de texto como sus primitivas: recuadros del código y líneas de texto (Excalidraw no tiene negrita por tramo). */
 function addTextBlock(b: Builder, el: Element, box: Box): void {
   if (el.kind !== 'text') return;
@@ -478,7 +524,7 @@ function addArrow(b: Builder, rel: Relation, byId: Map<string, Json>): void {
     type: 'arrow',
     strokeColor: style.color,
     ...widthOf(rel.style),
-    strokeStyle: style.dash ? 'dashed' : 'solid',
+    strokeStyle: style.dash ? (style.dash[0]! <= 2 ? 'dotted' : 'dashed') : 'solid',
     points: path.map((p) => [r(p.x - origin.x), r(p.y - origin.y)]),
     lastCommittedPoint: null,
     startBinding: byId.has(rel.source) ? binding(rel.source) : null,
@@ -526,6 +572,7 @@ export function exportExcalidraw(diagram: Diagram, settings: ExportSettings = DE
     if (el.kind === 'drawing') addDrawing(b, el, box);
     else if (el.kind === 'image') b.image(el.id, box, el.src);
     else if (el.kind === 'collection') addCollection(b, el, box);
+    else if (el.kind === 'flow-node') addFlowNode(b, el, box);
     else if (el.kind === 'text') addTextBlock(b, el, box);
     else if (el.kind === 'figure') addFigure(b, el, box);
     else if (el.kind === 'frame') addFrame(b, el, box);

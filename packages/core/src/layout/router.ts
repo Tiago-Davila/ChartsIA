@@ -9,6 +9,8 @@ export interface RouteRequest {
   sourceSide?: Side;
   targetSide?: Side;
   waypoints?: Point[];
+  /** El puerto queda en el centro del lado, no repartido con otras conexiones del mismo lado. */
+  centered?: boolean;
 }
 
 const MARGIN = 10;
@@ -240,6 +242,7 @@ export function routeEdges(requests: RouteRequest[], rects: Map<string, Rect>, o
     sides.set(req.id, pair);
     const other = [center(t), center(s)];
     pair.forEach((side, end) => {
+      if (req.centered) return;
       const node = end === 0 ? req.source : req.target;
       const key = `${node}:${side}`;
       const along = side === 'top' || side === 'bottom' ? other[end]!.x : other[end]!.y;
@@ -270,8 +273,8 @@ export function routeEdges(requests: RouteRequest[], rects: Map<string, Rect>, o
       continue;
     }
     const [sSide, tSide] = sides.get(req.id)!;
-    const from = portAt(s, sSide, fractions.get(`${req.id}:0`)!);
-    const to = portAt(t, tSide, fractions.get(`${req.id}:1`)!);
+    const from = portAt(s, sSide, fractions.get(`${req.id}:0`) ?? 0.5);
+    const to = portAt(t, tSide, fractions.get(`${req.id}:1`) ?? 0.5);
     const fromOut = { x: from.x + NORMAL[sSide].x * STUB, y: from.y + NORMAL[sSide].y * STUB };
     const toOut = { x: to.x + NORMAL[tSide].x * STUB, y: to.y + NORMAL[tSide].y * STUB };
     const stops = [fromOut, ...(req.waypoints ?? []), toOut];

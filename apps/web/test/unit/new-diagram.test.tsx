@@ -47,7 +47,7 @@ describe('NewDiagram', () => {
     render(<NewDiagram projects={[]} onCreate={vi.fn()} onImportMermaid={vi.fn()} onImportDrawio={vi.fn()} />);
     await elegir('Diagrama en blanco');
     const opciones = screen.getAllByRole('option').map((o) => (o as HTMLOptionElement).value);
-    expect(opciones).toEqual(['class', 'c4-context', 'c4-container', 'c4-component', 'er', 'nosql']);
+    expect(opciones).toEqual(['class', 'c4-context', 'c4-container', 'c4-component', 'er', 'nosql', 'flow']);
   });
 
   it('crea con el tipo y el título elegidos, recortado, y se cierra', async () => {

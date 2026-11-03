@@ -66,3 +66,27 @@ describe('toReactFlow', () => {
     expect(broken.edges).toEqual([]);
   });
 });
+
+describe('toReactFlow de un flujo', () => {
+  const flow: Diagram = {
+    id: 'dg_bbbbbbbbbbbb',
+    type: 'flow',
+    title: 'Flujo',
+    revision: 1,
+    createdAt: '',
+    updatedAt: '',
+    elements: [
+      { id: 'a', kind: 'flow-node', variant: 'trigger', name: 'A', layout: { x: 0, y: 0, width: 200, height: 60, pinned: false } },
+      { id: 'b', kind: 'flow-node', variant: 'database', name: 'B', layout: { x: 300, y: 0, width: 200, height: 60, pinned: false } },
+    ],
+    relations: [{ id: 'r1', kind: 'flow-edge', source: 'a', target: 'b', flowType: 'write', route: [{ x: 200, y: 30 }, { x: 300, y: 30 }] }],
+  };
+
+  it('los nodos de flujo tienen la entrada a la izquierda y la salida a la derecha', () => {
+    const { nodes, edges } = toReactFlow(flow);
+    expect(nodes[0]).toMatchObject({ type: 'flow-node', handles: [{ type: 'target', position: 'left', x: 0, y: 30 }, { type: 'source', position: 'right', x: 200, y: 30 }] });
+    expect(edges[0]).toMatchObject({ source: 'a', target: 'b', type: 'routed' });
+    expect(nodeTypes['flow-node']).toBeDefined();
+    expect(edgeTypes.routed).toBeDefined();
+  });
+});

@@ -19,6 +19,7 @@ import { DrawingElementSchema } from './drawing-elements.js';
 import { ImageElementSchema } from './image-elements.js';
 import { TextElementSchema } from './text-elements.js';
 import { CollectionElementSchema } from './nosql-elements.js';
+import { FlowNodeElementSchema } from './flow-elements.js';
 import { FrameElementSchema } from './frame-elements.js';
 import { DIAGRAM_TYPES } from './enums.js';
 import { PreferencesSchema } from './preferences.js';
@@ -43,6 +44,7 @@ export const ElementSchema = z.discriminatedUnion('kind', [
   ImageElementSchema,
   TextElementSchema,
   CollectionElementSchema,
+  FlowNodeElementSchema,
   FrameElementSchema,
   ErAttributeElementSchema,
   ValueListElementSchema,

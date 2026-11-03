@@ -9,7 +9,7 @@ import { validateDiagram } from '../../src/validation/index.js';
 
 // Regenerar solo con revisión explícita del diff: `pnpm --filter @chartsia/core test:golden -u`.
 const here = dirname(fileURLToPath(import.meta.url));
-const fixtures = ['library-class', 'shop-c4-container', 'uml-members', 'shop-er', 'shop-er-tables', 'shop-er-chen', 'er-figures', 'figures', 'images', 'connectors', 'styled-class', 'styled-c4', 'styled-er', 'nosql', 'frames', 'mixed', 'text-blocks'];
+const fixtures = ['library-class', 'shop-c4-container', 'uml-members', 'shop-er', 'shop-er-tables', 'shop-er-chen', 'er-figures', 'figures', 'images', 'connectors', 'styled-class', 'styled-c4', 'styled-er', 'nosql', 'flow', 'frames', 'mixed', 'text-blocks'];
 
 // Variantes con preferencias de diagrama: mismo fixture, otra salida.
 const variants: { name: string; fixture: string; preferences: PreferenceChanges }[] = [
