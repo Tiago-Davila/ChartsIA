@@ -38,6 +38,7 @@ describe('auth fuera de loopback (CHARTSIA_HOST=0.0.0.0)', () => {
     expect((await fetch(`${hub.url}/mcp`, { method: 'POST', headers: mcpHeaders, body: JSON.stringify(mcpInit) })).status).toBe(401);
     const api = await fetch(`${hub.url}/api/diagrams`);
     expect(api.status).toBe(401);
+    expect((await fetch(`${hub.url}/api/hub`)).status).toBe(401);
     expect((await body(api)).errors[0].code).toBe('UNAUTHORIZED');
   });
 

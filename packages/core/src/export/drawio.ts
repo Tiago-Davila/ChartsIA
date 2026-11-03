@@ -10,7 +10,9 @@ import { drawingXml } from './drawio-drawing.js';
 import { imageCells } from './drawio-image.js';
 import { textBlockCells } from './drawio-text.js';
 import { collectionCells } from './drawio-nosql.js';
+import { flowEdgeStyle, flowNodeCells } from './drawio-flow.js';
 import { frameCells } from './drawio-frame.js';
+import { DEFAULT_EXPORT_SETTINGS, type ExportSettings } from './options.js';
 import { drawioFont, drawioStroke } from './drawio-style.js';
 import { xmlElement } from './xml-escape.js';
 import { FONT } from '../shapes/types.js';
@@ -42,6 +44,7 @@ const EDGE_STYLES: Record<Relation['kind'], string> = {
   'er-rel': 'endArrow=none;',
   'er-attr': 'endArrow=none;',
   'nosql-rel': 'endArrow=block;endFill=1;endSize=12;',
+  'flow-edge': '',
   connector: 'endArrow=open;endSize=12;',
 };
 
@@ -71,12 +74,13 @@ function connectorEdgeStyle(rel: Relation): string {
   return `${start}${end}${rel.dashed ? 'dashed=1;' : ''}`;
 }
 
-function edgeXml(rel: Relation, byId: Map<string, Element>): string {
+function edgeXml(rel: Relation, byId: Map<string, Element>, showMultiplicities: boolean): string {
   const route = rel.route ?? [];
   const src = byId.get(rel.source);
   const tgt = byId.get(rel.target);
   let style = `${EDGE_STYLES[rel.kind]}html=0;rounded=0;edgeStyle=none;orthogonal=1;fontSize=11;labelBackgroundColor=#ffffff;`;
   if (rel.kind === 'er-rel') style = style.replace('endArrow=none;', erEdgeStyle(rel));
+  if (rel.kind === 'flow-edge') style = flowEdgeStyle(rel) + style;
   if (rel.kind === 'connector') style = style.replace('endArrow=open;endSize=12;', connectorEdgeStyle(rel));
   if (rel.kind === 'association' && rel.navigable === 'source-to-target') style = style.replace('endArrow=none;', 'endArrow=open;endSize=12;');
   style = drawioFont(drawioStroke(style, rel.style), rel.style, FONT.small);
@@ -90,16 +94,18 @@ function edgeXml(rel: Relation, byId: Map<string, Element>): string {
     const g = xmlElement('mxGeometry', { x, relative: '1', as: 'geometry' }, xmlElement('mxPoint', { x: x < 0 ? 10 : -10, y: -10, as: 'offset' }));
     cells.push(xmlElement('mxCell', { id: `${rel.id}:${suffix}`, value: text, style: drawioFont(`edgeLabel;resizable=0;html=0;align=${align};verticalAlign=bottom;fontSize=11;`, rel.style, FONT.small), vertex: '1', connectable: '0', parent: rel.id }, g));
   };
-  end(rel.sourceMultiplicity, -1, 'source', 'left');
-  end(rel.targetMultiplicity, 1, 'target', 'right');
+  if (showMultiplicities) {
+    end(rel.sourceMultiplicity, -1, 'source', 'left');
+    end(rel.targetMultiplicity, 1, 'target', 'right');
+  }
   return cells.join('');
 }
 
 /**
  * Exporta a draw.io (`.drawio`): `<mxfile><diagram><mxGraphModel>` sin comprimir. Las
- * coordenadas de los hijos son relativas a su contenedor, como espera draw.io.
+ * coordenadas de los hijos son relativas a su contenedor, como espera draw.io. Del resto de las opciones solo usa el fondo.
  */
-export function exportDrawio(diagram: Diagram): string {
+export function exportDrawio(diagram: Diagram, settings: ExportSettings = DEFAULT_EXPORT_SETTINGS): string {
   const byId = new Map(diagram.elements.map((e) => [e.id, e]));
   const cells: string[] = [xmlElement('mxCell', { id: '0' }), xmlElement('mxCell', { id: '1', parent: '0' })];
   for (const el of drawOrder(diagram.elements)) {
@@ -117,14 +123,14 @@ export function exportDrawio(diagram: Diagram): string {
       cells.push(drawing);
       continue;
     }
-    const vertices = frameCells(el, parent, geo) ?? classCells(el, parent, geo) ?? c4Cells(el, parent, geo) ?? erCells(el, parent, geo) ?? figureCells(el, parent, geo) ?? imageCells(el, parent, geo) ?? textBlockCells(el, parent, geo) ?? collectionCells(el, parent, geo) ?? [];
+    const vertices = frameCells(el, parent, geo) ?? classCells(el, parent, geo, diagram.preferences?.uml) ?? c4Cells(el, parent, geo) ?? erCells(el, parent, geo) ?? figureCells(el, parent, geo) ?? imageCells(el, parent, geo) ?? textBlockCells(el, parent, geo) ?? collectionCells(el, parent, geo) ?? flowNodeCells(el, parent, geo) ?? [];
     cells.push(...vertices.map(vertexXml));
   }
-  for (const rel of [...diagram.relations].sort((a, b) => (a.id < b.id ? -1 : 1))) cells.push(edgeXml(rel, byId));
+  for (const rel of [...diagram.relations].sort((a, b) => (a.id < b.id ? -1 : 1))) cells.push(edgeXml(rel, byId, diagram.preferences?.uml.multiplicities ?? true));
 
   const model = xmlElement(
     'mxGraphModel',
-    { dx: 0, dy: 0, grid: 1, gridSize: 10, guides: 1, tooltips: 1, connect: 1, arrows: 1, fold: 1, page: 0, pageScale: 1, math: 0, shadow: 0 },
+    { dx: 0, dy: 0, grid: 1, gridSize: 10, guides: 1, tooltips: 1, connect: 1, arrows: 1, fold: 1, page: 0, pageScale: 1, math: 0, shadow: 0, ...(settings.background === 'transparent' ? { background: 'none' } : {}) },
     xmlElement('root', {}, cells.join('\n')),
   );
   const file = xmlElement(

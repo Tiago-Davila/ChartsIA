@@ -26,6 +26,7 @@ function inferType(elements: Element[]): DiagramType {
     { type: 'c4-context' as const, n: count(C4_ELEMENT_KINDS) },
     { type: 'er' as const, n: count(ER_ELEMENT_KINDS) },
     { type: 'nosql' as const, n: count(['collection']) },
+    { type: 'flow' as const, n: count(['flow-node']) },
   ];
   const best = families.reduce((a, b) => (b.n > a.n ? b : a));
   if (best.type !== 'c4-context') return best.n === 0 ? 'class' : best.type;

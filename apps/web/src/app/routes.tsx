@@ -1,6 +1,6 @@
 import { useCallback, useSyncExternalStore } from 'react';
 
-export type ConfigSection = 'general' | 'mcp';
+export type ConfigSection = 'general' | 'lienzo' | 'diagramas' | 'exportacion' | 'hub' | 'mcp';
 
 export type Route = { name: 'home' } | { name: 'config'; section: ConfigSection } | { name: 'diagram'; diagramId: string };
 
@@ -28,6 +28,10 @@ export function diagramIdFromSegment(segmento: string): string {
 
 export function parseRoute(pathname: string): Route {
   if (pathname === '/config') return { name: 'config', section: 'general' };
+  if (pathname === '/config/lienzo') return { name: 'config', section: 'lienzo' };
+  if (pathname === '/config/diagramas') return { name: 'config', section: 'diagramas' };
+  if (pathname === '/config/exportacion') return { name: 'config', section: 'exportacion' };
+  if (pathname === '/config/hub') return { name: 'config', section: 'hub' };
   if (pathname === '/config/mcp') return { name: 'config', section: 'mcp' };
   const match = DIAGRAM_PATH.exec(pathname);
   return match ? { name: 'diagram', diagramId: diagramIdFromSegment(decodeURIComponent(match[1]!)) } : { name: 'home' };
@@ -35,7 +39,7 @@ export function parseRoute(pathname: string): Route {
 
 /** Dirección de una sección de la configuración. */
 export function configPath(section: ConfigSection): string {
-  return section === 'general' ? '/config' : '/config/mcp';
+  return section === 'general' ? '/config' : `/config/${section}`;
 }
 
 /** Dirección de un diagrama: `/d/<slug-del-título>-<parte-única-del-id>`; el slug es decorativo. */
@@ -66,7 +70,7 @@ export function navigate(path: string, options: { replace?: boolean } = {}): voi
 
 /**
  * Enrutado mínimo de la app: `/` (diagrama activo o estado vacío), `/d/:id` (destino de
- * `viewUrl`) y `/config` o `/config/mcp` (configuración general y conexión de agentes). Tan pocas rutas no justifican una dependencia de router (principio VI).
+ * `viewUrl`) y `/config`, `/config/lienzo`, `/config/diagramas`, `/config/exportacion`, `/config/hub` o `/config/mcp` (configuración general, del lienzo, de los diagramas, de la exportación, del hub y conexión de agentes). Tan pocas rutas no justifican una dependencia de router (principio VI).
  */
 export function useRoute(): Route {
   const path = useSyncExternalStore(subscribe, getPath, () => '/');

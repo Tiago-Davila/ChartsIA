@@ -1,6 +1,7 @@
 import { type ExportFormat } from '@chartsia/core/export';
 import { getViewportForBounds, useNodes, useReactFlow, useStoreApi } from '@xyflow/react';
 import { useRef, useState } from 'react';
+import { canvasPreferences, reducedMotion } from './canvas-preferences';
 import { type AlignMode } from '../canvas/align';
 import { FIT_VIEW_OPTIONS } from '../canvas/DiagramCanvas';
 
@@ -9,6 +10,8 @@ export interface ToolbarProps {
   revision?: number;
   disabled?: boolean;
   onExport(format: ExportFormat): void;
+  /** Formato por defecto de las preferencias de exportación; se marca en el menú. */
+  defaultFormat?: ExportFormat;
   onRename?(title: string): void;
   onAlign?(mode: AlignMode): void;
   /** Ids que tocó el último cambio; vacío encuadra todo el diagrama. */
@@ -66,7 +69,7 @@ function Menu<T extends string>({ label, items, primary, disabled, onSelect }: {
 }
 
 /** Título, encuadre, alineación de la selección y exportación (FR-027). */
-export function Toolbar({ title, revision, disabled = false, onExport, onRename, onAlign, changedIds = [], onOpenLatest, onChangedFitted }: ToolbarProps) {
+export function Toolbar({ title, revision, disabled = false, onExport, defaultFormat, onRename, onAlign, changedIds = [], onOpenLatest, onChangedFitted }: ToolbarProps) {
   const { getNodes, getNodesBounds, setViewport } = useReactFlow();
   const store = useStoreApi();
   // Encuadra los nodos del último cambio (o todos) con su tamaño declarado, porque fitView espera nodos medidos y tras un cambio del hub no responde.
@@ -77,7 +80,7 @@ export function Toolbar({ title, revision, disabled = false, onExport, onRename,
     const changed = all.filter((n) => changedIds.includes(n.id));
     if (changed.length > 0) onChangedFitted?.();
     const viewport = getViewportForBounds(getNodesBounds(changed.length > 0 ? changed : all), width, height, minZoom, FIT_VIEW_OPTIONS.maxZoom, FIT_VIEW_OPTIONS.padding);
-    void setViewport(viewport, { duration: 300 });
+    void setViewport(viewport, { duration: reducedMotion(canvasPreferences().animations) ? 0 : 300 });
   };
   const [editing, setEditing] = useState(false);
   // Guarda el título editado salvo que esté vacío o no cambie; Escape lo descarta antes de llegar aquí.
@@ -113,7 +116,7 @@ export function Toolbar({ title, revision, disabled = false, onExport, onRename,
       <button type="button" className="button" disabled={disabled} onClick={() => void fit()}>
         Ajustar
       </button>
-      <Menu label="Exportar" items={EXPORTS} primary disabled={disabled} onSelect={onExport} />
+      <Menu label="Exportar" items={EXPORTS.map((e) => (e.value === defaultFormat ? { ...e, label: `${e.label} · por defecto` } : e))} primary disabled={disabled} onSelect={onExport} />
     </header>
   );
 }

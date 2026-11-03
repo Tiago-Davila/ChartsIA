@@ -10,6 +10,10 @@ describe('rutas', () => {
     ['/d/diagrama-de-clases-pedidos-abcdefghijkl/', { name: 'diagram', diagramId: 'dg_abcdefghijkl' }],
     ['/d/sin-id-valido', { name: 'diagram', diagramId: 'sin-id-valido' }],
     ['/config', { name: 'config', section: 'general' }],
+    ['/config/lienzo', { name: 'config', section: 'lienzo' }],
+    ['/config/diagramas', { name: 'config', section: 'diagramas' }],
+    ['/config/exportacion', { name: 'config', section: 'exportacion' }],
+    ['/config/hub', { name: 'config', section: 'hub' }],
     ['/config/mcp', { name: 'config', section: 'mcp' }],
     ['/otra', { name: 'home' }],
   ])('%s', (path, route) => {

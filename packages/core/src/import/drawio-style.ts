@@ -1,11 +1,13 @@
 import { FONT_SIZE_MAX, FONT_SIZE_MIN, type Style, type StyleFontFamily } from '../model/style.js';
 import { C4_PALETTE } from '../shapes/c4/palette.js';
+import { FLOW_EDGE_STYLES } from '../shapes/flow/edge.js';
 import { FONT } from '../shapes/types.js';
 
 const DEFAULT_COLORS = new Set(
   [
     '#fff6d6', '#fffef5', '#1f2933', '#8492a6', '#475569', '#707070', '#404040', '#444444',
     ...Object.values(C4_PALETTE).flatMap((c) => [c.fill, c.stroke, c.text]),
+    ...Object.values(FLOW_EDGE_STYLES).map((c) => c.color),
   ].map((color) => color.toLowerCase()),
 );
 

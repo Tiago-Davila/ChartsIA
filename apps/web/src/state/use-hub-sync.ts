@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { canvasPreferences } from '../app/canvas-preferences';
 import { diagramPath, navigate, parseRoute, type Route } from '../app/routes';
 import { ApiError, type ApiClient } from './api-client';
 import { diagramStore, useDiagramStore } from './diagram-store';
@@ -48,6 +49,7 @@ export function useHubSync(api: ApiClient, route: Route): { live: React.RefObjec
   const reload = () => {
     reloadList();
     api.listAgents().then((agents) => diagramStore.getState().setAgents(agents)).catch(report);
+    api.getHub().then((hub) => diagramStore.getState().setHub(hub)).catch(report);
     const open = diagramStore.getState().openDiagramId;
     if (open) {
       // Si se borró mientras la app estaba desconectada, el 404 la devuelve a la lista.
@@ -78,7 +80,9 @@ export function useHubSync(api: ApiClient, route: Route): { live: React.RefObjec
       onProjectsChanged: () => reloadListRef.current(),
       onActiveChanged: ({ diagramId }) => {
         store().setActive(diagramId);
-        navigate(pathDeDiagrama(diagramId));
+        // Con el aviso, la app no cambia de diagrama sola; el que ya está abierto no necesita aviso.
+        if (canvasPreferences().onAgentChange === 'open' || diagramId === store().openDiagramId) navigate(pathDeDiagrama(diagramId));
+        else store().showAgentNotice(diagramId);
       },
       onAgentsChanged: ({ agents }) => store().setAgents(agents),
       onStatus: (s) => store().setConnection(s),

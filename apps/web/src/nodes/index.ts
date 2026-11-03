@@ -32,6 +32,7 @@ export const nodeTypes = {
   image: ElementNode,
   text: ElementNode,
   collection: ElementNode,
+  'flow-node': ElementNode,
   frame: GroupNode,
   attribute: ErAttributeNode,
   'value-list': ErValueListNode,

@@ -19,6 +19,9 @@ usarla.
 | `chartsia-listar-diagramas` | `list_diagrams`, `open_diagram` |
 | `chartsia-proyectos` | `create_project`, `move_diagram` |
 | `chartsia-borrar-diagrama` | `delete_diagram` |
+| `chartsia-preferencias` | `set_preferences` |
+| `chartsia-hub` | `get_hub_config` |
+| `chartsia-flujo-de-sistema` | `create_diagram`, `apply_changes` |
 
 ## Instalar y actualizar
 

@@ -1394,6 +1394,13 @@ button:disabled,
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
+.toast--info {
+  background: var(--surface);
+  border-color: var(--border);
+}
+.toast--info .toast__title {
+  color: var(--text);
+}
 .toast__title {
   display: flex;
   justify-content: space-between;
@@ -1454,7 +1461,6 @@ button:disabled,
 }
 
 /* Configuración: pantalla propia con su barra de secciones. */
-.theme-toggle { display: inline-flex; gap: 6px; align-items: center; }
 .config-shell {
   display: grid;
   grid-template-columns: 240px 1fr;
@@ -1499,6 +1505,43 @@ button:disabled,
 .config__connect > p { margin: 0; font-size: 14px; }
 .config__connect > .code-block { justify-self: stretch; }
 .config__connect h3 { margin: 12px 0 0; font-size: 14px; }
+/* Preferencia con su leyenda arriba y las opciones como botones segmentados. */
+.config__field { margin: 0 0 8px; padding: 0; border: 0; }
+.config__field legend { margin-bottom: 6px; padding: 0; font-size: 14px; font-weight: 600; }
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-muted);
+}
+.segmented label {
+  position: relative;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.segmented input { position: absolute; opacity: 0; pointer-events: none; }
+.segmented label:has(input:checked) { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgb(0 0 0 / 10%); }
+.segmented label:has(input:focus-visible) { outline: 2px solid var(--accent-ring); outline-offset: 1px; }
+/* Datos del hub: nombre a la izquierda y valor a la derecha. */
+.config__datos { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 16px; align-items: center; margin: 0; font-size: 14px; }
+.config__datos dt { color: var(--text-muted); }
+.config__datos dd { margin: 0; }
+.config__nota { margin: 0; font-size: 14px; color: var(--text-muted); }
+/* Hub y datos: etiqueta, fila de campo con botón, aviso de reinicio y lista de conflictos. */
+.config__label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 600; }
+.config__fila { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.config__fila input[type='text'], .config__fila input[type='number'] { flex: 1 1 280px; padding: 6px 8px; font-size: 14px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
+.config__aviso { margin: 0 0 16px; padding: 8px 12px; font-size: 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-muted); }
+.config__conflictos { margin: 0 0 12px; padding-left: 20px; font-size: 13px; }
+/* Paleta por tipo de elemento: nombre, tres selectores de color y el botón para quitarlos. */
+.config__paleta { display: grid; gap: 6px; margin: 8px 0 0; padding: 0; list-style: none; font-size: 14px; }
+.config__paleta li { display: grid; grid-template-columns: minmax(120px, 1fr) repeat(3, 40px) auto; gap: 8px; align-items: center; }
+.config__paleta input[type='color'] { width: 40px; height: 28px; padding: 2px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); cursor: pointer; }
 .modal--wide { width: min(640px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; }
 /* Código con el botón de copiar adentro, arriba a la derecha. */
 .code-block { position: relative; }

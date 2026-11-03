@@ -11,10 +11,11 @@ import { frozenIds } from './locks';
  * Los handles se declaran en el nodo para que las aristas no dependan de medir el DOM.
  */
 export function toReactFlow(diagram: Diagram): { nodes: ElementFlowNode[]; edges: RoutedFlowEdge[] } {
+  const uml = diagram.preferences?.uml;
   const byId = new Map(diagram.elements.map((e) => [e.id, e]));
   const frozen = frozenIds(diagram);
   const nodes = drawOrder(diagram.elements).map((element): ElementFlowNode => {
-    const size = element.layout?.width && element.layout.height ? { width: element.layout.width, height: element.layout.height } : measureElement(element);
+    const size = element.layout?.width && element.layout.height ? { width: element.layout.width, height: element.layout.height } : measureElement(element, uml);
     const parent = element.parentId ? byId.get(element.parentId) : undefined;
     const x = (element.layout?.x ?? 0) - (parent?.layout?.x ?? 0);
     const y = (element.layout?.y ?? 0) - (parent?.layout?.y ?? 0);
@@ -28,11 +29,17 @@ export function toReactFlow(diagram: Diagram): { nodes: ElementFlowNode[]; edges
       // Solo se marca el bloqueado: un `draggable: true` por nodo pisaría al `nodesDraggable` del lienzo (mano, lápiz, solo lectura).
       ...(frozen.has(element.id) ? { draggable: false, deletable: false } : {}),
       ...(isGroupKind(element.kind) || isHighlighter(element) ? { zIndex: -1 } : {}),
-      data: { element },
-      handles: [
-        { type: 'target', position: Position.Top, x: size.width / 2, y: 0, width: 1, height: 1 },
-        { type: 'source', position: Position.Bottom, x: size.width / 2, y: size.height, width: 1, height: 1 },
-      ],
+      data: { element, uml },
+      handles:
+        element.kind === 'flow-node'
+          ? [
+              { type: 'target', position: Position.Left, x: 0, y: size.height / 2, width: 1, height: 1 },
+              { type: 'source', position: Position.Right, x: size.width, y: size.height / 2, width: 1, height: 1 },
+            ]
+          : [
+              { type: 'target', position: Position.Top, x: size.width / 2, y: 0, width: 1, height: 1 },
+              { type: 'source', position: Position.Bottom, x: size.width / 2, y: size.height, width: 1, height: 1 },
+            ],
     };
   });
   const edges = diagram.relations
@@ -42,7 +49,7 @@ export function toReactFlow(diagram: Diagram): { nodes: ElementFlowNode[]; edges
       source: relation.source,
       target: relation.target,
       type: 'routed',
-      data: { relation },
+      data: { relation, showMultiplicities: uml?.multiplicities },
     }));
   return { nodes, edges };
 }

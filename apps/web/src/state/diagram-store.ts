@@ -2,7 +2,7 @@ import { type Diagram, type DiagramType } from '@chartsia/core/model';
 import { type ValidationError } from '@chartsia/core/validation';
 import { createStore, useStore } from 'zustand';
 import { type ConnectionState } from '../app/ConnectionStatus';
-import { type ConnectedAgent, type DiagramListResponse, type DiagramSummary, type Project } from './api-client';
+import { type ConnectedAgent, type DiagramListResponse, type DiagramSummary, type HubInfo, type Project } from './api-client';
 import { type DiagramUpdatedEvent } from './live-client';
 
 export interface DiagramState {
@@ -11,6 +11,8 @@ export interface DiagramState {
   listLoaded: boolean;
   projects: Project[];
   agents: ConnectedAgent[];
+  /** Datos del hub; `null` hasta que llegan. */
+  hub: HubInfo | null;
   activeDiagramId: string | null;
   openDiagramId: string | null;
   diagram?: Diagram;
@@ -21,11 +23,14 @@ export interface DiagramState {
   lastOrigin?: 'agent' | 'app';
   /** Elementos que tocó el último cambio del agente en el diagrama abierto; vacío si no se sabe o ya se encuadraron. */
   lastChangedIds: string[];
+  /** Diagrama que el agente abrió y que la app no abrió sola, a la espera de que se pulse "Abrir". */
+  agentNoticeId: string | null;
   /** Se incrementa para descartar cambios optimistas del lienzo (p. ej. tras un 422). */
   viewVersion: number;
 
   setList(list: DiagramListResponse): void;
   setAgents(agents: ConnectedAgent[]): void;
+  setHub(hub: HubInfo): void;
   open(diagramId: string | null): void;
   receiveDiagram(diagram: Diagram): void;
   applyUpdate(event: DiagramUpdatedEvent): void;
@@ -38,6 +43,7 @@ export interface DiagramState {
   setNeedsToken(value: boolean): void;
   showErrors(errors: ValidationError[]): void;
   dismissErrors(): void;
+  showAgentNotice(diagramId: string | null): void;
   refreshView(): void;
   clearChangedIds(): void;
   /** Bloque de texto recién creado que debe abrirse en edición al aparecer en el lienzo. */
@@ -68,6 +74,7 @@ export function createDiagramStore() {
     listLoaded: false,
     projects: [],
     agents: [],
+    hub: null,
     activeDiagramId: null,
     openDiagramId: null,
     diagram: undefined,
@@ -76,10 +83,12 @@ export function createDiagramStore() {
     errors: [],
     lastOrigin: undefined,
     lastChangedIds: [],
+    agentNoticeId: null,
     viewVersion: 0,
 
     setList: (list) => set({ diagrams: list.diagrams, listLoaded: true, projects: list.projects, activeDiagramId: list.activeDiagramId }),
     setAgents: (agents) => set({ agents }),
+    setHub: (hub) => set({ hub }),
     open: (diagramId) =>
       set((s) => (s.openDiagramId === diagramId ? s : { openDiagramId: diagramId, diagram: undefined, errors: [], lastOrigin: undefined, lastChangedIds: [] })),
     receiveDiagram: (diagram) => {
@@ -116,6 +125,7 @@ export function createDiagramStore() {
     setNeedsToken: (needsToken) => set({ needsToken }),
     showErrors: (errors) => set((s) => ({ errors, viewVersion: s.viewVersion + 1 })),
     dismissErrors: () => set({ errors: [] }),
+    showAgentNotice: (agentNoticeId) => set({ agentNoticeId }),
     clearChangedIds: () => set({ lastChangedIds: [] }),
     setPendingTextEdit: (id) => set({ pendingTextEdit: id }),
     refreshView: () => set((s) => ({ viewVersion: s.viewVersion + 1 })),

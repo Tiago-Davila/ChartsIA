@@ -1,14 +1,18 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AGENTS, mcpUrlParaAgentes, promptInstalacion } from '../../src/app/agents';
+import { DEFAULT_CANVAS_PREFERENCES, canvasPreferences, setCanvasPreferences } from '../../src/app/canvas-preferences';
 import { ConfigScreen } from '../../src/app/ConfigScreen';
-import { type ConnectedAgent } from '../../src/state/api-client';
+import { type ConnectedAgent, type HubInfo } from '../../src/state/api-client';
 
 const origin = 'http://127.0.0.1:24278';
 let agents: ConnectedAgent[] = [];
-const renderScreen = (section: 'general' | 'mcp' = 'mcp', onSection = vi.fn()) =>
-  render(<ConfigScreen origin={origin} agents={agents} section={section} onSection={onSection} onBack={vi.fn()} />);
+let hub: HubInfo | null = null;
+const renderScreen = (section: 'general' | 'lienzo' | 'mcp' = 'mcp', onSection = vi.fn()) =>
+  render(<ConfigScreen origin={origin} agents={agents} hub={hub} section={section} onSection={onSection} onBack={vi.fn()} />);
 
 /** Abre la ventana de conexión de un agente desde su tarjeta. */
 const abrir = async (nombre: string) => {
@@ -19,19 +23,100 @@ const abrir = async (nombre: string) => {
 describe('ConfigScreen', () => {
   afterEach(() => {
     agents = [];
+    hub = null;
+    setCanvasPreferences(DEFAULT_CANVAS_PREFERENCES);
+    localStorage.clear();
+    delete document.documentElement.dataset.theme;
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
-  it('tiene su propia barra con General y Conexiones MCP, y General por ahora está vacía', async () => {
+  it('tiene su propia barra con General y Conexiones MCP, y General no muestra agentes', async () => {
     const onSection = vi.fn();
     renderScreen('general', onSection);
     const secciones = screen.getByRole('list', { name: 'Secciones' });
     expect(within(secciones).getByRole('button', { name: 'General' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('region', { name: 'General' })).toBeInTheDocument();
-    expect(screen.queryByText(`${origin}/mcp`)).toBeNull();
     expect(screen.queryByRole('article')).toBeNull();
     await userEvent.click(within(secciones).getByRole('button', { name: 'Conexiones MCP' }));
     expect(onSection).toHaveBeenCalledWith('mcp');
+  });
+
+  it('el tema está en General, sigue al sistema por defecto y recuerda la elección', async () => {
+    renderScreen('general');
+    expect(screen.queryByRole('button', { name: /Cambiar a tema/ })).toBeNull();
+    const temas = screen.getByRole('group', { name: 'Tema' });
+    expect(within(temas).getByRole('radio', { name: 'Según el sistema' })).toBeChecked();
+    await userEvent.click(within(temas).getByRole('radio', { name: 'Oscuro' }));
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(localStorage.getItem('chartsia.theme')).toBe('dark');
+    await userEvent.click(within(temas).getByRole('radio', { name: 'Claro' }));
+    expect(document.documentElement.dataset.theme).toBe('light');
+    expect(localStorage.getItem('chartsia.theme')).toBe('light');
+  });
+
+  it('con "Según el sistema" el tema cambia cuando cambia el del sistema', async () => {
+    let oscuro = false;
+    const oyentes: (() => void)[] = [];
+    vi.stubGlobal('matchMedia', () => ({ get matches() { return oscuro; }, addEventListener: (_: string, fn: () => void) => oyentes.push(fn), removeEventListener: vi.fn() }));
+    localStorage.setItem('chartsia.theme', 'light');
+    renderScreen('general');
+    await userEvent.click(screen.getByRole('radio', { name: 'Según el sistema' }));
+    expect(document.documentElement.dataset.theme).toBe('light');
+    oscuro = true;
+    for (const fn of oyentes) fn();
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(localStorage.getItem('chartsia.theme')).toBe('system');
+  });
+
+  it('Lienzo está en la barra y sus opciones empiezan con los valores por defecto', () => {
+    renderScreen('lienzo');
+    expect(within(screen.getByRole('list', { name: 'Secciones' })).getByRole('button', { name: 'Lienzo' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('region', { name: 'Lienzo' })).toBeInTheDocument();
+    const marcadas: [string, string][] = [
+      ['Cuadrícula', 'Mostrar'],
+      ['Tamaño de la cuadrícula', '20 px'],
+      ['Ajustar a la cuadrícula al mover', 'No'],
+      ['Minimapa', 'Mostrar'],
+      ['Controles de zoom', 'Mostrar'],
+      ['Al abrir un diagrama', 'Ajustar a la pantalla'],
+      ['Animaciones', 'Según el sistema'],
+      ['Cuando el agente cambia el diagrama', 'Abrirlo automáticamente'],
+    ];
+    for (const [leyenda, opcion] of marcadas) expect(within(screen.getByRole('group', { name: leyenda })).getByRole('radio', { name: opcion })).toBeChecked();
+  });
+
+  it.each([
+    ['Cuadrícula', 'Ocultar', { grid: false }],
+    ['Tamaño de la cuadrícula', '40 px', { gridSize: 40 }],
+    ['Ajustar a la cuadrícula al mover', 'Sí', { snapToGrid: true }],
+    ['Minimapa', 'Ocultar', { minimap: false }],
+    ['Controles de zoom', 'Ocultar', { zoomControls: false }],
+    ['Al abrir un diagrama', 'Mostrar al 100 %', { onOpen: 'actual' }],
+    ['Animaciones', 'Reducidas', { animations: 'reduced' }],
+    ['Cuando el agente cambia el diagrama', 'Solo mostrar un aviso', { onAgentChange: 'notice' }],
+  ])('en Lienzo, "%s" → "%s" se aplica al instante y se guarda', async (leyenda, opcion, esperado) => {
+    renderScreen('lienzo');
+    await userEvent.click(within(screen.getByRole('group', { name: leyenda })).getByRole('radio', { name: opcion }));
+    expect(within(screen.getByRole('group', { name: leyenda })).getByRole('radio', { name: opcion })).toBeChecked();
+    expect(canvasPreferences()).toMatchObject(esperado);
+    expect(JSON.parse(localStorage.getItem('chartsia.canvas')!)).toMatchObject(esperado);
+  });
+
+  it('muestra versión, puerto, URL del MCP y carpeta de datos del hub', () => {
+    hub = { version: '0.1.0', port: 24278, dataDir: '/home/ana/.chartsia/diagrams' };
+    renderScreen('general');
+    const datos = screen.getByRole('region', { name: 'General' });
+    expect(datos).toHaveTextContent('Versión0.1.0');
+    expect(datos).toHaveTextContent('Puerto24278');
+    expect(within(datos).getByText(`${origin}/mcp`)).toBeInTheDocument();
+    expect(within(datos).getByText('/home/ana/.chartsia/diagrams')).toBeInTheDocument();
+    expect(within(datos).getByRole('button', { name: 'Copiar carpeta de datos' })).toBeInTheDocument();
+  });
+
+  it('mientras el hub no responde, avisa que los datos están cargando', () => {
+    renderScreen('general');
+    expect(screen.getByText('Cargando los datos del hub…')).toBeInTheDocument();
   });
 
   it('muestra solo las tarjetas de los agentes, sin la URL del MCP ni el estado del hub', async () => {
@@ -57,7 +142,7 @@ describe('ConfigScreen', () => {
     const conectados = screen.getByRole('region', { name: 'Conectados' });
     const habilitados = screen.getByRole('region', { name: 'Habilitados' });
     expect(conectados.compareDocumentPosition(habilitados) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(within(conectados).getAllByRole('article').map((a) => a.getAttribute('aria-label'))).toEqual(['OpenCode (HTTP)', 'OpenCode (stdio)']);
+    expect(within(conectados).getAllByRole('article').map((a) => a.getAttribute('aria-label'))).toEqual(['OpenCode', 'OpenCode (stdio)']);
     expect(within(conectados).getAllByRole('button', { name: 'Conectado' })).toHaveLength(2);
     expect(within(habilitados).getByRole('article', { name: 'Claude Code (HTTP)' })).toBeInTheDocument();
     expect(within(habilitados).queryByRole('button', { name: 'Conectado' })).toBeNull();
@@ -70,10 +155,20 @@ describe('ConfigScreen', () => {
     }
   });
 
-  it('Codex CLI y Grok Build se conectan con su propio comando mcp add', () => {
+  it('el comando de cada agente de terminal es el de la sección "Conectar agentes" del README', () => {
+    const readme = readFileSync(resolve(__dirname, '../../../../README.md'), 'utf8');
+    const porAgente = { 'claude-code': 'Claude Code', codex: 'Codex CLI', gemini: 'Gemini CLI', 'grok-build': 'Grok Build', opencode: 'OpenCode' };
+    for (const [id, titulo] of Object.entries(porAgente)) {
+      const comando = readme.match(new RegExp(String.raw`\*\*${titulo}\*\*\s+` + '```bash\\n(.+)\\n```'))?.[1];
+      expect(comando, `README sin comando para ${titulo}`).toBeDefined();
+      expect(AGENTS.find((a) => a.id === id)!.snippet('http://127.0.0.1:24278/mcp')).toBe(comando);
+    }
+  });
+
+  it('los comandos de Gemini CLI y OpenCode usan la URL del hub', () => {
     const snippet = (id: string) => AGENTS.find((a) => a.id === id)!.snippet(`${origin}/mcp`);
-    expect(snippet('codex')).toBe(`codex mcp add chartsia --url ${origin}/mcp`);
-    expect(snippet('grok-build')).toBe(`grok mcp add --transport http chartsia ${origin}/mcp`);
+    expect(snippet('gemini')).toBe(`gemini mcp add --scope user --transport http chartsia ${origin}/mcp`);
+    expect(snippet('opencode')).toBe(`opencode mcp add chartsia --url ${origin}/mcp`);
   });
 
   it('ningún agente usa token: todos corren en la misma máquina que el hub', () => {
@@ -110,13 +205,10 @@ describe('ConfigScreen', () => {
     expect(JSON.parse(AGENTS.find((a) => a.id === 'claude-desktop')!.snippet(`${origin}/mcp`)).mcpServers.chartsia.command).toBe('npx');
   });
 
-  it('los snippets de OpenCode son JSON válido con la URL del hub', () => {
-    const snippet = (id: string, url: string) => JSON.parse(AGENTS.find((a) => a.id === id)!.snippet(url));
-    for (const id of ['opencode-remote', 'opencode-local']) {
-      const config = snippet(id, `${origin}/mcp`);
-      expect(config.$schema).toBe('https://opencode.ai/config.json');
-      expect(JSON.stringify(config.mcp.chartsia)).toContain(`${origin}/mcp`);
-    }
+  it('el snippet de OpenCode por stdio es JSON válido con la URL del hub', () => {
+    const config = JSON.parse(AGENTS.find((a) => a.id === 'opencode-local')!.snippet(`${origin}/mcp`));
+    expect(config.$schema).toBe('https://opencode.ai/config.json');
+    expect(JSON.stringify(config.mcp.chartsia)).toContain(`${origin}/mcp`);
   });
 
   it('copia el comando de la tarjeta', async () => {

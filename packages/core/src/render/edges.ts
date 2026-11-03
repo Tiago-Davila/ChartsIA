@@ -130,7 +130,7 @@ function multiplicity(text: string | undefined, port: Point, next: Point, color:
 }
 
 /** Primitivas absolutas de una relación: línea, marcadores, etiqueta y multiplicidades. */
-export function edgePrimitives(rel: Relation): Primitive[] {
+export function edgePrimitives(rel: Relation, showMultiplicities = true): Primitive[] {
   const route = rel.route ?? [];
   if (route.length < 2) return [];
   const style = relationStyle(rel);
@@ -147,7 +147,9 @@ export function edgePrimitives(rel: Relation): Primitive[] {
   if (style.end) out.push(...markerPrimitives(style.end, route[route.length - 1]!, route[route.length - 2]!, style.color, style.fill, style.width));
   const text = rel.style?.fontColor ?? '#333333';
   out.push(...labelPrimitives(edgeLabelLines(rel), labelAnchor(route), text, 'label', rel.style));
-  out.push(...multiplicity(rel.sourceMultiplicity, route[0]!, route[1]!, text, 'sourceMultiplicity', rel.style));
-  out.push(...multiplicity(rel.targetMultiplicity, route[route.length - 1]!, route[route.length - 2]!, text, 'targetMultiplicity', rel.style));
+  if (showMultiplicities) {
+    out.push(...multiplicity(rel.sourceMultiplicity, route[0]!, route[1]!, text, 'sourceMultiplicity', rel.style));
+    out.push(...multiplicity(rel.targetMultiplicity, route[route.length - 1]!, route[route.length - 2]!, text, 'targetMultiplicity', rel.style));
+  }
   return out;
 }

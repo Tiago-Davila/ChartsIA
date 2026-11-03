@@ -1,6 +1,6 @@
 import { NoSqlFieldsSchema } from '../model/nosql-elements.js';
 import { sanitizeImageDataUrl } from '../model/image-data.js';
-import { type FigureShape } from '../model/enums.js';
+import { FLOW_VARIANTS, type FigureShape } from '../model/enums.js';
 import { ARROWS } from '../shapes/general/figure.js';
 import { FONT } from '../shapes/types.js';
 import { type RawCell } from './drawio-read.js';
@@ -32,6 +32,7 @@ export interface BuildContext {
 
 const isCompartment = (c: RawCell) => c.style.has('swimlane') && c.style.get('childLayout') === 'stackLayout';
 const isCollection = (c: RawCell) => c.object?.get('kind') === 'collection';
+const isFlowNode = (c: RawCell) => c.object?.get('kind') === 'flow-node';
 const html = (c: RawCell) => c.style.get('html') === '1';
 const label = (c: RawCell) => plainText(c.value, html(c)).trim();
 
@@ -44,7 +45,7 @@ export function claimedCells(cells: RawCell[], children: Map<string, RawCell[]>)
       for (const child of children.get(cell.id) ?? []) claimed.add(child.id);
     } else if (isCompartment(cell)) {
       for (const child of children.get(cell.id) ?? []) if (child.style.has('text') || child.style.has('line')) claimed.add(child.id);
-    } else if (isCollection(cell)) {
+    } else if (isCollection(cell) || isFlowNode(cell)) {
       for (const child of children.get(cell.id) ?? []) claimed.add(child.id);
     }
     const kind = cell.style.get('chartsia');
@@ -259,6 +260,18 @@ function buildCollection(cell: RawCell, ctx: BuildContext): BuiltElement | undef
   return { fields: { kind: 'collection', name, fields: fields.data } };
 }
 
+/** Nodo de flujo: `object` con su variante, título y subtítulo; las celdas hijas solo son el dibujo. */
+function buildFlowNode(cell: RawCell, ctx: BuildContext): BuiltElement | undefined {
+  const name = ctx.clip(cell.object!.get('name')?.trim() || cell.id, 200);
+  const variant = cell.object!.get('variant') ?? '';
+  if (!(FLOW_VARIANTS as readonly string[]).includes(variant)) {
+    ctx.warn(`El nodo de flujo "${name}" tiene la variante "${variant}", que no existe, y se omitió.`);
+    return undefined;
+  }
+  const subtitle = cell.object!.get('subtitle')?.trim();
+  return { fields: { kind: 'flow-node', name, variant, ...(subtitle ? { subtitle: ctx.clip(subtitle, 200) } : {}) } };
+}
+
 /** Figuras de la notación Chen; la marca `chartsia=` del estilo distingue entidad, atributo, relación y especialización de las figuras generales. */
 function buildEr(cell: RawCell, kind: string, ctx: BuildContext): BuiltElement | undefined {
   const name = ctx.clip(label(cell) || cell.id, 200);
@@ -367,6 +380,7 @@ function buildImage(cell: RawCell, ctx: BuildContext): BuiltElement | undefined 
 export function buildVertex(cell: RawCell, ctx: BuildContext): BuiltElement | undefined {
   const style = cell.style;
   if (isCollection(cell)) return buildCollection(cell, ctx);
+  if (isFlowNode(cell)) return buildFlowNode(cell, ctx);
   if (cell.object?.has('c4Type') || cell.object?.has('c4Name')) return buildC4(cell, ctx);
   const marked = style.get('chartsia');
   if (marked) return buildEr(cell, marked, ctx);

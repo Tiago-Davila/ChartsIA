@@ -49,6 +49,16 @@ describe('edición en línea → changes', () => {
     expect(changesForSlot(figura, 'name', 'Otro')).toEqual({ name: 'Otro' });
   });
 
+  it('el subtítulo y la variante de un nodo de flujo se editan por slot', () => {
+    const nodo: Element = { id: 'n', kind: 'flow-node', variant: 'file', name: 'Archivo', subtitle: 'src/a.ts' };
+    expect(slotValue(nodo, 'subtitle', 'src/a.')).toBe('src/a.ts');
+    expect(changesForSlot(nodo, 'subtitle', ' src/b.ts ')).toEqual({ subtitle: 'src/b.ts' });
+    expect(changesForSlot(nodo, 'subtitle', '  ')).toEqual({ subtitle: null });
+    expect(changesForSlot(nodo, 'variant', 'database')).toEqual({ variant: 'database' });
+    expect(changesForSlot(nodo, 'variant', 'robot')).toBeUndefined();
+    expect(changesForSlot(cls, 'subtitle', 'x')).toBeUndefined();
+  });
+
   it('edita un valor de una lista de valores y su nombre', () => {
     const list: Element = { id: 'L', kind: 'value-list', name: 'L', values: ['a', 'b'] };
     expect(changesForSlot(list, 'value:1', 'c')).toEqual({ values: ['a', 'c'] });

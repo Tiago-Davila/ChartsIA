@@ -15,7 +15,7 @@ import { type ExportService } from '../diagrams/export.service.js';
 export const RESOURCE_TEMPLATES: ResourceTemplate[] = [
   { uriTemplate: 'chartsia://diagrams/{id}', name: 'diagram', title: 'Diagrama (JSON)', description: 'Estado del diagrama, igual que get_diagram.', mimeType: 'application/json' },
   { uriTemplate: 'chartsia://diagrams/{id}/export.{ext}', name: 'diagram-export', title: 'Diagrama exportado', description: 'Exportación en svg, drawio o excalidraw.' },
-  { uriTemplate: 'chartsia://schema/{type}', name: 'diagram-schema', title: 'Guía por tipo de diagrama', description: 'Kinds, campos y relaciones permitidas para class, c4-context, c4-container, c4-component, er o nosql. Son las mismas en todos los tipos: el tipo no restringe nada.', mimeType: 'text/markdown' },
+  { uriTemplate: 'chartsia://schema/{type}', name: 'diagram-schema', title: 'Guía por tipo de diagrama', description: 'Kinds, campos y relaciones permitidas para class, c4-context, c4-container, c4-component, er, nosql o flow. Son las mismas en todos los tipos: el tipo no restringe nada.', mimeType: 'text/markdown' },
 ];
 
 const KIND_FIELDS: Record<string, string> = {
@@ -39,6 +39,7 @@ const KIND_FIELDS: Record<string, string> = {
   relationship: 'rombo de relación Chen con name dentro; identifying?: true (doble borde: relación identificante). Une entidades con connector (no con er-rel ni er-attr); pon la cardinalidad como label del conector (1, N, M) y la participación total con sourceTotal/targetTotal',
   specialization: 'triángulo de especialización o generalización: overlapping?: true (subclases solapadas, letra o; sin él, disjuntas, letra d). Une la superclase y cada subclase con connector sin puntas; name va debajo del triángulo',
   'value-list': 'values[] (≥1, máx. 200, únicos): lista de valores posibles de un atributo, una fila por valor; se une al atributo con una er-attr (atributo→lista)',
+  'flow-node': 'nodo de un flujo de sistema (tarjeta con ícono); variant (obligatorio): component | file | method | service | database | queue | trigger | decision | external; subtitle? (≤200) es el texto bajo el título, p. ej. la ruta y la línea "src/orders/service.ts:42", la firma de un método o el endpoint. Ver "Flujos de sistema"',
   boundary: 'grupo; boundaryType: enterprise | system | container. Úsalo solo si la persona lo pide o si hace falta para un component',
 };
 
@@ -53,6 +54,7 @@ const RELATION_RULES: Record<string, string> = {
   'er-attr': 'une un atributo o lista a su dueño; source es el dueño y target lo que cuelga de él: entity→attribute, attribute→attribute (compuesto) o attribute→value-list. Un atributo o lista cuelga de un solo dueño. Sin cardinalidades ni identifying; une solo elementos ER (entity, attribute, value-list)',
   connector: 'flecha o línea libre, sin semántica UML/C4, válida en cualquier diagrama y entre cualquier par de elementos que no sean grupos, aunque sean de familias distintas. Úsala para unir figuras entre sí o con elementos de cualquier tipo, y para uniones libres; si existe una relación propia del tipo (herencia, c4-rel, er-rel, er-attr…) usa esa. arrowheads?: none (sin punta) | end (punta en el destino, por defecto) | both (punta en ambos extremos), dashed?: true (línea discontinua), label?, sourceTotal?/targetTotal?: true (participación total: línea doble junto a ese extremo; pensada para unir un rombo ER con sus entidades)',
   'er-rel': 'sourceCardinality y targetCardinality obligatorias (one | zero-one | one-many | zero-many, pata de gallo; cada marca va en su extremo), identifying?: true (línea continua; sin él es discontinua), sourceTotal?/targetTotal?: true (participación total: línea doble junto a ese extremo), label?; solo une entities o tables',
+  'flow-edge': 'conexión de un flujo de sistema, siempre con flecha hacia el destino; flowType?: call (llama, por defecto) | import | read | write | event | data; label? (obligatoria si sale de un nodo decision); une solo flow-node o frame',
   'nosql-rel': 'flecha de referencia entre dos colecciones; source es la colección que guarda la referencia y target la colección referenciada; label? puede indicar el campo de referencia',
 };
 
@@ -76,8 +78,41 @@ export function schemaGuide(type: DiagramType): string {
     '',
     '## Estilo',
     `Opcional en elementos y relaciones, solo si la persona lo pide: \`style\` {\`borderColor?\`, \`fillColor?\`, \`fontColor?\` (\`#rrggbb\`), \`lineWidth?\` (${LINE_WIDTHS.join(' | ')}: grosor del borde o de la línea), \`fontFamily?\` (${FONT_FAMILIES.join(' | ')}), \`fontSize?\` (entero de ${FONT_SIZE_MIN} a ${FONT_SIZE_MAX})}. En una relación, \`borderColor\` es el color de la línea. En \`update_element\` y \`update_relation\`, \`style\` reemplaza el estilo completo y \`null\` lo elimina.`,
+    ...(type === 'flow' ? ['', FLOW_GUIDE] : []),
   ].join('\n');
 }
+
+const FLOW_GUIDE = [
+  '## Flujos de sistema',
+  'El diagrama `flow` muestra cómo se mueve el control o el dato por un sistema, de izquierda a derecha. Crea el flujo completo de una vez con `create_diagram` (nodos y conexiones sin coordenadas): así el layout sale ordenado. Con `apply_changes` sobre un diagrama vacío sale peor; úsalo solo para refinar uno ya creado.',
+  '',
+  'Variantes de `flow-node` (campo `variant`):',
+  '- `trigger`: punto de entrada (endpoint, evento, cron, comando). Empieza el flujo.',
+  '- `component`: pieza de código con responsabilidad propia (controlador, módulo, clase).',
+  '- `file`: un archivo concreto cuando importa el archivo y no la clase.',
+  '- `method`: una función o método puntual.',
+  '- `service`: servicio propio que se despliega aparte o capa de negocio.',
+  '- `database`: base de datos o tabla.',
+  '- `queue`: cola o bus de mensajes.',
+  '- `decision`: bifurcación (condición, validación). Cada salida lleva `label`.',
+  '- `external`: sistema de terceros fuera del repo (pasarela de pago, API externa).',
+  '',
+  'Tipos de conexión (`flowType` de `flow-edge`):',
+  '- `call` (por defecto): una pieza llama a otra.',
+  '- `import`: una pieza importa o depende de otra sin ejecutarla en este flujo.',
+  '- `read`: lee de una base, cola o archivo.',
+  '- `write`: escribe en una base, cola o archivo.',
+  '- `event`: publica o dispara un evento asíncrono.',
+  '- `data`: pasa un dato o una respuesta de una pieza a otra.',
+  '',
+  'Reglas:',
+  '- Toda `flow-edge` que sale de una `decision` necesita `label` con la rama (p. ej. "sí", "no", el caso); sin ella el error es `FIELD_REQUIRED` en `/relations/N/label`.',
+  '- `flow-edge` solo une `flow-node` o `frame`; para otros elementos usa `connector`.',
+  '- Agrupa con `frame` (`parentId` en cada nodo) por carpeta, capa o servicio. Un frame también puede ser origen o destino de una conexión.',
+  '- Un nodo por pieza relevante, no por línea de código. Pon la ruta y la línea en `subtitle` ("src/orders/service.ts:42").',
+  '',
+  'Entrada mínima: `{"type":"flow","title":"Alta de pedido","elements":[{"id":"api","kind":"flow-node","variant":"trigger","name":"POST /orders","subtitle":"src/orders/controller.ts:18"},{"id":"db","kind":"flow-node","variant":"database","name":"orders"}],"relations":[{"id":"api_db","kind":"flow-edge","source":"api","target":"db","flowType":"write","label":"guarda"}]}`',
+].join('\n');
 
 const EXT_PATTERN = new RegExp(`^chartsia://diagrams/([^/]+)/export\\.(${EXPORT_FORMATS.join('|')})$`);
 

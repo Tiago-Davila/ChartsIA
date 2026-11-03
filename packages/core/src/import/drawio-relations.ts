@@ -1,4 +1,4 @@
-import { C4_ELEMENT_KINDS, CLASS_ELEMENT_KINDS, ER_ELEMENT_KINDS, MULTIPLICITY_RELATION_KINDS, type RelationKind } from '../model/enums.js';
+import { C4_ELEMENT_KINDS, CLASS_ELEMENT_KINDS, ER_ELEMENT_KINDS, FLOW_EDGE_TYPES, MULTIPLICITY_RELATION_KINDS, type RelationKind } from '../model/enums.js';
 import { DRAWING_DEFAULT_COLOR, DRAWING_DEFAULT_WIDTH, DRAWING_MAX_COORDINATE, DRAWING_MAX_STROKE_WIDTH, DRAWING_MIN_STROKE_WIDTH } from '../model/drawing-elements.js';
 import { FONT } from '../shapes/types.js';
 import { canRelate } from '../validation/index.js';
@@ -24,12 +24,15 @@ const CARDINALITIES: Record<string, string> = {
 const inFamily = (family: readonly string[], kind: string) => family.includes(kind);
 const label = (edge: RawCell) => plainText(edge.value, edge.style.get('html') === '1').trim();
 
+const isFlowType = (value: string | undefined) => (FLOW_EDGE_TYPES as readonly string[]).includes(value ?? '');
+
 /** Tipo de relación según las puntas y el trazo de la arista y los elementos que une. */
 function chooseKind(edge: RawCell, source: Endpoint, target: Endpoint): RelationKind | undefined {
   const start = edge.style.get('startArrow') ?? 'none';
   const end = edge.style.get('endArrow') ?? 'classic';
   const dashed = edge.style.get('dashed') === '1';
   if (start.startsWith('ER') || end.startsWith('ER')) return 'er-rel';
+  if (isFlowType(edge.style.get('flowType'))) return 'flow-edge';
   const c4Like = (k: string) => inFamily(C4_ELEMENT_KINDS, k) || k === 'figure';
   if (end === 'blockThin' && start === 'none' && c4Like(source.kind) && c4Like(target.kind)) return 'c4-rel';
   if (source.kind === 'collection' && target.kind === 'collection' && end === 'block' && start === 'none') return 'nosql-rel';
@@ -107,6 +110,7 @@ export function buildRelation(edge: RawCell, ctx: RelationContext): BuiltRelatio
   if (ends.source) fields.sourceMultiplicity = ends.source;
   if (ends.target) fields.targetMultiplicity = ends.target;
   if (kind === 'association' && end !== 'none') fields.navigable = 'source-to-target';
+  if (kind === 'flow-edge') fields.flowType = edge.style.get('flowType');
   if (kind === 'c4-rel' && technology) fields.technology = ctx.clip(technology, 120);
   if (kind === 'er-rel') {
     fields.sourceCardinality = CARDINALITIES[start] ?? 'one';

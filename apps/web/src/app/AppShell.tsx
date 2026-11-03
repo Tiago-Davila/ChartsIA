@@ -2,7 +2,7 @@ import { type ExportFormat } from '@chartsia/core/export';
 import { type Diagram, type DiagramType, type Point } from '@chartsia/core/model';
 import { type Edge, type Node } from '@xyflow/react';
 import { type ClipboardEvent, type CSSProperties, type DragEvent, type ReactNode, useRef, useState } from 'react';
-import { type ConnectedAgent, type Project } from '../state/api-client';
+import { type ConnectedAgent, type HubInfo, type Project } from '../state/api-client';
 import { type AlignMode } from '../canvas/align';
 import { DiagramCanvas, type DiagramCanvasProps } from '../canvas/DiagramCanvas';
 import { FigureSidebar } from '../canvas/FigureSidebar';
@@ -22,6 +22,8 @@ export interface AppShellProps {
   diagrams: DiagramListItem[];
   projects: Project[];
   agents: ConnectedAgent[];
+  /** Datos del hub para la sección General; `null` mientras cargan. */
+  hub?: HubInfo | null;
   activeDiagramId: string | null;
   connection: ConnectionState;
   diagram?: Diagram;
@@ -49,6 +51,7 @@ export interface AppShellProps {
   onRenameDiagram(diagramId: string, title: string): void;
   onDeleteDiagram(diagramId: string): void;
   onExport(format: ExportFormat): void;
+  defaultExportFormat?: ExportFormat;
   onImportImages?(files: File[], screenPosition?: { x: number; y: number }): void;
   onAddFigure?(key: string, screenPosition: { x: number; y: number }): void;
   /** Doble clic en la barra: agrega la figura centrada en el centro de la vista. */
@@ -145,7 +148,7 @@ export function AppShell(props: AppShellProps) {
   if (props.configOpen) {
     return (
       <>
-        <ConfigScreen origin={props.origin} agents={props.agents} section={props.configSection ?? 'general'} onSection={props.onConfig} onBack={props.onCloseConfig} />
+        <ConfigScreen origin={props.origin} agents={props.agents} hub={props.hub ?? null} section={props.configSection ?? 'general'} onSection={props.onConfig} onBack={props.onCloseConfig} />
         {props.overlay}
       </>
     );
@@ -166,6 +169,7 @@ export function AppShell(props: AppShellProps) {
             revision={diagram.revision}
             disabled={props.readOnly}
             onExport={props.onExport}
+            defaultFormat={props.defaultExportFormat}
             onRename={props.onRename}
             onAlign={props.readOnly ? undefined : props.onAlign}
             changedIds={props.changedIds}
@@ -191,7 +195,7 @@ export function AppShell(props: AppShellProps) {
               onAddText={props.onAddText}
               onAddFrame={props.onAddFrame}
             />
-            <C4Legend diagram={diagram} />
+            {diagram.preferences?.c4Legend === false ? null : <C4Legend diagram={diagram} />}
           </div>
         </>
       ) : props.loading ? (

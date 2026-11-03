@@ -1,0 +1,410 @@
+{
+  "type": "class",
+  "title": "Biblioteca",
+  "elements": [
+    {
+      "id": "Persona",
+      "name": "Persona",
+      "kind": "class",
+      "abstract": true,
+      "attributes": [
+        {
+          "name": "nombre",
+          "type": "String",
+          "visibility": "#"
+        }
+      ],
+      "operations": [
+        {
+          "name": "nombreCompleto",
+          "parameters": [],
+          "returnType": "String",
+          "visibility": "+",
+          "abstract": true
+        }
+      ],
+      "layout": {
+        "x": 30,
+        "y": 446.83,
+        "width": 216,
+        "height": 110,
+        "pinned": false
+      }
+    },
+    {
+      "id": "Socio",
+      "name": "Socio",
+      "kind": "class",
+      "attributes": [
+        {
+          "name": "numero",
+          "type": "int",
+          "visibility": "-"
+        },
+        {
+          "name": "total",
+          "type": "int",
+          "visibility": "+",
+          "static": true,
+          "defaultValue": "0"
+        }
+      ],
+      "operations": [
+        {
+          "name": "prestar",
+          "parameters": [
+            {
+              "name": "libro",
+              "type": "Libro"
+            }
+          ],
+          "returnType": "Prestamo",
+          "visibility": "+"
+        }
+      ],
+      "layout": {
+        "x": 286,
+        "y": 427,
+        "width": 251,
+        "height": 113,
+        "pinned": false
+      }
+    },
+    {
+      "id": "Autor",
+      "name": "Autor",
+      "kind": "class",
+      "attributes": [],
+      "operations": [],
+      "layout": {
+        "x": 1016,
+        "y": 263.67,
+        "width": 140,
+        "height": 52,
+        "pinned": false
+      }
+    },
+    {
+      "id": "Libro",
+      "name": "Libro",
+      "kind": "class",
+      "stereotype": "entity",
+      "attributes": [
+        {
+          "name": "isbn",
+          "type": "String",
+          "visibility": "-"
+        },
+        {
+          "name": "titulo",
+          "type": "String",
+          "visibility": "-"
+        }
+      ],
+      "operations": [],
+      "layout": {
+        "x": 824.75,
+        "y": 227,
+        "width": 140,
+        "height": 108,
+        "pinned": false
+      }
+    },
+    {
+      "id": "Prestamo",
+      "name": "Préstamo",
+      "kind": "class",
+      "attributes": [
+        {
+          "name": "desde",
+          "type": "Date",
+          "visibility": "-"
+        },
+        {
+          "name": "estado",
+          "type": "EstadoPrestamo",
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        {
+          "name": "devolver",
+          "parameters": [],
+          "visibility": "+"
+        }
+      ],
+      "layout": {
+        "x": 577,
+        "y": 427,
+        "width": 204,
+        "height": 113,
+        "pinned": false
+      }
+    },
+    {
+      "id": "Prestable",
+      "name": "Prestable",
+      "kind": "interface",
+      "operations": [
+        {
+          "name": "disponible",
+          "parameters": [],
+          "returnType": "boolean",
+          "visibility": "+"
+        }
+      ],
+      "layout": {
+        "x": 594,
+        "y": 30,
+        "width": 182,
+        "height": 79,
+        "pinned": false
+      }
+    },
+    {
+      "id": "EstadoPrestamo",
+      "name": "EstadoPrestamo",
+      "kind": "enum",
+      "literals": [
+        "ACTIVO",
+        "DEVUELTO",
+        "VENCIDO"
+      ],
+      "layout": {
+        "x": 821,
+        "y": 443.83,
+        "width": 155,
+        "height": 117,
+        "pinned": false
+      }
+    },
+    {
+      "id": "catalogo",
+      "name": "catalogo",
+      "kind": "package",
+      "layout": {
+        "x": 596,
+        "y": 209,
+        "width": 180,
+        "height": 118,
+        "pinned": false
+      }
+    },
+    {
+      "id": "Ejemplar",
+      "name": "Ejemplar",
+      "parentId": "catalogo",
+      "kind": "class",
+      "attributes": [],
+      "operations": [],
+      "layout": {
+        "x": 616,
+        "y": 255,
+        "width": 140,
+        "height": 52,
+        "pinned": false
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "h1",
+      "kind": "inheritance",
+      "source": "Socio",
+      "target": "Persona",
+      "route": [
+        {
+          "x": 286,
+          "y": 483.5
+        },
+        {
+          "x": 270,
+          "y": 483.5
+        },
+        {
+          "x": 270,
+          "y": 501.83
+        },
+        {
+          "x": 246,
+          "y": 501.83
+        }
+      ]
+    },
+    {
+      "id": "h2",
+      "kind": "inheritance",
+      "source": "Autor",
+      "target": "Persona",
+      "route": [
+        {
+          "x": 1086,
+          "y": 315.67
+        },
+        {
+          "x": 1086,
+          "y": 417
+        },
+        {
+          "x": 138,
+          "y": 417
+        },
+        {
+          "x": 138,
+          "y": 446.83
+        }
+      ]
+    },
+    {
+      "id": "rl1",
+      "kind": "realization",
+      "source": "Libro",
+      "target": "Prestable",
+      "route": [
+        {
+          "x": 894.75,
+          "y": 227
+        },
+        {
+          "x": 894.75,
+          "y": 211
+        },
+        {
+          "x": 685,
+          "y": 211
+        },
+        {
+          "x": 685,
+          "y": 109
+        }
+      ]
+    },
+    {
+      "id": "c1",
+      "kind": "composition",
+      "source": "Socio",
+      "target": "Prestamo",
+      "sourceMultiplicity": "1",
+      "targetMultiplicity": "0..*",
+      "route": [
+        {
+          "x": 537,
+          "y": 483.5
+        },
+        {
+          "x": 577,
+          "y": 483.5
+        }
+      ]
+    },
+    {
+      "id": "a1",
+      "kind": "association",
+      "source": "Prestamo",
+      "target": "Libro",
+      "label": "de",
+      "navigable": "source-to-target",
+      "route": [
+        {
+          "x": 679,
+          "y": 427
+        },
+        {
+          "x": 679,
+          "y": 411
+        },
+        {
+          "x": 894.75,
+          "y": 411
+        },
+        {
+          "x": 894.75,
+          "y": 335
+        }
+      ]
+    },
+    {
+      "id": "ag1",
+      "kind": "aggregation",
+      "source": "Libro",
+      "target": "Autor",
+      "targetMultiplicity": "1..*",
+      "route": [
+        {
+          "x": 964.75,
+          "y": 281
+        },
+        {
+          "x": 1000,
+          "y": 281
+        },
+        {
+          "x": 1000,
+          "y": 289.67
+        },
+        {
+          "x": 1016,
+          "y": 289.67
+        }
+      ]
+    },
+    {
+      "id": "d1",
+      "kind": "dependency",
+      "source": "Prestamo",
+      "target": "EstadoPrestamo",
+      "route": [
+        {
+          "x": 781,
+          "y": 483.5
+        },
+        {
+          "x": 805,
+          "y": 483.5
+        },
+        {
+          "x": 805,
+          "y": 502.33
+        },
+        {
+          "x": 821,
+          "y": 502.33
+        }
+      ]
+    },
+    {
+      "id": "a2",
+      "kind": "association",
+      "source": "Ejemplar",
+      "target": "Libro",
+      "route": [
+        {
+          "x": 756,
+          "y": 281
+        },
+        {
+          "x": 824.75,
+          "y": 281
+        }
+      ]
+    }
+  ],
+  "preferences": {
+    "direction": "right",
+    "elementSpacing": "wide",
+    "layerSpacing": "compact",
+    "fontFamily": "default",
+    "palette": {},
+    "uml": {
+      "types": true,
+      "visibility": true,
+      "multiplicities": true,
+      "methods": true
+    },
+    "c4Legend": true
+  },
+  "id": "dg_goldengolden",
+  "revision": 1,
+  "createdAt": "2026-10-20T10:00:00.000Z",
+  "updatedAt": "2026-10-20T10:00:00.000Z"
+}

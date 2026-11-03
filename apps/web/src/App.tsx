@@ -2,7 +2,9 @@ import { type ExportFormat } from '@chartsia/core/export';
 import { type DiagramType } from '@chartsia/core/model';
 import { ReactFlowProvider } from '@xyflow/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { AgentNotice } from './app/AgentNotice';
 import { AppShell } from './app/AppShell';
+import { reducedMotion, useCanvasPreferences } from './app/canvas-preferences';
 import { ErrorToast } from './app/ErrorToast';
 import { Landing } from './app/Landing';
 import { configPath, diagramPath, navigate, useRoute } from './app/routes';
@@ -34,6 +36,7 @@ function ConnectedApp() {
   const listLoaded = useDiagramStore((s) => s.listLoaded);
   const projects = useDiagramStore((s) => s.projects);
   const agents = useDiagramStore((s) => s.agents);
+  const hub = useDiagramStore((s) => s.hub);
   const activeDiagramId = useDiagramStore((s) => s.activeDiagramId);
   const diagram = useDiagramStore((s) => s.diagram);
   const loading = useDiagramStore((s) => s.openDiagramId !== null && s.diagram === undefined);
@@ -41,7 +44,9 @@ function ConnectedApp() {
   const needsToken = useDiagramStore((s) => s.needsToken);
   const viewVersion = useDiagramStore((s) => s.viewVersion);
   const changedIds = useDiagramStore((s) => s.lastChangedIds);
-  const animate = useDiagramStore((s) => s.lastOrigin === 'agent');
+  const agentChanged = useDiagramStore((s) => s.lastOrigin === 'agent');
+  const { animations } = useCanvasPreferences();
+  const animate = agentChanged && !reducedMotion(animations);
   const edits = useDiagramEdits(api);
   const shortcuts = useMemo(() => ({ history: edits.history, duplicate: edits.duplicate, copy: edits.copy, cut: edits.cut, paste: edits.paste, pasteExternal: edits.pasteExternal }), [edits.history, edits.duplicate, edits.copy, edits.cut, edits.paste, edits.pasteExternal]);
   useShortcuts(shortcuts, diagram !== undefined);
@@ -178,6 +183,11 @@ function ConnectedApp() {
     [edits.rename],
   );
 
+  const [defaultExportFormat, setDefaultExportFormat] = useState<ExportFormat>();
+  useEffect(() => {
+    api.getExportPreferences().then((prefs) => setDefaultExportFormat(prefs.format)).catch(() => undefined);
+  }, [route.name]);
+
   const onExport = useCallback(async (format: ExportFormat) => {
     const current = diagramStore.getState().diagram;
     if (!current) return;
@@ -223,6 +233,7 @@ function ConnectedApp() {
           diagrams={diagrams}
           projects={projects}
           agents={agents}
+          hub={hub}
           activeDiagramId={activeDiagramId}
           connection={connection}
           diagram={diagram}
@@ -246,6 +257,7 @@ function ConnectedApp() {
           onRenameDiagram={onRenameDiagram}
           onDeleteDiagram={onDeleteDiagram}
           onExport={onExport}
+          defaultExportFormat={defaultExportFormat}
           onImportImages={edits.insertImages}
           onAddFigure={edits.addFigure}
           onAddFigureAtCenter={edits.addFigureAtCenter}
@@ -267,7 +279,12 @@ function ConnectedApp() {
           onOpenLatest={onOpenLatest}
           onChangedFitted={diagramStore.getState().clearChangedIds}
           startBlank={abrirEnBlanco}
-          overlay={<ErrorToast />}
+          overlay={
+            <>
+              <ErrorToast />
+              <AgentNotice />
+            </>
+          }
         />
       </div>
     </DiagramEditContext.Provider>

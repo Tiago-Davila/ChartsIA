@@ -51,6 +51,11 @@ export function UploadIcon() {
   return <Icon><path d="M12 15V4M7 9l5-5 5 5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" /></Icon>;
 }
 
+/** Flecha hacia abajo sobre una bandeja, para exportar. */
+export function DownloadIcon() {
+  return <Icon><path d="M12 4v11M7 10l5 5 5-5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" /></Icon>;
+}
+
 /** Panel lateral, para el botón "Vista" que oculta o muestra la barra. */
 export function SidebarIcon() {
   return <Icon><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16" /></Icon>;
@@ -64,6 +69,16 @@ export function ArrowLeftIcon() {
 /** Controles deslizantes de la configuración general. */
 export function SlidersIcon() {
   return <Icon><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" /><circle cx="16" cy="6" r="2" /><circle cx="10" cy="12" r="2" /><circle cx="18" cy="18" r="2" /></Icon>;
+}
+
+/** Cuadrícula de las preferencias del lienzo. */
+export function GridIcon() {
+  return <Icon><path d="M4 4h16v16H4zM4 12h16M12 4v16" /></Icon>;
+}
+
+/** Cilindro de la sección Hub y datos. */
+export function DatabaseIcon() {
+  return <Icon><ellipse cx="12" cy="5" rx="8" ry="3" /><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" /></Icon>;
 }
 
 /** Enchufe de las conexiones MCP. */

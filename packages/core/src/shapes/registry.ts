@@ -1,4 +1,5 @@
 import { type Element } from '../model/diagram.js';
+import { type UmlDetail } from '../model/preferences.js';
 import { type ElementKind } from '../model/enums.js';
 import { boundaryShape } from './c4/boundary.js';
 import { componentShape } from './c4/component.js';
@@ -10,6 +11,7 @@ import { frameShape } from './general/frame.js';
 import { drawingShape } from './general/drawing.js';
 import { imageShape } from './general/image.js';
 import { textBlockShape } from './general/text-block.js';
+import { flowNodeShape } from './flow/node.js';
 import { collectionShape } from './nosql/collection.js';
 import { tableShape } from './er/table.js';
 import { valueListShape } from './er/value-list.js';
@@ -41,6 +43,7 @@ const SHAPES: { [K in ElementKind]: ShapeDefinition<Extract<Element, { kind: K }
   image: imageShape,
   text: textBlockShape,
   collection: collectionShape,
+  'flow-node': flowNodeShape,
   attribute: attributeShape,
   'value-list': valueListShape,
   relationship: relationshipShape,
@@ -52,12 +55,12 @@ export function shapeFor<E extends Element>(element: E): ShapeDefinition<E> {
 }
 
 /** Tamaño natural de un elemento (en grupos, el mínimo sin contar a sus hijos). */
-export function measureElement(element: Element): Size {
-  return shapeFor(element).measure(element);
+export function measureElement(element: Element, uml?: UmlDetail): Size {
+  return shapeFor(element).measure(element, uml);
 }
 
-export function elementPrimitives(element: Element, size: Size): Primitive[] {
-  return shapeFor(element).primitives(element, size);
+export function elementPrimitives(element: Element, size: Size, uml?: UmlDetail): Primitive[] {
+  return shapeFor(element).primitives(element, size, uml);
 }
 
 const NO_PADDING = { top: 0, right: 0, bottom: 0, left: 0 };

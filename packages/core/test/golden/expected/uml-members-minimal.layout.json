@@ -1,0 +1,129 @@
+{
+  "type": "class",
+  "title": "Figuras y miembros",
+  "elements": [
+    {
+      "id": "Figura",
+      "name": "Figura",
+      "kind": "interface",
+      "operations": [
+        {
+          "name": "area",
+          "parameters": [],
+          "returnType": "double",
+          "visibility": "+"
+        },
+        {
+          "name": "describir",
+          "parameters": [],
+          "returnType": "String",
+          "visibility": "+",
+          "default": true
+        }
+      ],
+      "layout": {
+        "x": 230,
+        "y": 111,
+        "width": 140,
+        "height": 48,
+        "pinned": false
+      }
+    },
+    {
+      "id": "Base",
+      "name": "FiguraBase<T>",
+      "kind": "class",
+      "abstract": true,
+      "attributes": [
+        {
+          "name": "nombre",
+          "type": "String",
+          "visibility": "#"
+        }
+      ],
+      "operations": [
+        {
+          "name": "area",
+          "parameters": [],
+          "returnType": "double",
+          "visibility": "+",
+          "abstract": true
+        }
+      ],
+      "layout": {
+        "x": 228,
+        "y": 239,
+        "width": 144,
+        "height": 79,
+        "pinned": false
+      }
+    },
+    {
+      "id": "Color",
+      "name": "Color & Tono",
+      "kind": "enum",
+      "literals": [
+        "ROJO",
+        "VERDE"
+      ],
+      "attributes": [
+        {
+          "name": "hex",
+          "type": "String",
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        {
+          "name": "hex",
+          "parameters": [],
+          "returnType": "String",
+          "visibility": "+"
+        }
+      ],
+      "layout": {
+        "x": 30,
+        "y": 30,
+        "width": 140,
+        "height": 129,
+        "pinned": false
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "r1",
+      "kind": "realization",
+      "source": "Base",
+      "target": "Figura",
+      "route": [
+        {
+          "x": 300,
+          "y": 239
+        },
+        {
+          "x": 300,
+          "y": 159
+        }
+      ]
+    }
+  ],
+  "preferences": {
+    "direction": "down",
+    "elementSpacing": "normal",
+    "layerSpacing": "normal",
+    "fontFamily": "default",
+    "palette": {},
+    "uml": {
+      "types": false,
+      "visibility": false,
+      "multiplicities": false,
+      "methods": false
+    },
+    "c4Legend": true
+  },
+  "id": "dg_goldengolden",
+  "revision": 1,
+  "createdAt": "2026-10-20T10:00:00.000Z",
+  "updatedAt": "2026-10-20T10:00:00.000Z"
+}

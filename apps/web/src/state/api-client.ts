@@ -1,5 +1,5 @@
-import { type ExportFormat } from '@chartsia/core/export';
-import { type Diagram, type DiagramType, type Operation } from '@chartsia/core/model';
+import { type ExportFormat, type ExportPreferenceChanges, type ExportPreferences } from '@chartsia/core/export';
+import { type Diagram, type DiagramType, type Operation, type PreferenceChanges, type Preferences } from '@chartsia/core/model';
 import { type ValidationError } from '@chartsia/core/validation';
 
 export interface DiagramSummary {
@@ -23,6 +23,38 @@ export interface ConnectedAgent {
   name: string;
   version: string;
   lastCallAt: string;
+}
+
+/** Datos del hub para la sección General de la configuración. */
+export interface HubInfo {
+  version: string;
+  port: number;
+  dataDir: string;
+}
+
+/** De dónde sale un valor del hub: variable de entorno, `config.json` o el valor por defecto. */
+export type ValueSource = 'env' | 'file' | 'default';
+
+/** Configuración del hub; `running` es lo que usa el hub ahora y `value` lo que usará tras reiniciar. */
+export interface HubSettings {
+  dataDir: { value: string; source: ValueSource; running: string };
+  maxElements: { value: number; source: ValueSource };
+  network: { value: boolean; source: ValueSource; running: boolean };
+  token: { value: string | null; source: ValueSource };
+  restartRequired: boolean;
+}
+
+export interface HubSettingsChanges {
+  dataDir?: string | null;
+  maxElements?: number | null;
+  network?: boolean;
+}
+
+export interface BackupImportResult {
+  imported: number;
+  replaced: number;
+  skipped: number;
+  projectsCreated: number;
 }
 
 export interface DiagramListResponse {
@@ -90,6 +122,21 @@ export function createApiClient({ baseUrl = '', getToken, fetch: fetchImpl = (..
     importDrawio: (body: { source: string; title?: string; projectId?: string }) =>
       json<{ diagramId: string; revision: number; viewUrl: string; counts: { elements: number; relations: number }; warnings: string[] }>('/api/diagrams/import-drawio', { method: 'POST', body: JSON.stringify(body) }),
     listAgents: async () => (await json<{ agents: ConnectedAgent[] }>('/api/agents')).agents,
+    getHub: () => json<HubInfo>('/api/hub'),
+    getHubSettings: () => json<HubSettings>('/api/hub/config'),
+    setHubSettings: (changes: HubSettingsChanges) => json<HubSettings>('/api/hub/config', { method: 'PUT', body: JSON.stringify(changes) }),
+    regenerateToken: () => json<HubSettings>('/api/hub/token', { method: 'POST' }),
+    downloadBackup: async () => {
+      const res = await request('/api/backup');
+      const filename = /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') ?? '')?.[1] ?? 'chartsia-respaldo.json';
+      return { blob: await res.blob(), filename };
+    },
+    importBackup: (backup: unknown, onConflict?: 'replace' | 'skip') =>
+      json<BackupImportResult>('/api/backup/import', { method: 'POST', body: JSON.stringify({ backup, ...(onConflict ? { onConflict } : {}) }) }),
+    getPreferences: () => json<Preferences>('/api/preferences'),
+    setPreferences: (changes: PreferenceChanges) => json<Preferences>('/api/preferences', { method: 'PUT', body: JSON.stringify(changes) }),
+    getExportPreferences: () => json<ExportPreferences>('/api/preferences/export'),
+    setExportPreferences: (changes: ExportPreferenceChanges) => json<ExportPreferences>('/api/preferences/export', { method: 'PUT', body: JSON.stringify(changes) }),
     getDiagram: (diagramId: string) => json<Diagram>(`/api/diagrams/${id(diagramId)}`),
     applyOperations: (diagramId: string, body: { baseRevision?: number; operations: Operation[] }) =>
       json<ApplyResponse>(`/api/diagrams/${id(diagramId)}/operations`, { method: 'POST', body: JSON.stringify(body) }),

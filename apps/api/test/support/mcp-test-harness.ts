@@ -16,9 +16,9 @@ export type ToolResult = CallToolResult & {
  */
 export async function createMcpHarness(overrides: { maxElements?: number } = {}) {
   const services = createServices(overrides);
-  const exports = new ExportService(services.query);
+  const exports = new ExportService(services.query, services.preferences);
   const formatter = new ToolResultFormatter(services.config);
-  const factory = new McpServerFactory(services.commands, services.query, exports, formatter);
+  const factory = new McpServerFactory(services.commands, services.query, exports, formatter, services.hubSettings);
   const server = factory.create();
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   const client = new Client({ name: 'contract-test', version: '1.0.0' });

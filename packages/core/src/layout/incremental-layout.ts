@@ -30,7 +30,8 @@ export async function relayoutDiagram(previous: Diagram, next: Diagram): Promise
 
   const fresh = next.elements.filter((e) => !positions.has(e.id));
   if (fresh.length > 0) {
-    const elk = await runElk(buildElkGraph({ diagram: next, sizes, seeds: positions }));
+    // Sin ningún elemento colocado no hay a qué sembrar: ELK dispone todo con su modo normal.
+    const elk = await runElk(buildElkGraph({ diagram: next, sizes, seeds: positions.size > 0 ? positions : undefined }));
     const freshIds = new Set(fresh.map((e) => e.id));
     const parentOf = new Map(next.elements.map((e) => [e.id, e.parentId]));
     const rootOf = (id: string): string => {

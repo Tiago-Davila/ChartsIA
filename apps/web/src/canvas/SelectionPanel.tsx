@@ -5,6 +5,7 @@ import { type RoutedEdgeData } from '../edges/RoutedEdge';
 import { useDiagramEditActions } from '../nodes/edit-context';
 import { type ElementNodeData } from '../nodes/types';
 import { type DrawingTarget, type StyleTarget } from './style-edits';
+import { FlowNodePanel } from './FlowNodePanel';
 import { StylePanel } from './StylePanel';
 
 export interface SelectionPanelProps {
@@ -73,8 +74,9 @@ export function SelectionPanel({ nodes, edges, editingEdge, onEditEdge }: Select
           </button>
         </Panel>
       ) : null}
-      {onlyNode && (isGroupKind(onlyNode.kind) || onlyNode.parentId) ? (
+      {onlyNode && (isGroupKind(onlyNode.kind) || onlyNode.parentId || onlyNode.kind === 'flow-node') ? (
         <Panel position="top-center" className="edge-toolbar nodrag nopan">
+          {onlyNode.kind === 'flow-node' && !onlyNode.locked ? <FlowNodePanel element={onlyNode} /> : null}
           <GroupActions node={selectedNodes[0]!} />
         </Panel>
       ) : null}
