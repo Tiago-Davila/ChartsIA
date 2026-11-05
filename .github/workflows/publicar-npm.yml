@@ -45,5 +45,5 @@ jobs:
 
       - name: Publicar
         run: |
-          npm publish paquetes/chartsia-core-*.tgz --provenance --access public
-          npm publish paquetes/chartsia-[0-9]*.tgz --provenance --access public
+          npm publish ./paquetes/chartsia-core-*.tgz --provenance --access public
+          npm publish ./paquetes/chartsia-[0-9]*.tgz --provenance --access public
