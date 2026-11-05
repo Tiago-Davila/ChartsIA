@@ -1,6 +1,6 @@
 {
   "name": "@chartsia/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Modelo canónico, validación, layout, formas y exportadores de ChartsIA",
   "license": "MIT",
