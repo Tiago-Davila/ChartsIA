@@ -43,7 +43,16 @@ jobs:
           (cd packages/core && pnpm pack --pack-destination ../../paquetes)
           (cd apps/api && pnpm pack --pack-destination ../../paquetes)
 
+      # Se omiten los paquetes cuya versión ya está en npm, para poder relanzar un publish a medias.
       - name: Publicar
         run: |
-          npm publish ./paquetes/chartsia-core-*.tgz --provenance --access public
-          npm publish ./paquetes/chartsia-[0-9]*.tgz --provenance --access public
+          version="${GITHUB_REF_NAME#v}"
+          publicar() {
+            if npm view "$1@$version" version > /dev/null 2>&1; then
+              echo "$1@$version ya está publicado, se omite"
+            else
+              npm publish "$2" --provenance --access public
+            fi
+          }
+          publicar @chartsia/core ./paquetes/chartsia-core-*.tgz
+          publicar chartsia ./paquetes/chartsia-[0-9]*.tgz
