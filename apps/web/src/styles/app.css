@@ -1505,6 +1505,8 @@ button:disabled,
 .config__connect > p { margin: 0; font-size: 14px; }
 .config__connect > .code-block { justify-self: stretch; }
 .config__connect h3 { margin: 12px 0 0; font-size: 14px; }
+.config__links { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.config__links .button { color: inherit; text-decoration: none; }
 /* Preferencia con su leyenda arriba y las opciones como botones segmentados. */
 .config__field { margin: 0 0 8px; padding: 0; border: 0; }
 .config__field legend { margin-bottom: 6px; padding: 0; font-size: 14px; font-weight: 600; }

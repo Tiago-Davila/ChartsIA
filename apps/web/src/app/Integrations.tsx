@@ -34,6 +34,10 @@ function ConnectDialog({ agent, mcpUrl, onCerrar }: { agent: Agent; mcpUrl: stri
       <div className="config__connect">
         <p>{agent.help}</p>
         <CodeBlock text={agent.snippet(mcpUrl)} label={`Copiar configuración de ${agent.name}`} />
+        <p className="config__links">
+          {agent.install ? <a className="button" href={agent.install(mcpUrl)}>Instalar en {agent.name}</a> : null}
+          <a href={agent.docs} target="_blank" rel="noreferrer">Documentación de {agent.name}</a>
+        </p>
         <h3>Prompt de instalación</h3>
         <p>Pégalo en el propio agente y deja que se conecte solo.</p>
         <CodeBlock text={promptInstalacion(agent, mcpUrl)} label={`Copiar prompt de ${agent.name}`} />

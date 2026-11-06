@@ -75,8 +75,28 @@ grok mcp add --transport http chartsia http://127.0.0.1:24278/mcp
 opencode mcp add chartsia --url http://127.0.0.1:24278/mcp
 ```
 
+**GitHub Copilot (VS Code)**
+
+```bash
+code --add-mcp '{"name":"chartsia","type":"http","url":"http://127.0.0.1:24278/mcp"}'
+```
+
+**Cursor**: pega este bloque en `~/.cursor/mcp.json`, o usa el botón **Instalar en Cursor** de la
+pantalla **Configuración**.
+
+```json
+{
+  "mcpServers": {
+    "chartsia": {
+      "url": "http://127.0.0.1:24278/mcp"
+    }
+  }
+}
+```
+
 Para Claude Desktop y los demás clientes por stdio, la pantalla **Configuración** de la app
-muestra el bloque listo para pegar.
+muestra el bloque listo para pegar, con el prompt de instalación y el enlace a la documentación
+de cada agente.
 
 ### Skills
 
