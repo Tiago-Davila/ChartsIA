@@ -11,6 +11,10 @@ export interface Agent {
   help: string;
   /** Comando o configuración que se copia. */
   snippet(mcpUrl: string): string;
+  /** Documentación oficial del agente sobre servidores MCP. */
+  docs: string;
+  /** Enlace que instala ChartsIA en el agente con un clic, si el agente lo admite. */
+  install?(mcpUrl: string): string;
 }
 
 /** URL del MCP para los agentes: `*.localhost` solo lo resuelven los navegadores, así que pasa a 127.0.0.1. */
@@ -28,6 +32,7 @@ export function mcpUrlParaAgentes(origin: string): string {
 export const AGENTS: Agent[] = [
   {
     id: 'claude-code',
+    docs: 'https://code.claude.com/docs/en/mcp',
     name: 'Claude Code (HTTP)',
     category: 'Terminal',
     summary: 'Agente de terminal: un comando y queda disponible en todas tus carpetas.',
@@ -37,6 +42,7 @@ export const AGENTS: Agent[] = [
   },
   {
     id: 'claude-desktop',
+    docs: 'https://modelcontextprotocol.io/docs/develop/connect-local-servers',
     name: 'Claude Desktop (stdio)',
     category: 'Escritorio',
     summary: 'La app de escritorio, a través del puente stdio hacia el hub.',
@@ -59,6 +65,7 @@ export const AGENTS: Agent[] = [
   },
   {
     id: 'codex',
+    docs: 'https://developers.openai.com/codex/mcp',
     name: 'Codex CLI',
     category: 'Terminal',
     summary: 'Agente de terminal de OpenAI: un comando y queda disponible en todas tus carpetas.',
@@ -68,6 +75,7 @@ export const AGENTS: Agent[] = [
   },
   {
     id: 'gemini',
+    docs: 'https://geminicli.com/docs/tools/mcp-server/',
     name: 'Gemini CLI',
     category: 'Terminal',
     summary: 'Agente de terminal de Google: un comando y queda disponible en todas tus carpetas.',
@@ -77,6 +85,7 @@ export const AGENTS: Agent[] = [
   },
   {
     id: 'grok-build',
+    docs: 'https://docs.x.ai/build/features/mcp-servers',
     name: 'Grok Build',
     category: 'Terminal',
     summary: 'Agente de terminal de xAI: un comando y queda disponible en todas tus carpetas.',
@@ -86,6 +95,7 @@ export const AGENTS: Agent[] = [
   },
   {
     id: 'opencode',
+    docs: 'https://opencode.ai/docs/mcp-servers/',
     name: 'OpenCode',
     category: 'Terminal',
     summary: 'Agente de terminal de código abierto: un comando y queda disponible en todas tus carpetas.',
@@ -95,6 +105,7 @@ export const AGENTS: Agent[] = [
   },
   {
     id: 'opencode-local',
+    docs: 'https://opencode.ai/docs/mcp-servers/',
     name: 'OpenCode (stdio)',
     category: 'Terminal',
     summary: 'Puente stdio local, lanzado por OpenCode con npx.',
@@ -115,6 +126,27 @@ export const AGENTS: Agent[] = [
         null,
         2,
       ),
+  },
+  {
+    id: 'copilot',
+    name: 'GitHub Copilot (VS Code)',
+    category: 'Editor',
+    summary: 'El modo agente de Copilot en VS Code: un comando y queda disponible en todas tus carpetas.',
+    clients: ['Visual Studio Code', 'Visual Studio Code - Insiders'],
+    help: 'Ejecuta este comando en tu terminal. Queda en tu perfil de usuario de VS Code, disponible en todas tus carpetas; después elige ChartsIA en las herramientas del modo agente.',
+    docs: 'https://code.visualstudio.com/docs/copilot/customization/mcp-servers',
+    snippet: (mcpUrl) => `code --add-mcp '${JSON.stringify({ name: 'chartsia', type: 'http', url: mcpUrl })}'`,
+  },
+  {
+    id: 'cursor',
+    name: 'Cursor',
+    category: 'Editor',
+    summary: 'El editor con agente de Anysphere: instálalo con un clic o pega el bloque en tu configuración.',
+    clients: ['cursor-vscode'],
+    help: 'Pega este bloque en ~/.cursor/mcp.json para tenerlo en todas tus carpetas (o en .cursor/mcp.json de un proyecto). También puedes instalarlo con el botón.',
+    docs: 'https://cursor.com/docs/context/mcp',
+    snippet: (mcpUrl) => JSON.stringify({ mcpServers: { chartsia: { url: mcpUrl } } }, null, 2),
+    install: (mcpUrl) => `cursor://anysphere.cursor-deeplink/mcp/install?name=chartsia&config=${btoa(JSON.stringify({ url: mcpUrl }))}`,
   },
 ];
 

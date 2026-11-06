@@ -157,9 +157,10 @@ describe('ConfigScreen', () => {
 
   it('el comando de cada agente de terminal es el de la sección "Conectar agentes" del README', () => {
     const readme = readFileSync(resolve(__dirname, '../../../../README.md'), 'utf8');
-    const porAgente = { 'claude-code': 'Claude Code', codex: 'Codex CLI', gemini: 'Gemini CLI', 'grok-build': 'Grok Build', opencode: 'OpenCode' };
+    const porAgente = { 'claude-code': 'Claude Code', codex: 'Codex CLI', gemini: 'Gemini CLI', 'grok-build': 'Grok Build', opencode: 'OpenCode', copilot: 'GitHub Copilot (VS Code)' };
     for (const [id, titulo] of Object.entries(porAgente)) {
-      const comando = readme.match(new RegExp(String.raw`\*\*${titulo}\*\*\s+` + '```bash\\n(.+)\\n```'))?.[1];
+      const escapado = titulo.replace(/[()]/g, '\\$&');
+      const comando = readme.match(new RegExp(String.raw`\*\*${escapado}\*\*\s+` + '```bash\\n(.+)\\n```'))?.[1];
       expect(comando, `README sin comando para ${titulo}`).toBeDefined();
       expect(AGENTS.find((a) => a.id === id)!.snippet('http://127.0.0.1:24278/mcp')).toBe(comando);
     }
@@ -169,6 +170,41 @@ describe('ConfigScreen', () => {
     const snippet = (id: string) => AGENTS.find((a) => a.id === id)!.snippet(`${origin}/mcp`);
     expect(snippet('gemini')).toBe(`gemini mcp add --scope user --transport http chartsia ${origin}/mcp`);
     expect(snippet('opencode')).toBe(`opencode mcp add chartsia --url ${origin}/mcp`);
+  });
+
+  it('el bloque de Cursor es JSON válido con la URL del hub y coincide con el README', () => {
+    const cursor = AGENTS.find((a) => a.id === 'cursor')!;
+    expect(JSON.parse(cursor.snippet(`${origin}/mcp`))).toEqual({ mcpServers: { chartsia: { url: `${origin}/mcp` } } });
+    const readme = readFileSync(resolve(__dirname, '../../../../README.md'), 'utf8');
+    const bloque = readme.match(/\*\*Cursor\*\*[\s\S]*?```json\n([\s\S]+?)\n```/)?.[1];
+    expect(bloque).toBe(cursor.snippet('http://127.0.0.1:24278/mcp'));
+  });
+
+  it('el enlace de instalación de Cursor lleva la URL del hub en base64', () => {
+    const enlace = new URL(AGENTS.find((a) => a.id === 'cursor')!.install!(`${origin}/mcp`));
+    expect(enlace.protocol).toBe('cursor:');
+    expect(enlace.searchParams.get('name')).toBe('chartsia');
+    expect(JSON.parse(atob(enlace.searchParams.get('config')!))).toEqual({ url: `${origin}/mcp` });
+  });
+
+  it('el comando de Copilot agrega el servidor HTTP al perfil de VS Code', () => {
+    const comando = AGENTS.find((a) => a.id === 'copilot')!.snippet(`${origin}/mcp`);
+    const json = comando.match(/^code --add-mcp '(.+)'$/)?.[1];
+    expect(JSON.parse(json!)).toEqual({ name: 'chartsia', type: 'http', url: `${origin}/mcp` });
+  });
+
+  it('cada ventana enlaza la documentación del agente y solo Cursor tiene botón de instalar', async () => {
+    renderScreen();
+    for (const agent of AGENTS) {
+      const ventana = await abrir(agent.name);
+      const docs = within(ventana).getByRole('link', { name: `Documentación de ${agent.name}` });
+      expect(docs).toHaveAttribute('href', agent.docs);
+      expect(docs).toHaveAttribute('target', '_blank');
+      const instalar = within(ventana).queryByRole('link', { name: `Instalar en ${agent.name}` });
+      if (agent.id === 'cursor') expect(instalar).toHaveAttribute('href', agent.install!(`${origin}/mcp`));
+      else expect(instalar).toBeNull();
+      await userEvent.click(within(ventana).getByRole('button', { name: 'Cerrar' }));
+    }
   });
 
   it('ningún agente usa token: todos corren en la misma máquina que el hub', () => {
