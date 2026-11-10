@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { DiagramInputSchema } from '@chartsia/core/model';
 import { type DiagramCommandService } from '../../diagrams/diagram-command.service.js';
 import { type ToolResultFormatter } from '../tool-result.js';
+import { PSEUDOCODE_QUESTION, RELATIONS_BY_TYPE_GUIDE } from '../relation-guide.js';
 import { ProjectIdSchema } from './schemas.js';
 import { defineTool } from './tool-definition.js';
 
@@ -72,7 +73,9 @@ export const createDiagramTool = (commands: DiagramCommandService, results: Tool
       'Úsalo siempre que la persona pida un diagrama nuevo o distinto de los que ya existen (otro tema, sistema o tipo): crea un diagrama aparte y no modifica los anteriores. No uses apply_changes para eso.',
       'No envíes coordenadas: el servidor dispone el diagrama automáticamente sin solapes. Solo si quieres fijar un elemento, añade layout {"x","y"}.',
       'Cada elemento y relación lleva un id estable elegido por ti (letra inicial, letras, dígitos, "_" o "-"); úsalo después en apply_changes.',
-      'El tipo de diagrama solo indica el uso previsto: todos los kinds y relaciones valen en cualquier tipo, y un mismo diagrama puede mezclar clases, C4, ER, NoSQL y figuras. Kinds: class → class, interface, enum, package (grupo). c4-context → person, software-system, boundary. c4-container → además container (variant: default|database|queue|web). c4-component → además component, que debe ir dentro de un boundary con boundaryType "container". er → entity (weak:true para entidad débil, doble borde; associative:true para entidad asociativa, borde discontinuo) y table (columns[] con name, type, pk?, fk? {table, column}, notNull?, unique?; fk debe apuntar a una columna pk de otra tabla), attribute (óvalo de la notación Chen: key? subrayado, partialKey? subrayado discontinuo, multivalued? doble óvalo, derived? discontinuo), value-list (values[]: lista de valores de un atributo), relationship (rombo de relación Chen; identifying?: true lo dibuja de doble borde) y specialization (triángulo de especialización o generalización; overlapping?: true para subclases solapadas, si no disjuntas).',
+      RELATIONS_BY_TYPE_GUIDE,
+      PSEUDOCODE_QUESTION,
+      'Los kinds de elementos valen en cualquier tipo de diagrama y pueden mezclarse con figuras; las relaciones, no (ver arriba). Kinds: class → class, interface, enum, package (grupo). c4-context → person, software-system, boundary. c4-container → además container (variant: default|database|queue|web). c4-component → además component, que debe ir dentro de un boundary con boundaryType "container". er → entity (weak:true para entidad débil, doble borde; associative:true para entidad asociativa, borde discontinuo) y table (columns[] con name, type, pk?, fk? {table, column}, notNull?, unique?; fk debe apuntar a una columna pk de otra tabla), attribute (óvalo de la notación Chen: key? subrayado, partialKey? subrayado discontinuo, multivalued? doble óvalo, derived? discontinuo), value-list (values[]: lista de valores de un atributo), relationship (rombo de relación Chen; identifying?: true lo dibuja de doble borde) y specialization (triángulo de especialización o generalización; overlapping?: true para subclases solapadas, si no disjuntas).',
       'nosql → collection con fields[] (máx. 200) en rutas planas path:string[] de 1–8 segmentos; cada segmento empieza con letra o _ y sigue con letras, dígitos, _ o -, máx. 64, excepto __proto__, constructor y prototype. Tipos: string|number|boolean|date|timestamp|objectId|reference|geopoint|null|object|array; array requiere itemsType simple u object. Para subdocumentos, define el object o array<object> y después sus campos con la ruta extendida. nosql-rel va de la colección que guarda la referencia a la colección destino; label puede nombrar el campo de referencia.',
       'flow → flujo de sistema, para explicar cómo se procesa algo en un código (un pedido, un login, un webhook): nodos flow-node con variant (trigger = punto de entrada, component, file, method, service, database, queue, decision, external) y subtitle opcional (ruta y línea, p. ej. "src/orders/service.ts:42"), unidos con flow-edge, que lleva flowType opcional (call por defecto, import, read, write, event o data) y label. Cada flow-edge que sale de una decision necesita label (la rama: "sí", "no"). Lee el código antes de dibujar, usa un nodo por pieza relevante y manda el flujo completo en una sola llamada a create_diagram (no lo armes de a poco con apply_changes sobre un diagrama vacío: el layout sale menos ordenado). El flujo va siempre de izquierda a derecha, sin coordenadas. Se agrupa con frame (por carpeta, capa o servicio). Guía de variantes y conexiones en chartsia://schema/flow.',
       'frame es un grupo universal con título en name; parentId contiene elementos dentro del marco y permite marcos anidados.',
@@ -100,7 +103,7 @@ export const createDiagramTool = (commands: DiagramCommandService, results: Tool
     }),
     run: async (args) => {
       const { projectId, ...input } = args;
-      const { diagram, warnings } = await commands.create(input, projectId);
+      const { diagram, warnings } = await commands.create(input, projectId, 'agent');
       const viewUrl = results.viewUrl(diagram.id);
       return {
         linkDiagramId: diagram.id,

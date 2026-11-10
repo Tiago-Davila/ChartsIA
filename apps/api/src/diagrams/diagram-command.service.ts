@@ -3,7 +3,7 @@ import { type ExportPreferences } from '@chartsia/core/export';
 import { layoutDiagram, relayoutDiagram } from '@chartsia/core/layout';
 import { type Diagram, DiagramInputSchema, newDiagramId, newProjectId, type Preferences, type Project, ProjectSchema, styleElement, styleRelation, withPreferences } from '@chartsia/core/model';
 import { applyOperations } from '@chartsia/core/operations';
-import { DomainValidationError, fromZodError, validateDiagram, validationError } from '@chartsia/core/validation';
+import { checkRelationsByType, DomainValidationError, fromZodError, validateDiagram, validationError } from '@chartsia/core/validation';
 import { APP_CONFIG, type AppConfig } from '../config/config.js';
 import { type BackupImportResult, BackupSchema, type ConflictPolicy } from './backup.js';
 import { DiagramEvents, type Origin } from './diagram-events.js';
@@ -60,10 +60,15 @@ export class DiagramCommandService {
     @Inject(DIAGRAM_ID_GENERATOR) private readonly newId: IdGenerator = newDiagramId,
   ) {}
 
-  async create(input: unknown, projectId?: string): Promise<CommandResult> {
+  /** Con origin "agent" las relaciones deben corresponder al tipo del diagrama; las importaciones y la app no se restringen. */
+  async create(input: unknown, projectId?: string, origin?: Origin): Promise<CommandResult> {
     if (projectId !== undefined) await this.requireProject(projectId);
     const checked = validateDiagram(input, { schema: DiagramInputSchema, maxElements: this.config.maxElements });
     if (!checked.ok) throw new DomainValidationError(checked.errors);
+    if (origin === 'agent') {
+      const typeErrors = checkRelationsByType(checked.value);
+      if (typeErrors.length > 0) throw new DomainValidationError(typeErrors);
+    }
     const now = this.clock().toISOString();
     const diagram = await layoutDiagram({
       ...withPreferences(checked.value, await this.preferences.get()),
@@ -87,6 +92,10 @@ export class DiagramCommandService {
       if (!current) throw notFound(id);
       const result = applyOperations(current, params.operations, { maxElements: this.config.maxElements });
       if (!result.ok) throw new DomainValidationError(result.errors);
+      if (params.origin === 'agent') {
+        const typeErrors = checkRelationsByType(result.diagram, current);
+        if (typeErrors.length > 0) throw new DomainValidationError(typeErrors);
+      }
 
       const warnings: string[] = [];
       if (params.baseRevision !== undefined && params.baseRevision !== current.revision) {
