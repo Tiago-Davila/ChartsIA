@@ -26,7 +26,13 @@ Diseña un diagrama nuevo a partir del pedido y créalo en una sola llamada a `c
 - **Alcance**: incluye solo lo que la persona pidió o lo que el pedido necesita para entenderse. Si pasa de unos 25 elementos, propone partirlo en varios diagramas.
 - **Ids**: estables, legibles y sin tildes ni espacios. Usa el nombre del elemento (`Cliente`, `LineaPedido`) y, para relaciones, origen y destino (`Pedido_Cliente`). Se usan después para editar.
 - **Nombres**: en el idioma de la persona, con la convención del tipo (clases en singular, tablas como las nombraría la persona).
-- **Relaciones**: usa la relación propia del tipo (`inheritance`, `composition`, `c4-rel` con `label` y `technology`, `er-rel` con sus dos cardinalidades). `connector` solo para figuras o uniones libres.
+- **Relaciones**: usa el tipo de flecha del diagrama que la persona pidió en su mensaje, y solo ese. El hub rechaza con `RELATION_NOT_ALLOWED` las que no corresponden al tipo.
+  - UML o clases (`class`): `association`, `aggregation`, `composition`, `inheritance`, `realization`, `dependency`. Nunca `er-rel`, `er-attr` ni `connector` entre clases.
+  - C4: `c4-rel` con `label` y `technology`.
+  - Entidad-relación (`er`): `er-rel` con sus dos cardinalidades y `er-attr` para los atributos.
+  - NoSQL: `nosql-rel`.
+  - `connector` solo para figuras o uniones libres.
+- **Pseudocódigo**: en un diagrama de clases, antes de crearlo pregunta "¿Querés que agregue pseudocódigo a los métodos?". Si dice que sí, escríbelo en un elemento `text` con bloque de código junto a cada clase; si dice que no, no lo agregues.
 - **Lo que no se agrega sin pedido**: grupos (`package`, `boundary`, `frame`), salvo que un `component` lo exija; coordenadas, porque el hub dispone el diagrama solo; estilos; proyecto (`projectId`).
 
 ## Orden

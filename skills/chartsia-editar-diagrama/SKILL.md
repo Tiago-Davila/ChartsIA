@@ -28,6 +28,8 @@ Aplica los cambios que pide la persona sobre un diagrama existente con un solo l
 | Ubicar en un lugar concreto | `move_element` (deja el elemento fijo) |
 | Cambiar el tamaño | `resize_element` |
 | Traer adelante o mandar atrás | `reorder_element` |
+
+Las flechas nuevas o cambiadas deben ser del tipo del diagrama: UML (`class`) usa `association`, `aggregation`, `composition`, `inheritance`, `realization` o `dependency`; C4 usa `c4-rel`; ER usa `er-rel` y `er-attr`; NoSQL usa `nosql-rel`. Si la persona pide otro estilo de flecha, respeta lo que dice su mensaje. `connector` solo para figuras y uniones libres. El hub rechaza con `RELATION_NOT_ALLOWED` las que no corresponden.
 | Colores, grosor o letra | `update_element` o `update_relation` con `style` |
 | Cambiar el título | `set_title` |
 

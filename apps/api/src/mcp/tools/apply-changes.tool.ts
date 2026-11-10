@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { OperationBatchSchema } from '@chartsia/core/model';
 import { type DiagramCommandService } from '../../diagrams/diagram-command.service.js';
 import { type ToolResultFormatter } from '../tool-result.js';
+import { RELATIONS_BY_TYPE_GUIDE } from '../relation-guide.js';
 import { DiagramIdSchema } from './schemas.js';
 import { defineTool } from './tool-definition.js';
 
@@ -29,6 +30,7 @@ export const applyChangesTool = (commands: DiagramCommandService, results: ToolR
     description: [
       'Solo para refinar un diagrama que ya existe y del que se está hablando. Si la persona pide un diagrama nuevo o de otro tema, usa create_diagram: apply_changes sobre el diagrama activo lo pisaría.',
       'Modifica un diagrama existente con un lote atómico de 1 a 200 operaciones, aplicadas en orden. Los cambios aparecen en vivo en la app y el resto del diagrama no se mueve.',
+      RELATIONS_BY_TYPE_GUIDE,
       'Puedes añadir una imagen con add_element {element: {id, kind: "image", name, src}} o reemplazarla con update_element {id, changes: {src}}. src debe ser un data URL base64 PNG/JPG válido o SVG saneado (máx. 5 MiB); el hub lo valida y lo persiste embebido. El total por diagrama es 25 MiB y 40 millones de píxeles raster; el cuerpo HTTP por defecto admite 8 MiB.',
       'Operaciones (campo "op"): add_element, update_element {id, changes}, remove_element {id, cascade?: "reparent"|"children"}, add_relation, update_relation {id, changes}, remove_relation {id}, move_element {id, x, y} (fija el elemento), resize_element {id, width, height} (tamaño mínimo elegido a mano), reorder_element {id, to: front|back|forward|backward} (orden de dibujo: al frente, al fondo o un nivel adelante/atrás entre elementos del mismo nivel; los grupos siempre quedan detrás de sus hijos), set_title.',
       'update_relation admite además sourceTotal/targetTotal (participación total en er-rel y connector), kind (cambiar el tipo de flecha), sourceSide/targetSide ("top"|"right"|"bottom"|"left") y waypoints (puntos de quiebre); para invertir una flecha intercambia source y target. En un connector (flecha libre, válido en cualquier tipo de diagrama) admite arrowheads (none | end | both), dashed y label. En una er-rel también admite sourceCardinality, targetCardinality e identifying, y update_element admite weak y associative en una entity, identifying en una relationship, overlapping en una specialization, y en un attribute key, partialKey, multivalued y derived (en una value-list, values reemplaza la lista completa); en una table update_element admite columns (reemplaza la lista completa); en una figure (válida en cualquier tipo de diagrama) update_element admite shape: circle, oval, square, rectangle, isosceles-triangle, equilateral-triangle, scalene-triangle, right-triangle, diamond, parallelogram, pentagon, hexagon, heptagon, octagon, cloud, arrow, double-arrow, arrow-right, arrow-left, arrow-up o arrow-down.',

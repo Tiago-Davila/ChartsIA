@@ -10,12 +10,13 @@ import {
 } from '@chartsia/core/model';
 import { isDomainValidationError } from '@chartsia/core/validation';
 import { type DiagramQueryService } from '../diagrams/diagram-query.service.js';
+import { RELATIONS_BY_TYPE_GUIDE } from './relation-guide.js';
 import { type ExportService } from '../diagrams/export.service.js';
 
 export const RESOURCE_TEMPLATES: ResourceTemplate[] = [
   { uriTemplate: 'chartsia://diagrams/{id}', name: 'diagram', title: 'Diagrama (JSON)', description: 'Estado del diagrama, igual que get_diagram.', mimeType: 'application/json' },
   { uriTemplate: 'chartsia://diagrams/{id}/export.{ext}', name: 'diagram-export', title: 'Diagrama exportado', description: 'Exportación en svg, drawio o excalidraw.' },
-  { uriTemplate: 'chartsia://schema/{type}', name: 'diagram-schema', title: 'Guía por tipo de diagrama', description: 'Kinds, campos y relaciones permitidas para class, c4-context, c4-container, c4-component, er, nosql o flow. Son las mismas en todos los tipos: el tipo no restringe nada.', mimeType: 'text/markdown' },
+  { uriTemplate: 'chartsia://schema/{type}', name: 'diagram-schema', title: 'Guía por tipo de diagrama', description: 'Kinds, campos y relaciones permitidas para class, c4-context, c4-container, c4-component, er, nosql o flow. Los kinds valen en todos los tipos; las relaciones dependen del tipo.', mimeType: 'text/markdown' },
 ];
 
 const KIND_FIELDS: Record<string, string> = {
@@ -65,7 +66,8 @@ export function schemaGuide(type: DiagramType): string {
   return [
     `# Diagrama \`${type}\``,
     '',
-    'Todos los kinds y relaciones valen en cualquier tipo de diagrama, y pueden mezclarse en el mismo diagrama. El tipo es solo una etiqueta de uso y no restringe nada.',
+    'Los kinds de elementos valen en cualquier tipo de diagrama y pueden mezclarse. Las relaciones dependen del tipo.',
+    RELATIONS_BY_TYPE_GUIDE,
     '',
     'Todos los elementos: `id` (letra inicial; letras, dígitos, "_" o "-"; máx. 64), `kind`, `name` (1–200), `description?` (≤1000), `parentId?` (grupo contenedor: package, boundary o frame), `layout?` ({x, y} solo para fijar), `style?` (ver "Estilo").',
     '',

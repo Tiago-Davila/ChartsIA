@@ -14,6 +14,7 @@ import { checkRelations } from './rules/relations.js';
 
 export * from './errors.js';
 export { canRelate } from './rules/relations.js';
+export { checkRelationsByType, RELATIONS_BY_TYPE } from './rules/diagram-type.js';
 export type { RuleOptions } from './context.js';
 
 const RULES: Rule[] = [
